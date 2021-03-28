@@ -1,0 +1,11 @@
+mode: debug
+
+mysql:
+  dsn: root:password@tcp(127.0.0.1:3306)/script_web?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+
+redis:
+  addr: localhost:6379
+  password:
+  db: 0
+
+webPort: 8080
