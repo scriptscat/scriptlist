@@ -1,0 +1,25 @@
+
+mode: debug
+
+mysql:
+  dsn: root:password@tcp(127.0.0.1:3306)/scriptweb?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+  prefix: cm_
+
+redis:
+  addr: localhost:6379
+  password:
+  db: 0
+
+cache:
+  addr: localhost:6379
+  password:
+  db: 1
+
+webPort: 8080
+
+oauth:
+  clientId: xxx
+  clientSecret: xxx
+
+jwt:
+  token: xxx

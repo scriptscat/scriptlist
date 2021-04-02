@@ -2,15 +2,19 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
 	Mode    string
-	MySQL   MySQL
+	Mysql   MySQL
 	Redis   Redis
-	WebPort int `yaml:"webPort"`
+	Cache   Redis
+	OAuth   OAuth `yaml:"oauth"`
+	Jwt     Jwt   `yaml:"jwt"`
+	WebPort int   `yaml:"webPort"`
 }
 
 type Redis struct {
@@ -22,6 +26,15 @@ type Redis struct {
 type MySQL struct {
 	Dsn    string
 	Prefix string
+}
+
+type OAuth struct {
+	ClientID     string `yaml:"clientId"`
+	ClientSecret string `yaml:"clientSecret"`
+}
+
+type Jwt struct {
+	Token string `yaml:"token"`
 }
 
 var AppConfig Config

@@ -2,14 +2,11 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/script_web/config"
-	"github.com/scriptscat/script_web/internal/service"
-	"github.com/scriptscat/script_web/internal/web"
-	"gorm.io/gorm"
-
-	"gorm.io/driver/mysql"
+	"github.com/scriptscat/scriptweb/internal/interfaces/apis"
+	"github.com/scriptscat/scriptweb/internal/pkg/config"
+	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"github.com/scriptscat/scriptweb/internal/pkg/migrate"
 	"log"
-	"strconv"
 )
 
 func main() {
@@ -17,16 +14,22 @@ func main() {
 		log.Fatal("config error: ", err)
 	}
 
-	gin.SetMode(config.AppConfig.Mode)
+	switch config.AppConfig.Mode {
+	case "debug":
+		gin.SetMode(gin.DebugMode)
+	case "prod":
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-	db, err := gorm.Open(mysql.Open(config.AppConfig.MySQL.Dsn), &gorm.Config{})
-	if err != nil {
+	if err := db.Init(); err != nil {
 		log.Fatal("database error: ", err)
 	}
-	script := service.NewScript(db)
+	if err := migrate.Migrate(); err != nil {
+		log.Fatal("migrate error: ", err)
+	}
 
-	r := gin.Default()
+	if err := apis.StartApi(); err != nil {
+		log.Fatal("apis error: ", err)
+	}
 
-	web.Registry(r, web.NewScript(script))
-	_ = r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))
 }

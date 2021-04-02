@@ -2,18 +2,19 @@ version: '3'
 
 services:
 
-    redis:
-      image: redis
-      container_name: script_web
-      ports:
-          - 6379:6379
+  redis:
+    image: redis
+    container_name: scriptweb
+    ports:
+      - 6379:6379
 
-    mysql:
-      image: mysql:5.7
-      environment:
-          - MYSQL_ROOT_PASSWORD=password
-          - MYSQL_DATABASE=script_web
-      ports:
-          - 3306:3306
-      volumes:
-        - ./.docker/store:/var/lib/mysql
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=scriptweb
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql
+
