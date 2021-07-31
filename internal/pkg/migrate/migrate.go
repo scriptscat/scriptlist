@@ -103,6 +103,26 @@ func Migrate() error {
 				}
 				return nil
 			},
+		}, {
+			ID: "1627723150",
+			Migrate: func(tx *gorm.DB) error {
+				if err := tx.Migrator().AddColumn(&entity.ScriptStatistics{}, "score"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().AddColumn(&entity.ScriptStatistics{}, "score_count"); err != nil {
+					return err
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if err := tx.Migrator().DropColumn(&entity.ScriptStatistics{}, "score"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.ScriptStatistics{}, "score_count"); err != nil {
+					return err
+				}
+				return nil
+			},
 		},
 	})
 

@@ -13,7 +13,7 @@ import (
 
 type Script interface {
 	GetScript(id int64) (*respond.ScriptInfo, error)
-	GetScriptList(category int64, keyword string, page request.Pages) (*respond.List, error)
+	GetScriptList(category []int64, domain, keyword, sort string, page request.Pages) (*respond.List, error)
 	GetUserScript(uid int64, self bool, page request.Pages) (*respond.List, error)
 	GetScriptCodeList(id int64) ([]*respond.ScriptCode, error)
 	GetLatestScriptCode(id int64) (*respond.ScriptCodeInfo, error)
@@ -71,8 +71,8 @@ func (s *script) GetLatestScriptCode(id int64) (*respond.ScriptCodeInfo, error) 
 	return respond.ToScriptCodeInfo(user, codes[0]), nil
 }
 
-func (s *script) GetScriptList(category int64, keyword string, page request.Pages) (*respond.List, error) {
-	list, total, err := s.scriptSvc.Search(category, keyword, page)
+func (s *script) GetScriptList(category []int64, domain, keyword, sort string, page request.Pages) (*respond.List, error) {
+	list, total, err := s.scriptSvc.Search(category, domain, keyword, sort, page)
 	if err != nil {
 		return nil, err
 	}

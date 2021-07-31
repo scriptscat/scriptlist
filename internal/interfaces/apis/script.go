@@ -126,7 +126,14 @@ func (s *Script) list(ctx *gin.Context) {
 		if err := ctx.ShouldBind(&req); err != nil {
 			return err
 		}
-		list, err := s.svc.GetScriptList(utils.StringToInt64(ctx.Query("category")), ctx.Query("keyword"), req)
+		categorys := make([]int64, 0)
+		for _, v := range strings.Split(ctx.Query("category"), ",") {
+			if v != "" {
+				categorys = append(categorys, utils.StringToInt64(v))
+			}
+		}
+		list, err := s.svc.GetScriptList(categorys, ctx.Query("domain"),
+			ctx.Query("keyword"), ctx.Query("sort"), req)
 		if err != nil {
 			return err
 		}

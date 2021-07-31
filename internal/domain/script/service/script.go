@@ -9,7 +9,7 @@ import (
 )
 
 type Script interface {
-	Search(category int64, keyword string, page request.Pages) ([]*entity.Script, int64, error)
+	Search(category []int64, domain, keyword, sort string, page request.Pages) ([]*entity.Script, int64, error)
 	UserScript(uid int64, self bool, page request.Pages) ([]*entity.Script, int64, error)
 	Info(id int64) (*entity.Script, error)
 	VersionList(id int64) ([]*entity.ScriptCode, error)
@@ -35,9 +35,11 @@ func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, cat
 	return ret
 }
 
-func (s *script) Search(category int64, keyword string, page request.Pages) ([]*entity.Script, int64, error) {
+func (s *script) Search(category []int64, domain, keyword, sort string, page request.Pages) ([]*entity.Script, int64, error) {
 	return s.scriptRepo.List(&repository.SearchList{
 		Category: category,
+		Domain:   domain,
+		Sort:     sort,
 		Status:   cnt.ACTIVE,
 		Keyword:  keyword,
 	}, page)

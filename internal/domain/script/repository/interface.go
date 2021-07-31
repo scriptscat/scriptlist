@@ -7,7 +7,8 @@ import (
 
 type SearchList struct {
 	Uid                   int64
-	Category, Status      int64
+	Category              []int64
+	Status                int64
 	Keyword, Sort, Domain string
 }
 

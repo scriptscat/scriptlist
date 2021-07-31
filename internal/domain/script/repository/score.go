@@ -23,6 +23,16 @@ func (s *score) scorekey(scriptId int64, key string) string {
 
 func (s *score) Save(score *entity.ScriptScore) error {
 	if score.ID == 0 {
+		if db.Db.Model(&entity.ScriptStatistics{}).Where("script_id=?", score.ScriptId).Updates(map[string]interface{}{
+			"score":       gorm.Expr("score+?", score.Score),
+			"score_count": gorm.Expr("score_count+1"),
+		}).RowsAffected == 0 {
+			return db.Db.Save(&entity.ScriptStatistics{
+				ScriptId:   score.ScriptId,
+				Score:      score.Score,
+				ScoreCount: 1,
+			}).Error
+		}
 		if err := db.Redis.IncrBy(context.Background(), s.scorekey(score.ScriptId, "total"), 1).Err(); err != nil {
 			return err
 		}
@@ -34,6 +44,15 @@ func (s *score) Save(score *entity.ScriptScore) error {
 	old := &entity.ScriptScore{ID: score.ID}
 	if err := db.Db.First(old).Error; err != nil {
 		return err
+	}
+	if db.Db.Model(&entity.ScriptStatistics{}).Where("script_id=?", score.ScriptId).Updates(map[string]interface{}{
+		"score": gorm.Expr("score+?", score.Score-old.Score),
+	}).RowsAffected == 0 {
+		return db.Db.Save(&entity.ScriptStatistics{
+			ScriptId:   score.ScriptId,
+			Score:      score.Score,
+			ScoreCount: 1,
+		}).Error
 	}
 	if err := db.Redis.IncrBy(context.Background(), s.scorekey(score.ScriptId, "score"), score.Score-old.Score).Err(); err != nil {
 		return err
@@ -79,5 +98,4 @@ func (s *score) List(scriptId int64, page *request.Pages) ([]*entity.ScriptScore
 		return nil, 0, err
 	}
 	return list, num, nil
-
 }

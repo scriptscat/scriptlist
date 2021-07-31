@@ -38,12 +38,22 @@ type ScriptScore struct {
 	Updatetime int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
 
+func (s *ScriptScore) TableName() string {
+	return config.AppConfig.Mysql.Prefix + "script_score"
+}
+
 // ScriptStatistics 脚本总下载更新统计
 type ScriptStatistics struct {
-	ID       int64 `gorm:"column:id" json:"id" form:"id"`
-	ScriptId int64 `gorm:"column:script_id;index:script,unique" json:"script_id" form:"script_id"`
-	Download int64 `gorm:"column:download" json:"download" form:"download"`
-	Update   int64 `gorm:"column:update" json:"update" form:"update"`
+	ID         int64 `gorm:"column:id" json:"id" form:"id"`
+	ScriptId   int64 `gorm:"column:script_id;index:script,unique" json:"script_id" form:"script_id"`
+	Download   int64 `gorm:"column:download" json:"download" form:"download"`
+	Update     int64 `gorm:"column:update" json:"update" form:"update"`
+	Score      int64 `gorm:"column:score" json:"score" form:"score"`
+	ScoreCount int64 `gorm:"column:score_count" json:"score_count" form:"score_count"`
+}
+
+func (s *ScriptStatistics) TableName() string {
+	return config.AppConfig.Mysql.Prefix + "script_statistics"
 }
 
 // ScriptDateStatistics 脚本日下载更新统计
@@ -55,12 +65,20 @@ type ScriptDateStatistics struct {
 	Update   int64  `gorm:"column:update" json:"update" form:"update"`
 }
 
+func (s *ScriptDateStatistics) TableName() string {
+	return config.AppConfig.Mysql.Prefix + "script_date_statistics"
+}
+
 // ScriptDomain 脚本域名
 type ScriptDomain struct {
 	ID            int64  `gorm:"column:id" json:"id" form:"id"`
-	Domain        string `gorm:"column:Domain;type:varchar(255);index:domain_script,unique" json:"Domain" form:"Domain"`
+	Domain        string `gorm:"column:domain;type:varchar(255);index:domain_script,unique" json:"domain" form:"domain"`
 	DomainReverse string `gorm:"column:domain_reverse;type:varchar(255);index:domain_reverse" json:"domain_reverse" form:"domain_reverse"`
 	ScriptId      int64  `gorm:"column:script_id;index:script_id;index:domain_script,unique" json:"script_id" form:"script_id"`
 	ScriptCodeId  int64  `gorm:"column:script_code_id" json:"script_code_id" form:"script_code_id"`
 	Createtime    int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`
+}
+
+func (s *ScriptDomain) TableName() string {
+	return config.AppConfig.Mysql.Prefix + "script_domain"
 }
