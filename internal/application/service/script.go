@@ -69,7 +69,10 @@ func (s *script) GetLatestScriptCode(id int64) (*respond2.ScriptCode, error) {
 		return nil, errs.ErrScriptAudit
 	}
 	user, err := s.userSvc.GetUser(codes[0].UserId)
-	return respond2.ToScriptCode(user, codes[0]), err
+	ret := respond2.ToScriptCode(user, codes[0])
+	ret.Code = codes[0].Code
+	return ret, err
+
 }
 
 func (s *script) GetScriptList(category []int64, domain, keyword, sort string, page request2.Pages) (*respond2.List, error) {
@@ -151,7 +154,9 @@ func (s *script) GetScriptCodeByVersion(id int64, version string) (*respond2.Scr
 	for _, v := range list {
 		if v.Version == version {
 			user, _ := s.userSvc.GetUser(v.UserId)
-			return respond2.ToScriptCode(user, v), nil
+			ret := respond2.ToScriptCode(user, v)
+			ret.Code = v.Code
+			return ret, err
 		}
 	}
 	return nil, errs.ErrScriptCodeIsNil
