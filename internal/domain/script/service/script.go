@@ -1,11 +1,13 @@
 package service
 
 import (
+	"github.com/robfig/cron/v3"
+	"github.com/scriptscat/scriptweb/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
+	"github.com/scriptscat/scriptweb/internal/pkg/migrate"
 )
 
 type Script interface {
@@ -25,7 +27,11 @@ type script struct {
 	statisRepo   repository.Statistics
 }
 
-func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics) Script {
+func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics, c *cron.Cron) Script {
+	go migrate.DealMetaInfo()
+	c.AddFunc("0/20 * * * *", func() {
+		migrate.DealMetaInfo()
+	})
 	ret := &script{
 		scriptRepo:   scriptRepo,
 		codeRepo:     codeRepo,

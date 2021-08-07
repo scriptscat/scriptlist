@@ -46,10 +46,10 @@ func (s *ScriptScore) TableName() string {
 type ScriptStatistics struct {
 	ID         int64 `gorm:"column:id" json:"id" form:"id"`
 	ScriptId   int64 `gorm:"column:script_id;index:script,unique" json:"script_id" form:"script_id"`
-	Download   int64 `gorm:"column:download" json:"download" form:"download"`
-	Update     int64 `gorm:"column:update" json:"update" form:"update"`
-	Score      int64 `gorm:"column:score" json:"score" form:"score"`
-	ScoreCount int64 `gorm:"column:score_count" json:"score_count" form:"score_count"`
+	Download   int64 `gorm:"column:download;default:0" json:"download" form:"download"`
+	Update     int64 `gorm:"column:update;default:0" json:"update" form:"update"`
+	Score      int64 `gorm:"column:score;default:0" json:"score" form:"score"`
+	ScoreCount int64 `gorm:"column:score_count;default:0" json:"score_count" form:"score_count"`
 }
 
 func (s *ScriptStatistics) TableName() string {
@@ -59,10 +59,10 @@ func (s *ScriptStatistics) TableName() string {
 // ScriptDateStatistics 脚本日下载更新统计
 type ScriptDateStatistics struct {
 	ID       int64  `gorm:"column:id" json:"id" form:"id"`
-	ScriptId int64  `gorm:"column:script_id;index:script_date,unique" json:"script_id" form:"script_id"`
-	Date     string `gorm:"column:date;index:script_date,unique" json:"date" form:"date"`
-	Download int64  `gorm:"column:download" json:"download" form:"download"`
-	Update   int64  `gorm:"column:update" json:"update" form:"update"`
+	ScriptId int64  `gorm:"column:script_id;index:script_date,unique;default:0" json:"script_id" form:"script_id"`
+	Date     string `gorm:"column:date;index:script_date,unique;default:0" json:"date" form:"date"`
+	Download int64  `gorm:"column:download;default:0" json:"download" form:"download"`
+	Update   int64  `gorm:"column:update;default:0" json:"update" form:"update"`
 }
 
 func (s *ScriptDateStatistics) TableName() string {

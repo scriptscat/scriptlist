@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwt2 "github.com/golang-jwt/jwt"
+	"github.com/scriptscat/scriptweb/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/application/service"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"

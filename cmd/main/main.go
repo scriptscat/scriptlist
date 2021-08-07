@@ -1,12 +1,13 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/internal/interfaces/apis"
+	"github.com/scriptscat/scriptweb/interfaces/apis"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/migrate"
-	"log"
 )
 
 func main() {

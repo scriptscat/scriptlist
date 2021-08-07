@@ -10,7 +10,7 @@ import (
 
 type Script struct {
 	*User
-	Latest       *ScriptCode `json:"latest"`
+	Script       *ScriptCode `json:"script"`
 	ID           int64       `json:"id"`
 	PostId       int64       `json:"post_id"`
 	UserId       int64       `json:"user_id"`
@@ -41,11 +41,7 @@ type ScriptCode struct {
 	Changelog  string      `json:"changelog" form:"changelog"`
 	Status     int64       `json:"status" form:"status"`
 	Createtime int64       `json:"createtime" form:"createtime"`
-}
-
-type ScriptCodeInfo struct {
-	*ScriptCode
-	Code string `json:"code" form:"code"`
+	Code       string      `json:"code,omitempty" form:"code"`
 }
 
 type ScriptScore struct {
@@ -74,18 +70,18 @@ func ToScriptScore(user *entity.User, score *entity2.ScriptScore) *ScriptScore {
 	}
 }
 
-func ToScript(user *entity.User, script *entity2.Script, latest *ScriptCode) *Script {
+func ToScript(user *entity.User, scriptInfo *entity2.Script, script *ScriptCode) *Script {
 	return &Script{
 		User:        ToUser(user),
-		ID:          script.ID,
-		PostId:      script.PostId,
-		UserId:      script.UserId,
-		Name:        script.Name,
-		Description: script.Description,
-		Latest:      latest,
-		Status:      script.Status,
-		Createtime:  script.Createtime,
-		Updatetime:  script.Updatetime,
+		ID:          scriptInfo.ID,
+		PostId:      scriptInfo.PostId,
+		UserId:      scriptInfo.UserId,
+		Name:        scriptInfo.Name,
+		Description: scriptInfo.Description,
+		Script:      script,
+		Status:      scriptInfo.Status,
+		Createtime:  scriptInfo.Createtime,
+		Updatetime:  scriptInfo.Updatetime,
 	}
 }
 
@@ -128,12 +124,5 @@ func ToScriptCode(user *entity.User, code *entity2.ScriptCode) *ScriptCode {
 		Changelog:  code.Changelog,
 		Status:     code.Status,
 		Createtime: code.Createtime,
-	}
-}
-
-func ToScriptCodeInfo(user *entity.User, code *entity2.ScriptCode) *ScriptCodeInfo {
-	return &ScriptCodeInfo{
-		ScriptCode: ToScriptCode(user, code),
-		Code:       code.Code,
 	}
 }

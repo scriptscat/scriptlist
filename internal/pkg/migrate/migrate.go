@@ -123,6 +123,15 @@ func Migrate() error {
 				}
 				return nil
 			},
+		}, {
+			ID: "1627908382",
+			Migrate: func(tx *gorm.DB) error {
+				return nil
+			},
+			Rollback: func(g *gorm.DB) error {
+
+				return nil
+			},
 		},
 	})
 

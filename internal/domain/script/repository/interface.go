@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"github.com/scriptscat/scriptweb/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/request"
 )
 
 type SearchList struct {

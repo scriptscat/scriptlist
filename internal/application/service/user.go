@@ -1,8 +1,8 @@
 package service
 
 import (
+	"github.com/scriptscat/scriptweb/interfaces/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/respond"
 )
 
 type User interface {

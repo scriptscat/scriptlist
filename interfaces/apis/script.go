@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	request2 "github.com/scriptscat/scriptweb/interfaces/dto/request"
+	"github.com/scriptscat/scriptweb/interfaces/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/application/service"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/request"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
@@ -36,19 +36,25 @@ func (s *Script) Registry(r *gin.Engine) {
 		}
 		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") {
 			jwtAuth(ctx)
-			s.downloadScript(ctx)
+			if !ctx.IsAborted() {
+				s.downloadScript(ctx)
+			}
 		} else if strings.HasSuffix(ctx.Request.RequestURI, ".meta.js") {
 			jwtAuth(ctx)
-			s.getScriptMeta(ctx)
+			if !ctx.IsAborted() {
+				s.getScriptMeta(ctx)
+			}
 		}
 	})
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
-	rg.GET("/:id", s.get)
+	rg.GET("/:id", s.get(false))
+	rg.GET("/:id/code", s.get(true))
 	rg.GET("/:id/versions", s.versions)
-	rg.GET("/:id/versions/:version", s.versionsGet)
+	rg.GET("/:id/versions/:version", s.versionsGet(false))
+	rg.GET("/:id/versions/:version/code", s.versionsGet(true))
 
-	rgg := rg.Group("/:id/score", jwt3.Jwt([]byte(config.AppConfig.Jwt.Token), false, jwt3.WithExpired(JwtAuthMaxAge)))
+	rgg := rg.Group("/:id/score", jwtAuth)
 	rgg.GET("", s.scoreList)
 	rgg.PUT("", s.putScore)
 	rgg.GET("/self", s.selfScore)
@@ -80,7 +86,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}
-	var code *respond.ScriptCodeInfo
+	var code *respond.ScriptCode
 	var err error
 	if version != "" {
 		code, err = s.svc.GetScriptCodeByVersion(id, version)
@@ -104,7 +110,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}
-	var code *respond.ScriptCodeInfo
+	var code *respond.ScriptCode
 	var err error
 	if version != "" {
 		code, err = s.svc.GetScriptCodeByVersion(id, version)
@@ -122,7 +128,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 
 func (s *Script) list(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		req := request.Pages{}
+		req := request2.Pages{}
 		if err := ctx.ShouldBind(&req); err != nil {
 			return err
 		}
@@ -141,15 +147,17 @@ func (s *Script) list(ctx *gin.Context) {
 	})
 }
 
-func (s *Script) get(ctx *gin.Context) {
-	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
-		ret, err := s.svc.GetScript(id)
-		if err != nil {
-			return err
-		}
-		return ret
-	})
+func (s *Script) get(withcode bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		handle(ctx, func() interface{} {
+			id := utils.StringToInt64(ctx.Param("id"))
+			ret, err := s.svc.GetScript(id, "", withcode)
+			if err != nil {
+				return err
+			}
+			return ret
+		})
+	}
 }
 
 func (s *Script) versions(ctx *gin.Context) {
@@ -163,16 +171,18 @@ func (s *Script) versions(ctx *gin.Context) {
 	})
 }
 
-func (s *Script) versionsGet(ctx *gin.Context) {
-	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
-		version := ctx.Param("version")
-		code, err := s.svc.GetScriptCodeByVersion(id, version)
-		if err != nil {
-			return err
-		}
-		return code
-	})
+func (s *Script) versionsGet(withcode bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		handle(ctx, func() interface{} {
+			id := utils.StringToInt64(ctx.Param("id"))
+			version := ctx.Param("version")
+			code, err := s.svc.GetScript(id, version, withcode)
+			if err != nil {
+				return err
+			}
+			return code
+		})
+	}
 }
 
 func (s *Script) category(ctx *gin.Context) {
@@ -192,7 +202,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 			return errs.ErrNotLogin
 		}
 		id := utils.StringToInt64(ctx.Param("id"))
-		score := &request.Score{}
+		score := &request2.Score{}
 		if err := ctx.ShouldBind(score); err != nil {
 			return err
 		}
@@ -203,7 +213,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 func (s *Script) scoreList(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("id"))
-		page := &request.Pages{}
+		page := &request2.Pages{}
 		if err := ctx.ShouldBind(page); err != nil {
 			return err
 		}

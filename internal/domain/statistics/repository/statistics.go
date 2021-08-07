@@ -24,7 +24,7 @@ func (s *statistics) Download(entity *entity.StatisticsDownload) error {
 	if err := s.cacheTotalNum(entity.ScriptId, true); err != nil {
 		return err
 	}
-	if _, err := db.Redis.IncrBy(context.Background(), s.todayKey(entity.ScriptId, time.Now(), false), 1).Result(); err != nil {
+	if _, err := db.Redis.IncrBy(context.Background(), s.todayKey(entity.ScriptId, time.Now(), true), 1).Result(); err != nil {
 		return err
 	}
 	if _, err := db.Redis.IncrBy(context.Background(), s.totalKey(entity.ScriptId, true), 1).Result(); err != nil {

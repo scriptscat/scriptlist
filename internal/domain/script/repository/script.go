@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/scriptscat/scriptweb/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 )

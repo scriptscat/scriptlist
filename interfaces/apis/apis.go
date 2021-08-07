@@ -9,6 +9,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	jwt2 "github.com/golang-jwt/jwt"
 	"github.com/golang/glog"
+	"github.com/robfig/cron/v3"
+	"github.com/scriptscat/scriptweb/interfaces/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/application/service"
 	repository3 "github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
@@ -16,7 +18,6 @@ import (
 	service4 "github.com/scriptscat/scriptweb/internal/domain/statistics/service"
 	"github.com/scriptscat/scriptweb/internal/domain/user/repository"
 	service2 "github.com/scriptscat/scriptweb/internal/domain/user/service"
-	"github.com/scriptscat/scriptweb/internal/interfaces/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
@@ -105,9 +106,9 @@ func jwttoken(ctx *gin.Context) (jwt2.MapClaims, *jwt2.Token, bool) {
 
 func StartApi() error {
 	binding.Validator = pkgValidator.NewValidator()
-
+	c := cron.New()
 	userSvc := service2.NewUser(repository.NewUser())
-	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics())
+	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics(), c)
 	script := service.NewScript(userSvc,
 		scriptSvc,
 		service3.NewScore(repository3.NewScore()),
@@ -123,5 +124,6 @@ func StartApi() error {
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), config.AppConfig.Jwt.Token),
 		NewUser(user, script),
 	)
+	c.Start()
 	return r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))
 }

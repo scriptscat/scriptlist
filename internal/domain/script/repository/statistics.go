@@ -18,11 +18,13 @@ func NewStatistics() Statistics {
 func (s *statistics) Download(id int64) error {
 	date := time.Now().Format("2006-01-02")
 	if db.Db.Model(&entity.ScriptDateStatistics{}).Where("script_id=? and date=?", id, date).Update("download", gorm.Expr("download+1")).RowsAffected == 0 {
-		return db.Db.Save(&entity.ScriptDateStatistics{
+		if err := db.Db.Save(&entity.ScriptDateStatistics{
 			ScriptId: id,
 			Date:     date,
 			Download: 1,
-		}).Error
+		}).Error; err != nil {
+			return err
+		}
 	}
 	if db.Db.Model(&entity.ScriptStatistics{}).Where("script_id=?", id).Update("download", gorm.Expr("download+1")).RowsAffected == 0 {
 		return db.Db.Save(&entity.ScriptStatistics{
@@ -36,11 +38,13 @@ func (s *statistics) Download(id int64) error {
 func (s *statistics) Update(id int64) error {
 	date := time.Now().Format("2006-01-02")
 	if db.Db.Model(&entity.ScriptDateStatistics{}).Where("script_id=? and date=?", id, date).Update("update", gorm.Expr("`update`+1")).RowsAffected == 0 {
-		return db.Db.Save(&entity.ScriptDateStatistics{
+		if err := db.Db.Save(&entity.ScriptDateStatistics{
 			ScriptId: id,
 			Date:     date,
 			Update:   1,
-		}).Error
+		}).Error; err != nil {
+			return err
+		}
 	}
 	if db.Db.Model(&entity.ScriptStatistics{}).Where("script_id=?", id).Update("update", gorm.Expr("`update`+1")).RowsAffected == 0 {
 		return db.Db.Save(&entity.ScriptStatistics{
