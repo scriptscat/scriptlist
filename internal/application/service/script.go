@@ -16,8 +16,8 @@ type Script interface {
 	GetScriptList(category []int64, domain, keyword, sort string, page request2.Pages) (*respond2.List, error)
 	GetUserScript(uid int64, self bool, page request2.Pages) (*respond2.List, error)
 	GetScriptCodeList(id int64) ([]*respond2.ScriptCode, error)
-	GetLatestScriptCode(id int64) (*respond2.ScriptCode, error)
-	GetScriptCodeByVersion(id int64, version string) (*respond2.ScriptCode, error)
+	GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error)
+	GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond2.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	AddScore(uid int64, id int64, score *request2.Score) error
 	ScoreList(id int64, page *request2.Pages) (*respond2.List, error)
@@ -49,18 +49,14 @@ func (s *script) GetScript(id int64, version string, withcode bool) (*respond2.S
 	if err != nil {
 		return nil, err
 	}
-	latest, err := s.GetScriptCodeByVersion(id, version)
+	latest, err := s.GetScriptCodeByVersion(id, version, withcode)
 	if err != nil {
 		return nil, err
 	}
-	ret := respond2.ToScriptInfo(user, script, latest)
-	if withcode {
-		ret.Script.Script.Code = latest.Code
-	}
-	return ret, nil
+	return respond2.ToScriptInfo(user, script, latest), nil
 }
 
-func (s *script) GetLatestScriptCode(id int64) (*respond2.ScriptCode, error) {
+func (s *script) GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error) {
 	codes, err := s.scriptSvc.VersionList(id)
 	if err != nil {
 		return nil, err
@@ -70,7 +66,10 @@ func (s *script) GetLatestScriptCode(id int64) (*respond2.ScriptCode, error) {
 	}
 	user, err := s.userSvc.GetUser(codes[0].UserId)
 	ret := respond2.ToScriptCode(user, codes[0])
-	ret.Code = codes[0].Code
+	if withcode {
+		ret.Meta = codes[0].Meta
+		ret.Code = codes[0].Code
+	}
 	return ret, err
 
 }
@@ -83,7 +82,7 @@ func (s *script) GetScriptList(category []int64, domain, keyword, sort string, p
 	ret := make([]*respond2.Script, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.GetUser(v.UserId)
-		latest, err := s.GetLatestScriptCode(v.ID)
+		latest, err := s.GetLatestScriptCode(v.ID, false)
 		if err != nil {
 			glog.Errorf("GetLatestScriptCode: %v", err)
 		}
@@ -106,7 +105,7 @@ func (s *script) GetUserScript(uid int64, self bool, page request2.Pages) (*resp
 	ret := make([]*respond2.Script, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.GetUser(v.UserId)
-		latest, err := s.GetLatestScriptCode(v.ID)
+		latest, err := s.GetLatestScriptCode(v.ID, false)
 		if err != nil {
 			glog.Errorf("GetLatestScriptCode: %v", err)
 		}
@@ -143,9 +142,9 @@ func (s *script) GetScriptCodeList(id int64) ([]*respond2.ScriptCode, error) {
 	return ret, nil
 }
 
-func (s *script) GetScriptCodeByVersion(id int64, version string) (*respond2.ScriptCode, error) {
+func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond2.ScriptCode, error) {
 	if version == "" {
-		return s.GetLatestScriptCode(id)
+		return s.GetLatestScriptCode(id, withcode)
 	}
 	list, err := s.scriptSvc.VersionList(id)
 	if err != nil {
@@ -155,7 +154,10 @@ func (s *script) GetScriptCodeByVersion(id int64, version string) (*respond2.Scr
 		if v.Version == version {
 			user, _ := s.userSvc.GetUser(v.UserId)
 			ret := respond2.ToScriptCode(user, v)
-			ret.Code = v.Code
+			if withcode {
+				ret.Meta = v.Meta
+				ret.Code = v.Code
+			}
 			return ret, err
 		}
 	}

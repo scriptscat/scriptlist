@@ -118,7 +118,6 @@ func ToScriptCode(user *entity.User, code *entity2.ScriptCode) *ScriptCode {
 		ID:         code.ID,
 		UserId:     code.UserId,
 		ScriptId:   code.ScriptId,
-		Meta:       code.Meta,
 		MetaJson:   data,
 		Version:    code.Version,
 		Changelog:  code.Changelog,

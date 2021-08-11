@@ -89,9 +89,9 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 	var code *respond.ScriptCode
 	var err error
 	if version != "" {
-		code, err = s.svc.GetScriptCodeByVersion(id, version)
+		code, err = s.svc.GetScriptCodeByVersion(id, version, true)
 	} else {
-		code, err = s.svc.GetLatestScriptCode(id)
+		code, err = s.svc.GetLatestScriptCode(id, true)
 	}
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
@@ -113,9 +113,9 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 	var code *respond.ScriptCode
 	var err error
 	if version != "" {
-		code, err = s.svc.GetScriptCodeByVersion(id, version)
+		code, err = s.svc.GetScriptCodeByVersion(id, version, false)
 	} else {
-		code, err = s.svc.GetLatestScriptCode(id)
+		code, err = s.svc.GetLatestScriptCode(id, false)
 	}
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
