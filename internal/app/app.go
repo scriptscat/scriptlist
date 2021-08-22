@@ -1,20 +1,16 @@
-package main
+package app
 
 import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/interfaces/apis"
+	"github.com/scriptscat/scriptweb/internal/http"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/internal/pkg/migrate"
+	"github.com/scriptscat/scriptweb/migrations"
 )
 
-func main() {
-	if err := config.Init("config.yaml"); err != nil {
-		log.Fatal("config error: ", err)
-	}
-
+func Run() {
 	switch config.AppConfig.Mode {
 	case "debug":
 		gin.SetMode(gin.DebugMode)
@@ -25,12 +21,11 @@ func main() {
 	if err := db.Init(); err != nil {
 		log.Fatal("database error: ", err)
 	}
-	if err := migrate.Migrate(); err != nil {
+	if err := migrations.Migrate(); err != nil {
 		log.Fatal("migrate error: ", err)
 	}
 
-	if err := apis.StartApi(); err != nil {
+	if err := http.StartApi(); err != nil {
 		log.Fatal("apis error: ", err)
 	}
-
 }

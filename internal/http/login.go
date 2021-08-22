@@ -1,6 +1,7 @@
-package apis
+package http
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +60,7 @@ func (l *Login) oauth(ctx *gin.Context) {
 	})
 }
 
-func (l *Login) Registry(r *gin.Engine) {
+func (l *Login) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/login")
 	rg.GET("/oauth", l.oauth)
 }

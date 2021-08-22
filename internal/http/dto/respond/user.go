@@ -22,7 +22,7 @@ func ToUser(user *entity.User) *User {
 	}
 	avatar := ""
 	if user.Avatarstatus == 1 {
-		avatar = "https://bbs.tampermonkey.net.cn/uc_server/avatar.php?uid=" + strconv.FormatInt(user.Uid, 10) + "&size=middle"
+		avatar = "/api/v1/user/avatar/" + strconv.FormatInt(user.Uid, 10)
 	}
 	return &User{
 		UID:      user.Uid,

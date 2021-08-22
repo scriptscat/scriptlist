@@ -1,6 +1,7 @@
-package apis
+package http
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -10,29 +11,31 @@ import (
 	jwt2 "github.com/golang-jwt/jwt"
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
-	"github.com/scriptscat/scriptweb/interfaces/dto/respond"
-	"github.com/scriptscat/scriptweb/internal/application/service"
 	repository3 "github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
 	repository2 "github.com/scriptscat/scriptweb/internal/domain/statistics/repository"
 	service4 "github.com/scriptscat/scriptweb/internal/domain/statistics/service"
 	"github.com/scriptscat/scriptweb/internal/domain/user/repository"
 	service2 "github.com/scriptscat/scriptweb/internal/domain/user/service"
+	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
+	service5 "github.com/scriptscat/scriptweb/internal/service"
 	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 	pkgValidator "github.com/scriptscat/scriptweb/pkg/utils/validator"
 )
 
+const CheckUserInfo = "user.CheckUserInfo"
+
 type Service interface {
-	Registry(r *gin.Engine)
+	Registry(ctx context.Context, r *gin.Engine)
 }
 
-func Registry(r *gin.Engine, registry ...Service) {
+func Registry(ctx context.Context, r *gin.Engine, registry ...Service) {
 	for _, v := range registry {
-		v.Registry(r)
+		v.Registry(ctx, r)
 	}
 }
 
@@ -76,7 +79,7 @@ func handle(ctx *gin.Context, f func() interface{}) {
 	}
 }
 
-func userinfo(ctx *gin.Context) (int64, bool) {
+func userId(ctx *gin.Context) (int64, bool) {
 	u, ok := ctx.Get(jwt3.Userinfo)
 	if !ok {
 		return 0, false
@@ -105,24 +108,27 @@ func jwttoken(ctx *gin.Context) (jwt2.MapClaims, *jwt2.Token, bool) {
 }
 
 func StartApi() error {
+	ctx := context.Background()
 	binding.Validator = pkgValidator.NewValidator()
 	c := cron.New()
 	userSvc := service2.NewUser(repository.NewUser())
 	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics(), c)
-	script := service.NewScript(userSvc,
+	script := service5.NewScript(userSvc,
 		scriptSvc,
 		service3.NewScore(repository3.NewScore()),
 		service4.NewStatistics(repository2.NewStatistics()),
 	)
 
-	statis := service.NewStatistical(service4.NewStatistics(repository2.NewStatistics()), scriptSvc)
-	user := service.NewUser(userSvc)
+	statis := service5.NewStatistical(service4.NewStatistics(repository2.NewStatistics()), scriptSvc)
+	user := service5.NewUser(userSvc)
+	userApi := NewUser(user, script)
+	ctx = context.WithValue(ctx, CheckUserInfo, userApi.CheckUserInfo())
 
 	r := gin.Default()
-	Registry(r,
+	Registry(ctx, r,
 		NewScript(script, statis),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), config.AppConfig.Jwt.Token),
-		NewUser(user, script),
+		userApi,
 	)
 	c.Start()
 	return r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))

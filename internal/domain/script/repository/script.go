@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scriptscat/scriptweb/interfaces/dto/request"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
+	"github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 )
@@ -76,7 +76,11 @@ func (s *script) List(search *SearchList, page request.Pages) ([]*entity.Script,
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := find.Select(scriptTbName + ".*").Limit(page.Size()).Offset((page.Page() - 1) * page.Size()).Scan(&list).Error; err != nil {
+	if page == request.AllPage {
+		if err := find.Select(scriptTbName + ".*").Scan(&list).Error; err != nil {
+			return nil, 0, err
+		}
+	} else if err := find.Select(scriptTbName + ".*").Limit(page.Size()).Offset((page.Page() - 1) * page.Size()).Scan(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, num, nil

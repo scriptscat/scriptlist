@@ -5,7 +5,7 @@ import (
 
 	entity2 "github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/user/entity"
-	"github.com/scriptscat/scriptweb/internal/pkg/utils"
+	"github.com/scriptscat/scriptweb/pkg/utils"
 )
 
 type Script struct {
@@ -34,7 +34,7 @@ type ScriptCode struct {
 	*User
 	ID         int64       `json:"id" form:"id"`
 	UserId     int64       `json:"user_id" form:"user_id"`
-	Meta       string      `json:"meta" form:"meta"`
+	Meta       string      `json:"meta,omitempty" form:"meta"`
 	MetaJson   interface{} `json:"meta_json"`
 	ScriptId   int64       `json:"script_id" form:"script_id"`
 	Version    string      `json:"version" form:"version"`
@@ -118,6 +118,7 @@ func ToScriptCode(user *entity.User, code *entity2.ScriptCode) *ScriptCode {
 		ID:         code.ID,
 		UserId:     code.UserId,
 		ScriptId:   code.ScriptId,
+		Meta:       code.Meta,
 		MetaJson:   data,
 		Version:    code.Version,
 		Changelog:  code.Changelog,

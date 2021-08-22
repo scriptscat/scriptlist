@@ -2,12 +2,12 @@ package service
 
 import (
 	"github.com/golang/glog"
-	request2 "github.com/scriptscat/scriptweb/interfaces/dto/request"
-	respond2 "github.com/scriptscat/scriptweb/interfaces/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	service2 "github.com/scriptscat/scriptweb/internal/domain/script/service"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/statistics/service"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
+	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
+	respond2 "github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 )
 
@@ -22,6 +22,7 @@ type Script interface {
 	AddScore(uid int64, id int64, score *request2.Score) error
 	ScoreList(id int64, page *request2.Pages) (*respond2.List, error)
 	UserScore(uid int64, id int64) (*entity.ScriptScore, error)
+	CreateScript(uid int64, req *request2.CreateScript) error
 }
 
 type script struct {
@@ -53,7 +54,10 @@ func (s *script) GetScript(id int64, version string, withcode bool) (*respond2.S
 	if err != nil {
 		return nil, err
 	}
-	return respond2.ToScriptInfo(user, script, latest), nil
+
+	ret := respond2.ToScriptInfo(user, script, latest)
+	s.join(ret.Script)
+	return ret, nil
 }
 
 func (s *script) GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error) {
@@ -155,7 +159,6 @@ func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool)
 			user, _ := s.userSvc.GetUser(v.UserId)
 			ret := respond2.ToScriptCode(user, v)
 			if withcode {
-				ret.Meta = v.Meta
 				ret.Code = v.Code
 			}
 			return ret, err

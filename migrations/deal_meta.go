@@ -1,4 +1,4 @@
-package migrate
+package migrations
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/internal/pkg/utils"
+	"github.com/scriptscat/scriptweb/pkg/utils"
 )
 
 func DealMetaInfo() error {

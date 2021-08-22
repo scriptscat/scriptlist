@@ -13,11 +13,7 @@ import (
 const Userinfo = "userinfo"
 const JwtToken = "jwt_token"
 
-func Jwt(jwtToken []byte, enforce bool, opt ...Option) gin.HandlerFunc {
-	opts := &Options{}
-	for _, v := range opt {
-		v(opts)
-	}
+func Jwt(jwtToken []byte, enforce bool, handlers ...HandlerFunc) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth, _ := ctx.Cookie("auth")
 		if auth == "" {
@@ -49,8 +45,8 @@ func Jwt(jwtToken []byte, enforce bool, opt ...Option) gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
-			if opts.HandelHeader != nil {
-				if err := opts.HandelHeader(token); err != nil {
+			for _, v := range handlers {
+				if err := v(token); err != nil {
 					return nil, err
 				}
 			}

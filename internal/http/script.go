@@ -1,33 +1,34 @@
-package apis
+package http
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	request2 "github.com/scriptscat/scriptweb/interfaces/dto/request"
-	"github.com/scriptscat/scriptweb/interfaces/dto/respond"
-	"github.com/scriptscat/scriptweb/internal/application/service"
+	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
+	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
+	service2 "github.com/scriptscat/scriptweb/internal/service"
 	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 )
 
 type Script struct {
-	svc       service.Script
-	statisSvc service.Statistics
+	svc       service2.Script
+	statisSvc service2.Statistics
 }
 
-func NewScript(svc service.Script, statisSvc service.Statistics) *Script {
+func NewScript(svc service2.Script, statisSvc service2.Statistics) *Script {
 	return &Script{
 		svc:       svc,
 		statisSvc: statisSvc,
 	}
 }
 
-func (s *Script) Registry(r *gin.Engine) {
+func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	jwtAuth := jwt3.Jwt([]byte(config.AppConfig.Jwt.Token), false, jwt3.WithExpired(JwtAuthMaxAge))
 	r.Use(func(ctx *gin.Context) {
 		ctx.Next()
@@ -48,13 +49,16 @@ func (s *Script) Registry(r *gin.Engine) {
 	})
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
-	rg.GET("/:id", s.get(false))
-	rg.GET("/:id/code", s.get(true))
-	rg.GET("/:id/versions", s.versions)
-	rg.GET("/:id/versions/:version", s.versionsGet(false))
-	rg.GET("/:id/versions/:version/code", s.versionsGet(true))
+	rg.POST("", ctx.Value(CheckUserInfo).(gin.HandlerFunc), s.add)
 
-	rgg := rg.Group("/:id/score", jwtAuth)
+	rgg := r.Group("/:id")
+	rgg.GET("", s.get(false))
+	rgg.GET("/code", s.get(true))
+	rgg.GET("/versions", s.versions)
+	rgg.GET("/versions/:version", s.versionsGet(false))
+	rgg.GET("/versions/:version/code", s.versionsGet(true))
+
+	rgg = rg.Group("/:id/score", jwtAuth)
 	rgg.GET("", s.scoreList)
 	rgg.PUT("", s.putScore)
 	rgg.GET("/self", s.selfScore)
@@ -79,7 +83,7 @@ func (s *Script) parseScriptInfo(url string) (int64, string) {
 }
 
 func (s *Script) downloadScript(ctx *gin.Context) {
-	uid, _ := userinfo(ctx)
+	uid, _ := userId(ctx)
 	id, version := s.parseScriptInfo(ctx.Request.RequestURI)
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
@@ -103,7 +107,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 }
 
 func (s *Script) getScriptMeta(ctx *gin.Context) {
-	uid, _ := userinfo(ctx)
+	uid, _ := userId(ctx)
 	id, version := s.parseScriptInfo(ctx.Request.RequestURI)
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
@@ -197,7 +201,7 @@ func (s *Script) category(ctx *gin.Context) {
 
 func (s *Script) putScore(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		uid, ok := userinfo(ctx)
+		uid, ok := userId(ctx)
 		if !ok {
 			return errs.ErrNotLogin
 		}
@@ -227,7 +231,7 @@ func (s *Script) scoreList(ctx *gin.Context) {
 
 func (s *Script) selfScore(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		uid, ok := userinfo(ctx)
+		uid, ok := userId(ctx)
 		if !ok {
 			return errs.ErrNotLogin
 		}
@@ -237,5 +241,21 @@ func (s *Script) selfScore(ctx *gin.Context) {
 			return err
 		}
 		return ret
+	})
+}
+
+func (s *Script) add(ctx *gin.Context) {
+	handle(ctx, func() interface{} {
+		uid, ok := userId(ctx)
+		if !ok {
+			return errs.ErrNotLogin
+		}
+		script := &request2.CreateScript{}
+		if err := ctx.ShouldBind(script); err != nil {
+			return err
+		}
+		s.svc.CreateScript(uid, script)
+
+		return nil
 	})
 }
