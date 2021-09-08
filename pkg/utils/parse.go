@@ -1,11 +1,32 @@
 package utils
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 
+	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 )
+
+func GetCodeMeta(code string) (string, string, int, error) {
+	reg := regexp.MustCompile("\\/\\/\\s*==UserScript==([\\s\\S]+?)\\/\\/\\s*==\\/UserScript==")
+	ret := reg.FindString(code)
+	scriptType := entity.USERSCRIPT_TYPE
+	if ret == "" {
+		reg = regexp.MustCompile("\\/\\/\\s*==UserScript==([\\s\\S]+?)\\/\\/\\s*==\\/UserScript==")
+		ret = reg.FindString(code)
+		if ret == "" {
+			return "", "", 0, errors.New("错误的格式")
+		}
+		scriptType = entity.SUBSCRIBE_TYPE
+	}
+	// 处理
+	reg2 := regexp.MustCompile("(?im)^//\\s*@(updateurl|downloadurl)($|\\s+(.+?)$)\\s+")
+	ret = reg2.ReplaceAllString(ret, "")
+	code = reg.ReplaceAllString(code, ret)
+	return code, ret, scriptType, nil
+}
 
 func ParseMetaToJson(meta string) map[string][]string {
 	reg := regexp.MustCompile("(?im)^//\\s*@(.+?)($|\\s+(.+?)$)")

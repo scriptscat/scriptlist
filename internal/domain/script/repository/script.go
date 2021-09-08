@@ -8,31 +8,40 @@ import (
 	"github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"gorm.io/gorm"
 )
 
 type script struct {
+	db *gorm.DB
 }
 
 func NewScript() Script {
-	return &script{}
+	return &script{db: db.Db}
+}
+
+func NewTxScript(db *gorm.DB) Script {
+	return &script{db: db}
 }
 
 func (s *script) Find(id int64) (*entity.Script, error) {
 	ret := &entity.Script{}
-	if err := db.Db.Find(ret, "id=?", id).Error; err != nil {
+	if err := s.db.Find(ret, "id=?", id).Error; err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
 func (s *script) Save(script *entity.Script) error {
-	return db.Db.Save(script).Error
+	return s.db.Save(script).Error
 }
 
 func (s *script) List(search *SearchList, page request.Pages) ([]*entity.Script, int64, error) {
 	list := make([]*entity.Script, 0)
 	scriptTbName := (&entity.Script{}).TableName()
-	find := db.Db.Model(&entity.Script{})
+	find := s.db.Model(&entity.Script{})
+	if !search.Self {
+		find.Where("public=?", entity.PUBLIC_SCRIPT)
+	}
 	if len(search.Category) != 0 {
 		tabname := (&entity.ScriptCategory{}).TableName()
 		find = find.Joins("left join "+tabname+" on "+tabname+".script_id="+scriptTbName+".id").

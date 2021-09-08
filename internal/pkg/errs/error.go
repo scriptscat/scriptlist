@@ -1,5 +1,7 @@
 package errs
 
+import "net/http"
+
 type JsonRespondError struct {
 	Status int    `json:"-"`
 	Code   int    `json:"code"`
@@ -18,18 +20,10 @@ func (j *JsonRespondError) Error() string {
 	return j.Msg
 }
 
-type RespondError struct {
-	Status int    `json:"status"`
-	Msg    string `json:"msg"`
-}
-
-func NewRespondError(status int, msg string) error {
-	return &RespondError{
-		Status: status,
-		Msg:    msg,
+func NewBadRequestError(code int, err string) error {
+	return &JsonRespondError{
+		Status: http.StatusBadRequest,
+		Code:   code,
+		Msg:    err,
 	}
-}
-
-func (r *RespondError) Error() string {
-	return r.Msg
 }

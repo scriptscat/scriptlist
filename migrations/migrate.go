@@ -126,11 +126,46 @@ func Migrate() error {
 		}, {
 			ID: "1627908382",
 			Migrate: func(tx *gorm.DB) error {
-				return nil
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "type"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "public"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "unwell"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "sync_url"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "sync_mode"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "content_url"); err != nil {
+					return err
+				}
+				return tx.Migrator().AutoMigrate(&entity.LibDefinition{})
 			},
-			Rollback: func(g *gorm.DB) error {
-
-				return nil
+			Rollback: func(tx *gorm.DB) error {
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "type"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "public"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "unwell"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "sync_url"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "sync_mode"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "content_url"); err != nil {
+					return err
+				}
+				return tx.Migrator().DropTable(&entity.LibDefinition{})
 			},
 		},
 	})

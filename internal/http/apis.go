@@ -11,6 +11,8 @@ import (
 	jwt2 "github.com/golang-jwt/jwt"
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
+	repository4 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
+	"github.com/scriptscat/scriptweb/internal/domain/safe/service"
 	repository3 "github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
 	repository2 "github.com/scriptscat/scriptweb/internal/domain/statistics/repository"
@@ -48,9 +50,6 @@ func handle(ctx *gin.Context, f func() interface{}) {
 		return
 	}
 	switch resp.(type) {
-	case *errs.RespondError:
-		err := resp.(*errs.RespondError)
-		ctx.String(err.Status, err.Msg)
 	case *errs.JsonRespondError:
 		err := resp.(*errs.JsonRespondError)
 		ctx.JSON(err.Status, err)
@@ -113,10 +112,12 @@ func StartApi() error {
 	c := cron.New()
 	userSvc := service2.NewUser(repository.NewUser())
 	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics(), c)
+	rateSvc := service.NewRate(repository4.NewRate())
 	script := service5.NewScript(userSvc,
 		scriptSvc,
 		service3.NewScore(repository3.NewScore()),
 		service4.NewStatistics(repository2.NewStatistics()),
+		rateSvc,
 	)
 
 	statis := service5.NewStatistical(service4.NewStatistics(repository2.NewStatistics()), scriptSvc)

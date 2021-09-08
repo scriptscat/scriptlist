@@ -121,7 +121,18 @@ func (u *User) CheckUserInfo() gin.HandlerFunc {
 		if c.IsAborted() {
 			return
 		}
-		//TODO: 从数据库中获取用户信息进行校验
+		uid, ok := userId(c)
+		if !ok {
+			c.JSON(http.StatusForbidden, errs.ErrNotLogin)
+			c.Abort()
+			return
+		}
+		_, err := u.svc.UserInfo(uid)
+		if err != nil {
+			c.JSON(http.StatusForbidden, err)
+			c.Abort()
+			return
+		}
 	}
 }
 

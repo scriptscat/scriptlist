@@ -35,7 +35,7 @@ func Jwt(jwtToken []byte, enforce bool, handlers ...HandlerFunc) gin.HandlerFunc
 		if auth == "" {
 			if enforce {
 				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-					"code": 1000, "msg": "auth string is empty",
+					"code": 1001, "msg": "auth string is empty",
 				})
 			}
 			return
@@ -54,7 +54,7 @@ func Jwt(jwtToken []byte, enforce bool, handlers ...HandlerFunc) gin.HandlerFunc
 		})
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"code": 1001, "msg": err.Error(),
+				"code": 1002, "msg": err.Error(),
 			})
 			return
 		}
@@ -63,7 +63,7 @@ func Jwt(jwtToken []byte, enforce bool, handlers ...HandlerFunc) gin.HandlerFunc
 			ctx.Set(JwtToken, token)
 		} else {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"code": 1001, "msg": "token is wrong",
+				"code": 1003, "msg": "token is wrong",
 			})
 		}
 

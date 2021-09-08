@@ -7,6 +7,7 @@ import (
 
 type SearchList struct {
 	Uid                   int64
+	Self                  bool
 	Category              []int64
 	Status                int64
 	Keyword, Sort, Domain string
@@ -22,6 +23,7 @@ type ScriptCode interface {
 	Find(id int64) (*entity.ScriptCode, error)
 	Save(script *entity.ScriptCode) error
 	List(script, status int64) ([]*entity.ScriptCode, error)
+	SaveDefinition(definition *entity.LibDefinition) error
 }
 
 type Score interface {

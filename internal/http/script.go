@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
+	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptweb/internal/service"
@@ -142,8 +144,13 @@ func (s *Script) list(ctx *gin.Context) {
 				categorys = append(categorys, utils.StringToInt64(v))
 			}
 		}
-		list, err := s.svc.GetScriptList(categorys, ctx.Query("domain"),
-			ctx.Query("keyword"), ctx.Query("sort"), req)
+		list, err := s.svc.GetScriptList(&repository.SearchList{
+			Category: categorys,
+			Domain:   ctx.Query("domain"),
+			Sort:     ctx.Query("keyword"),
+			Status:   cnt.ACTIVE,
+			Keyword:  ctx.Query("sort"),
+		}, req)
 		if err != nil {
 			return err
 		}
@@ -254,8 +261,6 @@ func (s *Script) add(ctx *gin.Context) {
 		if err := ctx.ShouldBind(script); err != nil {
 			return err
 		}
-		s.svc.CreateScript(uid, script)
-
-		return nil
+		return s.svc.CreateScript(uid, script)
 	})
 }

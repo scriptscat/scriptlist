@@ -2,7 +2,10 @@ package service
 
 import (
 	"github.com/golang/glog"
+	repository2 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
+	service4 "github.com/scriptscat/scriptweb/internal/domain/safe/service"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
+	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	service2 "github.com/scriptscat/scriptweb/internal/domain/script/service"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/statistics/service"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
@@ -13,7 +16,7 @@ import (
 
 type Script interface {
 	GetScript(id int64, version string, withcode bool) (*respond2.ScriptInfo, error)
-	GetScriptList(category []int64, domain, keyword, sort string, page request2.Pages) (*respond2.List, error)
+	GetScriptList(search *repository.SearchList, page request2.Pages) (*respond2.List, error)
 	GetUserScript(uid int64, self bool, page request2.Pages) (*respond2.List, error)
 	GetScriptCodeList(id int64) ([]*respond2.ScriptCode, error)
 	GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error)
@@ -30,14 +33,16 @@ type script struct {
 	scriptSvc service2.Script
 	scoreSvc  service2.Score
 	statisSvc service3.Statistics
+	rateSvc   service4.Rate
 }
 
-func NewScript(userSvc service.User, scriptSvc service2.Script, scoreSvc service2.Score, statisSvc service3.Statistics) Script {
+func NewScript(userSvc service.User, scriptSvc service2.Script, scoreSvc service2.Score, statisSvc service3.Statistics, rateSvc service4.Rate) Script {
 	return &script{
 		userSvc:   userSvc,
 		scriptSvc: scriptSvc,
 		scoreSvc:  scoreSvc,
 		statisSvc: statisSvc,
+		rateSvc:   rateSvc,
 	}
 }
 
@@ -78,8 +83,8 @@ func (s *script) GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptC
 
 }
 
-func (s *script) GetScriptList(category []int64, domain, keyword, sort string, page request2.Pages) (*respond2.List, error) {
-	list, total, err := s.scriptSvc.Search(category, domain, keyword, sort, page)
+func (s *script) GetScriptList(search *repository.SearchList, page request2.Pages) (*respond2.List, error) {
+	list, total, err := s.scriptSvc.Search(search, page)
 	if err != nil {
 		return nil, err
 	}
@@ -197,4 +202,13 @@ func (s *script) ScoreList(id int64, page *request2.Pages) (*respond2.List, erro
 
 func (s *script) UserScore(uid int64, id int64) (*entity.ScriptScore, error) {
 	return s.scoreSvc.UserScore(uid, id)
+}
+
+func (s *script) CreateScript(uid int64, req *request2.CreateScript) error {
+	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
+		Name:     "post-script",
+		Interval: 60,
+	}, func() error {
+		return s.scriptSvc.CreateScript(uid, req)
+	})
 }
