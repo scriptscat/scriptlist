@@ -1,10 +1,15 @@
 package utils
 
 import (
+	"math/rand"
 	"regexp"
 	"strconv"
 	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func StringToInt(i string) int {
 	ret, _ := strconv.Atoi(i)
@@ -35,4 +40,14 @@ func StringReverse(s string) string {
 		a[i], a[j] = a[j], a[i]
 	}
 	return string(a)
+}
+
+var str = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+
+func GetRandomString(n int) string {
+	var result []byte
+	for i := 0; i < n; i++ {
+		result = append(result, str[rand.Intn(62)])
+	}
+	return string(result)
 }

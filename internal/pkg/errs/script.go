@@ -1,6 +1,9 @@
 package errs
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 var (
 	ErrScriptNotFound     = NewError(http.StatusNotFound, 3001, "脚本已删除或不存在")
@@ -10,3 +13,7 @@ var (
 	ErrScriptForbidden    = NewError(http.StatusForbidden, 3005, "没有脚本访问权限")
 	ErrScriptCodeExist    = NewError(http.StatusBadRequest, 3006, "脚本版本已经存在")
 )
+
+func NewErrScriptSyncNetwork(url string, err error) error {
+	return NewError(http.StatusInternalServerError, 3007, fmt.Sprintf("脚本同步链接无法访问:%s %v", url, err))
+}

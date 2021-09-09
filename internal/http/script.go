@@ -55,6 +55,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg := rg.Group("/:id", ctx.Value(CheckUserInfo).(gin.HandlerFunc))
 	rgg.PUT("", s.update)
 	rgg.POST("/code", s.updatecode)
+	rgg.POST("/sync", s.sync)
 
 	rgg = r.Group("/:id")
 	rgg.GET("", s.get(false))
@@ -299,5 +300,16 @@ func (s *Script) updatecode(ctx *gin.Context) {
 			return err
 		}
 		return s.svc.UpdateScriptCode(uid, id, script)
+	})
+}
+
+func (s *Script) sync(ctx *gin.Context) {
+	handle(ctx, func() interface{} {
+		id := utils.StringToInt64(ctx.Param("id"))
+		uid, ok := userId(ctx)
+		if !ok {
+			return errs.ErrNotLogin
+		}
+		return s.svc.SyncScript(uid, id)
 	})
 }

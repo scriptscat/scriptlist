@@ -44,6 +44,10 @@ func (c *code) SaveDefinition(definition *entity.LibDefinition) error {
 	return c.db.Save(definition).Error
 }
 
+func (c *code) SaveScriptDomain(domain *entity.ScriptDomain) error {
+	return c.db.Save(domain).Error
+}
+
 func (c *code) dependkey(scriptId int64) string {
 	return fmt.Sprintf("script:code:list:%d", scriptId)
 }

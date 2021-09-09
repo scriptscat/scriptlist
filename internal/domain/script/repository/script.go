@@ -28,6 +28,9 @@ func (s *script) Find(id int64) (*entity.Script, error) {
 	if err := s.db.Find(ret, "id=?", id).Error; err != nil {
 		return nil, err
 	}
+	if ret.ID == 0 {
+		return nil, nil
+	}
 	return ret, nil
 }
 

@@ -11,6 +11,8 @@ import (
 	jwt2 "github.com/golang-jwt/jwt"
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
+	repository5 "github.com/scriptscat/scriptweb/internal/domain/resource/repository"
+	service6 "github.com/scriptscat/scriptweb/internal/domain/resource/service"
 	repository4 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
 	"github.com/scriptscat/scriptweb/internal/domain/safe/service"
 	repository3 "github.com/scriptscat/scriptweb/internal/domain/script/repository"
@@ -49,6 +51,10 @@ func handle(ctx *gin.Context, f func() interface{}) {
 		})
 		return
 	}
+	handelResp(ctx, resp)
+}
+
+func handelResp(ctx *gin.Context, resp interface{}) {
 	switch resp.(type) {
 	case *errs.JsonRespondError:
 		err := resp.(*errs.JsonRespondError)
@@ -129,6 +135,7 @@ func StartApi() error {
 	Registry(ctx, r,
 		NewScript(script, statis),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), config.AppConfig.Jwt.Token),
+		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		userApi,
 	)
 	c.Start()

@@ -28,6 +28,13 @@ func (r *rate) Rate(userinfo *repository.RateUserInfo, rule *repository.RateRule
 	if t > time.Now().Unix()-rule.Interval {
 		return errs.NewOperationTimeToShort(rule)
 	}
+	c, err := r.repo.GetDayOpCnt(strconv.FormatInt(userinfo.Uid, 10), rule.Name)
+	if err != nil {
+		return err
+	}
+	if rule.DayMax > 0 && c > rule.DayMax {
+		return errs.NewOperationMax(rule)
+	}
 	if err := r.repo.SetLastOpTime(strconv.FormatInt(userinfo.Uid, 10), rule.Name, time.Now().Unix()); err != nil {
 		return err
 	}

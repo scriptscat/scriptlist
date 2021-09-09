@@ -1,6 +1,11 @@
 package service
 
 import (
+	"io"
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/golang/glog"
 	repository2 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
 	service4 "github.com/scriptscat/scriptweb/internal/domain/safe/service"
@@ -28,7 +33,7 @@ type Script interface {
 	CreateScript(uid int64, req *request2.CreateScript) (*entity.Script, error)
 	UpdateScript(uid, id int64, req *request2.UpdateScript) error
 	UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error
-	SyncScript(id int64) error
+	SyncScript(uid, id int64) error
 }
 
 type script struct {
@@ -243,7 +248,64 @@ func (s *script) UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode)
 	})
 }
 
-func (s *script) SyncScript(id int64) error {
+func (s *script) SyncScript(uid, id int64) error {
+	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
+		Name:     "sync-script",
+		Interval: 10,
+	}, func() error {
+		script, err := s.scriptSvc.Info(id)
+		if err != nil {
+			return err
+		}
+		if script.SyncUrl == "" {
+			return errs.NewBadRequestError(1000, "同步链接为空")
+		}
+		req := &request2.UpdateScriptCode{
+			Content:    script.Content,
+			Definition: "",
+			Changelog:  "",
+			Public:     script.Public,
+			Unwell:     script.Unwell,
+		}
+		req.Code, err = s.requestSyncUrl(script.SyncUrl)
+		if err != nil {
+			return err
+		}
+		if script.ContentUrl != "" {
+			req.Content, err = s.requestSyncUrl(script.Content)
+			if err != nil {
+				return err
+			}
+		}
+		if script.Type == entity.LIBRARY_TYPE && script.DefinitionUrl != "" {
+			req.Definition, err = s.requestSyncUrl(script.DefinitionUrl)
+			if err != nil {
+				return err
+			}
+		}
+		return s.scriptSvc.CreateScriptCode(uid, id, req)
+	})
+}
 
-	return nil
+func (s *script) requestSyncUrl(syncUrl string) (string, error) {
+	c := http.Client{
+		Timeout: time.Second * 10,
+	}
+	u, err := url.Parse(syncUrl)
+	if err != nil {
+		return "", errs.NewErrScriptSyncNetwork(syncUrl, err)
+	}
+	resp, err := c.Do(&http.Request{
+		Method: http.MethodGet,
+		URL:    u,
+	})
+	if err != nil {
+		return "", errs.NewErrScriptSyncNetwork(syncUrl, err)
+	}
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	return string(b), nil
 }

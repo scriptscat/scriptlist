@@ -25,6 +25,7 @@ type ScriptCode interface {
 	FindByVersion(scriptId int64, version string) (*entity.ScriptCode, error)
 	List(script, status int64) ([]*entity.ScriptCode, error)
 	SaveDefinition(definition *entity.LibDefinition) error
+	SaveScriptDomain(domain *entity.ScriptDomain) error
 }
 
 type Score interface {

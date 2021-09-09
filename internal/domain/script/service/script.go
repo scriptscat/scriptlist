@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
@@ -35,6 +36,8 @@ type script struct {
 	codeRepo     repository.ScriptCode
 	categoryRepo repository.Category
 	statisRepo   repository.Statistics
+	bgCategory   *entity.ScriptCategoryList
+	cronCategory *entity.ScriptCategoryList
 }
 
 func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics, c *cron.Cron) Script {
@@ -48,6 +51,21 @@ func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, cat
 		categoryRepo: categoryRepo,
 		statisRepo:   statisRepo,
 	}
+	ret.bgCategory = &entity.ScriptCategoryList{
+		Name:       "后台脚本",
+		Createtime: time.Now().Unix(),
+	}
+	ret.cronCategory = &entity.ScriptCategoryList{
+		Name:       "定时脚本",
+		Createtime: time.Now().Unix(),
+	}
+	if err := categoryRepo.Save(ret.bgCategory); err != nil {
+		panic(err)
+	}
+	if err := categoryRepo.Save(ret.cronCategory); err != nil {
+		panic(err)
+	}
+
 	return ret
 }
 
@@ -67,6 +85,9 @@ func (s *script) Info(id int64) (*entity.Script, error) {
 	script, err := s.scriptRepo.Find(id)
 	if err != nil {
 		return nil, err
+	}
+	if script == nil {
+		return nil, errs.ErrScriptNotFound
 	}
 	switch script.Status {
 	case cnt.ACTIVE:
@@ -215,7 +236,46 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 			}
 			codeRepo := repository.NewTxCode(tx)
 			code.ScriptId = script.ID
-			return codeRepo.Save(code)
+			if err := codeRepo.Save(code); err != nil {
+				return err
+			}
+			categoryRepo := repository.NewTxCategory(tx)
+			domains := make(map[string]struct{})
+			if _, ok := metaJson["background"]; ok {
+				_ = categoryRepo.LinkCategory(code.ScriptId, s.bgCategory.ID)
+			}
+			if _, ok := metaJson["crontab"]; ok {
+				_ = categoryRepo.LinkCategory(code.ScriptId, s.bgCategory.ID)
+				_ = categoryRepo.LinkCategory(code.ScriptId, s.cronCategory.ID)
+			}
+			for _, u := range metaJson["match"] {
+				domain := utils.ParseMetaDomain(u)
+				if domain != "" {
+					domains[domain] = struct{}{}
+				} else {
+					glog.Warningf("deal meta url info: %d %s", code.ID, u)
+				}
+			}
+			for _, u := range metaJson["include"] {
+				domain := utils.ParseMetaDomain(u)
+				if domain != "" {
+					domains[domain] = struct{}{}
+				} else {
+					glog.Warningf("deal meta url info: %d %s", code.ID, u)
+				}
+			}
+			for domain := range domains {
+				if err := codeRepo.SaveScriptDomain(&entity.ScriptDomain{
+					Domain:        domain,
+					DomainReverse: utils.StringReverse(domain),
+					ScriptId:      code.ScriptId,
+					ScriptCodeId:  code.ID,
+					Createtime:    time.Now().Unix(),
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
 		}); err != nil {
 			return err
 		}
