@@ -24,8 +24,11 @@ type Script interface {
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	AddScore(uid int64, id int64, score *request2.Score) error
 	ScoreList(id int64, page *request2.Pages) (*respond2.List, error)
-	UserScore(uid int64, id int64) (*entity.ScriptScore, error)
-	CreateScript(uid int64, req *request2.CreateScript) error
+	UserScore(uid, id int64) (*entity.ScriptScore, error)
+	CreateScript(uid int64, req *request2.CreateScript) (*entity.Script, error)
+	UpdateScript(uid, id int64, req *request2.UpdateScript) error
+	UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error
+	SyncScript(id int64) error
 }
 
 type script struct {
@@ -204,11 +207,43 @@ func (s *script) UserScore(uid int64, id int64) (*entity.ScriptScore, error) {
 	return s.scoreSvc.UserScore(uid, id)
 }
 
-func (s *script) CreateScript(uid int64, req *request2.CreateScript) error {
-	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
+func (s *script) CreateScript(uid int64, req *request2.CreateScript) (*entity.Script, error) {
+	var ret *entity.Script
+	if err := s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
 		Name:     "post-script",
 		Interval: 60,
 	}, func() error {
-		return s.scriptSvc.CreateScript(uid, req)
+		script, err := s.scriptSvc.CreateScript(uid, req)
+		if err != nil {
+			return err
+		}
+		ret = script
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (s *script) UpdateScript(uid, id int64, req *request2.UpdateScript) error {
+	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
+		Name:     "update-script",
+		Interval: 5,
+	}, func() error {
+		return s.scriptSvc.UpdateScript(uid, id, req)
 	})
+}
+
+func (s *script) UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error {
+	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
+		Name:     "update-script-code",
+		Interval: 10,
+	}, func() error {
+		return s.scriptSvc.CreateScriptCode(uid, id, req)
+	})
+}
+
+func (s *script) SyncScript(id int64) error {
+
+	return nil
 }

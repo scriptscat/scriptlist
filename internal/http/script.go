@@ -52,8 +52,11 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
 	rg.POST("", ctx.Value(CheckUserInfo).(gin.HandlerFunc), s.add)
+	rgg := rg.Group("/:id", ctx.Value(CheckUserInfo).(gin.HandlerFunc))
+	rgg.PUT("", s.update)
+	rgg.POST("/code", s.updatecode)
 
-	rgg := r.Group("/:id")
+	rgg = r.Group("/:id")
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
 	rgg.GET("/versions", s.versions)
@@ -261,6 +264,40 @@ func (s *Script) add(ctx *gin.Context) {
 		if err := ctx.ShouldBind(script); err != nil {
 			return err
 		}
-		return s.svc.CreateScript(uid, script)
+		ret, err := s.svc.CreateScript(uid, script)
+		if err != nil {
+			return err
+		}
+		return ret
+	})
+}
+
+func (s *Script) update(ctx *gin.Context) {
+	handle(ctx, func() interface{} {
+		id := utils.StringToInt64(ctx.Param("id"))
+		uid, ok := userId(ctx)
+		if !ok {
+			return errs.ErrNotLogin
+		}
+		script := &request2.UpdateScript{}
+		if err := ctx.ShouldBind(script); err != nil {
+			return err
+		}
+		return s.svc.UpdateScript(uid, id, script)
+	})
+}
+
+func (s *Script) updatecode(ctx *gin.Context) {
+	handle(ctx, func() interface{} {
+		id := utils.StringToInt64(ctx.Param("id"))
+		uid, ok := userId(ctx)
+		if !ok {
+			return errs.ErrNotLogin
+		}
+		script := &request2.UpdateScriptCode{}
+		if err := ctx.ShouldBind(script); err != nil {
+			return err
+		}
+		return s.svc.UpdateScriptCode(uid, id, script)
 	})
 }

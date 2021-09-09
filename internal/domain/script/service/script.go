@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -24,7 +25,9 @@ type Script interface {
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	Download(id int64) error
 	Update(id int64) error
-	CreateScript(uid int64, req *request.CreateScript) error
+	CreateScript(uid int64, req *request.CreateScript) (*entity.Script, error)
+	UpdateScript(uid, id int64, req *request.UpdateScript) error
+	CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
 }
 
 type script struct {
@@ -66,9 +69,9 @@ func (s *script) Info(id int64) (*entity.Script, error) {
 		return nil, err
 	}
 	switch script.Status {
-	case 1:
+	case cnt.ACTIVE:
 		return script, nil
-	case 2:
+	case cnt.AUDIT:
 		return nil, errs.ErrScriptAudit
 	}
 	return nil, errs.ErrScriptNotFound
@@ -90,21 +93,78 @@ func (s *script) Update(id int64) error {
 	return s.statisRepo.Update(id)
 }
 
-func (s *script) CreateScript(uid int64, req *request.CreateScript) error {
+const (
+	AUTO_SYNC_MODE = 1
+	NONE_SYNC_MODE = 2
+)
+
+func (s *script) CreateScript(uid int64, req *request.CreateScript) (*entity.Script, error) {
 	script := &entity.Script{
-		PostId:     0,
 		UserId:     uid,
 		Content:    req.Content,
 		Type:       req.Type,
 		Public:     req.Public,
 		Unwell:     req.Unwell,
 		Status:     cnt.ACTIVE,
+		SyncMode:   NONE_SYNC_MODE,
 		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
 	}
+	return script, s.createScriptCode(uid, script, req)
+}
+
+func (s *script) UpdateScript(uid, id int64, req *request.UpdateScript) error {
+	script, err := s.Info(id)
+	if err != nil {
+		return err
+	}
+	if script.UserId != uid {
+		return errs.ErrScriptForbidden
+	}
+	script.Public = req.Public
+	script.Unwell = req.Unwell
+	script.SyncUrl = req.SyncUrl
+	script.ContentUrl = req.ContentUrl
+	script.SyncMode = req.SyncMode
+	switch script.Type {
+	case entity.USERSCRIPT_TYPE, entity.SUBSCRIBE_TYPE:
+	case entity.LIBRARY_TYPE:
+		script.Name = req.Name
+		script.Description = req.Description
+		script.DefinitionUrl = req.DefinitionUrl
+	default:
+		return errors.New("错误的脚本类型")
+	}
+	return s.scriptRepo.Save(script)
+}
+
+func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) error {
+	script, err := s.Info(id)
+	if err != nil {
+		return err
+	}
+	if script.UserId != uid {
+		return errs.ErrScriptForbidden
+	}
+	return s.createScriptCode(uid, script, &request.CreateScript{
+		Content:     req.Content,
+		Code:        req.Code,
+		Name:        script.Name,
+		Description: script.Description,
+		Definition:  req.Definition,
+		Type:        script.Type,
+		Public:      req.Public,
+		Unwell:      req.Unwell,
+	})
+}
+
+func (s *script) createScriptCode(uid int64, script *entity.Script, req *request.CreateScript) error {
+	script.Public = req.Public
+	script.Unwell = req.Unwell
+	script.Updatetime = time.Now().Unix()
 	code := &entity.ScriptCode{
 		UserId:     uid,
 		Version:    time.Now().Format("20060102150405"),
+		Changelog:  req.Changelog,
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
@@ -133,7 +193,7 @@ func (s *script) CreateScript(uid int64, req *request.CreateScript) error {
 		if err != nil {
 			return err
 		}
-		version := ""
+		version := code.Version
 		if v, ok := metaJson["version"]; ok {
 			version = v[0]
 		}
@@ -141,6 +201,13 @@ func (s *script) CreateScript(uid int64, req *request.CreateScript) error {
 		code.Meta = meta
 		code.MetaJson = string(metaJsonStr)
 		code.Version = version
+		if script.ID != 0 {
+			if ok, err := s.codeRepo.FindByVersion(script.ID, code.Version); err != nil {
+				return err
+			} else if ok != nil {
+				return errs.ErrScriptCodeExist
+			}
+		}
 		if err := db.Db.Transaction(func(tx *gorm.DB) error {
 			scriptRepo := repository.NewTxScript(tx)
 			if err := scriptRepo.Save(script); err != nil {

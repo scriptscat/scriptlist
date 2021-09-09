@@ -144,6 +144,9 @@ func Migrate() error {
 				if err := tx.Migrator().AddColumn(&entity.Script{}, "content_url"); err != nil {
 					return err
 				}
+				if err := tx.Migrator().AddColumn(&entity.Script{}, "definition_url"); err != nil {
+					return err
+				}
 				return tx.Migrator().AutoMigrate(&entity.LibDefinition{})
 			},
 			Rollback: func(tx *gorm.DB) error {
@@ -163,6 +166,9 @@ func Migrate() error {
 					return err
 				}
 				if err := tx.Migrator().DropColumn(&entity.Script{}, "content_url"); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropColumn(&entity.Script{}, "definition_url"); err != nil {
 					return err
 				}
 				return tx.Migrator().DropTable(&entity.LibDefinition{})

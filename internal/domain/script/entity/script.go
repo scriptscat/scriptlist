@@ -12,21 +12,22 @@ const (
 )
 
 type Script struct {
-	ID          int64  `gorm:"column:id" json:"id" form:"id"`
-	PostId      int64  `gorm:"column:post_id;index:post_id,unique" json:"post_id" form:"post_id"`
-	UserId      int64  `gorm:"column:user_id;index:user_id" json:"user_id" form:"user_id"`
-	Name        string `gorm:"column:name;type:varchar(255)" json:"name" form:"name"`
-	Description string `gorm:"column:description;type:text" json:"description" form:"description"`
-	Content     string `gorm:"column:content" json:"content" form:"content"`
-	Type        int    `gorm:"column:type;index:type;not null;default:1"`
-	Public      int    `gorm:"column:public;not null;default:1"`
-	Unwell      int    `gorm:"column:unwell;not null;default:2"`
-	SyncUrl     string `gorm:"column:sync_url;"`
-	ContentUrl  string `gorm:"column:content_url;"`
-	SyncMode    int    `gorm:"column:sync_mode;"`
-	Status      int64  `gorm:"column:status" json:"status" form:"status"`
-	Createtime  int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`
-	Updatetime  int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
+	ID            int64  `gorm:"column:id" json:"id" form:"id"`
+	PostId        int64  `gorm:"column:post_id;index:post_id,unique" json:"post_id" form:"post_id"`
+	UserId        int64  `gorm:"column:user_id;index:user_id" json:"user_id" form:"user_id"`
+	Name          string `gorm:"column:name;type:varchar(255)" json:"name" form:"name"`
+	Description   string `gorm:"column:description;type:text" json:"description" form:"description"`
+	Content       string `gorm:"column:content" json:"content" form:"content"`
+	Type          int    `gorm:"column:type;index:type;not null;default:1" json:"type"`
+	Public        int    `gorm:"column:public;not null;default:1" json:"public"`
+	Unwell        int    `gorm:"column:unwell;not null;default:2" json:"unwell"`
+	SyncUrl       string `gorm:"column:sync_url;type:varchar(255);index:sync_url" json:"sync_url"`
+	ContentUrl    string `gorm:"column:content_url;type:varchar(255);index:content_url" json:"content_url"`
+	DefinitionUrl string `gorm:"column:definition_url;type:varchar(255);index:definition_url" json:"definition_url"`
+	SyncMode      int    `gorm:"column:sync_mode;type:tinyint(2)"`
+	Status        int64  `gorm:"column:status" json:"status" form:"status"`
+	Createtime    int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`
+	Updatetime    int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
 
 func (s *Script) TableName() string {

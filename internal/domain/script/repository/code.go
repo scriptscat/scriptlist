@@ -27,6 +27,9 @@ func (c *code) Find(id int64) (*entity.ScriptCode, error) {
 	if err := c.db.Find(ret, "id=?", id).Error; err != nil {
 		return nil, err
 	}
+	if ret.ID == 0 {
+		return nil, nil
+	}
 	return ret, nil
 }
 
@@ -57,4 +60,15 @@ func (c *code) List(script, status int64) ([]*entity.ScriptCode, error) {
 		return nil, err
 	}
 	return list, nil
+}
+
+func (c *code) FindByVersion(scriptId int64, version string) (*entity.ScriptCode, error) {
+	ret := &entity.ScriptCode{}
+	if err := c.db.Find(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
+		return nil, err
+	}
+	if ret.ID == 0 {
+		return nil, nil
+	}
+	return ret, nil
 }
