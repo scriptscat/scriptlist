@@ -68,9 +68,9 @@ func (s *script) List(search *SearchList, page request.Pages) ([]*entity.Script,
 	case "score":
 		tabname := (&entity.ScriptStatistics{}).TableName()
 		find = find.Joins(fmt.Sprintf("left join %s on %s.script_id=%s.id", tabname, tabname, scriptTbName)).
-			Order(tabname + ".score,createtime desc")
+			Order(tabname + ".score desc,createtime desc")
 	case "updatetime":
-		find = find.Order("updatetime desc,createtime desc")
+		find = find.Where("updatetime>0").Order("updatetime desc,createtime desc")
 	default:
 		find = find.Order("createtime desc")
 	}

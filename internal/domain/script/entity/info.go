@@ -60,7 +60,7 @@ func (s *ScriptStatistics) TableName() string {
 type ScriptDateStatistics struct {
 	ID       int64  `gorm:"column:id" json:"id" form:"id"`
 	ScriptId int64  `gorm:"column:script_id;index:script_date,unique;default:0" json:"script_id" form:"script_id"`
-	Date     string `gorm:"column:date;index:script_date,unique;default:0" json:"date" form:"date"`
+	Date     string `gorm:"type:varchar(255);column:date;index:script_date,unique;default:0" json:"date" form:"date"`
 	Download int64  `gorm:"column:download;default:0" json:"download" form:"download"`
 	Update   int64  `gorm:"column:update;default:0" json:"update" form:"update"`
 }

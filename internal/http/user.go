@@ -76,13 +76,12 @@ func (u *User) scripts(ctx *gin.Context) {
 		sUid := ctx.Param("uid")
 		uid, ok := userId(ctx)
 		self := false
-		if sUid == "" {
+		uid = utils.StringToInt64(sUid)
+		if uid == 0 {
 			if !ok {
 				return errs.NewError(http.StatusBadRequest, 1000, "请指定用户")
 			}
 			self = true
-		} else {
-			uid = utils.StringToInt64(sUid)
 		}
 		//page := request.Pages{}
 		//if err := ctx.ShouldBind(&page); err != nil {
