@@ -57,7 +57,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.POST("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
-	rgg = r.Group("/:id")
+	rgg = rg.Group("/:id")
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
 	rgg.GET("/versions", s.versions)
@@ -151,9 +151,9 @@ func (s *Script) list(ctx *gin.Context) {
 		list, err := s.svc.GetScriptList(&repository.SearchList{
 			Category: categorys,
 			Domain:   ctx.Query("domain"),
-			Sort:     ctx.Query("keyword"),
+			Sort:     ctx.Query("sort"),
 			Status:   cnt.ACTIVE,
-			Keyword:  ctx.Query("sort"),
+			Keyword:  ctx.Query("keyword"),
 		}, req)
 		if err != nil {
 			return err

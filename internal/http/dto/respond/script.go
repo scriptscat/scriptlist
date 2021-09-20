@@ -19,9 +19,9 @@ type Script struct {
 	Status       int64       `json:"status"`
 	Score        int64       `json:"score"`
 	ScoreNum     int64       `json:"score_num"`
-	Type         int         `form:"type"`
-	Public       int         `form:"public"`
-	Unwell       int         `form:"unwell"`
+	Type         int         `json:"type"`
+	Public       int         `json:"public"`
+	Unwell       int         `json:"unwell"`
 	TodayInstall int64       `json:"today_install"`
 	TotalInstall int64       `json:"total_install"`
 	Createtime   int64       `json:"createtime"`

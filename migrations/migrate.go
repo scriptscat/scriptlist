@@ -79,7 +79,6 @@ func Migrate() error {
 				if err := tx.AutoMigrate(&entity.ScriptStatistics{}); err != nil {
 					return err
 				}
-
 				// 处理meta_json和domain信息
 				go func() {
 					if err := DealMetaInfo(); err != nil {
