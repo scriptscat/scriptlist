@@ -74,13 +74,14 @@ func (u *User) info(ctx *gin.Context) {
 func (u *User) scripts(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
 		sUid := ctx.Param("uid")
-		uid, ok := userId(ctx)
+		currentUid, ok := userId(ctx)
 		self := false
-		uid = utils.StringToInt64(sUid)
+		uid := utils.StringToInt64(sUid)
 		if uid == 0 {
 			if !ok {
 				return errs.NewError(http.StatusBadRequest, 1000, "请指定用户")
 			}
+			uid = currentUid
 			self = true
 		}
 		//page := request.Pages{}

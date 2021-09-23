@@ -28,9 +28,17 @@ type Script struct {
 	Updatetime   int64       `json:"updatetime"`
 }
 
+type ScriptSetting struct {
+	SyncUrl       string `json:"sync_url"`
+	ContentUrl    string `json:"content_url"`
+	DefinitionUrl string `json:"definition_url"`
+	SyncMode      int    `json:"sync_mode"`
+}
+
 type ScriptInfo struct {
 	*Script
-	Content string `json:"content" form:"content"`
+	Setting *ScriptSetting `json:"setting,omitempty"`
+	Content string         `json:"content" form:"content"`
 }
 
 type ScriptCode struct {
@@ -76,23 +84,35 @@ func ToScriptScore(user *entity.User, score *entity2.ScriptScore) *ScriptScore {
 func ToScript(user *entity.User, scriptInfo *entity2.Script, script *ScriptCode) *Script {
 	return &Script{
 		User:        ToUser(user),
+		Script:      script,
 		ID:          scriptInfo.ID,
 		PostId:      scriptInfo.PostId,
 		UserId:      scriptInfo.UserId,
 		Name:        scriptInfo.Name,
 		Description: scriptInfo.Description,
-		Script:      script,
 		Status:      scriptInfo.Status,
+		Type:        scriptInfo.Type,
+		Public:      scriptInfo.Public,
+		Unwell:      scriptInfo.Unwell,
 		Createtime:  scriptInfo.Createtime,
 		Updatetime:  scriptInfo.Updatetime,
 	}
 }
 
 func ToScriptInfo(user *entity.User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
-	return &ScriptInfo{
+	ret := &ScriptInfo{
 		Script:  ToScript(user, script, code),
 		Content: script.Content,
 	}
+	if user.Uid == script.UserId {
+		ret.Setting = &ScriptSetting{
+			SyncUrl:       script.SyncUrl,
+			ContentUrl:    script.ContentUrl,
+			DefinitionUrl: script.DefinitionUrl,
+			SyncMode:      script.SyncMode,
+		}
+	}
+	return ret
 }
 
 func ToScriptCode(user *entity.User, code *entity2.ScriptCode) *ScriptCode {

@@ -16,6 +16,7 @@ import (
 	service2 "github.com/scriptscat/scriptweb/internal/service"
 	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
 	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptweb/pkg/utils/diff"
 )
 
 type Script struct {
@@ -57,9 +58,10 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.POST("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
-	rgg = rg.Group("/:id")
+	rgg = rg.Group("/:id", jwtAuth)
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
+	rgg.GET("/diff/:v1/:v2", s.diff)
 	rgg.GET("/versions", s.versions)
 	rgg.GET("/versions/:version", s.versionsGet(false))
 	rgg.GET("/versions/:version/code", s.versionsGet(true))
@@ -311,5 +313,24 @@ func (s *Script) sync(ctx *gin.Context) {
 			return errs.ErrNotLogin
 		}
 		return s.svc.SyncScript(uid, id)
+	})
+}
+
+func (s *Script) diff(c *gin.Context) {
+	handle(c, func() interface{} {
+		id := utils.StringToInt64(c.Param("id"))
+		v1 := c.Param("v1")
+		v2 := c.Param("v2")
+		s1, err := s.svc.GetScriptCodeByVersion(id, v1, true)
+		if err != nil {
+			return err
+		}
+		s2, err := s.svc.GetScriptCodeByVersion(id, v2, true)
+		if err != nil {
+			return err
+		}
+		return gin.H{
+			"diff": diff.Diff(s1.Code, s2.Code),
+		}
 	})
 }
