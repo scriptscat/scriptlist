@@ -7,24 +7,25 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	jwt2 "github.com/golang-jwt/jwt"
+	"github.com/scriptscat/scriptweb/internal/domain/user/service"
 	"github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
+	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptweb/internal/service"
-	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
+	"github.com/scriptscat/scriptweb/pkg/middleware/token"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 )
 
 type User struct {
-	svc       service2.User
+	svc       service.User
 	scriptSvc service2.Script
 	client    *oauth.Client
 	jwtToken  string
 }
 
-func NewUser(user service2.User, scriptSvc service2.Script) *User {
+func NewUser(user service.User, scriptSvc service2.Script) *User {
 	return &User{
 		svc:       user,
 		scriptSvc: scriptSvc,
@@ -35,27 +36,25 @@ func NewUser(user service2.User, scriptSvc service2.Script) *User {
 func (u *User) info(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
 		// 判断是否登录
-		user, token, ok := jwttoken(ctx)
+		tokenInfo, ok := authtoken(ctx)
 		resp := gin.H{}
 		uid := ctx.Param("uid")
 		if ok {
-			if t, ok := token.Header["time"]; ok {
-				if i, ok := t.(float64); !(ok && int64(i)+JwtAutoRenew > time.Now().Unix()) {
-					// 刷新token
-					tokenString, err := jwt3.GenJwt([]byte(u.jwtToken), jwt2.MapClaims{
-						"uid":      user["uid"],
-						"username": user["username"],
-						"email":    user["email"],
-					})
-					if err != nil {
-						return err
-					}
-					ctx.SetCookie("auth", tokenString, JwtAuthMaxAge, "/", "", false, true)
-					resp["auth"] = tokenString
+			if tokenInfo.Createtime+TokenAutoRegen < time.Now().Unix() {
+				// 刷新token
+				tokenString, err := token.GenToken(db.Cache, gin.H{
+					"uid":      tokenInfo.Info["uid"],
+					"username": tokenInfo.Info["username"],
+					"email":    tokenInfo.Info["email"],
+				})
+				if err != nil {
+					return err
 				}
+				ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", false, true)
+				resp["token"] = tokenString
 			}
 			if uid == "" {
-				uid = user["uid"].(string)
+				uid = tokenInfo.Info["uid"].(string)
 			}
 		}
 		if uid == "" {
@@ -113,34 +112,42 @@ func (u *User) avatar(ctx *gin.Context) {
 	ctx.Writer.Write(b)
 }
 
-// CheckUserInfo 校验用户信息
-func (u *User) CheckUserInfo() gin.HandlerFunc {
-	jwtAuth := jwt3.Jwt([]byte(config.AppConfig.Jwt.Token), true, jwt3.WithExpired(JwtAuthMaxAge))
-	return func(c *gin.Context) {
-		jwtAuth(c)
-		if c.IsAborted() {
-			return
-		}
-		uid, ok := userId(c)
-		if !ok {
-			c.JSON(http.StatusForbidden, errs.ErrNotLogin)
-			c.Abort()
-			return
-		}
-		_, err := u.svc.UserInfo(uid)
+func (u *User) getwebhook(c *gin.Context) {
+	handle(c, func() interface{} {
+		uid, _ := userId(c)
+		ret, err := u.svc.GetUserWebhook(uid)
 		if err != nil {
-			c.JSON(http.StatusForbidden, err)
-			c.Abort()
-			return
+			return err
 		}
-	}
+		return gin.H{
+			"token": ret,
+		}
+	})
+}
+
+func (u *User) regenwebhook(c *gin.Context) {
+	handle(c, func() interface{} {
+		uid, _ := userId(c)
+		ret, err := u.svc.RegenWebhook(uid)
+		if err != nil {
+			return err
+		}
+		return gin.H{
+			"token": ret,
+		}
+	})
 }
 
 func (u *User) Registry(ctx context.Context, r *gin.Engine) {
-	rg := r.Group("/api/v1/user", jwt3.Jwt([]byte(u.jwtToken), false, jwt3.WithExpired(JwtAuthMaxAge)))
-	rg.GET("/info", u.info)
-	rg.GET("/info/:uid", u.info)
-	rg.GET("/scripts", u.scripts)
-	rg.GET("/scripts/:uid", u.scripts)
-	rg.GET("/avatar/:uid", u.avatar)
+	rg := r.Group("/api/v1/user")
+	rgg := rg.Group("", tokenAuth(false))
+	rgg.GET("/info", u.info)
+	rgg.GET("/info/:uid", u.info)
+	rgg.GET("/scripts", u.scripts)
+	rgg.GET("/scripts/:uid", u.scripts)
+	rgg.GET("/avatar/:uid", u.avatar)
+
+	rgg = rg.Group("/webhook/:uid", userAuth())
+	rgg.GET("", u.getwebhook)
+	rgg.PUT("", u.regenwebhook)
 }

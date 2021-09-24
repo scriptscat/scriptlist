@@ -76,3 +76,14 @@ func (c *code) FindByVersion(scriptId int64, version string) (*entity.ScriptCode
 	}
 	return ret, nil
 }
+
+func (c *code) FindDefinitionByCodeId(codeid int64) (*entity.LibDefinition, error) {
+	ret := &entity.LibDefinition{}
+	if err := c.db.Where("code_id=?", codeid).First(ret).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}

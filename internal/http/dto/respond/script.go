@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	entity2 "github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/user/entity"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 )
 
@@ -53,6 +52,7 @@ type ScriptCode struct {
 	Status     int64       `json:"status" form:"status"`
 	Createtime int64       `json:"createtime" form:"createtime"`
 	Code       string      `json:"code,omitempty" form:"code"`
+	Definition string      `json:"definition,omitempty"`
 }
 
 type ScriptScore struct {
@@ -68,9 +68,9 @@ type ScriptScore struct {
 	Updatetime int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
 
-func ToScriptScore(user *entity.User, score *entity2.ScriptScore) *ScriptScore {
+func ToScriptScore(user *User, score *entity2.ScriptScore) *ScriptScore {
 	return &ScriptScore{
-		User:       ToUser(user),
+		User:       user,
 		ID:         score.ID,
 		UserId:     score.UserId,
 		ScriptId:   score.ScriptId,
@@ -81,9 +81,9 @@ func ToScriptScore(user *entity.User, score *entity2.ScriptScore) *ScriptScore {
 	}
 }
 
-func ToScript(user *entity.User, scriptInfo *entity2.Script, script *ScriptCode) *Script {
+func ToScript(user *User, scriptInfo *entity2.Script, script *ScriptCode) *Script {
 	return &Script{
-		User:        ToUser(user),
+		User:        user,
 		Script:      script,
 		ID:          scriptInfo.ID,
 		PostId:      scriptInfo.PostId,
@@ -99,12 +99,12 @@ func ToScript(user *entity.User, scriptInfo *entity2.Script, script *ScriptCode)
 	}
 }
 
-func ToScriptInfo(user *entity.User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
+func ToScriptInfo(user *User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
 	ret := &ScriptInfo{
 		Script:  ToScript(user, script, code),
 		Content: script.Content,
 	}
-	if user.Uid == script.UserId {
+	if user.UID == script.UserId {
 		ret.Setting = &ScriptSetting{
 			SyncUrl:       script.SyncUrl,
 			ContentUrl:    script.ContentUrl,
@@ -115,7 +115,7 @@ func ToScriptInfo(user *entity.User, script *entity2.Script, code *ScriptCode) *
 	return ret
 }
 
-func ToScriptCode(user *entity.User, code *entity2.ScriptCode) *ScriptCode {
+func ToScriptCode(user *User, code *entity2.ScriptCode) *ScriptCode {
 	data := make(map[string]interface{})
 	_ = json.Unmarshal([]byte(code.MetaJson), &data)
 	domains := make(map[string]struct{})
@@ -137,7 +137,7 @@ func ToScriptCode(user *entity.User, code *entity2.ScriptCode) *ScriptCode {
 	}
 	data["domains"] = domains
 	return &ScriptCode{
-		User:       ToUser(user),
+		User:       user,
 		ID:         code.ID,
 		UserId:     code.UserId,
 		ScriptId:   code.ScriptId,

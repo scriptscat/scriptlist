@@ -41,7 +41,7 @@ func (r *resource) UploadScriptImage(uid int64, comment string, name string, ima
 		return nil, errs.ErrResourceNotImage
 	}
 	resource := &entity.Resource{
-		ID:          utils.GetRandomString(16),
+		ID:          utils.RandString(16, 2),
 		Uid:         uid,
 		Comment:     comment,
 		Name:        name,

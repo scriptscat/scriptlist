@@ -29,6 +29,7 @@ type Script interface {
 	CreateScript(uid int64, req *request.CreateScript) (*entity.Script, error)
 	UpdateScript(uid, id int64, req *request.UpdateScript) error
 	CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
+	GetCodeDefinition(codeid int64) (*entity.LibDefinition, error)
 }
 
 type script struct {
@@ -320,4 +321,15 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 		return errs.NewBadRequestError(1010, "错误的类型")
 	}
 	return nil
+}
+
+func (s *script) GetCodeDefinition(codeid int64) (*entity.LibDefinition, error) {
+	ret, err := s.codeRepo.FindDefinitionByCodeId(codeid)
+	if err != nil {
+		return nil, err
+	}
+	if ret == nil {
+		return nil, errs.ErrCodeDefinitionNotFound
+	}
+	return ret, nil
 }

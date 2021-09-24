@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-func BenchmarkGetRandomString(b *testing.B) {
+func BenchmarkRandString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		GetRandomString(12)
+		RandString(12, 2)
 	}
 }

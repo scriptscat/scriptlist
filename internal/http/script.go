@@ -11,10 +11,8 @@ import (
 	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptweb/internal/service"
-	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 	"github.com/scriptscat/scriptweb/pkg/utils/diff"
 )
@@ -32,19 +30,19 @@ func NewScript(svc service2.Script, statisSvc service2.Statistics) *Script {
 }
 
 func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
-	jwtAuth := jwt3.Jwt([]byte(config.AppConfig.Jwt.Token), false, jwt3.WithExpired(JwtAuthMaxAge))
+	tokenAuth := tokenAuth(false)
 	r.Use(func(ctx *gin.Context) {
 		ctx.Next()
 		if ctx.Writer.Status() != http.StatusNotFound {
 			return
 		}
 		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") {
-			jwtAuth(ctx)
+			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.downloadScript(ctx)
 			}
 		} else if strings.HasSuffix(ctx.Request.RequestURI, ".meta.js") {
-			jwtAuth(ctx)
+			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.getScriptMeta(ctx)
 			}
@@ -52,13 +50,13 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	})
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
-	rg.POST("", ctx.Value(CheckUserInfo).(gin.HandlerFunc), s.add)
-	rgg := rg.Group("/:id", ctx.Value(CheckUserInfo).(gin.HandlerFunc))
+	rg.POST("", userAuth(), s.add)
+	rgg := rg.Group("/:id", userAuth())
 	rgg.PUT("", s.update)
 	rgg.POST("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
-	rgg = rg.Group("/:id", jwtAuth)
+	rgg = rg.Group("/:id", tokenAuth)
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
 	rgg.GET("/diff/:v1/:v2", s.diff)
@@ -66,7 +64,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.GET("/versions/:version", s.versionsGet(false))
 	rgg.GET("/versions/:version/code", s.versionsGet(true))
 
-	rgg = rg.Group("/:id/score", jwtAuth)
+	rgg = rg.Group("/:id/score", tokenAuth)
 	rgg.GET("", s.scoreList)
 	rgg.PUT("", s.putScore)
 	rgg.GET("/self", s.selfScore)

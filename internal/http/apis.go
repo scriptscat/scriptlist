@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	jwt2 "github.com/golang-jwt/jwt"
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	repository5 "github.com/scriptscat/scriptweb/internal/domain/resource/repository"
@@ -23,15 +22,13 @@ import (
 	service2 "github.com/scriptscat/scriptweb/internal/domain/user/service"
 	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/config"
+	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service5 "github.com/scriptscat/scriptweb/internal/service"
-	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
+	"github.com/scriptscat/scriptweb/pkg/middleware/token"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
-	"github.com/scriptscat/scriptweb/pkg/utils"
 	pkgValidator "github.com/scriptscat/scriptweb/pkg/utils/validator"
 )
-
-const CheckUserInfo = "user.CheckUserInfo"
 
 type Service interface {
 	Registry(ctx context.Context, r *gin.Engine)
@@ -84,35 +81,14 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 	}
 }
 
-func userId(ctx *gin.Context) (int64, bool) {
-	u, ok := ctx.Get(jwt3.Userinfo)
-	if !ok {
-		return 0, false
-	}
-	return utils.StringToInt64(u.(jwt2.MapClaims)["uid"].(string)), true
-}
-
-func isadmin(ctx *gin.Context) (int64, bool) {
-	u, ok := ctx.Get(jwt3.Userinfo)
-	if !ok {
-		return 0, false
-	}
-	return utils.StringToInt64(u.(jwt2.MapClaims)["uid"].(string)), false
-}
-
-func jwttoken(ctx *gin.Context) (jwt2.MapClaims, *jwt2.Token, bool) {
-	u, ok := ctx.Get(jwt3.Userinfo)
-	if !ok {
-		return nil, nil, false
-	}
-	t, ok := ctx.Get(jwt3.JwtToken)
-	if !ok {
-		return nil, nil, false
-	}
-	return u.(jwt2.MapClaims), t.(*jwt2.Token), true
-}
+var tokenAuth func(enforce bool) func(ctx *gin.Context)
+var userAuth func() func(ctx *gin.Context)
 
 func StartApi() error {
+	tokenAuth = func(enforce bool) func(ctx *gin.Context) {
+		return token.Middleware(db.Cache, enforce, token.WithExpired(TokenAuthMaxAge))
+	}
+
 	ctx := context.Background()
 	binding.Validator = pkgValidator.NewValidator()
 	c := cron.New()
@@ -126,10 +102,22 @@ func StartApi() error {
 		rateSvc,
 	)
 
+	enforceAuth := token.Middleware(db.Cache, true, token.WithExpired(TokenAuthMaxAge))
+	userAuth = func() func(ctx *gin.Context) {
+		return func(ctx *gin.Context) {
+			enforceAuth(ctx)
+			if !ctx.IsAborted() {
+				uid, _ := userId(ctx)
+				if _, err := userSvc.UserInfo(uid); err != nil {
+					handelResp(ctx, err)
+					ctx.Abort()
+				}
+			}
+		}
+	}
+
 	statis := service5.NewStatistical(service4.NewStatistics(repository2.NewStatistics()), scriptSvc)
-	user := service5.NewUser(userSvc)
-	userApi := NewUser(user, script)
-	ctx = context.WithValue(ctx, CheckUserInfo, userApi.CheckUserInfo())
+	userApi := NewUser(userSvc, script)
 
 	r := gin.Default()
 	Registry(ctx, r,

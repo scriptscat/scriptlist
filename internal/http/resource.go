@@ -26,7 +26,7 @@ func NewResource(svc service.Resource, rate service2.Rate) *Resource {
 func (s *Resource) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/resource/image")
 	rg.GET("/:id", s.getImg)
-	rg.POST("", ctx.Value(CheckUserInfo).(gin.HandlerFunc), s.uploadImg)
+	rg.POST("", userAuth(), s.uploadImg)
 }
 
 func (s *Resource) getImg(c *gin.Context) {

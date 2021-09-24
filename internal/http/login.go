@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	jwt3 "github.com/scriptscat/scriptweb/pkg/middleware/jwt"
+	"github.com/scriptscat/scriptweb/pkg/middleware/token"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
 )
 
-const JwtAuthMaxAge = 432000
-const JwtAutoRenew = 259200
+const TokenAuthMaxAge = 432000
+const TokenAutoRegen = 259200
 
 type Login struct {
 	client   *oauth.Client
@@ -41,7 +41,7 @@ func (l *Login) oauth(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		tokenString, err := jwt3.GenJwt([]byte(l.jwtToken), jwt.MapClaims{
+		tokenString, err := token.GenToken(db.Cache, gin.H{
 			"uid":      userResp.User.Uid,
 			"username": userResp.User.Username,
 			"email":    userResp.User.Email,
@@ -49,7 +49,7 @@ func (l *Login) oauth(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		ctx.SetCookie("auth", tokenString, JwtAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", false, true)
 		if uri := ctx.Query("redirect_uri"); uri != "" {
 			ctx.Redirect(http.StatusFound, uri)
 			return nil
