@@ -254,23 +254,25 @@ func (s *script) UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode)
 }
 
 func (s *script) SyncScript(uid, id int64) error {
+	script, err := s.scriptSvc.Info(id)
+	if err != nil {
+		return err
+	}
+	if script.SyncUrl == "" {
+		return errs.NewBadRequestError(1000, "同步链接为空")
+	}
 	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
 		Name:     "sync-script",
 		Interval: 10,
 	}, func() error {
-		script, err := s.scriptSvc.Info(id)
-		if err != nil {
-			return err
-		}
-		if script.SyncUrl == "" {
-			return errs.NewBadRequestError(1000, "同步链接为空")
-		}
 		req := &request2.UpdateScriptCode{
-			Content:    script.Content,
-			Definition: "",
-			Changelog:  "",
-			Public:     script.Public,
-			Unwell:     script.Unwell,
+			Name:        script.Name,
+			Description: script.Description,
+			Content:     script.Content,
+			Definition:  "",
+			Changelog:   "",
+			Public:      script.Public,
+			Unwell:      script.Unwell,
 		}
 		req.Code, err = s.requestSyncUrl(script.SyncUrl)
 		if err != nil {

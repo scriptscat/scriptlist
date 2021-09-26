@@ -36,7 +36,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 		if ctx.Writer.Status() != http.StatusNotFound {
 			return
 		}
-		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") {
+		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") || strings.HasSuffix(ctx.Request.RequestURI, ".user.sub.js") {
 			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.downloadScript(ctx)
@@ -53,21 +53,22 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg.POST("", userAuth(), s.add)
 	rgg := rg.Group("/:id", userAuth())
 	rgg.PUT("", s.update)
-	rgg.POST("/code", s.updatecode)
+	rgg.PUT("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
 	rgg = rg.Group("/:id", tokenAuth)
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
 	rgg.GET("/diff/:v1/:v2", s.diff)
-	rgg.GET("/versions", s.versions)
-	rgg.GET("/versions/:version", s.versionsGet(false))
-	rgg.GET("/versions/:version/code", s.versionsGet(true))
+	rggg := rgg.Group("/versions")
+	rggg.GET("", s.versions)
+	rggg.GET("/:version", s.versionsGet(false))
+	rggg.GET("/:version/code", s.versionsGet(true))
 
-	rgg = rg.Group("/:id/score", tokenAuth)
-	rgg.GET("", s.scoreList)
-	rgg.PUT("", s.putScore)
-	rgg.GET("/self", s.selfScore)
+	rggg = rgg.Group("/score")
+	rggg.GET("", s.scoreList)
+	rggg.PUT("", s.putScore)
+	rggg.GET("/self", s.selfScore)
 
 	rg = r.Group("/api/v1/category")
 	rg.GET("", s.category)

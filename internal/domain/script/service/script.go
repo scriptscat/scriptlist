@@ -167,6 +167,10 @@ func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) 
 	if script.UserId != uid {
 		return errs.ErrScriptForbidden
 	}
+	if script.Type == entity.LIBRARY_TYPE {
+		script.Name = req.Name
+		script.Description = req.Description
+	}
 	return s.createScriptCode(uid, script, &request.CreateScript{
 		Content:     req.Content,
 		Code:        req.Code,

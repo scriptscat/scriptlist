@@ -33,10 +33,12 @@ type UpdateScript struct {
 }
 
 type UpdateScriptCode struct {
-	Content    string `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
-	Code       string `form:"code" binding:"required,max=10485760" label:"脚本代码"`
-	Definition string `form:"definition" binding:"max=102400" label:"库的定义文件"`
-	Changelog  string `form:"changelog" binding:"max=1024" label:"更新日志"`
+	Name        string `form:"name" binding:"max=128" label:"库的名字"`
+	Description string `form:"description" binding:"max=102400" label:"库的描述"`
+	Content     string `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
+	Code        string `form:"code" binding:"required,max=10485760" label:"脚本代码"`
+	Definition  string `form:"definition" binding:"max=102400" label:"库的定义文件"`
+	Changelog   string `form:"changelog" binding:"max=1024" label:"更新日志"`
 	// 公开类型：1 公开 2 半公开
 	Public int `form:"public" binding:"required,number" label:"公开类型"`
 	Unwell int `form:"unwell" binding:"required,number" label:"不适内容"`
