@@ -270,6 +270,11 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 				}
 			}
 			for domain := range domains {
+				if ret, err := codeRepo.FindScriptDomain(code.ScriptId, domain); err != nil {
+					return err
+				} else if ret != nil {
+					continue
+				}
 				if err := codeRepo.SaveScriptDomain(&entity.ScriptDomain{
 					Domain:        domain,
 					DomainReverse: utils.StringReverse(domain),

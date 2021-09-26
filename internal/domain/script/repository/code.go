@@ -44,6 +44,25 @@ func (c *code) SaveDefinition(definition *entity.LibDefinition) error {
 	return c.db.Save(definition).Error
 }
 
+func (c *code) FindScriptDomain(scriptId int64, domain string) (*entity.ScriptDomain, error) {
+	ret := &entity.ScriptDomain{}
+	if err := db.Cache.GetOrSet(fmt.Sprintf("script:code:list:domain:%d:%s", scriptId, domain), ret, func() (interface{}, error) {
+		if err := c.db.Where("script_id=? and domain=?", scriptId, domain).First(&ret).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return ret, nil
+			}
+			return nil, err
+		}
+		return ret, nil
+	}, cache.WithTTL(time.Hour*30)); err != nil {
+		return nil, err
+	}
+	if ret.ID == 0 {
+		return nil, nil
+	}
+	return ret, nil
+}
+
 func (c *code) SaveScriptDomain(domain *entity.ScriptDomain) error {
 	return c.db.Save(domain).Error
 }

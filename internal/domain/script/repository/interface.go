@@ -26,6 +26,7 @@ type ScriptCode interface {
 	List(script, status int64) ([]*entity.ScriptCode, error)
 	SaveDefinition(definition *entity.LibDefinition) error
 	SaveScriptDomain(domain *entity.ScriptDomain) error
+	FindScriptDomain(scriptId int64, domain string) (*entity.ScriptDomain, error)
 	FindDefinitionByCodeId(codeid int64) (*entity.LibDefinition, error)
 }
 
