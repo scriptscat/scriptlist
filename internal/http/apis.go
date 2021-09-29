@@ -122,7 +122,7 @@ func StartApi() error {
 	r := gin.Default()
 	Registry(ctx, r,
 		NewScript(script, statis),
-		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), config.AppConfig.Jwt.Token),
+		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		userApi,
 	)

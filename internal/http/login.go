@@ -15,14 +15,12 @@ const TokenAuthMaxAge = 432000
 const TokenAutoRegen = 259200
 
 type Login struct {
-	client   *oauth.Client
-	jwtToken string
+	client *oauth.Client
 }
 
-func NewLogin(client *oauth.Client, jwtToken string) *Login {
+func NewLogin(client *oauth.Client) *Login {
 	return &Login{
-		client:   client,
-		jwtToken: jwtToken,
+		client: client,
 	}
 }
 

@@ -13,7 +13,6 @@ type Config struct {
 	Redis   Redis
 	Cache   Redis
 	OAuth   OAuth `yaml:"oauth"`
-	Jwt     Jwt   `yaml:"jwt"`
 	WebPort int   `yaml:"webPort"`
 }
 
@@ -31,10 +30,6 @@ type MySQL struct {
 type OAuth struct {
 	ClientID     string `yaml:"clientId"`
 	ClientSecret string `yaml:"clientSecret"`
-}
-
-type Jwt struct {
-	Token string `yaml:"token"`
 }
 
 var AppConfig Config

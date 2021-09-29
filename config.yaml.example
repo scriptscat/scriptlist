@@ -25,10 +25,6 @@ oauth:
   clientId: xxx
   clientSecret: xxx
 
-# jwt token
-jwt:
-  token: xxx
-
 # 执行的定时任务
 crontab:
   - scripts

@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
 	"github.com/scriptscat/scriptweb/internal/http/dto/request"
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptweb/internal/service"
@@ -22,14 +21,12 @@ type User struct {
 	svc       service.User
 	scriptSvc service2.Script
 	client    *oauth.Client
-	jwtToken  string
 }
 
 func NewUser(user service.User, scriptSvc service2.Script) *User {
 	return &User{
 		svc:       user,
 		scriptSvc: scriptSvc,
-		jwtToken:  config.AppConfig.Jwt.Token,
 	}
 }
 
