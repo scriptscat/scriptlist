@@ -21,9 +21,9 @@ type Script struct {
 	Type          int    `gorm:"column:type;index:type;not null;default:1" json:"type"`
 	Public        int    `gorm:"column:public;not null;default:1" json:"public"`
 	Unwell        int    `gorm:"column:unwell;not null;default:2" json:"unwell"`
-	SyncUrl       string `gorm:"column:sync_url;type:varchar(255);index:sync_url" json:"sync_url"`
-	ContentUrl    string `gorm:"column:content_url;type:varchar(255);index:content_url" json:"content_url"`
-	DefinitionUrl string `gorm:"column:definition_url;type:varchar(255);index:definition_url" json:"definition_url"`
+	SyncUrl       string `gorm:"column:sync_url;type:text;index:sync_url" json:"sync_url"`
+	ContentUrl    string `gorm:"column:content_url;type:text;index:content_url" json:"content_url"`
+	DefinitionUrl string `gorm:"column:definition_url;type:text;index:definition_url" json:"definition_url"`
 	SyncMode      int    `gorm:"column:sync_mode;type:tinyint(2)"`
 	Status        int64  `gorm:"column:status" json:"status" form:"status"`
 	Createtime    int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`

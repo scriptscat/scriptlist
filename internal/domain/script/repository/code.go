@@ -54,7 +54,7 @@ func (c *code) FindScriptDomain(scriptId int64, domain string) (*entity.ScriptDo
 			return nil, err
 		}
 		return ret, nil
-	}, cache.WithTTL(time.Hour*30)); err != nil {
+	}, cache.WithTTL(time.Hour*30), cache.WithKeyDepend(db.Cache, c.dependkey(scriptId))); err != nil {
 		return nil, err
 	}
 	if ret.ID == 0 {

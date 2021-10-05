@@ -266,13 +266,13 @@ func (s *script) SyncScript(uid, id int64) error {
 		Interval: 10,
 	}, func() error {
 		req := &request2.UpdateScriptCode{
-			Name:        script.Name,
-			Description: script.Description,
-			Content:     script.Content,
-			Definition:  "",
-			Changelog:   "",
-			Public:      script.Public,
-			Unwell:      script.Unwell,
+			//Name:        script.Name,
+			//Description: script.Description,
+			Content:    script.Content,
+			Definition: "",
+			Changelog:  "",
+			Public:     script.Public,
+			Unwell:     script.Unwell,
 		}
 		req.Code, err = s.requestSyncUrl(script.SyncUrl)
 		if err != nil {

@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -143,8 +142,8 @@ func (s *script) UpdateScript(uid, id int64, req *request.UpdateScript) error {
 	if script.UserId != uid {
 		return errs.ErrScriptForbidden
 	}
-	script.Public = req.Public
-	script.Unwell = req.Unwell
+	//script.Public = req.Public
+	//script.Unwell = req.Unwell
 	script.SyncUrl = req.SyncUrl
 	script.ContentUrl = req.ContentUrl
 	script.SyncMode = req.SyncMode
@@ -168,11 +167,10 @@ func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) 
 	if script.UserId != uid {
 		return errs.ErrScriptForbidden
 	}
-	script.Content = req.Content
-	if script.Type == entity.LIBRARY_TYPE {
-		script.Name = req.Name
-		script.Description = req.Description
-	}
+	//if script.Type == entity.LIBRARY_TYPE {
+	//	script.Name = req.Name
+	//	script.Description = req.Description
+	//}
 	return s.createScriptCode(uid, script, &request.CreateScript{
 		Content:     req.Content,
 		Code:        req.Code,
@@ -221,7 +219,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 		if err != nil {
 			return err
 		}
-		var version string
+		version := code.Version
 		if v, ok := metaJson["version"]; ok {
 			version = v[0]
 		}
@@ -233,15 +231,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 			if ok, err := s.codeRepo.FindByVersion(script.ID, code.Version); err != nil {
 				return err
 			} else if ok != nil {
-				//NOTE: 是不是应该优化一下对比功能
-				if strings.ReplaceAll(ok.Code, "\r\n", "\n") != strings.ReplaceAll(code.Code, "\r\n", "\n") {
-					return errs.ErrScriptCodeExist
-				}
-				code = ok
-				if req.Changelog != "" {
-					code.Changelog = req.Changelog
-				}
-				code.Updatetime = time.Now().Unix()
+				return errs.ErrScriptCodeExist
 			}
 		}
 		if err := db.Db.Transaction(func(tx *gorm.DB) error {

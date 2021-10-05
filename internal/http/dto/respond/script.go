@@ -13,6 +13,7 @@ type Script struct {
 	ID           int64       `json:"id"`
 	PostId       int64       `json:"post_id"`
 	UserId       int64       `json:"user_id"`
+	IsManager    bool        `json:"is_manager"`
 	Name         string      `json:"name"`
 	Description  string      `json:"description"`
 	Status       int64       `json:"status"`
@@ -81,22 +82,26 @@ func ToScriptScore(user *User, score *entity2.ScriptScore) *ScriptScore {
 	}
 }
 
-func ToScript(user *User, scriptInfo *entity2.Script, script *ScriptCode) *Script {
-	return &Script{
+func ToScript(user *User, script *entity2.Script, code *ScriptCode) *Script {
+	ret := &Script{
 		User:        user,
-		Script:      script,
-		ID:          scriptInfo.ID,
-		PostId:      scriptInfo.PostId,
-		UserId:      scriptInfo.UserId,
-		Name:        scriptInfo.Name,
-		Description: scriptInfo.Description,
-		Status:      scriptInfo.Status,
-		Type:        scriptInfo.Type,
-		Public:      scriptInfo.Public,
-		Unwell:      scriptInfo.Unwell,
-		Createtime:  scriptInfo.Createtime,
-		Updatetime:  scriptInfo.Updatetime,
+		Script:      code,
+		ID:          script.ID,
+		PostId:      script.PostId,
+		UserId:      script.UserId,
+		Name:        script.Name,
+		Description: script.Description,
+		Status:      script.Status,
+		Type:        script.Type,
+		Public:      script.Public,
+		Unwell:      script.Unwell,
+		Createtime:  script.Createtime,
+		Updatetime:  script.Updatetime,
 	}
+	if user != nil {
+		ret.IsManager = user.UID == script.UserId
+	}
+	return ret
 }
 
 func ToScriptInfo(user *User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
