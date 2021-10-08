@@ -2,12 +2,18 @@ package http
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
+	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
+	"github.com/scriptscat/scriptweb/internal/domain/user/service"
 	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
@@ -20,12 +26,14 @@ import (
 type Script struct {
 	svc       service2.Script
 	statisSvc service2.Statistics
+	userSvc   service.User
 }
 
-func NewScript(svc service2.Script, statisSvc service2.Statistics) *Script {
+func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User) *Script {
 	return &Script{
 		svc:       svc,
 		statisSvc: statisSvc,
+		userSvc:   userSvc,
 	}
 }
 
@@ -50,8 +58,8 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	})
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
-	rg.POST("", userAuth(), s.add)
-	rgg := rg.Group("/:id", userAuth())
+	rg.POST("", userAuth(true), s.add)
+	rgg := rg.Group("/:id", userAuth(true))
 	rgg.PUT("", s.update)
 	rgg.PUT("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
@@ -73,6 +81,70 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg = r.Group("/api/v1/category")
 	rg.GET("", s.category)
 
+	r.Any("/api/v1/webhook/:uid", s.webhook)
+
+}
+
+type githubWebhook struct {
+	Hook struct {
+		Type string `json:"type"`
+	} `json:"hook"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
+}
+
+func (s *Script) webhook(c *gin.Context) {
+	handle(c, func() interface{} {
+		uid := utils.StringToInt64(c.Param("uid"))
+		secret, err := s.userSvc.GetUserWebhook(uid)
+		if err != nil {
+			return err
+		}
+		ua := c.GetHeader("User-Agent")
+		if strings.Index(ua, "GitHub") != -1 {
+			b, err := io.ReadAll(c.Request.Body)
+			if err != nil {
+				return err
+			}
+			hash := hmac.New(sha256.New, []byte(secret))
+			if _, err := hash.Write(b); err != nil {
+				return err
+			}
+			if fmt.Sprintf(" sha256=%x", hash.Sum(nil)) != c.GetHeader("X-Hub-Signature-256") {
+				return errs.NewBadRequestError(1000, "密钥校验错误")
+			}
+			// 处理github
+			data := &githubWebhook{}
+			if err := c.ShouldBindJSON(data); err != nil {
+				return err
+			}
+			if data.Hook.Type != "repository" {
+				return errs.NewBadRequestError(10001, "只能识别data.hook.type=repository")
+			}
+			list, err := s.svc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
+			if err != nil {
+				return nil
+			}
+			success := []gin.H{}
+			error := []gin.H{}
+			for _, v := range list {
+				if v.SyncMode != service3.SYNC_MODE_AUTO {
+					continue
+				}
+				if err := s.svc.SyncScript(uid, v.ID); err != nil {
+					error = append(error, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
+				} else {
+					success = append(success, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
+				}
+			}
+			return gin.H{
+				"success": success,
+				"error":   error,
+			}
+		}
+		return nil
+	})
 }
 
 func (s *Script) parseScriptInfo(url string) (int64, string) {
@@ -166,11 +238,13 @@ func (s *Script) list(ctx *gin.Context) {
 func (s *Script) get(withcode bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		handle(ctx, func() interface{} {
+			uid, _ := userId(ctx)
 			id := utils.StringToInt64(ctx.Param("id"))
 			ret, err := s.svc.GetScript(id, "", withcode)
 			if err != nil {
 				return err
 			}
+			ret.IsManager = uid == ret.UID
 			return ret
 		})
 	}

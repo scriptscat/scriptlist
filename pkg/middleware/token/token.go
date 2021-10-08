@@ -13,7 +13,11 @@ import (
 const Userinfo = "userinfo"
 const AuthToken = "auth_token"
 
-func Middleware(cache cache.Cache, enforce bool, handlers ...HandlerFunc) gin.HandlerFunc {
+func Middleware(cache cache.Cache, enforce bool, option ...Option) gin.HandlerFunc {
+	opts := &options{}
+	for _, o := range option {
+		o(opts)
+	}
 	return func(ctx *gin.Context) {
 		token, _ := ctx.Cookie("token")
 		if token == "" {
@@ -43,12 +47,25 @@ func Middleware(cache cache.Cache, enforce bool, handlers ...HandlerFunc) gin.Ha
 		tokenInfo := &Token{}
 		err := cache.Get("token:token:"+token, tokenInfo)
 		if err != nil {
+			for _, v := range opts.authFailed {
+				if err := v(tokenInfo); err != nil {
+					ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+						"code": 1002, "msg": err.Error(),
+					})
+					return
+				}
+			}
+			if tokenInfo.Info != nil {
+				ctx.Set(Userinfo, tokenInfo.Info)
+				ctx.Set(AuthToken, tokenInfo)
+				return
+			}
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"code": 1002, "msg": err.Error(),
 			})
 			return
 		}
-		for _, v := range handlers {
+		for _, v := range opts.tokenHandlerFunc {
 			if err := v(tokenInfo); err != nil {
 				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 					"code": 1002, "msg": err.Error(),

@@ -18,6 +18,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	SYNC_MODE_AUTO   = 1
+	SYNC_MODE_MANUAL = 2
+)
+
 type Script interface {
 	Search(search *repository.SearchList, page request.Pages) ([]*entity.Script, int64, error)
 	UserScript(uid int64, self bool, page request.Pages) ([]*entity.Script, int64, error)
@@ -30,6 +35,7 @@ type Script interface {
 	UpdateScript(uid, id int64, req *request.UpdateScript) error
 	CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
 	GetCodeDefinition(codeid int64) (*entity.LibDefinition, error)
+	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 }
 
 type script struct {
@@ -341,4 +347,8 @@ func (s *script) GetCodeDefinition(codeid int64) (*entity.LibDefinition, error) 
 		return nil, errs.ErrCodeDefinitionNotFound
 	}
 	return ret, nil
+}
+
+func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
+	return s.scriptRepo.FindSyncPrefix(uid, prefix)
 }

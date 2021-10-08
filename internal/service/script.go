@@ -34,6 +34,7 @@ type Script interface {
 	UpdateScript(uid, id int64, req *request2.UpdateScript) error
 	UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error
 	SyncScript(uid, id int64) error
+	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 }
 
 type script struct {
@@ -240,7 +241,13 @@ func (s *script) UpdateScript(uid, id int64, req *request2.UpdateScript) error {
 		Name:     "update-script",
 		Interval: 5,
 	}, func() error {
-		return s.scriptSvc.UpdateScript(uid, id, req)
+		if err := s.scriptSvc.UpdateScript(uid, id, req); err != nil {
+			return err
+		}
+		if req.SyncMode == service2.SYNC_MODE_MANUAL {
+			return s.SyncScript(uid, id)
+		}
+		return nil
 	})
 }
 
@@ -315,4 +322,8 @@ func (s *script) requestSyncUrl(syncUrl string) (string, error) {
 	}
 	defer resp.Body.Close()
 	return string(b), nil
+}
+
+func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
+	return s.scriptSvc.FindSyncPrefix(uid, prefix)
 }

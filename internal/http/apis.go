@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,7 @@ import (
 	service5 "github.com/scriptscat/scriptweb/internal/service"
 	"github.com/scriptscat/scriptweb/pkg/middleware/token"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
+	"github.com/scriptscat/scriptweb/pkg/utils"
 	pkgValidator "github.com/scriptscat/scriptweb/pkg/utils/validator"
 )
 
@@ -82,10 +84,18 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 }
 
 var tokenAuth func(enforce bool) func(ctx *gin.Context)
-var userAuth func() func(ctx *gin.Context)
+var userAuth func(enforce bool) func(ctx *gin.Context)
 
 func StartApi() error {
+	disableAuth := os.Getenv("DISABLE_AUTH") == "true"
 	tokenAuth = func(enforce bool) func(ctx *gin.Context) {
+		if disableAuth {
+			return token.Middleware(db.Cache, enforce, token.WithExpired(TokenAuthMaxAge), token.WithDebug(gin.H{
+				"uid":      "1",
+				"username": "admin",
+				"token":    utils.RandString(16, 1),
+			}))
+		}
 		return token.Middleware(db.Cache, enforce, token.WithExpired(TokenAuthMaxAge))
 	}
 
@@ -102,15 +112,27 @@ func StartApi() error {
 		rateSvc,
 	)
 
-	enforceAuth := token.Middleware(db.Cache, true, token.WithExpired(TokenAuthMaxAge))
-	userAuth = func() func(ctx *gin.Context) {
-		return func(ctx *gin.Context) {
-			enforceAuth(ctx)
-			if !ctx.IsAborted() {
-				uid, _ := userId(ctx)
-				if _, err := userSvc.UserInfo(uid); err != nil {
-					handelResp(ctx, err)
-					ctx.Abort()
+	if disableAuth {
+		userAuth = func(enforce bool) func(ctx *gin.Context) {
+			auth := tokenAuth(enforce)
+			return func(ctx *gin.Context) {
+				auth(ctx)
+			}
+		}
+	} else {
+		userAuth = func(enforce bool) func(ctx *gin.Context) {
+			authHandler := tokenAuth(enforce)
+			return func(ctx *gin.Context) {
+				authHandler(ctx)
+				if !ctx.IsAborted() {
+					uid, _ := userId(ctx)
+					if uid != 0 {
+						// NOTE:用户信息可以写入context
+						if _, err := userSvc.UserInfo(uid); err != nil {
+							handelResp(ctx, err)
+							ctx.Abort()
+						}
+					}
 				}
 			}
 		}
@@ -121,7 +143,7 @@ func StartApi() error {
 
 	r := gin.Default()
 	Registry(ctx, r,
-		NewScript(script, statis),
+		NewScript(script, statis, userSvc),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		userApi,

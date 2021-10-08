@@ -98,9 +98,6 @@ func ToScript(user *User, script *entity2.Script, code *ScriptCode) *Script {
 		Createtime:  script.Createtime,
 		Updatetime:  script.Updatetime,
 	}
-	if user != nil {
-		ret.IsManager = user.UID == script.UserId
-	}
 	return ret
 }
 
