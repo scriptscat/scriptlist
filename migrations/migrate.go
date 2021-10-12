@@ -82,7 +82,7 @@ func Migrate() error {
 				// 处理meta_json和domain信息
 				go func() {
 					if err := DealMetaInfo(); err != nil {
-						glog.Fatal("deal meta info: %v", err)
+						glog.Fatalf("deal meta info: %v", err)
 					}
 				}()
 				return nil

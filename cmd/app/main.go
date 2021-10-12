@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/scriptscat/scriptweb/internal/app"
@@ -8,7 +9,10 @@ import (
 )
 
 func main() {
-	if err := config.Init("config.yaml"); err != nil {
+	cfg := "config.yaml"
+	flag.StringVar(&cfg, "config", cfg, "配置文件")
+	flag.Parse()
+	if err := config.Init(cfg); err != nil {
 		log.Fatal("config error: ", err)
 	}
 	app.Run()

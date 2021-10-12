@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -237,7 +238,15 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 			if ok, err := s.codeRepo.FindByVersion(script.ID, code.Version); err != nil {
 				return err
 			} else if ok != nil {
-				return errs.ErrScriptCodeExist
+				//NOTE: 是不是应该优化一下对比功能
+				if strings.ReplaceAll(ok.Code, "\r\n", "\n") != strings.ReplaceAll(code.Code, "\r\n", "\n") {
+					return errs.ErrScriptCodeExist
+				}
+				code = ok
+				if req.Changelog != "" {
+					code.Changelog = req.Changelog
+					code.Updatetime = time.Now().Unix()
+				}
 			}
 		}
 		if err := db.Db.Transaction(func(tx *gorm.DB) error {
