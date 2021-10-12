@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -111,20 +112,23 @@ func (s *Script) webhook(c *gin.Context) {
 			if _, err := hash.Write(b); err != nil {
 				return err
 			}
-			if fmt.Sprintf(" sha256=%x", hash.Sum(nil)) != c.GetHeader("X-Hub-Signature-256") {
+			if fmt.Sprintf("sha256=%x", hash.Sum(nil)) != c.GetHeader("X-Hub-Signature-256") {
 				return errs.NewBadRequestError(1000, "密钥校验错误")
 			}
 			// 处理github
 			data := &githubWebhook{}
-			if err := c.ShouldBindJSON(data); err != nil {
+			if err := json.Unmarshal(b, data); err != nil {
 				return err
 			}
-			if data.Hook.Type != "repository" {
+			if data.Hook.Type != "Repository" {
 				return errs.NewBadRequestError(10001, "只能识别data.hook.type=repository")
 			}
 			list, err := s.svc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 			if err != nil {
-				return nil
+				return gin.H{
+					"success": nil,
+					"error":   nil,
+				}
 			}
 			success := []gin.H{}
 			error := []gin.H{}

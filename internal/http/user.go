@@ -144,7 +144,7 @@ func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.GET("/scripts/:uid", u.scripts)
 	rgg.GET("/avatar/:uid", u.avatar)
 
-	rgg = rg.Group("/webhook/:uid", userAuth(true))
+	rgg = rg.Group("/webhook", userAuth(true))
 	rgg.GET("", u.getwebhook)
 	rgg.PUT("", u.regenwebhook)
 }

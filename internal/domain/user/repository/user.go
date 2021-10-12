@@ -67,7 +67,7 @@ func (u *user) SetUserToken(id int64, token string) error {
 		return err
 	}
 	if old != "" {
-		if err := db.Redis.Del(context.Background(), u.tokenKey(old)); err != nil {
+		if err := db.Redis.Del(context.Background(), u.tokenKey(old)).Err(); err != nil {
 			logrus.Errorf("setusertoken delete %s: %v", token, err)
 		}
 	}

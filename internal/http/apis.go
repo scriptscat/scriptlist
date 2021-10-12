@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	repository5 "github.com/scriptscat/scriptweb/internal/domain/resource/repository"
 	service6 "github.com/scriptscat/scriptweb/internal/domain/resource/service"
@@ -30,6 +29,7 @@ import (
 	"github.com/scriptscat/scriptweb/pkg/oauth"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 	pkgValidator "github.com/scriptscat/scriptweb/pkg/utils/validator"
+	"github.com/sirupsen/logrus"
 )
 
 type Service interface {
@@ -65,7 +65,7 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 		})
 	case error:
 		err := resp.(error)
-		glog.Errorf("%s - %s: %v", ctx.Request.RequestURI, ctx.ClientIP(), err)
+		logrus.Errorf("%s - %s: %v", ctx.Request.RequestURI, ctx.ClientIP(), err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})
