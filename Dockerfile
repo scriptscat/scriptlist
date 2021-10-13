@@ -1,4 +1,4 @@
-FROM busybox:1.33.1-glibc
+FROM ubuntu:20.04
 
 WORKDIR /www
 
