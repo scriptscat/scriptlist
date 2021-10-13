@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -11,7 +12,11 @@ func HttpPost(url, data string, header http.Header) ([]byte, error) {
 
 	payload := strings.NewReader(data)
 
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
 		return nil, err
