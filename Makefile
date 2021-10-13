@@ -1,6 +1,6 @@
 
 linux:
-	GOOS=linux go build -o scriptweb ./cmd/app/main.go
+	CGO_ENABLE=0 GOOS=linux go build -o scriptlist ./cmd/app
 
 test:
 	go test -v ./...
