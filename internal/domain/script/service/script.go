@@ -191,6 +191,7 @@ func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) 
 }
 
 func (s *script) createScriptCode(uid int64, script *entity.Script, req *request.CreateScript) error {
+	script.Content = req.Content
 	script.Public = req.Public
 	script.Unwell = req.Unwell
 	script.Updatetime = time.Now().Unix()
