@@ -222,7 +222,10 @@ func (s *Script) list(ctx *gin.Context) {
 		categorys := make([]int64, 0)
 		for _, v := range strings.Split(ctx.Query("category"), ",") {
 			if v != "" {
-				categorys = append(categorys, utils.StringToInt64(v))
+				id := utils.StringToInt64(v)
+				if id > 0 {
+					categorys = append(categorys, id)
+				}
 			}
 		}
 		list, err := s.svc.GetScriptList(&repository.SearchList{
