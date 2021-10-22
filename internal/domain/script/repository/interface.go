@@ -18,6 +18,7 @@ type Script interface {
 	Save(script *entity.Script) error
 	List(search *SearchList, page request.Pages) ([]*entity.Script, int64, error)
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
+	FindSyncScript(page request.Pages) ([]*entity.Script, error)
 }
 
 type ScriptCode interface {

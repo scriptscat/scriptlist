@@ -88,11 +88,11 @@ func (s *script) List(search *SearchList, page request.Pages) ([]*entity.Script,
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
 	}
-	if page == request.AllPage {
-		if err := find.Select(scriptTbName + ".*").Scan(&list).Error; err != nil {
-			return nil, 0, err
-		}
-	} else if err := find.Select(scriptTbName + ".*").Limit(page.Size()).Offset((page.Page() - 1) * page.Size()).Scan(&list).Error; err != nil {
+	find = find.Select(scriptTbName + ".*")
+	if page != request.AllPage {
+		find = find.Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
+	}
+	if err := find.Scan(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, num, nil
@@ -101,6 +101,18 @@ func (s *script) List(search *SearchList, page request.Pages) ([]*entity.Script,
 func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
 	ret := make([]*entity.Script, 0)
 	if err := db.Db.Model(&entity.Script{}).Where("user_id=? and sync_url=?", uid, prefix+"%").Scan(&ret).Error; err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (s *script) FindSyncScript(page request.Pages) ([]*entity.Script, error) {
+	ret := make([]*entity.Script, 0)
+	find := db.Db.Model(&entity.Script{}).Where("sync_url!=null or sync_url!=''")
+	if page != request.AllPage {
+		find = find.Limit(page.Size()).Offset(page.Page() - 1*page.Size())
+	}
+	if err := find.Scan(&ret).Error; err != nil {
 		return nil, err
 	}
 	return ret, nil

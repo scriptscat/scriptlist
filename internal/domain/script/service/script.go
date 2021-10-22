@@ -37,6 +37,7 @@ type Script interface {
 	CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
 	GetCodeDefinition(codeid int64) (*entity.LibDefinition, error)
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
+	FindSyncScript(page request.Pages) ([]*entity.Script, error)
 }
 
 type script struct {
@@ -361,4 +362,8 @@ func (s *script) GetCodeDefinition(codeid int64) (*entity.LibDefinition, error) 
 
 func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
 	return s.scriptRepo.FindSyncPrefix(uid, prefix)
+}
+
+func (s *script) FindSyncScript(page request.Pages) ([]*entity.Script, error) {
+	return s.scriptRepo.FindSyncScript(page)
 }

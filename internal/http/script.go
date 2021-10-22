@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
@@ -22,6 +23,7 @@ import (
 	service2 "github.com/scriptscat/scriptweb/internal/service"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 	"github.com/scriptscat/scriptweb/pkg/utils/diff"
+	"github.com/sirupsen/logrus"
 )
 
 type Script struct {
@@ -84,6 +86,25 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 
 	r.Any("/api/v1/webhook/:uid", s.webhook)
 
+	// crontab 定时检查更新
+	c := cron.New(cron.WithSeconds())
+	c.AddFunc("* * */6 * * *", func() {
+		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
+		list, err := s.svc.FindSyncScript(request2.AllPage)
+		if err != nil {
+			logrus.Errorf("Timing synchronization find script list: %v", err)
+			return
+		}
+		for _, v := range list {
+			if v.SyncMode != service3.SYNC_MODE_AUTO {
+				continue
+			}
+			if err := s.svc.SyncScript(v.UserId, v.ID); err != nil {
+				logrus.Errorf("Timing synchronization %v: %v", v.ID, err)
+			}
+		}
+	})
+	c.Start()
 }
 
 type githubWebhook struct {
@@ -120,8 +141,8 @@ func (s *Script) webhook(c *gin.Context) {
 			if err := json.Unmarshal(b, data); err != nil {
 				return err
 			}
-			if data.Hook.Type != "Repository" {
-				return errs.NewBadRequestError(10001, "只能识别data.hook.type=repository")
+			if data.Repository.FullName == "" {
+				return errs.NewBadRequestError(1001, "仓库地址错误")
 			}
 			list, err := s.svc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 			if err != nil {
@@ -130,8 +151,8 @@ func (s *Script) webhook(c *gin.Context) {
 					"error":   nil,
 				}
 			}
-			success := []gin.H{}
-			error := []gin.H{}
+			var success []gin.H
+			var error []gin.H
 			for _, v := range list {
 				if v.SyncMode != service3.SYNC_MODE_AUTO {
 					continue

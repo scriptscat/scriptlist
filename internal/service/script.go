@@ -35,6 +35,7 @@ type Script interface {
 	UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error
 	SyncScript(uid, id int64) error
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
+	FindSyncScript(page request2.Pages) ([]*entity.Script, error)
 }
 
 type script struct {
@@ -326,4 +327,8 @@ func (s *script) requestSyncUrl(syncUrl string) (string, error) {
 
 func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
 	return s.scriptSvc.FindSyncPrefix(uid, prefix)
+}
+
+func (s *script) FindSyncScript(page request2.Pages) ([]*entity.Script, error) {
+	return s.scriptSvc.FindSyncScript(page)
 }
