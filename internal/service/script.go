@@ -287,7 +287,7 @@ func (s *script) SyncScript(uid, id int64) error {
 			return err
 		}
 		if script.ContentUrl != "" {
-			req.Content, err = s.requestSyncUrl(script.Content)
+			req.Content, err = s.requestSyncUrl(script.ContentUrl)
 			if err != nil {
 				return err
 			}

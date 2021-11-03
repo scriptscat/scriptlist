@@ -146,11 +146,21 @@ func (s *Script) webhook(c *gin.Context) {
 			}
 			list, err := s.svc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 			if err != nil {
+				logrus.Errorf("Github hook FindSyncPrefix err: %v", err)
 				return gin.H{
 					"success": nil,
 					"error":   nil,
 				}
 			}
+			listtmp, err := s.svc.FindSyncPrefix(uid, "https://github.com/"+data.Repository.FullName)
+			if err != nil {
+				logrus.Errorf("Github hook FindSyncPrefix err: %v", err)
+				return gin.H{
+					"success": nil,
+					"error":   nil,
+				}
+			}
+			list = append(list, listtmp...)
 			var success []gin.H
 			var error []gin.H
 			for _, v := range list {
@@ -158,6 +168,7 @@ func (s *Script) webhook(c *gin.Context) {
 					continue
 				}
 				if err := s.svc.SyncScript(uid, v.ID); err != nil {
+					logrus.Errorf("Github hook SyncScript: %v", err)
 					error = append(error, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
 				} else {
 					success = append(success, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
