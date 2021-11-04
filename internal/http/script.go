@@ -346,21 +346,29 @@ func (s *Script) putScore(ctx *gin.Context) {
 		if !exist {
 			info, err := s.scriptSvc.GetScript(id, "", false)
 			if err != nil {
-				logrus.Errorf("getscript: %v", err)
+				logrus.Errorf("GetScript: %v", err)
+				return nil
+			}
+			cfg, err := s.userSvc.GetUserConfig(info.UserId)
+			if err != nil {
+				logrus.Errorf("GetUserConfig: %v", err)
+				return nil
+			}
+			if !cfg.Notify["score"].(bool) {
+				return nil
+			}
+			sendUser, err := s.userSvc.SelfInfo(info.UserId)
+			if err != nil {
+				logrus.Errorf("SelfInfo: %v", err)
 			} else {
-				sendUser, err := s.userSvc.SelfInfo(info.UserId)
-				if err != nil {
-					logrus.Errorf("selfinfo: %v", err)
-				} else {
-					if err := s.notifySvc.SendEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
-						fmt.Sprintf("您的脚本【%s】有新的评分:<br/>%s:<br/>%s<br/><br/><a href='%s'>点我查看</a>或者复制链接:%s",
-							info.Name, user.Username, score.Message,
-							config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",
-							config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",
-						),
-						"text/html"); err != nil {
-						logrus.Errorf("sendemail: %v", err)
-					}
+				if err := s.notifySvc.SendEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
+					fmt.Sprintf("您的脚本【%s】有新的评分:<br/>%s:<br/>%s<br/><br/><a href='%s'>点我查看</a>或者复制链接:%s",
+						info.Name, user.Username, score.Message,
+						config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",
+						config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",
+					),
+					"text/html"); err != nil {
+					logrus.Errorf("sendemail: %v", err)
 				}
 			}
 		}
