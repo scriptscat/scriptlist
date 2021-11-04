@@ -47,7 +47,7 @@ func (l *Login) oauth(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", true, true)
 		if uri := ctx.Query("redirect_uri"); uri != "" {
 			ctx.Redirect(http.StatusFound, uri)
 			return nil

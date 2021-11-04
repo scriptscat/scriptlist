@@ -7,7 +7,7 @@ import (
 )
 
 type Statistics interface {
-	Record(scriptId, scriptCodeId, user int64, ip, ua string, download bool) error
+	Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error
 }
 
 type statistics struct {
@@ -18,11 +18,11 @@ type statistics struct {
 
 type recordParam struct {
 	scriptId, scriptCodeId, user int64
-	ip, ua                       string
+	ip, ua, statisticsToken      string
 	download                     bool
 }
 
-func NewStatistical(statisSvc service.Statistics, serviceSvc service2.Script) Statistics {
+func NewStatistics(statisSvc service.Statistics, serviceSvc service2.Script) Statistics {
 	ret := &statistics{
 		Statistics: statisSvc,
 		serviceSvc: serviceSvc,
@@ -35,7 +35,7 @@ func NewStatistical(statisSvc service.Statistics, serviceSvc service2.Script) St
 func (s *statistics) handlerQueue() {
 	for {
 		record := <-s.queue
-		if err := s.Statistics.Record(record.scriptId, record.scriptCodeId, record.user, record.ip, record.ua, record.download); err != nil {
+		if err := s.Statistics.Record(record.scriptId, record.scriptCodeId, record.user, record.ip, record.ua, record.statisticsToken, record.download); err != nil {
 			glog.Warningf("statis record error: %v", err)
 		}
 		if record.download {
@@ -50,14 +50,15 @@ func (s *statistics) handlerQueue() {
 	}
 }
 
-func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua string, download bool) error {
+func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error {
 	s.queue <- &recordParam{
-		scriptId:     scriptId,
-		scriptCodeId: scriptCodeId,
-		user:         user,
-		ip:           ip,
-		ua:           ua,
-		download:     download,
+		scriptId:        scriptId,
+		scriptCodeId:    scriptCodeId,
+		user:            user,
+		ip:              ip,
+		ua:              ua,
+		statisticsToken: statisticsToken,
+		download:        download,
 	}
 	return nil
 }

@@ -50,7 +50,7 @@ func (u *User) info(ctx *gin.Context) {
 				if err != nil {
 					return err
 				}
-				ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", false, true)
+				ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", true, true)
 				resp["token"] = tokenString
 			}
 			if uid == "" {

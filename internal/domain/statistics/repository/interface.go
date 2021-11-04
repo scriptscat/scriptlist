@@ -19,6 +19,6 @@ type Statistics interface {
 	TotalDownload(scriptId int64) (int64, error)
 	DayUpdate(scriptId int64, day time.Time) (int64, error)
 	TotalUpdate(scriptId int64) (int64, error)
-	DownloadCount(scriptId, starttime, endtime int64) (int64, error)
-	UpdateCount(scriptId, starttime, endtime int64) (int64, error)
+	DealDay() error
+	DealRealtime() error
 }

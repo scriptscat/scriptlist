@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/robfig/cron/v3"
 	repository2 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
 	service4 "github.com/scriptscat/scriptweb/internal/domain/safe/service"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
@@ -17,6 +18,7 @@ import (
 	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
 	respond2 "github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
+	"github.com/scriptscat/scriptweb/migrations"
 )
 
 type Script interface {
@@ -46,7 +48,11 @@ type script struct {
 	rateSvc   service4.Rate
 }
 
-func NewScript(userSvc service.User, scriptSvc service2.Script, scoreSvc service2.Score, statisSvc service3.Statistics, rateSvc service4.Rate) Script {
+func NewScript(userSvc service.User, scriptSvc service2.Script, scoreSvc service2.Score, statisSvc service3.Statistics, rateSvc service4.Rate, c *cron.Cron) Script {
+	go migrations.DealMetaInfo()
+	c.AddFunc("0 0/20 * * * *", func() {
+		migrations.DealMetaInfo()
+	})
 	return &script{
 		userSvc:   userSvc,
 		scriptSvc: scriptSvc,

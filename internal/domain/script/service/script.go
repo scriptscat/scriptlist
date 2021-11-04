@@ -7,14 +7,12 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	"github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/migrations"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -49,11 +47,7 @@ type script struct {
 	cronCategory *entity.ScriptCategoryList
 }
 
-func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics, c *cron.Cron) Script {
-	go migrations.DealMetaInfo()
-	c.AddFunc("0/20 * * * *", func() {
-		migrations.DealMetaInfo()
-	})
+func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics) Script {
 	ret := &script{
 		scriptRepo:   scriptRepo,
 		codeRepo:     codeRepo,

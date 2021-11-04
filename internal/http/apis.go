@@ -104,14 +104,17 @@ func StartApi() error {
 	binding.Validator = pkgValidator.NewValidator()
 	c := cron.New()
 	userSvc := service2.NewUser(repository.NewUser())
-	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics(), c)
+	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics())
+	statisSvc := service4.NewStatistics(repository2.NewStatistics())
+	scoreSvc := service3.NewScore(repository3.NewScore())
 	rateSvc := service.NewRate(repository4.NewRate())
 	notifySvc := service7.NewSender(config.AppConfig.Email)
 	script := service5.NewScript(userSvc,
 		scriptSvc,
-		service3.NewScore(repository3.NewScore()),
-		service4.NewStatistics(repository2.NewStatistics()),
+		scoreSvc,
+		statisSvc,
 		rateSvc,
+		c,
 	)
 
 	userAuth = func(enforce bool) func(ctx *gin.Context) {
@@ -132,7 +135,7 @@ func StartApi() error {
 		}
 	}
 
-	statis := service5.NewStatistical(service4.NewStatistics(repository2.NewStatistics()), scriptSvc)
+	statis := service5.NewStatistics(statisSvc, scriptSvc)
 	userApi := NewUser(userSvc, script)
 
 	r := gin.Default()
@@ -140,6 +143,7 @@ func StartApi() error {
 		NewScript(script, statis, userSvc, notifySvc),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
+		NewStatistics(statisSvc, c),
 		userApi,
 	)
 	c.Start()

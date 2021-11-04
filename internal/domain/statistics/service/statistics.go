@@ -8,11 +8,13 @@ import (
 )
 
 type Statistics interface {
-	Record(scriptId, scriptCodeId, user int64, ip, ua string, download bool) error
+	Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error
 	TodayDownload(scriptId int64) (int64, error)
 	TotalDownload(scriptId int64) (int64, error)
 	TodayUpdate(scriptId int64) (int64, error)
 	TotalUpdate(scriptId int64) (int64, error)
+	DealDay() error
+	DealRealtime() error
 }
 
 type statistics struct {
@@ -25,14 +27,15 @@ func NewStatistics(repo repository.Statistics) Statistics {
 	}
 }
 
-func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua string, download bool) error {
+func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error {
 	item := &entity.StatisticsDownload{
-		UserId:       user,
-		Ip:           ip,
-		ScriptId:     scriptId,
-		ScriptCodeId: scriptCodeId,
-		Ua:           ua,
-		Createtime:   time.Now().Unix(),
+		UserId:          user,
+		Ip:              ip,
+		ScriptId:        scriptId,
+		ScriptCodeId:    scriptCodeId,
+		Ua:              ua,
+		StatisticsToken: statisticsToken,
+		Createtime:      time.Now().Unix(),
 	}
 	if download {
 		return s.repo.Download(item)
@@ -54,4 +57,12 @@ func (s *statistics) TodayUpdate(scriptId int64) (int64, error) {
 
 func (s *statistics) TotalUpdate(scriptId int64) (int64, error) {
 	return s.repo.TotalUpdate(scriptId)
+}
+
+func (s *statistics) DealDay() error {
+	return s.repo.DealDay()
+}
+
+func (s *statistics) DealRealtime() error {
+	return s.repo.DealRealtime()
 }

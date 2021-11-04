@@ -201,6 +201,15 @@ func (s *Script) parseScriptInfo(url string) (int64, string) {
 	return id, version
 }
 
+func (s *Script) getStatisticsToken(ctx *gin.Context) string {
+	stk, _ := ctx.Cookie("_statistics")
+	if stk == "" {
+		stk = utils.RandString(32, 2)
+		ctx.SetCookie("_statistics", stk, 3600*24*30, "/", "", true, true)
+	}
+	return stk
+}
+
 func (s *Script) downloadScript(ctx *gin.Context) {
 	uid, _ := userId(ctx)
 	id, version := s.parseScriptInfo(ctx.Request.RequestURI)
@@ -220,9 +229,10 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
+	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, s.getStatisticsToken(ctx), true)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Code)
-	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, true)
+
 }
 
 func (s *Script) getScriptMeta(ctx *gin.Context) {
@@ -244,9 +254,9 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
+	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, s.getStatisticsToken(ctx), false)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Meta)
-	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, false)
 }
 
 func (s *Script) list(ctx *gin.Context) {
