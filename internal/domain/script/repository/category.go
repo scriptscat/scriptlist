@@ -26,7 +26,7 @@ func NewTxCategory(db *gorm.DB) Category {
 
 func (c *category) List() ([]*entity.ScriptCategoryList, error) {
 	ret := make([]*entity.ScriptCategoryList, 0)
-	if err := c.db.Model(&entity.ScriptCategoryList{}).Scan(&ret).Error; err != nil {
+	if err := c.db.Model(&entity.ScriptCategoryList{}).Order("sort").Scan(&ret).Error; err != nil {
 		return nil, err
 	}
 	return ret, nil

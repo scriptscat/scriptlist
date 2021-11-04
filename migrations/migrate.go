@@ -172,6 +172,20 @@ func Migrate() error {
 				}
 				return tx.Migrator().DropTable(&entity.LibDefinition{})
 			},
+		}, {
+			ID: "1636011013",
+			Migrate: func(tx *gorm.DB) error {
+				if err := tx.Migrator().AddColumn(&entity.ScriptCategoryList{}, "sort"); err != nil {
+					return err
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if err := tx.Migrator().DropColumn(&entity.ScriptCategoryList{}, "sort"); err != nil {
+					return err
+				}
+				return nil
+			},
 		},
 	})
 

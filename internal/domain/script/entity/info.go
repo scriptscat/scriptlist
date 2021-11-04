@@ -8,6 +8,7 @@ type ScriptCategoryList struct {
 	Name string `gorm:"column:name;type:varchar(255)" json:"name" form:"name"`
 	// 本分类下脚本数量
 	Num        int64 `gorm:"column:num" json:"num" form:"num"`
+	Sort       int32 `gorm:"column:sort;type:int(10);index:sort" json:"sort" form:"sort"`
 	Createtime int64 `gorm:"column:createtime" json:"createtime" form:"createtime"`
 	Updatetime int64 `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
