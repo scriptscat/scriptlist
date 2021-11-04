@@ -27,7 +27,7 @@ type Script interface {
 	GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error)
 	GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond2.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
-	AddScore(uid int64, id int64, score *request2.Score) error
+	AddScore(uid int64, id int64, score *request2.Score) (bool, error)
 	ScoreList(id int64, page *request2.Pages) (*respond2.List, error)
 	UserScore(uid, id int64) (*entity.ScriptScore, error)
 	CreateScript(uid int64, req *request2.CreateScript) (*entity.Script, error)
@@ -191,9 +191,9 @@ func (s *script) GetCategory() ([]*entity.ScriptCategoryList, error) {
 	return s.scriptSvc.GetCategory()
 }
 
-func (s *script) AddScore(uid int64, id int64, score *request2.Score) error {
+func (s *script) AddScore(uid int64, id int64, score *request2.Score) (bool, error) {
 	if _, err := s.scriptSvc.Info(id); err != nil {
-		return err
+		return false, err
 	}
 	return s.scoreSvc.AddScore(uid, id, score)
 }

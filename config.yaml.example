@@ -2,6 +2,8 @@
 # 启动模式 debug/prod
 mode: debug
 
+frontendUrl: http://localhost:8080/
+
 mysql:
   dsn: root:password@tcp(127.0.0.1:3306)/scriptweb?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
   prefix: cm_
@@ -28,3 +30,10 @@ oauth:
 # 执行的定时任务
 crontab:
   - scripts
+
+email:
+  smtp: smtp.qq.com
+  port: 465
+  user: admin@qq.org
+  password: 123456
+

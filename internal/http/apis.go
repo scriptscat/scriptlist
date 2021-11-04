@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/robfig/cron/v3"
+	service7 "github.com/scriptscat/scriptweb/internal/domain/notify/service"
 	repository5 "github.com/scriptscat/scriptweb/internal/domain/resource/repository"
 	service6 "github.com/scriptscat/scriptweb/internal/domain/resource/service"
 	repository4 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
@@ -105,6 +106,7 @@ func StartApi() error {
 	userSvc := service2.NewUser(repository.NewUser())
 	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics(), c)
 	rateSvc := service.NewRate(repository4.NewRate())
+	notifySvc := service7.NewSender(config.AppConfig.Email)
 	script := service5.NewScript(userSvc,
 		scriptSvc,
 		service3.NewScore(repository3.NewScore()),
@@ -112,26 +114,18 @@ func StartApi() error {
 		rateSvc,
 	)
 
-	if disableAuth {
-		userAuth = func(enforce bool) func(ctx *gin.Context) {
-			auth := tokenAuth(enforce)
-			return func(ctx *gin.Context) {
-				auth(ctx)
-			}
-		}
-	} else {
-		userAuth = func(enforce bool) func(ctx *gin.Context) {
-			authHandler := tokenAuth(enforce)
-			return func(ctx *gin.Context) {
-				authHandler(ctx)
-				if !ctx.IsAborted() {
-					uid, _ := userId(ctx)
-					if uid != 0 {
-						// NOTE:用户信息可以写入context
-						if _, err := userSvc.UserInfo(uid); err != nil {
-							handelResp(ctx, err)
-							ctx.Abort()
-						}
+	userAuth = func(enforce bool) func(ctx *gin.Context) {
+		authHandler := tokenAuth(enforce)
+		return func(ctx *gin.Context) {
+			authHandler(ctx)
+			if !ctx.IsAborted() {
+				if uid, ok := userId(ctx); ok {
+					// NOTE:用户信息可以写入context
+					if user, err := userSvc.UserInfo(uid); err != nil {
+						handelResp(ctx, err)
+						ctx.Abort()
+					} else {
+						ctx.Set(SelfInfo, user)
 					}
 				}
 			}
@@ -143,7 +137,7 @@ func StartApi() error {
 
 	r := gin.Default()
 	Registry(ctx, r,
-		NewScript(script, statis, userSvc),
+		NewScript(script, statis, userSvc, notifySvc),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		userApi,

@@ -13,12 +13,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
+	service4 "github.com/scriptscat/scriptweb/internal/domain/notify/service"
 	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
 	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
 	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
 	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
+	"github.com/scriptscat/scriptweb/internal/pkg/config"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptweb/internal/service"
 	"github.com/scriptscat/scriptweb/pkg/utils"
@@ -27,16 +29,18 @@ import (
 )
 
 type Script struct {
-	svc       service2.Script
+	scriptSvc service2.Script
 	statisSvc service2.Statistics
 	userSvc   service.User
+	notifySvc service4.Sender
 }
 
-func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User) *Script {
+func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender) *Script {
 	return &Script{
-		svc:       svc,
+		scriptSvc: svc,
 		statisSvc: statisSvc,
 		userSvc:   userSvc,
+		notifySvc: notify,
 	}
 }
 
@@ -67,7 +71,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.PUT("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
-	rgg = rg.Group("/:id", tokenAuth)
+	rgg = rg.Group("/:id", userAuth(false))
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
 	rgg.GET("/diff/:v1/:v2", s.diff)
@@ -88,9 +92,9 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 
 	// crontab 定时检查更新
 	c := cron.New(cron.WithSeconds())
-	c.AddFunc("* * */6 * * *", func() {
+	c.AddFunc("0 0 */6 * * *", func() {
 		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
-		list, err := s.svc.FindSyncScript(request2.AllPage)
+		list, err := s.scriptSvc.FindSyncScript(request2.AllPage)
 		if err != nil {
 			logrus.Errorf("Timing synchronization find script list: %v", err)
 			return
@@ -99,7 +103,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 			if v.SyncMode != service3.SYNC_MODE_AUTO {
 				continue
 			}
-			if err := s.svc.SyncScript(v.UserId, v.ID); err != nil {
+			if err := s.scriptSvc.SyncScript(v.UserId, v.ID); err != nil {
 				logrus.Errorf("Timing synchronization %v: %v", v.ID, err)
 			}
 		}
@@ -144,7 +148,7 @@ func (s *Script) webhook(c *gin.Context) {
 			if data.Repository.FullName == "" {
 				return errs.NewBadRequestError(1001, "仓库地址错误")
 			}
-			list, err := s.svc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
+			list, err := s.scriptSvc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 			if err != nil {
 				logrus.Errorf("Github hook FindSyncPrefix err: %v", err)
 				return gin.H{
@@ -152,7 +156,7 @@ func (s *Script) webhook(c *gin.Context) {
 					"error":   nil,
 				}
 			}
-			listtmp, err := s.svc.FindSyncPrefix(uid, "https://github.com/"+data.Repository.FullName)
+			listtmp, err := s.scriptSvc.FindSyncPrefix(uid, "https://github.com/"+data.Repository.FullName)
 			if err != nil {
 				logrus.Errorf("Github hook FindSyncPrefix err: %v", err)
 				return gin.H{
@@ -167,7 +171,7 @@ func (s *Script) webhook(c *gin.Context) {
 				if v.SyncMode != service3.SYNC_MODE_AUTO {
 					continue
 				}
-				if err := s.svc.SyncScript(uid, v.ID); err != nil {
+				if err := s.scriptSvc.SyncScript(uid, v.ID); err != nil {
 					logrus.Errorf("Github hook SyncScript: %v", err)
 					error = append(error, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
 				} else {
@@ -208,9 +212,9 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 	var code *respond.ScriptCode
 	var err error
 	if version != "" {
-		code, err = s.svc.GetScriptCodeByVersion(id, version, true)
+		code, err = s.scriptSvc.GetScriptCodeByVersion(id, version, true)
 	} else {
-		code, err = s.svc.GetLatestScriptCode(id, true)
+		code, err = s.scriptSvc.GetLatestScriptCode(id, true)
 	}
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
@@ -232,9 +236,9 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 	var code *respond.ScriptCode
 	var err error
 	if version != "" {
-		code, err = s.svc.GetScriptCodeByVersion(id, version, false)
+		code, err = s.scriptSvc.GetScriptCodeByVersion(id, version, false)
 	} else {
-		code, err = s.svc.GetLatestScriptCode(id, false)
+		code, err = s.scriptSvc.GetLatestScriptCode(id, false)
 	}
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
@@ -260,7 +264,7 @@ func (s *Script) list(ctx *gin.Context) {
 				}
 			}
 		}
-		list, err := s.svc.GetScriptList(&repository.SearchList{
+		list, err := s.scriptSvc.GetScriptList(&repository.SearchList{
 			Category: categorys,
 			Domain:   ctx.Query("domain"),
 			Sort:     ctx.Query("sort"),
@@ -279,7 +283,7 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 		handle(ctx, func() interface{} {
 			uid, _ := userId(ctx)
 			id := utils.StringToInt64(ctx.Param("id"))
-			ret, err := s.svc.GetScript(id, "", withcode)
+			ret, err := s.scriptSvc.GetScript(id, "", withcode)
 			if err != nil {
 				return err
 			}
@@ -292,7 +296,7 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 func (s *Script) versions(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("id"))
-		list, err := s.svc.GetScriptCodeList(id)
+		list, err := s.scriptSvc.GetScriptCodeList(id)
 		if err != nil {
 			return err
 		}
@@ -305,7 +309,7 @@ func (s *Script) versionsGet(withcode bool) gin.HandlerFunc {
 		handle(ctx, func() interface{} {
 			id := utils.StringToInt64(ctx.Param("id"))
 			version := ctx.Param("version")
-			code, err := s.svc.GetScript(id, version, withcode)
+			code, err := s.scriptSvc.GetScript(id, version, withcode)
 			if err != nil {
 				return err
 			}
@@ -316,7 +320,7 @@ func (s *Script) versionsGet(withcode bool) gin.HandlerFunc {
 
 func (s *Script) category(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		list, err := s.svc.GetCategory()
+		list, err := s.scriptSvc.GetCategory()
 		if err != nil {
 			return err
 		}
@@ -326,7 +330,7 @@ func (s *Script) category(ctx *gin.Context) {
 
 func (s *Script) putScore(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		uid, ok := userId(ctx)
+		user, ok := selfinfo(ctx)
 		if !ok {
 			return errs.ErrNotLogin
 		}
@@ -335,7 +339,32 @@ func (s *Script) putScore(ctx *gin.Context) {
 		if err := ctx.ShouldBind(score); err != nil {
 			return err
 		}
-		return s.svc.AddScore(uid, id, score)
+		exist, err := s.scriptSvc.AddScore(user.UID, id, score)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			info, err := s.scriptSvc.GetScript(id, "", false)
+			if err != nil {
+				logrus.Errorf("getscript: %v", err)
+			} else {
+				sendUser, err := s.userSvc.SelfInfo(info.UserId)
+				if err != nil {
+					logrus.Errorf("selfinfo: %v", err)
+				} else {
+					if err := s.notifySvc.SendEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
+						fmt.Sprintf("您的脚本【%s】有新的评分:<br/>%s:<br/>%s<br/><br/><a href='%s'>点我查看</a>或者复制链接:%s",
+							info.Name, user.Username, score.Message,
+							config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",
+							config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",
+						),
+						"text/html"); err != nil {
+						logrus.Errorf("sendemail: %v", err)
+					}
+				}
+			}
+		}
+		return nil
 	})
 }
 
@@ -346,7 +375,7 @@ func (s *Script) scoreList(ctx *gin.Context) {
 		if err := ctx.ShouldBind(page); err != nil {
 			return err
 		}
-		list, err := s.svc.ScoreList(id, page)
+		list, err := s.scriptSvc.ScoreList(id, page)
 		if err != nil {
 			return err
 		}
@@ -361,7 +390,7 @@ func (s *Script) selfScore(ctx *gin.Context) {
 			return errs.ErrNotLogin
 		}
 		id := utils.StringToInt64(ctx.Param("id"))
-		ret, err := s.svc.UserScore(uid, id)
+		ret, err := s.scriptSvc.UserScore(uid, id)
 		if err != nil {
 			return err
 		}
@@ -379,7 +408,7 @@ func (s *Script) add(ctx *gin.Context) {
 		if err := ctx.ShouldBind(script); err != nil {
 			return err
 		}
-		ret, err := s.svc.CreateScript(uid, script)
+		ret, err := s.scriptSvc.CreateScript(uid, script)
 		if err != nil {
 			return err
 		}
@@ -398,7 +427,7 @@ func (s *Script) update(ctx *gin.Context) {
 		if err := ctx.ShouldBind(script); err != nil {
 			return err
 		}
-		return s.svc.UpdateScript(uid, id, script)
+		return s.scriptSvc.UpdateScript(uid, id, script)
 	})
 }
 
@@ -413,7 +442,7 @@ func (s *Script) updatecode(ctx *gin.Context) {
 		if err := ctx.ShouldBind(script); err != nil {
 			return err
 		}
-		return s.svc.UpdateScriptCode(uid, id, script)
+		return s.scriptSvc.UpdateScriptCode(uid, id, script)
 	})
 }
 
@@ -424,7 +453,7 @@ func (s *Script) sync(ctx *gin.Context) {
 		if !ok {
 			return errs.ErrNotLogin
 		}
-		return s.svc.SyncScript(uid, id)
+		return s.scriptSvc.SyncScript(uid, id)
 	})
 }
 
@@ -433,11 +462,11 @@ func (s *Script) diff(c *gin.Context) {
 		id := utils.StringToInt64(c.Param("id"))
 		v1 := c.Param("v1")
 		v2 := c.Param("v2")
-		s1, err := s.svc.GetScriptCodeByVersion(id, v1, true)
+		s1, err := s.scriptSvc.GetScriptCodeByVersion(id, v1, true)
 		if err != nil {
 			return err
 		}
-		s2, err := s.svc.GetScriptCodeByVersion(id, v2, true)
+		s2, err := s.scriptSvc.GetScriptCodeByVersion(id, v2, true)
 		if err != nil {
 			return err
 		}

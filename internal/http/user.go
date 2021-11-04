@@ -177,7 +177,7 @@ func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 
 	rgg = rg.Group("/config", userAuth(true))
 	rgg.GET("", u.config)
-	rgg.PUT("/notify", u.notify)
+	rgg.PUT("/notifySvc", u.notify)
 
 	rgg = rg.Group("/webhook", userAuth(true))
 	rgg.GET("", u.getwebhook)

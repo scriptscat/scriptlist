@@ -9,7 +9,7 @@ import (
 )
 
 type Score interface {
-	AddScore(uid, scriptId int64, msg *request2.Score) error
+	AddScore(uid, scriptId int64, msg *request2.Score) (bool, error)
 	GetAvgScore(scriptId int64) (int64, error)
 	Count(scriptId int64) (int64, error)
 	UserScore(uid int64, scriptId int64) (*entity.ScriptScore, error)
@@ -24,22 +24,28 @@ func NewScore(repo repository.Score) Score {
 	return &score{repo: repo}
 }
 
-func (s *score) AddScore(uid, scriptId int64, msg *request2.Score) error {
+func (s *score) AddScore(uid, scriptId int64, msg *request2.Score) (bool, error) {
 	score, err := s.repo.UserScore(uid, scriptId)
 	if err != nil {
-		return err
+		return false, err
 	}
+	exist := true
 	if score == nil {
 		score = &entity.ScriptScore{
 			UserId:     uid,
 			ScriptId:   scriptId,
 			Createtime: time.Now().Unix(),
 		}
+		exist = false
 	}
 	score.Score = msg.Score
 	score.Message = msg.Message
 	score.Updatetime = time.Now().Unix()
-	return s.repo.Save(score)
+	err = s.repo.Save(score)
+	if err != nil {
+		return false, err
+	}
+	return exist, nil
 }
 
 func (s *score) GetAvgScore(scriptId int64) (int64, error) {

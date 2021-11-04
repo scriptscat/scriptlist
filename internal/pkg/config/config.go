@@ -8,12 +8,14 @@ import (
 )
 
 type Config struct {
-	Mode    string
-	Mysql   MySQL
-	Redis   Redis
-	Cache   Redis
-	OAuth   OAuth `yaml:"oauth"`
-	WebPort int   `yaml:"webPort"`
+	Mode        string
+	FrontendUrl string `yaml:"frontendUrl"`
+	Mysql       MySQL
+	Redis       Redis
+	Cache       Redis
+	OAuth       OAuth `yaml:"oauth"`
+	WebPort     int   `yaml:"webPort"`
+	Email       Email
 }
 
 type Redis struct {
@@ -30,6 +32,13 @@ type MySQL struct {
 type OAuth struct {
 	ClientID     string `yaml:"clientId"`
 	ClientSecret string `yaml:"clientSecret"`
+}
+
+type Email struct {
+	Smtp     string
+	Port     int
+	User     string
+	Password string
 }
 
 var AppConfig Config
