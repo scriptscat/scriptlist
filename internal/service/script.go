@@ -269,37 +269,32 @@ func (s *script) SyncScript(uid, id int64) error {
 	if script.SyncUrl == "" {
 		return errs.NewBadRequestError(1000, "同步链接为空")
 	}
-	return s.rateSvc.Rate(&repository2.RateUserInfo{Uid: uid}, &repository2.RateRule{
-		Name:     "sync-script",
-		Interval: 10,
-	}, func() error {
-		req := &request2.UpdateScriptCode{
-			//Name:        script.Name,
-			//Description: script.Description,
-			Content:    script.Content,
-			Definition: "",
-			Changelog:  "",
-			Public:     script.Public,
-			Unwell:     script.Unwell,
-		}
-		req.Code, err = s.requestSyncUrl(script.SyncUrl)
+	req := &request2.UpdateScriptCode{
+		//Name:        script.Name,
+		//Description: script.Description,
+		Content:    script.Content,
+		Definition: "",
+		Changelog:  "",
+		Public:     script.Public,
+		Unwell:     script.Unwell,
+	}
+	req.Code, err = s.requestSyncUrl(script.SyncUrl)
+	if err != nil {
+		return err
+	}
+	if script.ContentUrl != "" {
+		req.Content, err = s.requestSyncUrl(script.ContentUrl)
 		if err != nil {
 			return err
 		}
-		if script.ContentUrl != "" {
-			req.Content, err = s.requestSyncUrl(script.ContentUrl)
-			if err != nil {
-				return err
-			}
+	}
+	if script.Type == entity.LIBRARY_TYPE && script.DefinitionUrl != "" {
+		req.Definition, err = s.requestSyncUrl(script.DefinitionUrl)
+		if err != nil {
+			return err
 		}
-		if script.Type == entity.LIBRARY_TYPE && script.DefinitionUrl != "" {
-			req.Definition, err = s.requestSyncUrl(script.DefinitionUrl)
-			if err != nil {
-				return err
-			}
-		}
-		return s.scriptSvc.CreateScriptCode(uid, id, req)
-	})
+	}
+	return s.scriptSvc.CreateScriptCode(uid, id, req)
 }
 
 func (s *script) requestSyncUrl(syncUrl string) (string, error) {

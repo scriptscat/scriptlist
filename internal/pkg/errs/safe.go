@@ -7,7 +7,7 @@ import (
 )
 
 func NewOperationTimeToShort(rule *repository.RateRule) error {
-	return NewBadRequestError(4001, fmt.Sprintf("两次操作时间过断,请%d秒后重试", rule.Interval))
+	return NewBadRequestError(4001, fmt.Sprintf("两次操作时间过短,请%d秒后重试", rule.Interval))
 }
 
 func NewOperationMax(rule *repository.RateRule) error {
