@@ -9,12 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptweb/internal/domain/user/service"
 	"github.com/scriptscat/scriptweb/internal/http/dto/request"
+	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptweb/internal/service"
 	"github.com/scriptscat/scriptweb/pkg/middleware/token"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
 	"github.com/scriptscat/scriptweb/pkg/utils"
+	"gorm.io/datatypes"
 )
 
 type User struct {
@@ -36,6 +38,7 @@ func (u *User) info(ctx *gin.Context) {
 		tokenInfo, ok := authtoken(ctx)
 		resp := gin.H{}
 		uid := ctx.Param("uid")
+		self := false
 		if ok {
 			if tokenInfo.Createtime+TokenAutoRegen < time.Now().Unix() {
 				// 刷新token
@@ -52,13 +55,20 @@ func (u *User) info(ctx *gin.Context) {
 			}
 			if uid == "" {
 				uid = tokenInfo.Info["uid"].(string)
+				self = true
 			}
 		}
 		if uid == "" {
 			return errs.NewError(http.StatusBadRequest, 1000, "请指定用户")
 		}
 		dUid := utils.StringToInt64(uid)
-		userinfo, err := u.svc.UserInfo(dUid)
+		var userinfo *respond.User
+		var err error
+		if self {
+			userinfo, err = u.svc.SelfInfo(dUid)
+		} else {
+			userinfo, err = u.svc.UserInfo(dUid)
+		}
 		if err != nil {
 			return err
 		}
@@ -135,6 +145,27 @@ func (u *User) regenwebhook(c *gin.Context) {
 	})
 }
 
+func (u *User) config(c *gin.Context) {
+	handle(c, func() interface{} {
+		uid, _ := userId(c)
+		ret, err := u.svc.GetUserConfig(uid)
+		if err != nil {
+			return err
+		}
+		return ret
+	})
+}
+
+func (u *User) notify(c *gin.Context) {
+	handle(c, func() interface{} {
+		uid, _ := userId(c)
+		notify := datatypes.JSONMap{
+			"score": c.PostForm("score") == "true",
+		}
+		return u.svc.SetUserNotifyConfig(uid, notify)
+	})
+}
+
 func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/user")
 	rgg := rg.Group("", tokenAuth(false))
@@ -143,6 +174,10 @@ func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.GET("/scripts", u.scripts)
 	rgg.GET("/scripts/:uid", u.scripts)
 	rgg.GET("/avatar/:uid", u.avatar)
+
+	rgg = rg.Group("/config", userAuth(true))
+	rgg.GET("", u.config)
+	rgg.PUT("/notify", u.notify)
 
 	rgg = rg.Group("/webhook", userAuth(true))
 	rgg.GET("", u.getwebhook)

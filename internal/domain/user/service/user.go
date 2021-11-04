@@ -1,17 +1,22 @@
 package service
 
 import (
+	entity3 "github.com/scriptscat/scriptweb/internal/domain/user/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/user/repository"
 	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	"github.com/scriptscat/scriptweb/pkg/utils"
+	"gorm.io/datatypes"
 )
 
 type User interface {
 	UserInfo(id int64) (*respond.User, error)
+	SelfInfo(id int64) (*respond.User, error)
 	GetUserWebhook(uid int64) (string, error)
 	RegenWebhook(uid int64) (string, error)
 	GetUserByWebhook(token string) (int64, error)
+	GetUserConfig(uid int64) (*entity3.UserConfig, error)
+	SetUserNotifyConfig(uid int64, notify datatypes.JSONMap) error
 }
 
 type user struct {
@@ -34,6 +39,18 @@ func (u *user) UserInfo(id int64) (*respond.User, error) {
 		return respond.ToUser(user), errs.ErrUserIsBan
 	}
 	return respond.ToUser(user), nil
+}
+
+func (u *user) SelfInfo(id int64) (*respond.User, error) {
+	user, err := u.userRepo.Find(id)
+	if err != nil {
+		return nil, err
+	}
+	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
+		// 禁止访问 禁止发言 等待验证会员 封禁用户组
+		return respond.ToSelfUser(user), errs.ErrUserIsBan
+	}
+	return respond.ToSelfUser(user), nil
 }
 
 func (u *user) GetUserWebhook(uid int64) (string, error) {
@@ -67,4 +84,24 @@ func (u *user) GetUserByWebhook(token string) (int64, error) {
 		return 0, errs.ErrTokenNotFound
 	}
 	return ret, nil
+}
+
+func (u *user) GetUserConfig(uid int64) (*entity3.UserConfig, error) {
+	ret, err := u.userRepo.FindUserConfig(uid)
+	if err != nil {
+		return nil, err
+	}
+	if ret == nil {
+		ret = &entity3.UserConfig{
+			Uid: uid,
+			Notify: map[string]interface{}{
+				"score": true,
+			},
+		}
+	}
+	return ret, nil
+}
+
+func (u *user) SetUserNotifyConfig(uid int64, notify datatypes.JSONMap) error {
+	return u.userRepo.SaveUserNotifyConfig(uid, notify)
 }

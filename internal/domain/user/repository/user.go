@@ -11,6 +11,8 @@ import (
 	"github.com/scriptscat/scriptweb/internal/pkg/db"
 	"github.com/scriptscat/scriptweb/pkg/utils"
 	"github.com/sirupsen/logrus"
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type User interface {
@@ -18,6 +20,8 @@ type User interface {
 	FindUserToken(id int64) (string, error)
 	FindUserByToken(token string) (int64, error)
 	SetUserToken(id int64, token string) error
+	FindUserConfig(id int64) (*entity.UserConfig, error)
+	SaveUserNotifyConfig(id int64, notify datatypes.JSONMap) error
 }
 
 type user struct {
@@ -91,4 +95,33 @@ func (u *user) tokenUserKey(id int64) string {
 
 func (u *user) tokenKey(t string) string {
 	return fmt.Sprintf("user:token:token:%s", t)
+}
+
+func (u *user) FindUserConfig(id int64) (*entity.UserConfig, error) {
+	ret := &entity.UserConfig{}
+	if err := db.Db.First(ret, "uid=?", id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *user) SaveUserNotifyConfig(uid int64, notify datatypes.JSONMap) error {
+	config, err := u.FindUserConfig(uid)
+	if err != nil {
+		return err
+	}
+	if config == nil {
+		config = &entity.UserConfig{
+			Uid:        uid,
+			Notify:     notify,
+			Createtime: time.Now().Unix(),
+		}
+	} else {
+		config.Notify = notify
+		config.Updatetime = time.Now().Unix()
+	}
+	return db.Db.Save(config).Error
 }

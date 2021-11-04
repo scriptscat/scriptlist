@@ -1,5 +1,7 @@
 package entity
 
+import "gorm.io/datatypes"
+
 type User struct {
 	Uid                int64  `gorm:"column:uid" json:"uid" form:"uid"`
 	Email              string `gorm:"column:email" json:"email" form:"email"`
@@ -28,4 +30,12 @@ type User struct {
 
 func (u *User) TableName() string {
 	return "pre_common_member"
+}
+
+type UserConfig struct {
+	ID         int64             `gorm:"column:id" json:"id" form:"id"`
+	Uid        int64             `gorm:"column:uid;index:user_id,unique" json:"uid" form:"uid"`
+	Notify     datatypes.JSONMap `gorm:"column:notify" json:"notify" form:"uid"`
+	Createtime int64             `gorm:"column:createtime" json:"createtime" form:"createtime"`
+	Updatetime int64             `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
