@@ -35,7 +35,7 @@ func (u *User) TableName() string {
 }
 
 func (u *UserArchive) TableName() string {
-	return "pre_common_member"
+	return "pre_common_member_archive"
 }
 
 type UserConfig struct {
