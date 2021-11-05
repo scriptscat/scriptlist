@@ -38,7 +38,18 @@ func (u *user) userkey(id int64) string {
 func (u *user) Find(id int64) (*entity.User, error) {
 	ret := &entity.User{}
 	if err := db.Cache.GetOrSet(u.userkey(id), ret, func() (interface{}, error) {
-		if err := db.Db.Find(ret, "uid=?", id).Error; err != nil {
+		if err := db.Db.First(ret, "uid=?", id).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				archive := &entity.UserArchive{}
+				if err := db.Db.First(archive, "uid=?", id).Error; err != nil {
+					if err == gorm.ErrRecordNotFound {
+						return nil, nil
+					}
+					return nil, err
+				}
+				ret = (*entity.User)(archive)
+				return ret, nil
+			}
 			return nil, err
 		}
 		return ret, nil

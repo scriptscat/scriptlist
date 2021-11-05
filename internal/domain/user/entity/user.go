@@ -28,7 +28,13 @@ type User struct {
 	Freeze             int64  `gorm:"column:freeze" json:"freeze" form:"freeze"`
 }
 
+type UserArchive User
+
 func (u *User) TableName() string {
+	return "pre_common_member"
+}
+
+func (u *UserArchive) TableName() string {
 	return "pre_common_member"
 }
 
