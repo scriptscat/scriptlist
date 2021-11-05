@@ -60,16 +60,20 @@ func Middleware(cache cache.Cache, enforce bool, option ...Option) gin.HandlerFu
 				ctx.Set(AuthToken, tokenInfo)
 				return
 			}
-			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"code": 1002, "msg": err.Error(),
-			})
+			if enforce {
+				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+					"code": 1002, "msg": err.Error(),
+				})
+			}
 			return
 		}
 		for _, v := range opts.tokenHandlerFunc {
 			if err := v(tokenInfo); err != nil {
-				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-					"code": 1002, "msg": err.Error(),
-				})
+				if enforce {
+					ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+						"code": 1002, "msg": err.Error(),
+					})
+				}
 				return
 			}
 		}
