@@ -98,10 +98,10 @@ func (s *statistics) UpdatePv(scriptId, days int64, date time.Time) ([]*respond.
 }
 
 func (s *statistics) daysData(scriptId, days int64, date time.Time, op string, data string) ([]*respond.StatisticsChart, error) {
-	t := date
+	t := date.Add(-time.Hour * 24 * time.Duration(days))
 	var ret []*respond.StatisticsChart
 	for i := int64(0); i < days; i++ {
-		t = t.Add(-time.Hour * 24)
+		t = t.Add(time.Hour * 24)
 		day := t.Format("2006/01/02")
 		var num int64
 		switch data {
