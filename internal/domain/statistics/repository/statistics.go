@@ -18,18 +18,18 @@ type statistics struct {
 	sync.Mutex
 }
 
-// pf   statistics:script:@op:@id:day:uv:@date
-// hash statistics:script:@op:@id:day:uv @date @num
-// pf   statistics:script:weekly:@id:uv:@date
+// pf   statistics:script:@op:@id:day:uv:@date 30天过期
+// hash statistics:script:@op:@id:day:uv @date @num 永不过期
+// pf   statistics:script:weekly:@id:uv:@date 15天过期
 
-// pf   statistics:script:@op:@id:day:member:@date
-// hash statistics:script:@op:@id:day:member @date @num
-// pf   statistics:script:weekly:@id:member:@date
+// pf   statistics:script:@op:@id:day:member:@date 30天过期
+// hash statistics:script:@op:@id:day:member @date @num 永不过期
+// pf   statistics:script:weekly:@id:member:@date 15天过期
 
-// hash statistics:script:@op:@id:day:pv @date @num
-// hash statistics:script:@op:@id:total:pv
+// hash statistics:script:@op:@id:day:pv @date @num 永不过期
+// hash statistics:script:@op:@id:total:pv 永不过期
 
-// hash statistics:script:@op:@id:realtime @time @num
+// hash statistics:script:@op:@id:realtime @time @num 永不过期,但定时删除项
 
 // NewStatistics TODO: 遍历key很多,后续换专门的redis库存储
 func NewStatistics() Statistics {
@@ -137,7 +137,12 @@ func (s *statistics) weekly(scriptId int64, op string) (int64, error) {
 		}
 		db.Redis.PFMerge(context.Background(), weeklyKey, weeklyDay...)
 	}
-	return db.Redis.PFCount(context.Background()).Result()
+	ret, err := db.Redis.PFCount(context.Background()).Result()
+	if err != nil {
+		return 0, err
+	}
+	db.Redis.Expire(context.Background(), weeklyKey, time.Hour*24*15)
+	return ret, nil
 }
 
 func (s *statistics) RealtimeDownload(scriptId int64) ([]int64, error) {
