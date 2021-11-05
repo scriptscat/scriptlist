@@ -14,11 +14,13 @@ type Precision struct {
 type Statistics interface {
 	Download(entity *entity.StatisticsDownload) error
 	CheckUpdate(entity *entity.StatisticsUpdate) error
-	Query(scriptId, starttime, endtime, precision int64) ([]*Precision, error)
-	DayDownload(scriptId int64, day time.Time) (int64, error)
-	TotalDownload(scriptId int64) (int64, error)
-	DayUpdate(scriptId int64, day time.Time) (int64, error)
-	TotalUpdate(scriptId int64) (int64, error)
-	DealDay() error
-	DealRealtime() error
+	Deal() error
+	RealtimeDownload(scriptId int64) ([]int64, error)
+	RealtimeUpdate(scriptId int64) ([]int64, error)
+	WeeklyUv(scriptId int64) (int64, error)
+	WeeklyMember(scriptId int64) (int64, error)
+	TotalPv(scriptId int64, op string) (int64, error)
+	DayPv(scriptId int64, op string, day time.Time) (int64, error)
+	DayUv(scriptId int64, op string, day time.Time) (int64, error)
+	DayMember(scriptId int64, op string, day time.Time) (int64, error)
 }

@@ -1,10 +1,12 @@
 package service
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/scriptscat/scriptweb/internal/domain/statistics/entity"
 	"github.com/scriptscat/scriptweb/internal/domain/statistics/repository"
+	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
 )
 
 type Statistics interface {
@@ -13,8 +15,15 @@ type Statistics interface {
 	TotalDownload(scriptId int64) (int64, error)
 	TodayUpdate(scriptId int64) (int64, error)
 	TotalUpdate(scriptId int64) (int64, error)
-	DealDay() error
-	DealRealtime() error
+	Deal() error
+	WeeklyUv(scriptId int64) (int64, error)
+	WeeklyMember(scriptId int64) (int64, error)
+	DownloadUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
+	DownloadPv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
+	UpdateUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
+	UpdatePv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
+	RealtimeDownload(scriptId int64) ([]int64, error)
+	RealtimeUpdate(scriptId int64) ([]int64, error)
 }
 
 type statistics struct {
@@ -22,9 +31,10 @@ type statistics struct {
 }
 
 func NewStatistics(repo repository.Statistics) Statistics {
-	return &statistics{
+	ret := &statistics{
 		repo: repo,
 	}
+	return ret
 }
 
 func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error {
@@ -44,25 +54,76 @@ func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisti
 }
 
 func (s *statistics) TodayDownload(scriptId int64) (int64, error) {
-	return s.repo.DayDownload(scriptId, time.Now())
+	return s.repo.DayPv(scriptId, "download", time.Now())
 }
 
 func (s *statistics) TotalDownload(scriptId int64) (int64, error) {
-	return s.repo.TotalDownload(scriptId)
+	return s.repo.TotalPv(scriptId, "download")
 }
 
 func (s *statistics) TodayUpdate(scriptId int64) (int64, error) {
-	return s.repo.DayUpdate(scriptId, time.Now())
+	return s.repo.DayPv(scriptId, "update", time.Now())
 }
 
 func (s *statistics) TotalUpdate(scriptId int64) (int64, error) {
-	return s.repo.TotalUpdate(scriptId)
+	return s.repo.TotalPv(scriptId, "update")
 }
 
-func (s *statistics) DealDay() error {
-	return s.repo.DealDay()
+func (s *statistics) Deal() error {
+	return s.repo.Deal()
 }
 
-func (s *statistics) DealRealtime() error {
-	return s.repo.DealRealtime()
+func (s *statistics) WeeklyUv(scriptId int64) (int64, error) {
+	return s.repo.WeeklyUv(scriptId)
+}
+
+func (s *statistics) WeeklyMember(scriptId int64) (int64, error) {
+	return s.repo.WeeklyMember(scriptId)
+}
+
+func (s *statistics) DownloadUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+	return s.daysData(scriptId, days, date, "download", "uv")
+}
+
+func (s *statistics) DownloadPv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+	return s.daysData(scriptId, days, date, "download", "pv")
+}
+
+func (s *statistics) UpdateUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+	return s.daysData(scriptId, days, date, "update", "uv")
+}
+
+func (s *statistics) UpdatePv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+	return s.daysData(scriptId, days, date, "update", "pv")
+}
+
+func (s *statistics) daysData(scriptId, days int64, date time.Time, op string, data string) ([]*respond.StatisticsChart, error) {
+	t := date
+	var ret []*respond.StatisticsChart
+	for i := int64(0); i < days; i++ {
+		t = t.Add(-time.Hour * 24)
+		day := t.Format("2006/01/02")
+		var num int64
+		switch data {
+		case "uv":
+			num, _ = s.repo.DayUv(scriptId, op, t)
+		case "pv":
+			num, _ = s.repo.DayPv(scriptId, op, t)
+		case "member":
+			num, _ = s.repo.DayMember(scriptId, op, t)
+		}
+		ret = append(ret, &respond.StatisticsChart{
+			X: day,
+			Y: strconv.FormatInt(num, 10),
+		})
+	}
+	return ret, nil
+}
+
+func (s *statistics) RealtimeDownload(scriptId int64) ([]int64, error) {
+	return s.repo.RealtimeDownload(scriptId)
+}
+
+func (s *statistics) RealtimeUpdate(scriptId int64) ([]int64, error) {
+	return s.repo.RealtimeUpdate(scriptId)
 }

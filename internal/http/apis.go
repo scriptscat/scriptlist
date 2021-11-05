@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +27,6 @@ import (
 	service5 "github.com/scriptscat/scriptweb/internal/service"
 	"github.com/scriptscat/scriptweb/pkg/middleware/token"
 	"github.com/scriptscat/scriptweb/pkg/oauth"
-	"github.com/scriptscat/scriptweb/pkg/utils"
 	pkgValidator "github.com/scriptscat/scriptweb/pkg/utils/validator"
 	"github.com/sirupsen/logrus"
 )
@@ -88,15 +86,7 @@ var tokenAuth func(enforce bool) func(ctx *gin.Context)
 var userAuth func(enforce bool) func(ctx *gin.Context)
 
 func StartApi() error {
-	disableAuth := os.Getenv("DISABLE_AUTH") == "true"
 	tokenAuth = func(enforce bool) func(ctx *gin.Context) {
-		if disableAuth {
-			return token.Middleware(db.Cache, enforce, token.WithExpired(TokenAuthMaxAge), token.WithDebug(gin.H{
-				"uid":      "1",
-				"username": "admin",
-				"token":    utils.RandString(16, 1),
-			}))
-		}
 		return token.Middleware(db.Cache, enforce, token.WithExpired(TokenAuthMaxAge))
 	}
 
@@ -143,7 +133,7 @@ func StartApi() error {
 		NewScript(script, statis, userSvc, notifySvc),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
-		NewStatistics(statisSvc, c),
+		NewStatistics(statisSvc, scriptSvc, c),
 		userApi,
 	)
 	c.Start()
