@@ -63,6 +63,24 @@ func (s *Statistics) scriptStatistics(ctx *gin.Context) {
 	})
 }
 
+func (s *Statistics) scriptRealtime(ctx *gin.Context) {
+	handle(ctx, func() interface{} {
+		user, _ := userId(ctx)
+		id := utils.StringToInt64(ctx.Param("id"))
+		script, err := s.scriptSvc.Info(id)
+		if err != nil {
+			return err
+		}
+		if script.UserId != user {
+			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
+		}
+		return gin.H{
+			"download": s.ignoreError(s.statisSvc.RealtimeDownload(script.ID)),
+			"update":   s.ignoreError(s.statisSvc.RealtimeUpdate(script.ID)),
+		}
+	})
+}
+
 func (s *Statistics) ignoreError(args interface{}, err error) interface{} {
 	return args
 }
@@ -71,5 +89,6 @@ func (s *Statistics) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/statistics")
 	rgg := rg.Group("/script", userAuth(true))
 	rgg.GET("/:id", s.scriptStatistics)
+	rgg.GET("/:id/realtime", s.scriptRealtime)
 
 }
