@@ -41,7 +41,7 @@ func (s *Statistics) scriptStatistics(ctx *gin.Context) {
 		if script.UserId != user {
 			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
 		}
-		now := time.Now()
+		now := time.Now().Add(-time.Hour * 24)
 		lastweekly := time.Now().Add(-time.Hour * 24 * 7)
 		return gin.H{
 			"download": gin.H{
