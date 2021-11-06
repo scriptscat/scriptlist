@@ -22,8 +22,8 @@ type Statistics interface {
 	DownloadPv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
 	UpdateUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
 	UpdatePv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
-	RealtimeDownload(scriptId int64) ([]int64, error)
-	RealtimeUpdate(scriptId int64) ([]int64, error)
+	RealtimeDownload(scriptId int64) ([]*respond.StatisticsChart, error)
+	RealtimeUpdate(scriptId int64) ([]*respond.StatisticsChart, error)
 }
 
 type statistics struct {
@@ -120,10 +120,28 @@ func (s *statistics) daysData(scriptId, days int64, date time.Time, op string, d
 	return ret, nil
 }
 
-func (s *statistics) RealtimeDownload(scriptId int64) ([]int64, error) {
-	return s.repo.RealtimeDownload(scriptId)
+func (s *statistics) RealtimeDownload(scriptId int64) ([]*respond.StatisticsChart, error) {
+	return s.realtime(scriptId, "download")
 }
 
-func (s *statistics) RealtimeUpdate(scriptId int64) ([]int64, error) {
-	return s.repo.RealtimeUpdate(scriptId)
+func (s *statistics) RealtimeUpdate(scriptId int64) ([]*respond.StatisticsChart, error) {
+	return s.realtime(scriptId, "update")
+}
+
+func (s *statistics) realtime(scriptId int64, op string) ([]*respond.StatisticsChart, error) {
+	var nums []int64
+	var ret []*respond.StatisticsChart
+	switch op {
+	case "download":
+		nums, _ = s.repo.RealtimeDownload(scriptId)
+	case "update":
+		nums, _ = s.repo.RealtimeUpdate(scriptId)
+	}
+	for n, v := range nums {
+		ret = append(ret, &respond.StatisticsChart{
+			X: strconv.Itoa(n+1) + "分钟前",
+			Y: strconv.FormatInt(v, 10),
+		})
+	}
+	return ret, nil
 }
