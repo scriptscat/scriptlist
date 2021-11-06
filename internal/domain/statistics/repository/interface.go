@@ -17,8 +17,8 @@ type Statistics interface {
 	Deal() error
 	RealtimeDownload(scriptId int64) ([]int64, error)
 	RealtimeUpdate(scriptId int64) ([]int64, error)
-	WeeklyUv(scriptId int64) (int64, error)
-	WeeklyMember(scriptId int64) (int64, error)
+	WeeklyUv(scriptId int64, t time.Time) (int64, error)
+	WeeklyMember(scriptId int64, t time.Time) (int64, error)
 	TotalPv(scriptId int64, op string) (int64, error)
 	DayPv(scriptId int64, op string, day time.Time) (int64, error)
 	DayUv(scriptId int64, op string, day time.Time) (int64, error)

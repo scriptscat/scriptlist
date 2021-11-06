@@ -18,12 +18,12 @@ type Statistics interface {
 	Deal() error
 	WeeklyUv(scriptId int64) (int64, error)
 	WeeklyMember(scriptId int64) (int64, error)
-	DownloadUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
-	DownloadPv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
-	UpdateUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
-	UpdatePv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error)
-	RealtimeDownload(scriptId int64) ([]*respond.StatisticsChart, error)
-	RealtimeUpdate(scriptId int64) ([]*respond.StatisticsChart, error)
+	DownloadUv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error)
+	DownloadPv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error)
+	UpdateUv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error)
+	UpdatePv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error)
+	RealtimeDownload(scriptId int64) (*respond.StatisticsChart, error)
+	RealtimeUpdate(scriptId int64) (*respond.StatisticsChart, error)
 }
 
 type statistics struct {
@@ -74,32 +74,32 @@ func (s *statistics) Deal() error {
 }
 
 func (s *statistics) WeeklyUv(scriptId int64) (int64, error) {
-	return s.repo.WeeklyUv(scriptId)
+	return s.repo.WeeklyUv(scriptId, time.Now())
 }
 
 func (s *statistics) WeeklyMember(scriptId int64) (int64, error) {
-	return s.repo.WeeklyMember(scriptId)
+	return s.repo.WeeklyMember(scriptId, time.Now())
 }
 
-func (s *statistics) DownloadUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+func (s *statistics) DownloadUv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error) {
 	return s.daysData(scriptId, days, date, "download", "uv")
 }
 
-func (s *statistics) DownloadPv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+func (s *statistics) DownloadPv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error) {
 	return s.daysData(scriptId, days, date, "download", "pv")
 }
 
-func (s *statistics) UpdateUv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+func (s *statistics) UpdateUv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error) {
 	return s.daysData(scriptId, days, date, "update", "uv")
 }
 
-func (s *statistics) UpdatePv(scriptId, days int64, date time.Time) ([]*respond.StatisticsChart, error) {
+func (s *statistics) UpdatePv(scriptId, days int64, date time.Time) (*respond.StatisticsChart, error) {
 	return s.daysData(scriptId, days, date, "update", "pv")
 }
 
-func (s *statistics) daysData(scriptId, days int64, date time.Time, op string, data string) ([]*respond.StatisticsChart, error) {
+func (s *statistics) daysData(scriptId, days int64, date time.Time, op string, data string) (*respond.StatisticsChart, error) {
 	t := date.Add(-time.Hour * 24 * time.Duration(days))
-	var ret []*respond.StatisticsChart
+	var x, y []string
 	for i := int64(0); i < days; i++ {
 		t = t.Add(time.Hour * 24)
 		day := t.Format("2006/01/02")
@@ -112,36 +112,39 @@ func (s *statistics) daysData(scriptId, days int64, date time.Time, op string, d
 		case "member":
 			num, _ = s.repo.DayMember(scriptId, op, t)
 		}
-		ret = append(ret, &respond.StatisticsChart{
-			X: day,
-			Y: strconv.FormatInt(num, 10),
-		})
+		x = append(x, day)
+		y = append(y, strconv.FormatInt(num, 10))
 	}
-	return ret, nil
+	return &respond.StatisticsChart{
+		X: x,
+		Y: y,
+	}, nil
 }
 
-func (s *statistics) RealtimeDownload(scriptId int64) ([]*respond.StatisticsChart, error) {
+func (s *statistics) RealtimeDownload(scriptId int64) (*respond.StatisticsChart, error) {
 	return s.realtime(scriptId, "download")
 }
 
-func (s *statistics) RealtimeUpdate(scriptId int64) ([]*respond.StatisticsChart, error) {
+func (s *statistics) RealtimeUpdate(scriptId int64) (*respond.StatisticsChart, error) {
 	return s.realtime(scriptId, "update")
 }
 
-func (s *statistics) realtime(scriptId int64, op string) ([]*respond.StatisticsChart, error) {
+func (s *statistics) realtime(scriptId int64, op string) (*respond.StatisticsChart, error) {
 	var nums []int64
-	var ret []*respond.StatisticsChart
 	switch op {
 	case "download":
 		nums, _ = s.repo.RealtimeDownload(scriptId)
 	case "update":
 		nums, _ = s.repo.RealtimeUpdate(scriptId)
 	}
+	l := len(nums)
+	var x, y = make([]string, l), make([]string, l)
 	for n, v := range nums {
-		ret = append(ret, &respond.StatisticsChart{
-			X: strconv.Itoa(n+1) + "分钟前",
-			Y: strconv.FormatInt(v, 10),
-		})
+		x[l-n-1] = strconv.Itoa(n+1) + "分钟前"
+		y[l-n-1] = strconv.FormatInt(v, 10)
 	}
-	return ret, nil
+	return &respond.StatisticsChart{
+		X: x,
+		Y: y,
+	}, nil
 }

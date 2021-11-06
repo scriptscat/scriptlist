@@ -116,19 +116,19 @@ func (s *statistics) CheckUpdate(entity *entity.StatisticsUpdate) error {
 	return s.save(entity, "update")
 }
 
-func (s *statistics) WeeklyUv(scriptId int64) (int64, error) {
-	return s.weekly(scriptId, "uv")
+func (s *statistics) WeeklyUv(scriptId int64, t time.Time) (int64, error) {
+	return s.weekly(scriptId, "uv", t)
 }
 
-func (s *statistics) WeeklyMember(scriptId int64) (int64, error) {
-	return s.weekly(scriptId, "member")
+func (s *statistics) WeeklyMember(scriptId int64, t time.Time) (int64, error) {
+	return s.weekly(scriptId, "member", t)
 }
 
-func (s *statistics) weekly(scriptId int64, op string) (int64, error) {
-	weeklyKey := fmt.Sprintf("statistics:script:weekly:%d:%s:%s", scriptId, op, time.Now().Format("2006/01/02"))
+func (s *statistics) weekly(scriptId int64, op string, t time.Time) (int64, error) {
+	weeklyKey := fmt.Sprintf("statistics:script:weekly:%d:%s:%s", scriptId, op, t.Format("2006/01/02"))
 	if db.Redis.Exists(context.Background(), weeklyKey).Val() != 1 {
 		var weeklyDay []string
-		t := time.Now()
+		t := t
 		for i := 1; i <= 7; i++ {
 			weeklyDay = append(weeklyDay,
 				fmt.Sprintf("statistics:script:download:%d:day:%s:%s", scriptId, op, t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")),
