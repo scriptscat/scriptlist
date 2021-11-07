@@ -137,7 +137,7 @@ func (s *statistics) weekly(scriptId int64, op string, t time.Time) (int64, erro
 		}
 		db.Redis.PFMerge(context.Background(), weeklyKey, weeklyDay...)
 	}
-	ret, err := db.Redis.PFCount(context.Background()).Result()
+	ret, err := db.Redis.PFCount(context.Background(), weeklyKey).Result()
 	if err != nil {
 		return 0, err
 	}
