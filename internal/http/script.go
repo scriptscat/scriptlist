@@ -35,7 +35,24 @@ type Script struct {
 	notifySvc service4.Sender
 }
 
-func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender) *Script {
+func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, c *cron.Cron) *Script {
+	// crontab 定时检查更新
+	c.AddFunc("0 */6 * * *", func() {
+		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
+		list, err := svc.FindSyncScript(request2.AllPage)
+		if err != nil {
+			logrus.Errorf("Timing synchronization find script list: %v", err)
+			return
+		}
+		for _, v := range list {
+			if v.SyncMode != service3.SYNC_MODE_AUTO {
+				continue
+			}
+			if err := svc.SyncScript(v.UserId, v.ID); err != nil {
+				logrus.Errorf("Timing synchronization %v: %v", v.ID, err)
+			}
+		}
+	})
 	return &Script{
 		scriptSvc: svc,
 		statisSvc: statisSvc,
@@ -89,26 +106,6 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg.GET("", s.category)
 
 	r.Any("/api/v1/webhook/:uid", s.webhook)
-
-	// crontab 定时检查更新
-	c := cron.New(cron.WithSeconds())
-	c.AddFunc("0 0 */6 * * *", func() {
-		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
-		list, err := s.scriptSvc.FindSyncScript(request2.AllPage)
-		if err != nil {
-			logrus.Errorf("Timing synchronization find script list: %v", err)
-			return
-		}
-		for _, v := range list {
-			if v.SyncMode != service3.SYNC_MODE_AUTO {
-				continue
-			}
-			if err := s.scriptSvc.SyncScript(v.UserId, v.ID); err != nil {
-				logrus.Errorf("Timing synchronization %v: %v", v.ID, err)
-			}
-		}
-	})
-	c.Start()
 }
 
 type githubWebhook struct {

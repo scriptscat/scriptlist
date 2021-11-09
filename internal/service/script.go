@@ -50,7 +50,7 @@ type script struct {
 
 func NewScript(userSvc service.User, scriptSvc service2.Script, scoreSvc service2.Score, statisSvc service3.Statistics, rateSvc service4.Rate, c *cron.Cron) Script {
 	go migrations.DealMetaInfo()
-	c.AddFunc("0 0/20 * * * *", func() {
+	c.AddFunc("0/20 * * * *", func() {
 		migrations.DealMetaInfo()
 	})
 	return &script{

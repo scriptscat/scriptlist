@@ -11,6 +11,7 @@ import (
 	"github.com/scriptscat/scriptweb/internal/domain/statistics/service"
 	"github.com/scriptscat/scriptweb/internal/pkg/errs"
 	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Statistics struct {
@@ -24,8 +25,10 @@ func NewStatistics(statisSvc service.Statistics, scriptSvc service2.Script, c *c
 		scriptSvc: scriptSvc,
 	}
 	go statisSvc.Deal()
-	c.AddFunc("0 0 */8 * * *", func() {
-		statisSvc.Deal()
+	c.AddFunc("0 */8 * * *", func() {
+		if err := statisSvc.Deal(); err != nil {
+			logrus.Errorf("statistics deal error: %v", err)
+		}
 	})
 	return ret
 }

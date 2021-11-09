@@ -126,15 +126,14 @@ func StartApi() error {
 	}
 
 	statis := service5.NewStatistics(statisSvc, scriptSvc)
-	userApi := NewUser(userSvc, script)
 
 	r := gin.Default()
 	Registry(ctx, r,
-		NewScript(script, statis, userSvc, notifySvc),
+		NewScript(script, statis, userSvc, notifySvc, c),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		NewStatistics(statisSvc, scriptSvc, c),
-		userApi,
+		NewUser(userSvc, script),
 	)
 	c.Start()
 	return r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))
