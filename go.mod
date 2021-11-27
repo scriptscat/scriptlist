@@ -1,4 +1,4 @@
-module github.com/scriptscat/scriptweb
+module github.com/scriptscat/scriptlist
 
 go 1.15
 

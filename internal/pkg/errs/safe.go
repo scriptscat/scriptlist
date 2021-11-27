@@ -3,7 +3,7 @@ package errs
 import (
 	"fmt"
 
-	"github.com/scriptscat/scriptweb/internal/domain/safe/repository"
+	"github.com/scriptscat/scriptlist/internal/domain/safe/repository"
 )
 
 func NewOperationTimeToShort(rule *repository.RateRule) error {

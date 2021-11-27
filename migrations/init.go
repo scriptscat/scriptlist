@@ -2,13 +2,13 @@ package migrations
 
 import (
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
 )
 
 func Migrate() error {
 	return run(T1617420365,
 		T1622952090, T1627371597, T1627723150, T1627908382,
-		T1636014908, T1636031743,
+		T1636014908, T1636031743, T1637399317,
 	)
 }
 

@@ -4,10 +4,10 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/internal/http"
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/migrations"
+	"github.com/scriptscat/scriptlist/internal/http"
+	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/migrations"
 )
 
 func Run() {

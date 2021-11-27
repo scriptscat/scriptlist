@@ -3,7 +3,7 @@ package service
 import (
 	"crypto/tls"
 
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/pkg/config"
 	"gopkg.in/gomail.v2"
 )
 

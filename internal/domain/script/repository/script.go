@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/http/dto/request"
-	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/http/dto/request"
+	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"gorm.io/gorm"
 )
 

@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/scriptscat/scriptweb/internal/domain/resource/entity"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/domain/resource/entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
 )
 
 type resource struct {

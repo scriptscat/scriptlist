@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/internal/pkg/cache"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/pkg/cache"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 const Userinfo = "userinfo"

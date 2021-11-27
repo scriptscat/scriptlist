@@ -1,6 +1,6 @@
 package entity
 
-import "github.com/scriptscat/scriptweb/internal/pkg/config"
+import "github.com/scriptscat/scriptlist/internal/pkg/config"
 
 // ScriptCategoryList 拥有的分类列表
 type ScriptCategoryList struct {

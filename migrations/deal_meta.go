@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 func DealMetaInfo() error {

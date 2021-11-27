@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/statistics/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/statistics/repository"
-	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/domain/statistics/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/statistics/repository"
+	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
 )
 
 type Statistics interface {

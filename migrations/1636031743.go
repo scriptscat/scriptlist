@@ -2,7 +2,7 @@ package migrations
 
 import (
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/scriptscat/scriptweb/internal/domain/statistics/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/statistics/entity"
 	"gorm.io/gorm"
 )
 

@@ -3,8 +3,8 @@ package respond
 import (
 	"encoding/json"
 
-	entity2 "github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	entity2 "github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 type Script struct {

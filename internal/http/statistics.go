@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
-	service2 "github.com/scriptscat/scriptweb/internal/domain/script/service"
-	"github.com/scriptscat/scriptweb/internal/domain/statistics/service"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	service2 "github.com/scriptscat/scriptlist/internal/domain/script/service"
+	"github.com/scriptscat/scriptlist/internal/domain/statistics/service"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/safe/repository"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/internal/domain/safe/repository"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 )
 
 type Rate interface {

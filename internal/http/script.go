@@ -13,18 +13,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
-	service4 "github.com/scriptscat/scriptweb/internal/domain/notify/service"
-	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
-	service3 "github.com/scriptscat/scriptweb/internal/domain/script/service"
-	"github.com/scriptscat/scriptweb/internal/domain/user/service"
-	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
-	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
-	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	service2 "github.com/scriptscat/scriptweb/internal/service"
-	"github.com/scriptscat/scriptweb/pkg/utils"
-	"github.com/scriptscat/scriptweb/pkg/utils/diff"
+	service4 "github.com/scriptscat/scriptlist/internal/domain/notify/service"
+	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
+	service3 "github.com/scriptscat/scriptlist/internal/domain/script/service"
+	"github.com/scriptscat/scriptlist/internal/domain/user/service"
+	request2 "github.com/scriptscat/scriptlist/internal/http/dto/request"
+	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
+	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	service2 "github.com/scriptscat/scriptlist/internal/service"
+	"github.com/scriptscat/scriptlist/pkg/utils"
+	"github.com/scriptscat/scriptlist/pkg/utils/diff"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,7 +45,7 @@ func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc servi
 			return
 		}
 		for _, v := range list {
-			if v.SyncMode != service3.SYNC_MODE_AUTO {
+			if v.SyncMode != service3.SyncModeAuto {
 				continue
 			}
 			if err := svc.SyncScript(v.UserId, v.ID); err != nil {
@@ -165,7 +165,7 @@ func (s *Script) webhook(c *gin.Context) {
 			var success []gin.H
 			var error []gin.H
 			for _, v := range list {
-				if v.SyncMode != service3.SYNC_MODE_AUTO {
+				if v.SyncMode != service3.SyncModeAuto {
 					continue
 				}
 				if err := s.scriptSvc.SyncScript(uid, v.ID); err != nil {

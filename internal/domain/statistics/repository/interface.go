@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/statistics/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/statistics/entity"
 )
 
 type Precision struct {

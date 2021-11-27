@@ -3,8 +3,8 @@ package repository
 import (
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"gorm.io/gorm"
 )
 

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/resource/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/resource/repository"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/domain/resource/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/resource/repository"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 type Resource interface {

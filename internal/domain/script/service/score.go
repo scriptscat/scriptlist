@@ -3,9 +3,9 @@ package service
 import (
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
-	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
+	request2 "github.com/scriptscat/scriptlist/internal/http/dto/request"
 )
 
 type Score interface {

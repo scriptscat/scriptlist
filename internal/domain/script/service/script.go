@@ -7,19 +7,19 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
-	"github.com/scriptscat/scriptweb/internal/http/dto/request"
-	"github.com/scriptscat/scriptweb/internal/pkg/cnt"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
+	"github.com/scriptscat/scriptlist/internal/http/dto/request"
+	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/gorm"
 )
 
 const (
-	SYNC_MODE_AUTO   = 1
-	SYNC_MODE_MANUAL = 2
+	SyncModeAuto   = 1
+	SyncModeManual = 2
 )
 
 type Script interface {

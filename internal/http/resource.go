@@ -5,10 +5,10 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/internal/domain/resource/service"
-	repository2 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
-	service2 "github.com/scriptscat/scriptweb/internal/domain/safe/service"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/internal/domain/resource/service"
+	repository2 "github.com/scriptscat/scriptlist/internal/domain/safe/repository"
+	service2 "github.com/scriptscat/scriptlist/internal/domain/safe/service"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 )
 
 type Resource struct {

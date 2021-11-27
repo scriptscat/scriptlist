@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/scriptscat/scriptweb/internal/app"
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/app"
+	"github.com/scriptscat/scriptlist/internal/pkg/config"
 )
 
 func main() {

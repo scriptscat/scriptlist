@@ -7,8 +7,8 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	goRedis "github.com/go-redis/redis/v8"
-	"github.com/scriptscat/scriptweb/internal/pkg/cache"
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/pkg/cache"
+	"github.com/scriptscat/scriptlist/internal/pkg/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"

@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/pkg/middleware/token"
-	"github.com/scriptscat/scriptweb/pkg/oauth"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/pkg/middleware/token"
+	"github.com/scriptscat/scriptlist/pkg/oauth"
 )
 
 const TokenAuthMaxAge = 432000

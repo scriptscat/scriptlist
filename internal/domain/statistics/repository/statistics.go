@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/scriptscat/scriptweb/internal/domain/statistics/entity"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/domain/statistics/entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

@@ -2,8 +2,8 @@ package migrations
 
 import (
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	entity3 "github.com/scriptscat/scriptweb/internal/domain/user/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	entity3 "github.com/scriptscat/scriptlist/internal/domain/user/entity"
 	"gorm.io/gorm"
 )
 

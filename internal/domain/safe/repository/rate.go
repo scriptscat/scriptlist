@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/scriptscat/scriptweb/internal/pkg/db"
+	"github.com/scriptscat/scriptlist/internal/pkg/db"
 )
 
 type rate struct {

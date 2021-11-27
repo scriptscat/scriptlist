@@ -2,9 +2,9 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
-	"github.com/scriptscat/scriptweb/pkg/middleware/token"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/pkg/middleware/token"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 const SelfInfo = "self-info"

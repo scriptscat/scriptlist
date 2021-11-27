@@ -1,11 +1,11 @@
 package service
 
 import (
-	entity3 "github.com/scriptscat/scriptweb/internal/domain/user/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/user/repository"
-	"github.com/scriptscat/scriptweb/internal/http/dto/respond"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	entity3 "github.com/scriptscat/scriptlist/internal/domain/user/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/user/repository"
+	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/datatypes"
 )
 

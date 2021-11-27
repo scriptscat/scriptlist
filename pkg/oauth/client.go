@@ -3,8 +3,8 @@ package oauth
 import (
 	"encoding/json"
 
-	"github.com/scriptscat/scriptweb/internal/pkg/config"
-	"github.com/scriptscat/scriptweb/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 const serverUrl = "https://bbs.tampermonkey.net.cn"

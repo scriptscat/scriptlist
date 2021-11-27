@@ -3,7 +3,7 @@ package respond
 import (
 	"strconv"
 
-	"github.com/scriptscat/scriptweb/internal/domain/user/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/user/entity"
 )
 
 type User struct {

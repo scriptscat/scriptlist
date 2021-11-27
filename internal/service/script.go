@@ -8,17 +8,17 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
-	repository2 "github.com/scriptscat/scriptweb/internal/domain/safe/repository"
-	service4 "github.com/scriptscat/scriptweb/internal/domain/safe/service"
-	"github.com/scriptscat/scriptweb/internal/domain/script/entity"
-	"github.com/scriptscat/scriptweb/internal/domain/script/repository"
-	service2 "github.com/scriptscat/scriptweb/internal/domain/script/service"
-	service3 "github.com/scriptscat/scriptweb/internal/domain/statistics/service"
-	"github.com/scriptscat/scriptweb/internal/domain/user/service"
-	request2 "github.com/scriptscat/scriptweb/internal/http/dto/request"
-	respond2 "github.com/scriptscat/scriptweb/internal/http/dto/respond"
-	"github.com/scriptscat/scriptweb/internal/pkg/errs"
-	"github.com/scriptscat/scriptweb/migrations"
+	repository2 "github.com/scriptscat/scriptlist/internal/domain/safe/repository"
+	service4 "github.com/scriptscat/scriptlist/internal/domain/safe/service"
+	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
+	service2 "github.com/scriptscat/scriptlist/internal/domain/script/service"
+	service3 "github.com/scriptscat/scriptlist/internal/domain/statistics/service"
+	"github.com/scriptscat/scriptlist/internal/domain/user/service"
+	request2 "github.com/scriptscat/scriptlist/internal/http/dto/request"
+	respond2 "github.com/scriptscat/scriptlist/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/migrations"
 )
 
 type Script interface {
@@ -251,7 +251,7 @@ func (s *script) UpdateScript(uid, id int64, req *request2.UpdateScript) error {
 		if err := s.scriptSvc.UpdateScript(uid, id, req); err != nil {
 			return err
 		}
-		if req.SyncMode == service2.SYNC_MODE_MANUAL {
+		if req.SyncMode == service2.SyncModeManual {
 			return s.SyncScript(uid, id)
 		}
 		return nil
