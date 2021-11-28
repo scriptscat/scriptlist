@@ -59,7 +59,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 		if c.Query("labels") != "" {
 			labels = strings.Split(c.Query("labels"), ",")
 		}
-		list, err := s.issueSvc.List(script, c.Query("keyword"), labels, page)
+		list, err := s.issueSvc.List(script, c.Query("keyword"), labels, utils.StringToInt(c.Query("status")), page)
 		if err != nil {
 			return err
 		}
