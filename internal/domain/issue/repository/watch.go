@@ -26,7 +26,10 @@ func (w *watch) List(issue int64) ([]*Watch, error) {
 		return nil, err
 	}
 	ret := make([]*Watch, 0)
-	for k := range list {
+	for k, v := range list {
+		if v != "1" {
+			continue
+		}
 		ret = append(ret, &Watch{UserId: utils.StringToInt64(k)})
 	}
 	return ret, nil
@@ -45,16 +48,16 @@ func (w *watch) Watch(issue, user int64) error {
 }
 
 func (w *watch) Unwatch(issue, user int64) error {
-	return db.Redis.HDel(context.Background(), w.key(issue), strconv.FormatInt(user, 10)).Err()
+	return db.Redis.HSet(context.Background(), w.key(issue), user, "2").Err()
 }
 
-func (w *watch) IsWatch(issue, user int64) (bool, error) {
+func (w *watch) IsWatch(issue, user int64) (int, error) {
 	ret, err := db.Redis.HGet(context.Background(), w.key(issue), strconv.FormatInt(user, 10)).Result()
 	if err != nil {
 		if err == goRedis.Nil {
-			return false, nil
+			return 0, nil
 		}
-		return false, err
+		return 0, err
 	}
-	return ret == "1", nil
+	return utils.StringToInt(ret), nil
 }

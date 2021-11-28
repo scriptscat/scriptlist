@@ -18,7 +18,7 @@ func NewComment() IssueComment {
 func (c *comment) List(issue int64, status int, page request.Pages) ([]*entity.ScriptIssueComment, error) {
 	list := make([]*entity.ScriptIssueComment, 0)
 	find := c.db.Model(&entity.ScriptIssueComment{}).Where("issue_id=? and status=?", issue, status).
-		Order("createtime desc").Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
+		Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
 	if err := find.Scan(&list).Error; err != nil {
 		return nil, err
 	}

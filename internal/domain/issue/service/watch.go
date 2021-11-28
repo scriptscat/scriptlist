@@ -8,7 +8,7 @@ type Watch interface {
 	Unwatch(issue, user int64) error
 
 	WatchList(issue int64) ([]int64, error)
-	IsWatch(issue, user int64) (bool, error)
+	IsWatch(issue, user int64) (int, error)
 }
 
 type watch struct {
@@ -39,6 +39,6 @@ func (w *watch) WatchList(issue int64) ([]int64, error) {
 	return ret, nil
 }
 
-func (w *watch) IsWatch(issue, user int64) (bool, error) {
+func (w *watch) IsWatch(issue, user int64) (int, error) {
 	return w.watchRepo.IsWatch(issue, user)
 }

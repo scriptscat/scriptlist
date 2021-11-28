@@ -83,12 +83,12 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
 	rg.POST("", userAuth(true), s.add)
-	rgg := rg.Group("/:id", userAuth(true))
+	rgg := rg.Group("/:script", userAuth(true))
 	rgg.PUT("", s.update)
 	rgg.PUT("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
-	rgg = rg.Group("/:id", userAuth(false))
+	rgg = rg.Group("/:script", userAuth(false))
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
 	rgg.GET("/diff/:v1/:v2", s.diff)
@@ -289,7 +289,7 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		handle(ctx, func() interface{} {
 			uid, _ := userId(ctx)
-			id := utils.StringToInt64(ctx.Param("id"))
+			id := utils.StringToInt64(ctx.Param("script"))
 			ret, err := s.scriptSvc.GetScript(id, "", withcode)
 			if err != nil {
 				return err
@@ -302,7 +302,7 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 
 func (s *Script) versions(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		list, err := s.scriptSvc.GetScriptCodeList(id)
 		if err != nil {
 			return err
@@ -314,7 +314,7 @@ func (s *Script) versions(ctx *gin.Context) {
 func (s *Script) versionsGet(withcode bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		handle(ctx, func() interface{} {
-			id := utils.StringToInt64(ctx.Param("id"))
+			id := utils.StringToInt64(ctx.Param("script"))
 			version := ctx.Param("version")
 			code, err := s.scriptSvc.GetScript(id, version, withcode)
 			if err != nil {
@@ -341,7 +341,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 		if !ok {
 			return errs.ErrNotLogin
 		}
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		score := &request2.Score{}
 		if err := ctx.ShouldBind(score); err != nil {
 			return err
@@ -385,7 +385,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 
 func (s *Script) scoreList(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		page := &request2.Pages{}
 		if err := ctx.ShouldBind(page); err != nil {
 			return err
@@ -404,7 +404,7 @@ func (s *Script) selfScore(ctx *gin.Context) {
 		if !ok {
 			return errs.ErrNotLogin
 		}
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		ret, err := s.scriptSvc.UserScore(uid, id)
 		if err != nil {
 			return err
@@ -433,7 +433,7 @@ func (s *Script) add(ctx *gin.Context) {
 
 func (s *Script) update(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		uid, ok := userId(ctx)
 		if !ok {
 			return errs.ErrNotLogin
@@ -448,7 +448,7 @@ func (s *Script) update(ctx *gin.Context) {
 
 func (s *Script) updatecode(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		uid, ok := userId(ctx)
 		if !ok {
 			return errs.ErrNotLogin
@@ -463,7 +463,7 @@ func (s *Script) updatecode(ctx *gin.Context) {
 
 func (s *Script) sync(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		id := utils.StringToInt64(ctx.Param("id"))
+		id := utils.StringToInt64(ctx.Param("script"))
 		uid, ok := userId(ctx)
 		if !ok {
 			return errs.ErrNotLogin
@@ -474,7 +474,7 @@ func (s *Script) sync(ctx *gin.Context) {
 
 func (s *Script) diff(c *gin.Context) {
 	handle(c, func() interface{} {
-		id := utils.StringToInt64(c.Param("id"))
+		id := utils.StringToInt64(c.Param("script"))
 		v1 := c.Param("v1")
 		v2 := c.Param("v2")
 		s1, err := s.scriptSvc.GetScriptCodeByVersion(id, v1, true)

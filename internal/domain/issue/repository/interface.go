@@ -26,5 +26,5 @@ type IssueWatch interface {
 	Num(issue int64) (int, error)
 	Watch(issue, user int64) error
 	Unwatch(issue, user int64) error
-	IsWatch(issue, user int64) (bool, error)
+	IsWatch(issue, user int64) (int, error)
 }

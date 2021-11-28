@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/robfig/cron/v3"
+	repository6 "github.com/scriptscat/scriptlist/internal/domain/issue/repository"
+	service8 "github.com/scriptscat/scriptlist/internal/domain/issue/service"
 	service7 "github.com/scriptscat/scriptlist/internal/domain/notify/service"
 	repository5 "github.com/scriptscat/scriptlist/internal/domain/resource/repository"
 	service6 "github.com/scriptscat/scriptlist/internal/domain/resource/service"
@@ -99,6 +101,9 @@ func StartApi() error {
 	scoreSvc := service3.NewScore(repository3.NewScore())
 	rateSvc := service.NewRate(repository4.NewRate())
 	notifySvc := service7.NewSender(config.AppConfig.Email)
+	issueSvc := service8.NewIssue(repository6.NewIssue(), repository6.NewComment())
+	issueWatchSvc := service8.NewWatch(repository6.NewWatch())
+
 	script := service5.NewScript(userSvc,
 		scriptSvc,
 		scoreSvc,
@@ -134,6 +139,7 @@ func StartApi() error {
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		NewStatistics(statisSvc, scriptSvc, c),
 		NewUser(userSvc, script),
+		NewScriptIssue(scriptSvc, userSvc, notifySvc, issueSvc, issueWatchSvc),
 	)
 	c.Start()
 	return r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))

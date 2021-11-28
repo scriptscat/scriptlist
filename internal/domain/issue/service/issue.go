@@ -31,8 +31,8 @@ var Label = map[string]*entity.IssueLabel{
 
 type Issue interface {
 	List(script int64, keyword string, label []string, page request.Pages) ([]*entity.ScriptIssue, error)
-	Issue(script, user int64, title, content string, label []string) error
-	UpdateIssue(issue, user int64, title, content string, label []string) error
+	Issue(script, user int64, title, content string, label []string) (*entity.ScriptIssue, error)
+	UpdateIssue(issue, user int64, title, content string) error
 	GetIssue(issue int64) (*entity.ScriptIssue, error)
 	DelIssue(issue, operator int64) error
 	// 对issue的操作
@@ -42,8 +42,9 @@ type Issue interface {
 	Label(issue, operator int64, label []string) error
 
 	CommentList(issue int64, page request.Pages) ([]*entity.ScriptIssueComment, error)
-	Comment(issue, user int64, comment string) error
-	UpdateComment(issue, user int64, comment string) error
+	GetComment(commentId int64) (*entity.ScriptIssueComment, error)
+	Comment(issue, user int64, content string) (*entity.ScriptIssueComment, error)
+	UpdateComment(comment, user int64, content string) error
 	DelComment(commentId int64) error
 }
 
@@ -63,23 +64,28 @@ func (i *issue) List(script int64, keyword string, label []string, page request.
 	return i.issueRepo.List(script, keyword, label, 0, page)
 }
 
-func (i *issue) Issue(script, user int64, title, content string, label []string) error {
+func (i *issue) Issue(script, user int64, title, content string, labels []string) (*entity.ScriptIssue, error) {
+	for _, v := range labels {
+		if _, ok := Label[v]; !ok {
+			return nil, errs.NewBadRequestError(1000, "错误的标签")
+		}
+	}
 	issue := &entity.ScriptIssue{
 		ScriptID:   script,
 		UserID:     user,
 		Title:      title,
 		Content:    content,
-		Labels:     strings.Join(label, ","),
+		Labels:     strings.Join(labels, ","),
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),
 	}
 	if err := i.issueRepo.Save(issue); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return issue, nil
 }
 
-func (i *issue) UpdateIssue(issueId, user int64, title, content string, label []string) error {
+func (i *issue) UpdateIssue(issueId, user int64, title, content string) error {
 	issue, err := i.GetIssue(issueId)
 	if err != nil {
 		return err
@@ -90,10 +96,12 @@ func (i *issue) UpdateIssue(issueId, user int64, title, content string, label []
 	oldTitle := issue.Title
 	issue.Title = title
 	issue.Content = content
-	issue.Labels = strings.Join(label, ",")
 	issue.Updatetime = time.Now().Unix()
 	if err := i.issueRepo.Save(issue); err != nil {
 		return err
+	}
+	if oldTitle == title {
+		return nil
 	}
 	return i.commentRepo.Save(&entity.ScriptIssueComment{
 		IssueID:    issue.ID,
@@ -201,6 +209,11 @@ func (i *issue) Label(issueId, operator int64, label []string) error {
 	if len(add) == 0 && len(del) == 0 {
 		return errs.NewBadRequestError(1000, "标签没有发生改变")
 	}
+	for _, v := range update {
+		if _, ok := Label[v]; !ok {
+			return errs.NewBadRequestError(1000, "错误的标签")
+		}
+	}
 	issue.Labels = strings.Join(update, ",")
 	if err := i.issueRepo.Save(issue); err != nil {
 		return err
@@ -219,19 +232,26 @@ func (i *issue) CommentList(issue int64, page request.Pages) ([]*entity.ScriptIs
 	return i.commentRepo.List(issue, cnt.ACTIVE, page)
 }
 
-func (i *issue) Comment(issueId, user int64, content string) error {
+func (i *issue) Comment(issueId, user int64, content string) (*entity.ScriptIssueComment, error) {
+	if content == "" {
+		return nil, errs.NewBadRequestError(1000, "评论内容不能为空")
+	}
 	_, err := i.GetIssue(issueId)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return i.commentRepo.Save(&entity.ScriptIssueComment{
+	ret := &entity.ScriptIssueComment{
 		IssueID:    issueId,
 		UserID:     user,
 		Content:    content,
 		Type:       CommentTypeComment,
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),
-	})
+	}
+	if err := i.commentRepo.Save(ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func (i *issue) GetComment(commentId int64) (*entity.ScriptIssueComment, error) {
@@ -246,11 +266,14 @@ func (i *issue) GetComment(commentId int64) (*entity.ScriptIssueComment, error) 
 }
 
 func (i *issue) UpdateComment(commentId, user int64, content string) error {
+	if content == "" {
+		return errs.NewBadRequestError(1000, "评论内容不能为空")
+	}
 	comment, err := i.GetComment(commentId)
 	if err != nil {
 		return err
 	}
-	if comment.IssueID != user {
+	if comment.UserID != user || comment.Type != CommentTypeComment {
 		return errs.NewError(http.StatusForbidden, 1001, "没有权限进行修改")
 	}
 	_, err = i.GetIssue(comment.IssueID)

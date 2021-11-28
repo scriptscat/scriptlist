@@ -1,7 +1,7 @@
 package entity
 
 type ScriptIssue struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);primary_key;AUTO_INCREMENT" json:"id"`
+	ID         int64  `gorm:"column:id" json:"id"`
 	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);index:script_id;NOT NULL" json:"script_id"`
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);NOT NULL" json:"user_id"`
 	Title      string `gorm:"column:title;type:varchar(255);NOT NULL" json:"title"`
@@ -13,7 +13,7 @@ type ScriptIssue struct {
 }
 
 type ScriptIssueComment struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);primary_key;AUTO_INCREMENT" json:"id"`
+	ID         int64  `gorm:"column:id" json:"id"`
 	IssueID    int64  `gorm:"column:issue_id;type:bigint(20);index:issue_id;NOT NULL" json:"issue_id"`
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);NOT NULL" json:"user_id"`
 	Content    string `gorm:"column:content;type:text;NOT NULL" json:"content"`
