@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 	"unsafe"
-
-	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -75,7 +73,12 @@ func RandString(n int, stype int) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-func MarshalJson(h gin.H) string {
+func MarshalJson(h interface{}) string {
 	ret, _ := json.Marshal(h)
 	return string(ret)
+}
+
+func MarshalJsonByte(h interface{}) []byte {
+	ret, _ := json.Marshal(h)
+	return ret
 }

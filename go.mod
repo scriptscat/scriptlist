@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
 	github.com/go-playground/locales v0.13.0

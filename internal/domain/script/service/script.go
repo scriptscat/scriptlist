@@ -13,6 +13,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/pkg/event"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -22,10 +23,15 @@ const (
 	SyncModeManual = 2
 )
 
+const (
+	EventScriptVersionUpdate = "event:script:version:update"
+)
+
 type Script interface {
 	Search(search *repository.SearchList, page request.Pages) ([]*entity.Script, int64, error)
 	UserScript(uid int64, self bool, page request.Pages) ([]*entity.Script, int64, error)
 	Info(id int64) (*entity.Script, error)
+	GetCode(id int64) (*entity.ScriptCode, error)
 	VersionList(id int64) ([]*entity.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	Download(id int64) error
@@ -222,6 +228,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 		if err != nil {
 			return err
 		}
+		oldVersion := code.Version
 		version := code.Version
 		if v, ok := metaJson["version"]; ok {
 			version = v[0]
@@ -296,6 +303,15 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 					return err
 				}
 			}
+			if version != oldVersion {
+				_ = event.DefaultBroker.Publish(EventScriptVersionUpdate, &event.Message{
+					Header: nil,
+					Body: utils.MarshalJsonByte(event.Ids{
+						"code":   code.ID,
+						"script": script.ID,
+					}),
+				})
+			}
 			return nil
 		}); err != nil {
 			return err
@@ -333,6 +349,13 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 					return err
 				}
 			}
+			_ = event.DefaultBroker.Publish(EventScriptVersionUpdate, &event.Message{
+				Header: nil,
+				Body: utils.MarshalJsonByte(event.Ids{
+					"code":   code.ID,
+					"script": script.ID,
+				}),
+			})
 			return nil
 		}); err != nil {
 			return err
@@ -360,4 +383,8 @@ func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, err
 
 func (s *script) FindSyncScript(page request.Pages) ([]*entity.Script, error) {
 	return s.scriptRepo.FindSyncScript(page)
+}
+
+func (s *script) GetCode(id int64) (*entity.ScriptCode, error) {
+	return s.codeRepo.Find(id)
 }

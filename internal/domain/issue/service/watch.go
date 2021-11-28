@@ -2,7 +2,7 @@ package service
 
 import "github.com/scriptscat/scriptlist/internal/domain/issue/repository"
 
-type Watch interface {
+type ScriptIssueWatch interface {
 	// Watch 关注issue
 	Watch(issue, user int64) error
 	Unwatch(issue, user int64) error
@@ -15,7 +15,7 @@ type watch struct {
 	watchRepo repository.IssueWatch
 }
 
-func NewWatch(watchRepo repository.IssueWatch) Watch {
+func NewWatch(watchRepo repository.IssueWatch) ScriptIssueWatch {
 	return &watch{watchRepo: watchRepo}
 }
 

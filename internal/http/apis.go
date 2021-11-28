@@ -103,6 +103,7 @@ func StartApi() error {
 	notifySvc := service7.NewSender(config.AppConfig.Email)
 	issueSvc := service8.NewIssue(repository6.NewIssue(), repository6.NewComment())
 	issueWatchSvc := service8.NewWatch(repository6.NewWatch())
+	scriptWatchSvc := service3.NewWatch(repository3.NewScriptWatch())
 
 	script := service5.NewScript(userSvc,
 		scriptSvc,
@@ -134,7 +135,7 @@ func StartApi() error {
 
 	r := gin.Default()
 	Registry(ctx, r,
-		NewScript(script, statis, userSvc, notifySvc, c),
+		NewScript(script, statis, userSvc, notifySvc, scriptWatchSvc, c),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),
 		NewResource(service6.NewResource(repository5.NewResource()), rateSvc),
 		NewStatistics(statisSvc, scriptSvc, c),

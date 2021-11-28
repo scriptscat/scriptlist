@@ -27,10 +27,10 @@ type ScriptIssue struct {
 	userSvc       service.User
 	notifySvc     service4.Sender
 	issueSvc      service3.Issue
-	issueWatchSvc service3.Watch
+	issueWatchSvc service3.ScriptIssueWatch
 }
 
-func NewScriptIssue(scriptSvc service2.Script, userSvc service.User, notifySvc service4.Sender, issueSvc service3.Issue, issueWatchSvc service3.Watch) *ScriptIssue {
+func NewScriptIssue(scriptSvc service2.Script, userSvc service.User, notifySvc service4.Sender, issueSvc service3.Issue, issueWatchSvc service3.ScriptIssueWatch) *ScriptIssue {
 	return &ScriptIssue{
 		scriptSvc:     scriptSvc,
 		userSvc:       userSvc,
@@ -80,7 +80,7 @@ func (s *ScriptIssue) post(c *gin.Context) {
 		if err := c.ShouldBind(&req); err != nil {
 			return err
 		}
-		script, err := s.scriptSvc.Info(scriptId)
+		_, err := s.scriptSvc.Info(scriptId)
 		if err != nil {
 			return err
 		}
@@ -91,17 +91,6 @@ func (s *ScriptIssue) post(c *gin.Context) {
 		issue, err := s.issueSvc.Issue(scriptId, user.UID, req.Title, req.Content, labels)
 		if err != nil {
 			return err
-		}
-		_ = s.issueWatchSvc.Watch(issue.ID, script.UserId)
-		_ = s.issueWatchSvc.Watch(issue.ID, user.UID)
-		u, err := s.userSvc.SelfInfo(script.UserId)
-		if err == nil {
-			if err := s.notifySvc.SendEmailFrom(user.Username, u.Email, "["+script.Name+"]"+issue.Title, issue.Content+
-				fmt.Sprintf("<hr/><br/><a href=\"%s\">点击查看原文</a>",
-					config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(script.ID, 10)+"/issue/"+strconv.FormatInt(issue.ID, 10),
-				), "text/html"); err != nil {
-				logrus.Errorf("sendemail: %v", err)
-			}
 		}
 		return respond.ToIssue(user, issue)
 	})

@@ -50,3 +50,17 @@ type Statistics interface {
 	Download(id int64) error
 	Update(id int64) error
 }
+
+type Watch struct {
+	UserId int64 `json:"user_id"`
+	// Watch级别,0:未监听 1:版本更新监听 2:新建issue监听 2:评论都监听
+	Level int `json:"level"`
+}
+
+type ScriptWatch interface {
+	List(script int64) ([]*Watch, error)
+	Num(script int64) (int, error)
+	Watch(script, user int64, level int) error
+	Unwatch(script, user int64) error
+	IsWatch(script, user int64) (int, error)
+}

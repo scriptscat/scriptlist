@@ -33,9 +33,10 @@ type Script struct {
 	statisSvc service2.Statistics
 	userSvc   service.User
 	notifySvc service4.Sender
+	watchSvc  service3.ScriptWatch
 }
 
-func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, c *cron.Cron) *Script {
+func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, watchSvc service3.ScriptWatch, c *cron.Cron) *Script {
 	// crontab 定时检查更新
 	c.AddFunc("0 */6 * * *", func() {
 		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
@@ -58,6 +59,7 @@ func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc servi
 		statisSvc: statisSvc,
 		userSvc:   userSvc,
 		notifySvc: notify,
+		watchSvc:  watchSvc,
 	}
 }
 

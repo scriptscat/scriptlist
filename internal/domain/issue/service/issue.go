@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/scriptscat/scriptlist/internal/domain/issue/broker"
 	"github.com/scriptscat/scriptlist/internal/domain/issue/entity"
 	"github.com/scriptscat/scriptlist/internal/domain/issue/repository"
 	"github.com/scriptscat/scriptlist/internal/http/dto/request"
@@ -82,6 +83,7 @@ func (i *issue) Issue(script, user int64, title, content string, labels []string
 	if err := i.issueRepo.Save(issue); err != nil {
 		return nil, err
 	}
+	_ = broker.PublishScriptIssueCreate(issue.ID, script)
 	return issue, nil
 }
 
@@ -142,7 +144,7 @@ func (i *issue) Open(issueId, operator int64) error {
 	if err := i.changeStatus(issueId, cnt.ACTIVE); err != nil {
 		return err
 	}
-	return i.commentRepo.Save(&entity.ScriptIssueComment{
+	return i.commentSave(&entity.ScriptIssueComment{
 		IssueID:    issueId,
 		UserID:     operator,
 		Content:    "打开反馈",
@@ -156,7 +158,7 @@ func (i *issue) Close(issueId, operator int64) error {
 	if err := i.changeStatus(issueId, cnt.BAN); err != nil {
 		return err
 	}
-	return i.commentRepo.Save(&entity.ScriptIssueComment{
+	return i.commentSave(&entity.ScriptIssueComment{
 		IssueID:    issueId,
 		UserID:     operator,
 		Content:    "关闭反馈",
@@ -164,6 +166,14 @@ func (i *issue) Close(issueId, operator int64) error {
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),
 	})
+}
+
+func (i *issue) commentSave(comment *entity.ScriptIssueComment) error {
+	if err := i.commentRepo.Save(comment); err != nil {
+		return err
+	}
+	_ = broker.PublishScriptIssueCommentCreate(comment.IssueID, comment.ID)
+	return nil
 }
 
 func (i *issue) changeStatus(issueId int64, status int) error {
@@ -218,7 +228,7 @@ func (i *issue) Label(issueId, operator int64, label []string) error {
 	if err := i.issueRepo.Save(issue); err != nil {
 		return err
 	}
-	return i.commentRepo.Save(&entity.ScriptIssueComment{
+	return i.commentSave(&entity.ScriptIssueComment{
 		IssueID:    issueId,
 		UserID:     operator,
 		Content:    utils.MarshalJson(gin.H{"add": add, "del": del}),
@@ -248,7 +258,7 @@ func (i *issue) Comment(issueId, user int64, content string) (*entity.ScriptIssu
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),
 	}
-	if err := i.commentRepo.Save(ret); err != nil {
+	if err := i.commentSave(ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
