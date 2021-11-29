@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/scriptscat/scriptlist/internal/domain/script/broker"
 	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
 	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
 	"github.com/scriptscat/scriptlist/internal/http/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
-	"github.com/scriptscat/scriptlist/pkg/event"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -21,10 +21,6 @@ import (
 const (
 	SyncModeAuto   = 1
 	SyncModeManual = 2
-)
-
-const (
-	EventScriptVersionUpdate = "event:script:version:update"
 )
 
 type Script interface {
@@ -304,13 +300,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 				}
 			}
 			if version != oldVersion {
-				_ = event.DefaultBroker.Publish(EventScriptVersionUpdate, &event.Message{
-					Header: nil,
-					Body: utils.MarshalJsonByte(event.Ids{
-						"code":   code.ID,
-						"script": script.ID,
-					}),
-				})
+				_ = broker.PublishEventScriptVersionUpdate(script.ID, code.ID)
 			}
 			return nil
 		}); err != nil {
@@ -349,13 +339,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 					return err
 				}
 			}
-			_ = event.DefaultBroker.Publish(EventScriptVersionUpdate, &event.Message{
-				Header: nil,
-				Body: utils.MarshalJsonByte(event.Ids{
-					"code":   code.ID,
-					"script": script.ID,
-				}),
-			})
+			_ = broker.PublishEventScriptVersionUpdate(script.ID, code.ID)
 			return nil
 		}); err != nil {
 			return err

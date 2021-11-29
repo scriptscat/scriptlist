@@ -2,9 +2,7 @@ package http
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -16,10 +14,8 @@ import (
 	"github.com/scriptscat/scriptlist/internal/domain/user/service"
 	request2 "github.com/scriptscat/scriptlist/internal/http/dto/request"
 	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
-	"github.com/scriptscat/scriptlist/internal/pkg/config"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/pkg/utils"
-	"github.com/sirupsen/logrus"
 )
 
 type ScriptIssue struct {
@@ -165,11 +161,11 @@ func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 		handle(c, func() interface{} {
 			issueId := s.getIssueId(c)
 			uid, _ := userId(c)
-			user, err := s.userSvc.UserInfo(uid)
+			_, err := s.userSvc.UserInfo(uid)
 			if err != nil {
 				return err
 			}
-			issue, script, err := s.isOperate(issueId, uid)
+			_, _, err = s.isOperate(issueId, uid)
 			if err != nil {
 				return err
 			}
@@ -181,34 +177,8 @@ func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 			if err != nil {
 				return err
 			}
-			go func() {
-				op := "关闭"
-				if open {
-					op = "打开"
-				}
-				s.sendWatch(user.Username, issueId, "["+script.Name+"]反馈"+op, fmt.Sprintf("<a href=\"%s\">点击查看原文</a>",
-					config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(script.ID, 10)+"/issue/"+strconv.FormatInt(issue.ID, 10),
-				))
-			}()
 			return nil
 		})
-	}
-}
-
-func (s *ScriptIssue) sendWatch(from string, issueId int64, title, content string) {
-	list, err := s.issueWatchSvc.WatchList(issueId)
-	if err != nil {
-		logrus.Errorf("watchlist: %v", err)
-		return
-	}
-	for _, v := range list {
-		u, err := s.userSvc.SelfInfo(v)
-		if err != nil {
-			continue
-		}
-		if err := s.notifySvc.SendEmailFrom(from, u.Email, title, content, "text/html"); err != nil {
-			logrus.Errorf("send email: %v", err)
-		}
 	}
 }
 
@@ -244,7 +214,7 @@ func (s *ScriptIssue) comment(c *gin.Context) {
 		if err != nil {
 			return err
 		}
-		script, err := s.scriptSvc.Info(issue.ScriptID)
+		_, err = s.scriptSvc.Info(issue.ScriptID)
 		if err != nil {
 			return err
 		}
@@ -257,12 +227,6 @@ func (s *ScriptIssue) comment(c *gin.Context) {
 		if err == nil && watch == 0 {
 			_ = s.issueWatchSvc.Watch(issueId, user.UID)
 		}
-		// 通知
-		go func() {
-			s.sendWatch(user.Username, issueId, "新评论:["+script.Name+"]"+issue.Title, content+"<hr/><br/>"+fmt.Sprintf("<a href=\"%s\">点击查看原文</a>",
-				config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(script.ID, 10)+"/issue/"+strconv.FormatInt(issue.ID, 10),
-			))
-		}()
 		return comment
 	})
 }

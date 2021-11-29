@@ -1,17 +1,16 @@
 package subscriber
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/scriptscat/scriptlist/internal/domain/issue/broker"
 	service4 "github.com/scriptscat/scriptlist/internal/domain/issue/service"
 	service2 "github.com/scriptscat/scriptlist/internal/domain/notify/service"
+	broker2 "github.com/scriptscat/scriptlist/internal/domain/script/broker"
 	"github.com/scriptscat/scriptlist/internal/domain/script/service"
 	service3 "github.com/scriptscat/scriptlist/internal/domain/user/service"
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
-	"github.com/scriptscat/scriptlist/pkg/event"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,33 +29,15 @@ func NewNotifySubscriber() *NotifySubscriber {
 
 func (n *NotifySubscriber) Subscribe() error {
 
-	if _, err := event.DefaultBroker.Subscribe(service.EventScriptVersionUpdate, func(message *event.Message) error {
-		ids := event.Ids{}
-		if err := json.Unmarshal(message.Body, &ids); err != nil {
-			return err
-		}
-		return n.NotifyScriptUpdate(ids["script"], ids["code"])
-	}); err != nil {
+	if _, err := broker2.SubscribeEventScriptVersionUpdate(n.NotifyScriptUpdate); err != nil {
 		return err
 	}
 
-	if _, err := event.DefaultBroker.Subscribe(broker.EventScriptIssueCreate, func(message *event.Message) error {
-		ids := event.Ids{}
-		if err := json.Unmarshal(message.Body, &ids); err != nil {
-			return err
-		}
-		return n.NotifyScriptUpdate(ids["script"], ids["code"])
-	}); err != nil {
+	if _, err := broker.SubscribeScriptIssueCreate(n.NotifyScriptIssueCreate); err != nil {
 		return err
 	}
 
-	if _, err := event.DefaultBroker.Subscribe(broker.EventScriptIssueCommentCreate, func(message *event.Message) error {
-		ids := event.Ids{}
-		if err := json.Unmarshal(message.Body, &ids); err != nil {
-			return err
-		}
-		return n.NotifyScriptUpdate(ids["script"], ids["code"])
-	}); err != nil {
+	if _, err := broker.SubscribeScriptIssueCommentCreate(n.NotifyScriptIssueCommentCreate); err != nil {
 		return err
 	}
 
@@ -127,6 +108,54 @@ func (n *NotifySubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 			fmt.Sprintf("<hr/><br/><a href=\"%s\">点击查看原文</a>",
 				config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
 			), "text/html"); err != nil {
+			logrus.Errorf("sendemail: %v", err)
+		}
+	}
+	return nil
+}
+
+func (n *NotifySubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) error {
+	commentInfo, err := n.scriptIssue.GetComment(comment)
+	if err != nil {
+		return err
+	}
+	issueInfo, err := n.scriptIssue.GetIssue(issue)
+	if err != nil {
+		return err
+	}
+	scriptInfo, err := n.scriptSvc.Info(issueInfo.ScriptID)
+	if err != nil {
+		return err
+	}
+	list, err := n.scriptIssueWatchSvc.WatchList(issue)
+	if err != nil {
+		return err
+	}
+	user, err := n.userSvc.UserInfo(commentInfo.UserID)
+	if err != nil {
+		return err
+	}
+	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
+	content := fmt.Sprintf("<a href=\"%s\">点击查看原文</a>",
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
+	)
+	switch commentInfo.Type {
+	case service4.CommentTypeComment:
+		title += " 有新评论"
+		content = commentInfo.Content + "<hr/><br/>" + content
+	case service4.CommentTypeOpen:
+		title += " 打开"
+	case service4.CommentTypeClose:
+		title += " 关闭"
+	default:
+		return nil
+	}
+	for _, uid := range list {
+		u, err := n.userSvc.SelfInfo(uid)
+		if err != nil {
+			continue
+		}
+		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html"); err != nil {
 			logrus.Errorf("sendemail: %v", err)
 		}
 	}
