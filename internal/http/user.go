@@ -166,6 +166,34 @@ func (u *User) notify(c *gin.Context) {
 	})
 }
 
+func (u *User) isfollow(c *gin.Context) {
+	handle(c, func() interface{} {
+		follow := utils.StringToInt64(c.Param("follow"))
+		uid, _ := userId(c)
+		is, err := u.svc.IsFollow(uid, follow)
+		if err != nil {
+			return err
+		}
+		return is
+	})
+}
+
+func (u *User) follow(c *gin.Context) {
+	handle(c, func() interface{} {
+		follow := utils.StringToInt64(c.Param("follow"))
+		uid, _ := userId(c)
+		return u.svc.Follow(uid, follow)
+	})
+}
+
+func (u *User) unfollow(c *gin.Context) {
+	handle(c, func() interface{} {
+		follow := utils.StringToInt64(c.Param("follow"))
+		uid, _ := userId(c)
+		return u.svc.Unfollow(uid, follow)
+	})
+}
+
 func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 	rg := r.Group("/api/v1/user")
 	rgg := rg.Group("", tokenAuth(false))
@@ -174,6 +202,11 @@ func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.GET("/scripts", u.scripts)
 	rgg.GET("/scripts/:uid", u.scripts)
 	rgg.GET("/avatar/:uid", u.avatar)
+
+	rgg = rg.Group("/follow/:follow", tokenAuth(true))
+	rgg.GET("", u.isfollow)
+	rgg.POST("", u.follow)
+	rgg.DELETE("", u.unfollow)
 
 	rgg = rg.Group("/config", userAuth(true))
 	rgg.GET("", u.config)

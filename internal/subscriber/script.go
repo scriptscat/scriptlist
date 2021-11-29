@@ -1,6 +1,7 @@
 package subscriber
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -10,11 +11,12 @@ import (
 	broker2 "github.com/scriptscat/scriptlist/internal/domain/script/broker"
 	"github.com/scriptscat/scriptlist/internal/domain/script/service"
 	service3 "github.com/scriptscat/scriptlist/internal/domain/user/service"
+	"github.com/scriptscat/scriptlist/internal/http/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
 	"github.com/sirupsen/logrus"
 )
 
-type NotifySubscriber struct {
+type ScriptSubscriber struct {
 	notifySvc           service2.Sender
 	scriptWatchSvc      service.ScriptWatch
 	scriptIssueWatchSvc service4.ScriptIssueWatch
@@ -23,11 +25,23 @@ type NotifySubscriber struct {
 	userSvc             service3.User
 }
 
-func NewNotifySubscriber() *NotifySubscriber {
-	return &NotifySubscriber{}
+func NewScriptSubscriber(notifySvc service2.Sender, scriptWatchSvc service.ScriptWatch,
+	scriptIssueWatchSvc service4.ScriptIssueWatch, scriptIssue service4.Issue, scriptSvc service.Script, userSvc service3.User) *ScriptSubscriber {
+	return &ScriptSubscriber{
+		notifySvc:           notifySvc,
+		scriptWatchSvc:      scriptWatchSvc,
+		scriptIssueWatchSvc: scriptIssueWatchSvc,
+		scriptIssue:         scriptIssue,
+		scriptSvc:           scriptSvc,
+		userSvc:             userSvc,
+	}
 }
 
-func (n *NotifySubscriber) Subscribe() error {
+func (n *ScriptSubscriber) Subscribe(ctx context.Context) error {
+
+	if _, err := broker2.SubscribeEventScriptCreate(n.NotifyScriptCreate); err != nil {
+		return err
+	}
 
 	if _, err := broker2.SubscribeEventScriptVersionUpdate(n.NotifyScriptUpdate); err != nil {
 		return err
@@ -44,7 +58,37 @@ func (n *NotifySubscriber) Subscribe() error {
 	return nil
 }
 
-func (n *NotifySubscriber) NotifyScriptUpdate(script, code int64) error {
+// NotifyScriptCreate 脚本创建时间,对关注了脚本作者的用户推送脚本创建
+func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
+	scriptInfo, err := n.scriptSvc.Info(script)
+	if err != nil {
+		return err
+	}
+	user, err := n.userSvc.UserInfo(scriptInfo.UserId)
+	if err != nil {
+		return err
+	}
+	list, err := n.userSvc.FollowerList(scriptInfo.UserId, request.AllPage)
+	if err != nil {
+		return err
+	}
+	for _, v := range list {
+		u, err := n.userSvc.SelfInfo(v.Uid)
+		if err != nil {
+			continue
+		}
+		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, user.Username+"发布了一个新脚本:"+scriptInfo.Name,
+			fmt.Sprintf("<a href=\"%s\">点击查看脚本页面</a>",
+				config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
+			), "text/html"); err != nil {
+			logrus.Errorf("send email: %v", err)
+		}
+	}
+	return nil
+}
+
+// NotifyScriptUpdate 脚本更新事件,对订阅了脚本的进行通知推送
+func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 	scriptInfo, err := n.scriptSvc.Info(script)
 	if err != nil {
 		return err
@@ -75,7 +119,8 @@ func (n *NotifySubscriber) NotifyScriptUpdate(script, code int64) error {
 	return nil
 }
 
-func (n *NotifySubscriber) NotifyScriptIssueCreate(script, issue int64) error {
+// NotifyScriptIssueCreate 脚本反馈创建,对订阅了脚本等级1的进行推送,等级2的进行反馈关注
+func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 	scriptInfo, err := n.scriptSvc.Info(script)
 	if err != nil {
 		return err
@@ -114,7 +159,8 @@ func (n *NotifySubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 	return nil
 }
 
-func (n *NotifySubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) error {
+// NotifyScriptIssueCommentCreate 脚本反馈评论推送
+func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) error {
 	commentInfo, err := n.scriptIssue.GetComment(comment)
 	if err != nil {
 		return err

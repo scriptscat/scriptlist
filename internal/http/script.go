@@ -104,10 +104,43 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rggg.PUT("", s.putScore)
 	rggg.GET("/self", s.selfScore)
 
+	rgg = rg.Group("/:script/watch", userAuth(true))
+	rgg.GET("", s.iswatch)
+	rgg.POST("", s.watch)
+	rgg.DELETE("", s.unwatch)
+
 	rg = r.Group("/api/v1/category")
 	rg.GET("", s.category)
 
 	r.Any("/api/v1/webhook/:uid", s.webhook)
+}
+
+func (s *Script) iswatch(c *gin.Context) {
+	handle(c, func() interface{} {
+		script := utils.StringToInt64(c.Param("script"))
+		uid, _ := userId(c)
+		level, err := s.watchSvc.IsWatch(script, uid)
+		if err != nil {
+			return err
+		}
+		return gin.H{"level": level}
+	})
+}
+
+func (s *Script) watch(c *gin.Context) {
+	handle(c, func() interface{} {
+		script := utils.StringToInt64(c.Param("script"))
+		uid, _ := userId(c)
+		return s.watchSvc.Watch(script, uid, utils.StringToInt(c.PostForm("level")))
+	})
+}
+
+func (s *Script) unwatch(c *gin.Context) {
+	handle(c, func() interface{} {
+		script := utils.StringToInt64(c.Param("script"))
+		uid, _ := userId(c)
+		return s.watchSvc.Unwatch(script, uid)
+	})
 }
 
 type githubWebhook struct {

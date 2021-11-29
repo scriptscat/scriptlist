@@ -27,6 +27,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service5 "github.com/scriptscat/scriptlist/internal/service"
+	"github.com/scriptscat/scriptlist/internal/subscriber"
 	"github.com/scriptscat/scriptlist/pkg/middleware/token"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	pkgValidator "github.com/scriptscat/scriptlist/pkg/utils/validator"
@@ -37,9 +38,19 @@ type Service interface {
 	Registry(ctx context.Context, r *gin.Engine)
 }
 
+type Subscribe interface {
+	Subscribe(ctx context.Context) error
+}
+
 func Registry(ctx context.Context, r *gin.Engine, registry ...Service) {
 	for _, v := range registry {
 		v.Registry(ctx, r)
+	}
+}
+
+func Subscriber(ctx context.Context, sub ...Subscribe) {
+	for _, v := range sub {
+		v.Subscribe(ctx)
 	}
 }
 
@@ -95,7 +106,7 @@ func StartApi() error {
 	ctx := context.Background()
 	binding.Validator = pkgValidator.NewValidator()
 	c := cron.New()
-	userSvc := service2.NewUser(repository.NewUser())
+	userSvc := service2.NewUser(repository.NewUser(), repository.NewFollow())
 	scriptSvc := service3.NewScript(repository3.NewScript(), repository3.NewCode(), repository3.NewCategory(), repository3.NewStatistics())
 	statisSvc := service4.NewStatistics(repository2.NewStatistics())
 	scoreSvc := service3.NewScore(repository3.NewScore())
@@ -142,6 +153,11 @@ func StartApi() error {
 		NewUser(userSvc, script),
 		NewScriptIssue(scriptSvc, userSvc, notifySvc, issueSvc, issueWatchSvc),
 	)
+
+	Subscriber(ctx,
+		subscriber.NewScriptSubscriber(notifySvc, scriptWatchSvc, issueWatchSvc, issueSvc, scriptSvc, userSvc),
+	)
+
 	c.Start()
 	return r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))
 }

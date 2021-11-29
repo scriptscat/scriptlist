@@ -51,6 +51,7 @@ func (w *watch) Unwatch(issue, user int64) error {
 	return db.Redis.HSet(context.Background(), w.key(issue), user, "2").Err()
 }
 
+// IsWatch 0 从未关注过 1 关注 2 关注但是取消了
 func (w *watch) IsWatch(issue, user int64) (int, error) {
 	ret, err := db.Redis.HGet(context.Background(), w.key(issue), strconv.FormatInt(user, 10)).Result()
 	if err != nil {

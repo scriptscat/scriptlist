@@ -17,7 +17,7 @@ func SubscribeScriptIssueCreate(h func(script, issue int64) error) (event.Subscr
 }
 
 func SubscribeScriptIssueCommentCreate(h func(issue, comment int64) error) (event.Subscriber, error) {
-	return event.DefaultBroker.Subscribe(EventScriptIssueCreate, func(message *event.Message) error {
+	return event.DefaultBroker.Subscribe(EventScriptIssueCommentCreate, func(message *event.Message) error {
 		ids := event.Ids{}
 		if err := json.Unmarshal(message.Body, &ids); err != nil {
 			return err
