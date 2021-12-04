@@ -131,7 +131,7 @@ func (s *Script) watch(c *gin.Context) {
 	handle(c, func() interface{} {
 		script := utils.StringToInt64(c.Param("script"))
 		uid, _ := userId(c)
-		return s.watchSvc.Watch(script, uid, utils.StringToInt(c.PostForm("level")))
+		return s.watchSvc.Watch(script, uid, service3.ScriptWatchLevel(utils.StringToInt(c.PostForm("level"))))
 	})
 }
 
@@ -396,7 +396,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 				logrus.Errorf("GetUserConfig: %v", err)
 				return nil
 			}
-			if !cfg.Notify["score"].(bool) {
+			if n, ok := cfg.Notify[service.UserNotifyScore].(bool); ok && !n {
 				return nil
 			}
 			sendUser, err := s.userSvc.SelfInfo(info.UserId)

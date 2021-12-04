@@ -12,6 +12,14 @@ import (
 	"gorm.io/datatypes"
 )
 
+const (
+	UserNotifyCreateScript       = "create_script"
+	UserNotifyScriptUpdate       = "script_update"
+	UserNotifyScriptIssue        = "script_issue"
+	UserNotifyScriptIssueComment = "script_issue_comment"
+	UserNotifyScore              = "score"
+)
+
 type User interface {
 	UserInfo(id int64) (*respond.User, error)
 	SelfInfo(id int64) (*respond.User, error)
@@ -105,7 +113,11 @@ func (u *user) GetUserConfig(uid int64) (*entity3.UserConfig, error) {
 		ret = &entity3.UserConfig{
 			Uid: uid,
 			Notify: map[string]interface{}{
-				"score": true,
+				UserNotifyScore:              true,
+				UserNotifyScriptUpdate:       true,
+				UserNotifyCreateScript:       true,
+				UserNotifyScriptIssue:        true,
+				UserNotifyScriptIssueComment: true,
 			},
 		}
 	}

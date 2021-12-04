@@ -53,7 +53,7 @@ type Statistics interface {
 
 type Watch struct {
 	UserId int64 `json:"user_id"`
-	// Watch级别,0:未监听 1:版本更新监听 2:新建issue监听 2:评论都监听
+	// Watch级别,0:未监听 1:版本更新监听 2:新建issue监听 3:评论都监听
 	Level int `json:"level"`
 }
 

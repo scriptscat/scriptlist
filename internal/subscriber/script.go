@@ -58,7 +58,7 @@ func (n *ScriptSubscriber) Subscribe(ctx context.Context) error {
 	return nil
 }
 
-// NotifyScriptCreate 脚本创建时间,对关注了脚本作者的用户推送脚本创建
+// NotifyScriptCreate 脚本创建事件,对关注了脚本作者的用户推送脚本创建
 func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	scriptInfo, err := n.scriptSvc.Info(script)
 	if err != nil {
@@ -72,17 +72,31 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	if err != nil {
 		return err
 	}
+
+	// 脚本作者自己默认关注自己的脚本
+	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, service.ScriptWatchLevelIssueComment); err != nil {
+		logrus.Errorf("watch err:%v", err)
+	}
+
+	title := user.Username + "发布了一个新脚本:" + scriptInfo.Name
+	content := fmt.Sprintf("<a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
+		//TODO: 链接
+		config.AppConfig.FrontendUrl+"",
+	)
 	for _, v := range list {
 		u, err := n.userSvc.SelfInfo(v.Uid)
 		if err != nil {
 			continue
 		}
-		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, user.Username+"发布了一个新脚本:"+scriptInfo.Name,
-			fmt.Sprintf("<a href=\"%s\">点击查看脚本页面</a>",
-				config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
-			), "text/html"); err != nil {
-			logrus.Errorf("send email: %v", err)
+		uc, err := n.userSvc.GetUserConfig(v.Uid)
+		if err != nil {
+			continue
 		}
+		if n, ok := uc.Notify[service3.UserNotifyCreateScript].(bool); ok && !n {
+			continue
+		}
+		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
 	return nil
 }
@@ -105,21 +119,36 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 	if err != nil {
 		return err
 	}
-	for uid, _ := range list {
+
+	title := "[" + scriptInfo.Name + "]有新的版本: " + codeInfo.Version
+	content := fmt.Sprintf("%s升级到了:%s<hr/><a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+		scriptInfo.Name, codeInfo.Version,
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
+		//TODO: 链接
+		config.AppConfig.FrontendUrl+"",
+	)
+	for uid, v := range list {
+		if v < service.ScriptWatchLevelVersion {
+			continue
+		}
 		u, err := n.userSvc.SelfInfo(uid)
 		if err != nil {
 			continue
 		}
-		n.notifySvc.SendEmailFrom(user.Username, u.Email, "["+scriptInfo.Name+"]有新的版本: "+codeInfo.Version,
-			fmt.Sprintf(scriptInfo.Name+"升级到了:%s<br/><a href=\"%s\">点击查看脚本页面</a>", codeInfo.Version,
-				config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
-			), "text/html")
+		uc, err := n.userSvc.GetUserConfig(u.UID)
+		if err != nil {
+			continue
+		}
+		if n, ok := uc.Notify[service3.UserNotifyScriptUpdate].(bool); ok && !n {
+			continue
+		}
+		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
 
 	return nil
 }
 
-// NotifyScriptIssueCreate 脚本反馈创建,对订阅了脚本等级1的进行推送,等级2的进行反馈关注
+// NotifyScriptIssueCreate 脚本反馈创建,对订阅了脚本等级大于等于issue的进行推送,大于等于issueComment的进行反馈关注
 func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 	scriptInfo, err := n.scriptSvc.Info(script)
 	if err != nil {
@@ -137,22 +166,37 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 	if err != nil {
 		return err
 	}
+	// issue的创建者监听issue
+	if err := n.scriptIssueWatchSvc.Watch(issue, issueInfo.UserID); err != nil {
+		logrus.Errorf("issue watch: %v", err)
+	}
+	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
+	content := fmt.Sprintf("%s<hr/><a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+		issueInfo.Content,
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
+		//TODO: 链接
+		config.AppConfig.FrontendUrl+"",
+	)
 	for uid, level := range list {
-		if level < 1 {
+		if level < service.ScriptWatchLevelIssue {
 			continue
 		}
-		if level == 2 {
+		// 对issueComment级别的默认监听issue
+		if level >= service.ScriptWatchLevelIssueComment {
 			_ = n.scriptIssueWatchSvc.Watch(issue, uid)
 		}
-		_ = n.scriptIssueWatchSvc.Watch(issue, issueInfo.UserID)
 		u, err := n.userSvc.SelfInfo(uid)
 		if err != nil {
 			continue
 		}
-		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, "["+scriptInfo.Name+"]"+issueInfo.Title, issueInfo.Content+
-			fmt.Sprintf("<hr/><br/><a href=\"%s\">点击查看原文</a>",
-				config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
-			), "text/html"); err != nil {
+		uc, err := n.userSvc.GetUserConfig(u.UID)
+		if err != nil {
+			continue
+		}
+		if n, ok := uc.Notify[service3.UserNotifyScriptIssue].(bool); ok && !n {
+			continue
+		}
+		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html"); err != nil {
 			logrus.Errorf("sendemail: %v", err)
 		}
 	}
@@ -182,13 +226,15 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		return err
 	}
 	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
-	content := fmt.Sprintf("<a href=\"%s\">点击查看原文</a>",
+	content := fmt.Sprintf("<a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
+		//TODO: 链接
+		config.AppConfig.FrontendUrl+"",
 	)
 	switch commentInfo.Type {
 	case service4.CommentTypeComment:
 		title += " 有新评论"
-		content = commentInfo.Content + "<hr/><br/>" + content
+		content = commentInfo.Content + "<hr/>" + content
 	case service4.CommentTypeOpen:
 		title += " 打开"
 	case service4.CommentTypeClose:
@@ -201,9 +247,14 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		if err != nil {
 			continue
 		}
-		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html"); err != nil {
-			logrus.Errorf("sendemail: %v", err)
+		uc, err := n.userSvc.GetUserConfig(u.UID)
+		if err != nil {
+			continue
 		}
+		if n, ok := uc.Notify[service3.UserNotifyScriptIssueComment].(bool); ok && !n {
+			continue
+		}
+		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
 	return nil
 }

@@ -29,6 +29,7 @@ func (r *redisCache) GetOrSet(key string, get interface{}, set func() (interface
 		if err := r.Set(key, val, opts...); err != nil {
 			return err
 		}
+		copyInterface(get, val)
 	}
 	return nil
 }

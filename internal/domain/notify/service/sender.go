@@ -5,6 +5,7 @@ import (
 	"mime"
 
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
 )
 
@@ -33,7 +34,11 @@ func (s *sender) SendEmail(to, title, content, contextType string) error {
 	m.SetHeader("Subject", "[脚本猫]"+title)
 	m.SetBody(contextType, content)
 
-	return d.DialAndSend(m)
+	err := d.DialAndSend(m)
+	if err != nil {
+		logrus.Errorf("send %v %v email: %v", to, title, err)
+	}
+	return err
 }
 
 func (s *sender) SendEmailFrom(from, to, title, content, contextType string) error {
@@ -46,5 +51,9 @@ func (s *sender) SendEmailFrom(from, to, title, content, contextType string) err
 	m.SetHeader("Subject", "[脚本猫]"+title)
 	m.SetBody(contextType, content)
 
-	return d.DialAndSend(m)
+	err := d.DialAndSend(m)
+	if err != nil {
+		logrus.Errorf("send %v %v email: %v", to, title, err)
+	}
+	return err
 }
