@@ -28,6 +28,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service5 "github.com/scriptscat/scriptlist/internal/service"
 	"github.com/scriptscat/scriptlist/internal/subscriber"
+	"github.com/scriptscat/scriptlist/pkg/logs"
 	"github.com/scriptscat/scriptlist/pkg/middleware/token"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	pkgValidator "github.com/scriptscat/scriptlist/pkg/utils/validator"
@@ -144,7 +145,9 @@ func StartApi() error {
 
 	statis := service5.NewStatistics(statisSvc, scriptSvc)
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(logs.GinLogger(), gin.Recovery())
+
 	Registry(ctx, r,
 		NewScript(script, statis, userSvc, notifySvc, scriptWatchSvc, c),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth)),

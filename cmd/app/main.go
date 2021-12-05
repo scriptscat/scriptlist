@@ -6,6 +6,7 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/app"
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/pkg/logs"
 )
 
 func main() {
@@ -15,5 +16,7 @@ func main() {
 	if err := config.Init(cfg); err != nil {
 		log.Fatal("config error: ", err)
 	}
+	logs.InitLogs()
+
 	app.Run()
 }
