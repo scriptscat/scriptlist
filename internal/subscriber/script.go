@@ -3,6 +3,7 @@ package subscriber
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 
 	"github.com/scriptscat/scriptlist/internal/domain/issue/broker"
@@ -12,6 +13,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/domain/script/service"
 	service3 "github.com/scriptscat/scriptlist/internal/domain/user/service"
 	"github.com/scriptscat/scriptlist/internal/http/dto/request"
+	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
 	"github.com/sirupsen/logrus"
 )
@@ -144,7 +146,6 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 		}
 		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
-
 	return nil
 }
 
@@ -199,6 +200,25 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html"); err != nil {
 			logrus.Errorf("sendemail: %v", err)
 		}
+	}
+	// 解析是否有艾特并通知
+	users, err := n.parseContent(issueInfo.Content)
+	if err != nil {
+		logrus.Errorf("parseContent: %v", err)
+		return nil
+	}
+	for _, v := range users {
+		uc, err := n.userSvc.GetUserConfig(v.UID)
+		if err != nil {
+			continue
+		}
+		if n, ok := uc.Notify[service3.UserNotifyAt].(bool); ok && !n {
+			continue
+		}
+		if n, ok := uc.Notify[service3.UserNotifyScriptIssue].(bool); ok && !n {
+			continue
+		}
+		_ = n.notifySvc.SendEmailFrom(user.Username, v.Email, user.Username+" 在 "+issueInfo.Title+" 中有提及到您", content, "text/html")
 	}
 	return nil
 }
@@ -256,5 +276,39 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		}
 		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
+	// 解析是否有艾特并通知
+	users, err := n.parseContent(commentInfo.Content)
+	if err != nil {
+		logrus.Errorf("parseContent: %v", err)
+		return nil
+	}
+	for _, v := range users {
+		uc, err := n.userSvc.GetUserConfig(v.UID)
+		if err != nil {
+			continue
+		}
+		if n, ok := uc.Notify[service3.UserNotifyAt].(bool); ok && !n {
+			continue
+		}
+		if n, ok := uc.Notify[service3.UserNotifyScriptIssueComment].(bool); ok && !n {
+			continue
+		}
+		_ = n.notifySvc.SendEmailFrom(user.Username, v.Email, user.Username+" 在 "+issueInfo.Title+" 中有提及到您", content, "text/html")
+	}
 	return nil
+}
+
+// 解析内容查看是否有艾特的人,返回用户信息
+func (n *ScriptSubscriber) parseContent(content string) ([]*respond.User, error) {
+	r := regexp.MustCompile("@(\\S+)")
+	list := r.FindAllStringSubmatch(content, -1)
+	var users []*respond.User
+	for _, v := range list {
+		user, err := n.userSvc.FindByUsername(v[1], true)
+		if err != nil {
+			continue
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }

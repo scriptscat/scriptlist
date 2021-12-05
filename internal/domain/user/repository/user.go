@@ -127,3 +127,14 @@ func (u *user) SaveUserNotifyConfig(uid int64, notify datatypes.JSONMap) error {
 	}
 	return db.Db.Save(config).Error
 }
+
+func (u *user) FindByUsername(username string) (*entity.User, error) {
+	ret := &entity.User{}
+	if err := db.Db.First(ret, "username=?", username).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}

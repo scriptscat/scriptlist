@@ -18,8 +18,10 @@ const (
 	UserNotifyScriptIssue        = "script_issue"
 	UserNotifyScriptIssueComment = "script_issue_comment"
 	UserNotifyScore              = "score"
+	UserNotifyAt                 = "at"
 )
 
+//go:generate mockgen -source ./user.go -destination ./mock/user.go
 type User interface {
 	UserInfo(id int64) (*respond.User, error)
 	SelfInfo(id int64) (*respond.User, error)
@@ -33,6 +35,7 @@ type User interface {
 	Unfollow(uid, follow int64) error
 	FollowList(uid int64, page request.Pages) ([]*entity3.HomeFollow, error)
 	FollowerList(uid int64, page request.Pages) ([]*entity3.HomeFollow, error)
+	FindByUsername(username string, self bool) (*respond.User, error)
 }
 
 type user struct {
@@ -52,6 +55,9 @@ func (u *user) UserInfo(id int64) (*respond.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return respond.ToUser(user), errs.ErrUserNotFound
+	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组
 		return respond.ToUser(user), errs.ErrUserIsBan
@@ -63,6 +69,24 @@ func (u *user) SelfInfo(id int64) (*respond.User, error) {
 	user, err := u.userRepo.Find(id)
 	if err != nil {
 		return nil, err
+	}
+	if user == nil {
+		return respond.ToSelfUser(user), errs.ErrUserNotFound
+	}
+	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
+		// 禁止访问 禁止发言 等待验证会员 封禁用户组
+		return respond.ToSelfUser(user), errs.ErrUserIsBan
+	}
+	return respond.ToSelfUser(user), nil
+}
+
+func (u *user) FindByUsername(username string, self bool) (*respond.User, error) {
+	user, err := u.userRepo.FindByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return respond.ToSelfUser(user), errs.ErrUserNotFound
 	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组
@@ -118,6 +142,7 @@ func (u *user) GetUserConfig(uid int64) (*entity3.UserConfig, error) {
 				UserNotifyCreateScript:       true,
 				UserNotifyScriptIssue:        true,
 				UserNotifyScriptIssueComment: true,
+				UserNotifyAt:                 true,
 			},
 		}
 	}

@@ -13,6 +13,7 @@ type User interface {
 	SetUserToken(id int64, token string) error
 	FindUserConfig(id int64) (*entity.UserConfig, error)
 	SaveUserNotifyConfig(id int64, notify datatypes.JSONMap) error
+	FindByUsername(username string) (*entity.User, error)
 }
 
 type Follow interface {
