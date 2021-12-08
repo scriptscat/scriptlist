@@ -90,6 +90,8 @@ func copyInterface(dst interface{}, src interface{}) {
 		srcof := reflect.ValueOf(src)
 		if srcof.Kind() == reflect.Ptr {
 			el.Set(srcof.Elem())
+		} else if src == nil {
+			dst = nil
 		} else {
 			el.Set(srcof)
 		}
