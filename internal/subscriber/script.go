@@ -70,7 +70,7 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	if err != nil {
 		return err
 	}
-	list, err := n.userSvc.FollowerList(scriptInfo.UserId, request.AllPage)
+	list, _, err := n.userSvc.FollowerList(scriptInfo.UserId, request.AllPage)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 		logrus.Errorf("watch err:%v", err)
 	}
 
-	title := user.Username + "发布了一个新脚本:" + scriptInfo.Name
+	title := user.Username + " 发布了一个新脚本: " + scriptInfo.Name
 	content := fmt.Sprintf("<h2><a href=\"%s\">%s</a></h2><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10), scriptInfo.Name,
 		//TODO: 链接

@@ -33,8 +33,8 @@ type User interface {
 	IsFollow(uid, follow int64) (*entity3.HomeFollow, error)
 	Follow(uid, follow int64) error
 	Unfollow(uid, follow int64) error
-	FollowList(uid int64, page request.Pages) ([]*entity3.HomeFollow, error)
-	FollowerList(uid int64, page request.Pages) ([]*entity3.HomeFollow, error)
+	FollowList(uid int64, page request.Pages) ([]*entity3.HomeFollow, int64, error)
+	FollowerList(uid int64, page request.Pages) ([]*entity3.HomeFollow, int64, error)
 	FindByUsername(username string, self bool) (*respond.User, error)
 }
 
@@ -213,10 +213,10 @@ func (u *user) Unfollow(uid, follow int64) error {
 	return u.followRepo.Delete(uid, follow)
 }
 
-func (u *user) FollowList(uid int64, page request.Pages) ([]*entity3.HomeFollow, error) {
+func (u *user) FollowList(uid int64, page request.Pages) ([]*entity3.HomeFollow, int64, error) {
 	return u.followRepo.List(uid, page)
 }
 
-func (u *user) FollowerList(uid int64, page request.Pages) ([]*entity3.HomeFollow, error) {
+func (u *user) FollowerList(uid int64, page request.Pages) ([]*entity3.HomeFollow, int64, error) {
 	return u.followRepo.FollowerList(uid, page)
 }

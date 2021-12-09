@@ -73,6 +73,12 @@ func (u *User) info(ctx *gin.Context) {
 			return err
 		}
 		resp["user"] = userinfo
+		_, num, _ := u.svc.FollowList(userinfo.UID, request.Pages{})
+		_, num2, _ := u.svc.FollowerList(userinfo.UID, request.Pages{})
+		resp["follow"] = gin.H{
+			"following": num,
+			"followers": num2,
+		}
 		return resp
 	})
 }
@@ -160,7 +166,12 @@ func (u *User) notify(c *gin.Context) {
 	handle(c, func() interface{} {
 		uid, _ := userId(c)
 		notify := datatypes.JSONMap{
-			"score": c.PostForm("score") == "true",
+			service.UserNotifyScore:              c.PostForm(service.UserNotifyScore) == "true",
+			service.UserNotifyCreateScript:       c.PostForm(service.UserNotifyCreateScript) == "true",
+			service.UserNotifyScriptUpdate:       c.PostForm(service.UserNotifyScriptUpdate) == "true",
+			service.UserNotifyScriptIssue:        c.PostForm(service.UserNotifyScriptIssue) == "true",
+			service.UserNotifyScriptIssueComment: c.PostForm(service.UserNotifyScriptIssueComment) == "true",
+			service.UserNotifyAt:                 c.PostForm(service.UserNotifyAt) == "true",
 		}
 		return u.svc.SetUserNotifyConfig(uid, notify)
 	})
@@ -210,7 +221,7 @@ func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 
 	rgg = rg.Group("/config", userAuth(true))
 	rgg.GET("", u.config)
-	rgg.PUT("/notifySvc", u.notify)
+	rgg.PUT("/notify", u.notify)
 
 	rgg = rg.Group("/webhook", userAuth(true))
 	rgg.GET("", u.getwebhook)

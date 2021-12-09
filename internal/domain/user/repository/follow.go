@@ -27,28 +27,36 @@ func (f *follow) Find(uid, follow int64) (*entity.HomeFollow, error) {
 	return ret, nil
 }
 
-func (f *follow) List(uid int64, page request.Pages) ([]*entity.HomeFollow, error) {
+func (f *follow) List(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
 	list := make([]*entity.HomeFollow, 0)
 	find := f.db.Model(&entity.HomeFollow{}).Where("uid=?", uid)
+	var count int64
+	if err := find.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
 	if page != request.AllPage {
 		find = find.Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
 	}
 	if err := find.Scan(&list).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return list, nil
+	return list, count, nil
 }
 
-func (f *follow) FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, error) {
+func (f *follow) FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
 	list := make([]*entity.HomeFollow, 0)
 	find := f.db.Model(&entity.HomeFollow{}).Where("followuid=?", uid)
+	var count int64
+	if err := find.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
 	if page != request.AllPage {
 		find = find.Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
 	}
 	if err := find.Scan(&list).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return list, nil
+	return list, count, nil
 }
 
 func (f *follow) Save(homeFollow *entity.HomeFollow) error {
