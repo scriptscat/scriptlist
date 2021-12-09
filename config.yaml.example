@@ -31,7 +31,15 @@ oauth:
 crontab:
   - scripts
 
+# 发送验证码等系统类型的Email
 email:
+  smtp: smtp.qq.com
+  port: 465
+  user: admin@qq.org
+  password: 123456
+
+# 发送通知类型的Email
+emailNotify:
   smtp: smtp.qq.com
   port: 465
   user: admin@qq.org

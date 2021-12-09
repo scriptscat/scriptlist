@@ -40,7 +40,7 @@ func (e *EvBusBroker) Subscribe(topic string, h Handler, opts ...SubscribeOption
 	options := NewSubscribeOptions(opts...)
 	ret := NewEvBusSubscriber(topic, options)
 	if err := bus.Subscribe(topic, ret.handle(h)); err != nil {
-		logrus.Errorf("event bus broker subscribe err: %v", err)
+		logrus.Errorf("event bus broker subscribe %v err: %v", topic, err)
 		return nil, err
 	}
 	return ret, nil
@@ -74,7 +74,7 @@ func (n *EvBusSubscriber) Unsubscribe() error {
 func (n *EvBusSubscriber) handle(h Handler) func(data *Message, opts PublishOptions) {
 	n._handle = func(data *Message, opts PublishOptions) {
 		if err := h(data); err != nil {
-			logrus.Errorf("event bus subscriber handler err: %v", err)
+			logrus.Errorf("event bus subscriber handler %v err: %v", n.topic, err)
 		}
 	}
 	return n._handle

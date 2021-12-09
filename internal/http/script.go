@@ -403,7 +403,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 			if err != nil {
 				logrus.Errorf("SelfInfo: %v", err)
 			} else {
-				if err := s.notifySvc.SendEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
+				if err := s.notifySvc.NotifyEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
 					fmt.Sprintf("您的脚本【%s】有新的评分:<br/>%s:<br/>%s<br/><br/><a href='%s'>点我查看</a>或者复制链接:%s",
 						info.Name, user.Username, score.Message,
 						config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",

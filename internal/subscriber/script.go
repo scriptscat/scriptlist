@@ -81,8 +81,8 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	}
 
 	title := user.Username + "发布了一个新脚本:" + scriptInfo.Name
-	content := fmt.Sprintf("<a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
-		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
+	content := fmt.Sprintf("<h2><a href=\"%s\">%s</a></h2><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10), scriptInfo.Name,
 		//TODO: 链接
 		config.AppConfig.FrontendUrl+"",
 	)
@@ -98,7 +98,7 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 		if n, ok := uc.Notify[service3.UserNotifyCreateScript].(bool); ok && !n {
 			continue
 		}
-		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
+		_ = n.notifySvc.NotifyEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
 	return nil
 }
@@ -123,8 +123,8 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 	}
 
 	title := "[" + scriptInfo.Name + "]有新的版本: " + codeInfo.Version
-	content := fmt.Sprintf("%s升级到了:%s<hr/><a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
-		scriptInfo.Name, codeInfo.Version,
+	content := fmt.Sprintf("%s升级到了:%s<hr/><h3>更新日志</h3>%s<hr/><a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+		scriptInfo.Name, codeInfo.Version, codeInfo.Changelog,
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
 		//TODO: 链接
 		config.AppConfig.FrontendUrl+"",
@@ -144,7 +144,7 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 		if n, ok := uc.Notify[service3.UserNotifyScriptUpdate].(bool); ok && !n {
 			continue
 		}
-		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
+		_ = n.notifySvc.NotifyEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
 	return nil
 }
@@ -197,7 +197,7 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 		if n, ok := uc.Notify[service3.UserNotifyScriptIssue].(bool); ok && !n {
 			continue
 		}
-		if err := n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html"); err != nil {
+		if err := n.notifySvc.NotifyEmailFrom(user.Username, u.Email, title, content, "text/html"); err != nil {
 			logrus.Errorf("sendemail: %v", err)
 		}
 	}
@@ -218,7 +218,7 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 		if n, ok := uc.Notify[service3.UserNotifyScriptIssue].(bool); ok && !n {
 			continue
 		}
-		_ = n.notifySvc.SendEmailFrom(user.Username, v.Email, user.Username+" 在 "+issueInfo.Title+" 中有提及到您", content, "text/html")
+		_ = n.notifySvc.NotifyEmailFrom(user.Username, v.Email, user.Username+" 在 "+issueInfo.Title+" 中有提及到您", content, "text/html")
 	}
 	return nil
 }
@@ -274,7 +274,7 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		if n, ok := uc.Notify[service3.UserNotifyScriptIssueComment].(bool); ok && !n {
 			continue
 		}
-		_ = n.notifySvc.SendEmailFrom(user.Username, u.Email, title, content, "text/html")
+		_ = n.notifySvc.NotifyEmailFrom(user.Username, u.Email, title, content, "text/html")
 	}
 	// 解析是否有艾特并通知
 	users, err := n.parseContent(commentInfo.Content)
@@ -293,7 +293,7 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		if n, ok := uc.Notify[service3.UserNotifyScriptIssueComment].(bool); ok && !n {
 			continue
 		}
-		_ = n.notifySvc.SendEmailFrom(user.Username, v.Email, user.Username+" 在 "+issueInfo.Title+" 中有提及到您", content, "text/html")
+		_ = n.notifySvc.NotifyEmailFrom(user.Username, v.Email, user.Username+" 在 "+issueInfo.Title+" 中有提及到您", content, "text/html")
 	}
 	return nil
 }

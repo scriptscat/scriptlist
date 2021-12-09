@@ -2,7 +2,6 @@ package service
 
 import (
 	"crypto/tls"
-	"mime"
 
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
 	"github.com/sirupsen/logrus"
@@ -12,24 +11,32 @@ import (
 type Sender interface {
 	SendEmail(to, title, content, contextType string) error
 	SendEmailFrom(from, to, title, content, contextType string) error
+	NotifyEmail(to, title, content, contextType string) error
+	NotifyEmailFrom(from, to, title, content, contextType string) error
 }
 
 type sender struct {
 	config config.Email
+	notify config.Email
 }
 
-func NewSender(config config.Email) Sender {
+func NewSender(config config.Email, notify config.Email) Sender {
 	return &sender{
 		config: config,
+		notify: notify,
 	}
 }
 
 func (s *sender) SendEmail(to, title, content, contextType string) error {
+	return s.SendEmailFrom("ScriptCat", to, title, content, contextType)
+}
+
+func (s *sender) SendEmailFrom(from, to, title, content, contextType string) error {
 	d := gomail.NewDialer(s.config.Smtp, s.config.Port, s.config.User, s.config.Password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", mime.QEncoding.Encode("utf-8", "ScriptCat")+" <"+s.config.User+">")
+	m.SetHeader("From", m.FormatAddress(s.notify.User, from))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", "[脚本猫]"+title)
 	m.SetBody(contextType, content)
@@ -41,12 +48,16 @@ func (s *sender) SendEmail(to, title, content, contextType string) error {
 	return err
 }
 
-func (s *sender) SendEmailFrom(from, to, title, content, contextType string) error {
-	d := gomail.NewDialer(s.config.Smtp, s.config.Port, s.config.User, s.config.Password)
+func (s *sender) NotifyEmail(to, title, content, contextType string) error {
+	return s.NotifyEmailFrom("ScriptCat", to, title, content, contextType)
+}
+
+func (s *sender) NotifyEmailFrom(from, to, title, content, contextType string) error {
+	d := gomail.NewDialer(s.notify.Smtp, s.notify.Port, s.notify.User, s.notify.Password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", mime.QEncoding.Encode("utf-8", from)+" <"+s.config.User+">")
+	m.SetHeader("From", m.FormatAddress(s.notify.User, from))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", "[脚本猫]"+title)
 	m.SetBody(contextType, content)

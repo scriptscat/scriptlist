@@ -112,7 +112,7 @@ func StartApi() error {
 	statisSvc := service4.NewStatistics(repository2.NewStatistics())
 	scoreSvc := service3.NewScore(repository3.NewScore())
 	rateSvc := service.NewRate(repository4.NewRate())
-	notifySvc := service7.NewSender(config.AppConfig.Email)
+	notifySvc := service7.NewSender(config.AppConfig.Email, config.AppConfig.EmailNotify)
 	issueSvc := service8.NewIssue(repository6.NewIssue(), repository6.NewComment())
 	issueWatchSvc := service8.NewWatch(repository6.NewWatch())
 	scriptWatchSvc := service3.NewWatch(repository3.NewScriptWatch())
