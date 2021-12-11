@@ -28,6 +28,8 @@ type Script interface {
 	UserScript(uid int64, self bool, page request.Pages) ([]*entity.Script, int64, error)
 	Info(id int64) (*entity.Script, error)
 	GetCode(id int64) (*entity.ScriptCode, error)
+	GetScriptVersion(scriptId int64, version string) (*entity.ScriptCode, error)
+	GetLatestVersion(scriptId int64) (*entity.ScriptCode, error)
 	VersionList(id int64) ([]*entity.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	Download(id int64) error
@@ -371,4 +373,19 @@ func (s *script) FindSyncScript(page request.Pages) ([]*entity.Script, error) {
 
 func (s *script) GetCode(id int64) (*entity.ScriptCode, error) {
 	return s.codeRepo.Find(id)
+}
+
+func (s *script) GetScriptVersion(scriptId int64, version string) (*entity.ScriptCode, error) {
+	return s.codeRepo.FindByVersion(scriptId, version)
+}
+
+func (s *script) GetLatestVersion(scriptId int64) (*entity.ScriptCode, error) {
+	codes, err := s.VersionList(scriptId)
+	if err != nil {
+		return nil, err
+	}
+	if len(codes) == 0 {
+		return nil, errs.ErrScriptAudit
+	}
+	return codes[0], nil
 }

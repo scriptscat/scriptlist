@@ -246,17 +246,7 @@ func (s *Script) parseScriptInfo(url string) (int64, string) {
 	return id, version
 }
 
-func (s *Script) getStatisticsToken(ctx *gin.Context) string {
-	stk, _ := ctx.Cookie("_statistics")
-	if stk == "" {
-		stk = utils.RandString(32, 2)
-		ctx.SetCookie("_statistics", stk, 3600*24*365, "/", "", false, true)
-	}
-	return stk
-}
-
 func (s *Script) downloadScript(ctx *gin.Context) {
-	uid, _ := userId(ctx)
 	id := utils.StringToInt64(ctx.Param("id"))
 	version := ctx.Query("version")
 	if id == 0 {
@@ -278,10 +268,8 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
-	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, s.getStatisticsToken(ctx), true)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Code)
-
 }
 
 func (s *Script) getScriptMeta(ctx *gin.Context) {
@@ -307,7 +295,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
-	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, s.getStatisticsToken(ctx), false)
+	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, getStatisticsToken(ctx), false)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Meta)
 }
@@ -424,7 +412,7 @@ func (s *Script) putScore(ctx *gin.Context) {
 			if err != nil {
 				logrus.Errorf("SelfInfo: %v", err)
 			} else {
-				if err := s.notifySvc.NotifyEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
+				if err := s.notifySvc.SendEmail(sendUser.Email, "脚本有新的评分-"+info.Name,
 					fmt.Sprintf("您的脚本【%s】有新的评分:<br/>%s:<br/>%s<br/><br/><a href='%s'>点我查看</a>或者复制链接:%s",
 						info.Name, user.Username, score.Message,
 						config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(info.ID, 10)+"/comment",

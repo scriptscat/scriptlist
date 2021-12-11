@@ -13,7 +13,7 @@ type redisCache struct {
 	redis *goRedis.Client
 }
 
-func NewRedisCache(redis *goRedis.Client) *redisCache {
+func NewRedisCache(redis *goRedis.Client) Cache {
 	return &redisCache{
 		redis: redis,
 	}
@@ -81,6 +81,10 @@ func (r *redisCache) Has(key string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func (r *redisCache) Del(key string) error {
+	return r.redis.Del(context.Background(), key).Err()
 }
 
 func copyInterface(dst interface{}, src interface{}) {

@@ -15,3 +15,6 @@ generate:
 
 test:
 	go test -v ./...
+
+wasm:
+	GOOS=js GOARCH=wasm go build -o scriptlist.wasm ./cmd/wasm

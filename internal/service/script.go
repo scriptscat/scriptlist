@@ -173,24 +173,22 @@ func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool)
 	if version == "" {
 		return s.GetLatestScriptCode(id, withcode)
 	}
-	list, err := s.scriptSvc.VersionList(id)
+	code, err := s.scriptSvc.GetScriptVersion(id, version)
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range list {
-		if v.Version == version {
-			user, _ := s.userSvc.UserInfo(v.UserId)
-			ret := respond2.ToScriptCode(user, v)
-			if withcode {
-				ret.Code = v.Code
-				if d, err := s.scriptSvc.GetCodeDefinition(v.ID); err == nil {
-					ret.Definition = d.Definition
-				}
-			}
-			return ret, err
+	if code == nil {
+		return nil, errs.ErrScriptCodeIsNil
+	}
+	user, _ := s.userSvc.UserInfo(code.UserId)
+	ret := respond2.ToScriptCode(user, code)
+	if withcode {
+		ret.Code = code.Code
+		if d, err := s.scriptSvc.GetCodeDefinition(code.ID); err == nil {
+			ret.Definition = d.Definition
 		}
 	}
-	return nil, errs.ErrScriptCodeIsNil
+	return ret, nil
 }
 
 func (s *script) GetCategory() ([]*entity.ScriptCategoryList, error) {

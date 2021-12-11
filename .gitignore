@@ -8,3 +8,5 @@ scriptlist
 /resource
 
 /logs
+
+*.wasm
