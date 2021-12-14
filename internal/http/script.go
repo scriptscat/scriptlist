@@ -82,6 +82,19 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 			}
 		}
 	})
+	r.GET("/scripts/code/:id/*name", func(ctx *gin.Context) {
+		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") || strings.HasSuffix(ctx.Request.RequestURI, ".user.sub.js") {
+			tokenAuth(ctx)
+			if !ctx.IsAborted() {
+				s.downloadScript(ctx)
+			}
+		} else if strings.HasSuffix(ctx.Request.RequestURI, ".meta.js") {
+			tokenAuth(ctx)
+			if !ctx.IsAborted() {
+				s.getScriptMeta(ctx)
+			}
+		}
+	})
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
 	rg.POST("", userAuth(true), s.add)
@@ -244,7 +257,11 @@ func (s *Script) getStatisticsToken(ctx *gin.Context) string {
 
 func (s *Script) downloadScript(ctx *gin.Context) {
 	uid, _ := userId(ctx)
-	id, version := s.parseScriptInfo(ctx.Request.RequestURI)
+	id := utils.StringToInt64(ctx.Param("id"))
+	version := ctx.Query("version")
+	if id == 0 {
+		id, version = s.parseScriptInfo(ctx.Request.RequestURI)
+	}
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
 		ctx.String(http.StatusNotFound, "脚本未找到")
@@ -269,7 +286,11 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 
 func (s *Script) getScriptMeta(ctx *gin.Context) {
 	uid, _ := userId(ctx)
-	id, version := s.parseScriptInfo(ctx.Request.RequestURI)
+	id := utils.StringToInt64(ctx.Param("id"))
+	version := ctx.Query("version")
+	if id == 0 {
+		id, version = s.parseScriptInfo(ctx.Request.RequestURI)
+	}
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
 		ctx.String(http.StatusNotFound, "脚本未找到")
