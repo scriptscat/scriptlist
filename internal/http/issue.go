@@ -65,7 +65,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 			ret[k] = respond.ToIssue(u, v)
 		}
 		return &respond.List{
-			List:  list,
+			List:  ret,
 			Total: total,
 		}
 	})
