@@ -6,7 +6,7 @@ import (
 )
 
 type Issue interface {
-	List(scriptId int64, keyword string, tag []string, status int, page request.Pages) ([]*entity.ScriptIssue, error)
+	List(scriptId int64, keyword string, tag []string, status int, page request.Pages) ([]*entity.ScriptIssue, int64, error)
 	FindById(issue int64) (*entity.ScriptIssue, error)
 	Save(issue *entity.ScriptIssue) error
 }

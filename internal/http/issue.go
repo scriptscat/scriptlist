@@ -55,7 +55,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 		if c.Query("labels") != "" {
 			labels = strings.Split(c.Query("labels"), ",")
 		}
-		list, err := s.issueSvc.List(script, c.Query("keyword"), labels, utils.StringToInt(c.Query("status")), page)
+		list, total, err := s.issueSvc.List(script, c.Query("keyword"), labels, utils.StringToInt(c.Query("status")), page)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,10 @@ func (s *ScriptIssue) list(c *gin.Context) {
 			u, _ := s.userSvc.UserInfo(v.UserID)
 			ret[k] = respond.ToIssue(u, v)
 		}
-		return ret
+		return &respond.List{
+			List:  list,
+			Total: total,
+		}
 	})
 }
 

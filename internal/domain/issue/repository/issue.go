@@ -15,7 +15,7 @@ func NewIssue() Issue {
 	return &issue{db: db.Db}
 }
 
-func (i *issue) List(scriptId int64, keyword string, labels []string, status int, page request.Pages) ([]*entity.ScriptIssue, error) {
+func (i *issue) List(scriptId int64, keyword string, labels []string, status int, page request.Pages) ([]*entity.ScriptIssue, int64, error) {
 	list := make([]*entity.ScriptIssue, 0)
 	find := i.db.Model(&entity.ScriptIssue{}).Where("script_id=?", scriptId).Order("createtime desc")
 	if keyword != "" {
@@ -29,11 +29,15 @@ func (i *issue) List(scriptId int64, keyword string, labels []string, status int
 	if len(labels) != 0 {
 		find = find.Where("labels in ?", labels)
 	}
+	var num int64
+	if err := find.Count(&num).Error; err != nil {
+		return nil, 0, err
+	}
 	find = find.Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
 	if err := find.Scan(&list).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return list, nil
+	return list, num, nil
 }
 
 func (i *issue) FindById(issue int64) (*entity.ScriptIssue, error) {
