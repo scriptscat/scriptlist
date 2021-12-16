@@ -25,13 +25,13 @@ func T1638951531() *gormigrate.Migration {
 			userSvc := service3.NewUser(repository2.NewUser(), repository2.NewFollow())
 			scripts, _, err := script.List(&repository.SearchList{Status: cnt.ACTIVE}, request.AllPage)
 			if err != nil {
-				logrus.Error("query script: %v", err)
+				logrus.Errorf("query script: %v", err)
 				return err
 			}
 			email := make(map[string]*respond.User)
 			for _, script := range scripts {
 				if err := scriptSvc.Watch(script.ID, script.UserId, service.ScriptWatchLevelIssueComment); err != nil {
-					logrus.Error("watch %v %v: %v", script.ID, script.UserId, err)
+					logrus.Errorf("watch %v %v: %v", script.ID, script.UserId, err)
 					continue
 				}
 				user, err := userSvc.SelfInfo(script.UserId)

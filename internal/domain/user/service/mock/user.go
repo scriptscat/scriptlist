@@ -67,12 +67,13 @@ func (mr *MockUserMockRecorder) Follow(uid, follow interface{}) *gomock.Call {
 }
 
 // FollowList mocks base method.
-func (m *MockUser) FollowList(uid int64, page request.Pages) ([]*entity.HomeFollow, error) {
+func (m *MockUser) FollowList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FollowList", uid, page)
 	ret0, _ := ret[0].([]*entity.HomeFollow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // FollowList indicates an expected call of FollowList.
@@ -82,12 +83,13 @@ func (mr *MockUserMockRecorder) FollowList(uid, page interface{}) *gomock.Call {
 }
 
 // FollowerList mocks base method.
-func (m *MockUser) FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, error) {
+func (m *MockUser) FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FollowerList", uid, page)
 	ret0, _ := ret[0].([]*entity.HomeFollow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // FollowerList indicates an expected call of FollowerList.

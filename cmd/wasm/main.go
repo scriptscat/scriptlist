@@ -1,3 +1,5 @@
+//+build wasm
+
 package main
 
 import (
@@ -5,6 +7,11 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"hash"
+
+	"github.com/gopherjs/gopherjs/js"
+)
+
+import (
 	"syscall/js"
 )
 
