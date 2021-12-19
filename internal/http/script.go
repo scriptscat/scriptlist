@@ -253,7 +253,10 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		id, version = s.parseScriptInfo(ctx.Request.RequestURI)
 	}
 	ua := ctx.GetHeader("User-Agent")
-	if id == 0 || ua == "" {
+	if id == 0 {
+		return
+	}
+	if ua == "" {
 		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}

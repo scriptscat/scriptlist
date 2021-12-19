@@ -158,6 +158,9 @@ func (u *user) IsFollow(uid, follow int64) (*entity3.HomeFollow, error) {
 }
 
 func (u *user) Follow(uid, follow int64) error {
+	if uid == follow {
+		return errs.NewBadRequestError(1000, "自己不能关注自己")
+	}
 	ok, err := u.followRepo.Find(uid, follow)
 	if err != nil {
 		return err

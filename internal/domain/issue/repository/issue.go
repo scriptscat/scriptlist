@@ -41,8 +41,8 @@ func (i *issue) List(scriptId int64, keyword string, labels []string, status int
 }
 
 func (i *issue) FindById(issue int64) (*entity.ScriptIssue, error) {
-	ret := &entity.ScriptIssue{ID: issue}
-	if err := i.db.First(ret).Error; err != nil {
+	ret := &entity.ScriptIssue{}
+	if err := i.db.First(ret, "id=?", issue).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

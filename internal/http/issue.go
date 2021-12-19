@@ -138,7 +138,11 @@ func (s *ScriptIssue) putLabels(c *gin.Context) {
 			return err
 		}
 		labels := strings.Split(c.PostForm("labels"), ",")
-		return s.issueSvc.Label(issueId, user, labels)
+		comment, err := s.issueSvc.Label(issueId, user, labels)
+		if err != nil {
+			return err
+		}
+		return comment
 	})
 }
 
@@ -163,24 +167,25 @@ func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		handle(c, func() interface{} {
 			issueId := s.getIssueId(c)
-			uid, _ := userId(c)
-			_, err := s.userSvc.UserInfo(uid)
+			user, _ := selfinfo(c)
+			_, err := s.userSvc.UserInfo(user.UID)
 			if err != nil {
 				return err
 			}
-			_, _, err = s.isOperate(issueId, uid)
+			_, _, err = s.isOperate(issueId, user.UID)
 			if err != nil {
 				return err
 			}
+			var comment *entity2.ScriptIssueComment
 			if open {
-				err = s.issueSvc.Open(issueId, uid)
+				comment, err = s.issueSvc.Open(issueId, user.UID)
 			} else {
-				err = s.issueSvc.Close(issueId, uid)
+				comment, err = s.issueSvc.Close(issueId, user.UID)
 			}
 			if err != nil {
 				return err
 			}
-			return nil
+			return respond.ToIssueComment(user, comment)
 		})
 	}
 }
@@ -201,7 +206,10 @@ func (s *ScriptIssue) commentList(c *gin.Context) {
 			u, _ := s.userSvc.UserInfo(v.UserID)
 			ret[k] = respond.ToIssueComment(u, v)
 		}
-		return ret
+		return &respond.List{
+			List:  ret,
+			Total: int64(len(ret)),
+		}
 	})
 }
 
@@ -230,7 +238,7 @@ func (s *ScriptIssue) comment(c *gin.Context) {
 		if err == nil && watch == 0 {
 			_ = s.issueWatchSvc.Watch(issueId, user.UID)
 		}
-		return comment
+		return respond.ToIssueComment(user, comment)
 	})
 }
 

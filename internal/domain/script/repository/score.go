@@ -44,8 +44,8 @@ func (s *score) Save(score *entity.ScriptScore) error {
 		}
 		return db.Db.Create(score).Error
 	}
-	old := &entity.ScriptScore{ID: score.ID}
-	if err := db.Db.First(old).Error; err != nil {
+	old := &entity.ScriptScore{}
+	if err := db.Db.First(old, "id=?", score.ID).Error; err != nil {
 		return err
 	}
 	if score.Score != old.Score && db.Db.Model(&entity.ScriptStatistics{}).Where("script_id=?", score.ScriptId).Updates(map[string]interface{}{

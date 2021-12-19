@@ -26,8 +26,8 @@ func (c *comment) List(issue int64, status int, page request.Pages) ([]*entity.S
 }
 
 func (c *comment) FindById(comment int64) (*entity.ScriptIssueComment, error) {
-	ret := &entity.ScriptIssueComment{ID: comment}
-	if err := c.db.First(ret).Error; err != nil {
+	ret := &entity.ScriptIssueComment{}
+	if err := c.db.First(ret, "id=?", comment).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

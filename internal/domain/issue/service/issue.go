@@ -38,9 +38,9 @@ type Issue interface {
 	DelIssue(issue, operator int64) error
 	// 对issue的操作
 
-	Open(issue, operator int64) error
-	Close(issue, operator int64) error
-	Label(issue, operator int64, label []string) error
+	Open(issue, operator int64) (*entity.ScriptIssueComment, error)
+	Close(issue, operator int64) (*entity.ScriptIssueComment, error)
+	Label(issue, operator int64, label []string) (*entity.ScriptIssueComment, error)
 
 	CommentList(issue int64, page request.Pages) ([]*entity.ScriptIssueComment, error)
 	GetComment(commentId int64) (*entity.ScriptIssueComment, error)
@@ -140,9 +140,9 @@ func (i *issue) DelIssue(issueId int64, operator int64) error {
 	})
 }
 
-func (i *issue) Open(issueId, operator int64) error {
+func (i *issue) Open(issueId, operator int64) (*entity.ScriptIssueComment, error) {
 	if err := i.changeStatus(issueId, cnt.ACTIVE); err != nil {
-		return err
+		return nil, err
 	}
 	return i.commentSave(&entity.ScriptIssueComment{
 		IssueID:    issueId,
@@ -154,9 +154,9 @@ func (i *issue) Open(issueId, operator int64) error {
 	})
 }
 
-func (i *issue) Close(issueId, operator int64) error {
+func (i *issue) Close(issueId, operator int64) (*entity.ScriptIssueComment, error) {
 	if err := i.changeStatus(issueId, cnt.BAN); err != nil {
-		return err
+		return nil, err
 	}
 	return i.commentSave(&entity.ScriptIssueComment{
 		IssueID:    issueId,
@@ -168,12 +168,12 @@ func (i *issue) Close(issueId, operator int64) error {
 	})
 }
 
-func (i *issue) commentSave(comment *entity.ScriptIssueComment) error {
+func (i *issue) commentSave(comment *entity.ScriptIssueComment) (*entity.ScriptIssueComment, error) {
 	if err := i.commentRepo.Save(comment); err != nil {
-		return err
+		return nil, err
 	}
 	_ = broker.PublishScriptIssueCommentCreate(comment.IssueID, comment.ID)
-	return nil
+	return comment, nil
 }
 
 func (i *issue) changeStatus(issueId int64, status int) error {
@@ -188,10 +188,10 @@ func (i *issue) changeStatus(issueId int64, status int) error {
 	return i.issueRepo.Save(issue)
 }
 
-func (i *issue) Label(issueId, operator int64, label []string) error {
+func (i *issue) Label(issueId, operator int64, label []string) (*entity.ScriptIssueComment, error) {
 	issue, err := i.GetIssue(issueId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	oldLabel := strings.Split(issue.Labels, ",")
 	oldLabelMap := make(map[string]struct{})
@@ -217,16 +217,16 @@ func (i *issue) Label(issueId, operator int64, label []string) error {
 		}
 	}
 	if len(add) == 0 && len(del) == 0 {
-		return errs.NewBadRequestError(1000, "标签没有发生改变")
+		return nil, errs.NewBadRequestError(1000, "标签没有发生改变")
 	}
 	for _, v := range update {
 		if _, ok := Label[v]; !ok {
-			return errs.NewBadRequestError(1000, "错误的标签")
+			return nil, errs.NewBadRequestError(1000, "错误的标签")
 		}
 	}
 	issue.Labels = strings.Join(update, ",")
 	if err := i.issueRepo.Save(issue); err != nil {
-		return err
+		return nil, err
 	}
 	return i.commentSave(&entity.ScriptIssueComment{
 		IssueID:    issueId,
@@ -258,10 +258,7 @@ func (i *issue) Comment(issueId, user int64, content string) (*entity.ScriptIssu
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),
 	}
-	if err := i.commentSave(ret); err != nil {
-		return nil, err
-	}
-	return ret, nil
+	return i.commentSave(ret)
 }
 
 func (i *issue) GetComment(commentId int64) (*entity.ScriptIssueComment, error) {

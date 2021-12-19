@@ -81,10 +81,9 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	}
 
 	title := user.Username + " 发布了一个新脚本: " + scriptInfo.Name
-	content := fmt.Sprintf("<h2><a href=\"%s\">%s</a></h2><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+	content := fmt.Sprintf("<h2><a href=\"%s\">%s</a></h2><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该作者的关注",
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10), scriptInfo.Name,
-		//TODO: 链接
-		config.AppConfig.FrontendUrl+"",
+		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for _, v := range list {
 		u, err := n.userSvc.SelfInfo(v.Uid)
@@ -123,11 +122,10 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 	}
 
 	title := "[" + scriptInfo.Name + "]有新的版本: " + codeInfo.Version
-	content := fmt.Sprintf("%s升级到了:%s<hr/><h3>更新日志</h3>%s<hr/><a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+	content := fmt.Sprintf("%s升级到了:%s<hr/><h3>更新日志</h3>%s<hr/><a href=\"%s\">点击查看脚本页面</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该脚本的关注",
 		scriptInfo.Name, codeInfo.Version, codeInfo.Changelog,
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10),
-		//TODO: 链接
-		config.AppConfig.FrontendUrl+"",
+		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, v := range list {
 		if v < service.ScriptWatchLevelVersion {
@@ -172,11 +170,10 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 		logrus.Errorf("issue watch: %v", err)
 	}
 	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
-	content := fmt.Sprintf("%s<hr/><a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+	content := fmt.Sprintf("%s<hr/><a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该脚本反馈的关注",
 		issueInfo.Content,
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
-		//TODO: 链接
-		config.AppConfig.FrontendUrl+"",
+		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, level := range list {
 		if level < service.ScriptWatchLevelIssue {
@@ -246,10 +243,9 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		return err
 	}
 	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
-	content := fmt.Sprintf("<a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知",
+	content := fmt.Sprintf("<a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该脚本反馈评论的关注",
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
-		//TODO: 链接
-		config.AppConfig.FrontendUrl+"",
+		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	switch commentInfo.Type {
 	case service4.CommentTypeComment:
