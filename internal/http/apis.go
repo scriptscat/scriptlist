@@ -146,7 +146,7 @@ func StartApi() error {
 	statis := service5.NewStatistics(statisSvc, scriptSvc)
 
 	r := gin.New()
-	r.Use(logs.GinLogger(), gin.Recovery())
+	r.Use(logs.GinLogger()...)
 
 	Registry(ctx, r,
 		NewScript(script, statis, userSvc, notifySvc, scriptWatchSvc, c),

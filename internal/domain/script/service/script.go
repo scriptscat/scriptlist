@@ -301,12 +301,12 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 					return err
 				}
 			}
-			if version != oldVersion {
-				_ = broker.PublishEventScriptVersionUpdate(script.ID, code.ID)
-			}
 			return nil
 		}); err != nil {
 			return err
+		}
+		if version != oldVersion {
+			_ = broker.PublishEventScriptVersionUpdate(script.ID, code.ID)
 		}
 	case entity.LIBRARY_TYPE:
 		// 库的处理
@@ -341,11 +341,11 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 					return err
 				}
 			}
-			_ = broker.PublishEventScriptVersionUpdate(script.ID, code.ID)
 			return nil
 		}); err != nil {
 			return err
 		}
+		_ = broker.PublishEventScriptVersionUpdate(script.ID, code.ID)
 	default:
 		return errs.NewBadRequestError(1010, "错误的类型")
 	}
