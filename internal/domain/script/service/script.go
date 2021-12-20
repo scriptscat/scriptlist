@@ -244,6 +244,8 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 					return errs.ErrScriptCodeExist
 				}
 				code = ok
+				oldVersion = code.Version
+				script.Updatetime = ok.Createtime
 				if req.Changelog != "" {
 					code.Changelog = req.Changelog
 					code.Updatetime = time.Now().Unix()
