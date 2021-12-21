@@ -137,7 +137,10 @@ func (s *script) CreateScript(uid int64, req *request.CreateScript) (*entity.Scr
 		SyncMode:   NONE_SYNC_MODE,
 		Createtime: time.Now().Unix(),
 	}
-	return script, s.createScriptCode(uid, script, req)
+	if err := s.createScriptCode(uid, script, req); err != nil {
+		return nil, err
+	}
+	return script, broker.PublishEventScriptCreate(script.ID)
 }
 
 func (s *script) UpdateScript(uid, id int64, req *request.UpdateScript) error {
@@ -177,7 +180,7 @@ func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) 
 	//	script.Name = req.Name
 	//	script.Description = req.Description
 	//}
-	return s.createScriptCode(uid, script, &request.CreateScript{
+	if err := s.createScriptCode(uid, script, &request.CreateScript{
 		Content:     req.Content,
 		Code:        req.Code,
 		Name:        script.Name,
@@ -186,7 +189,10 @@ func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) 
 		Type:        script.Type,
 		Public:      req.Public,
 		Unwell:      req.Unwell,
-	})
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *script) createScriptCode(uid int64, script *entity.Script, req *request.CreateScript) error {
