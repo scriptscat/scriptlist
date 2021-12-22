@@ -107,6 +107,8 @@ func (s *Statistics) download(c *gin.Context) {
 	//if !hmac.Equal(h.Sum(nil), b) {
 	//	return
 	//}
+	//TODO: 屏蔽刷下载
+	return
 	if ok, _ := db.Cache.Has("csrf:" + c.GetHeader("X-CSRF-Token")); ok {
 		return
 	}

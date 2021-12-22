@@ -247,7 +247,8 @@ func (s *Script) parseScriptInfo(url string) (int64, string) {
 }
 
 func (s *Script) downloadScript(ctx *gin.Context) {
-	//uid, _ := userId(ctx)
+	//TODO: 暂时先允许刷吧
+	uid, _ := userId(ctx)
 	id := utils.StringToInt64(ctx.Param("id"))
 	version := ctx.Query("version")
 	if id == 0 {
@@ -272,7 +273,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
-	//_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, getStatisticsToken(ctx), true)
+	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, getStatisticsToken(ctx), true)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Code)
 }
