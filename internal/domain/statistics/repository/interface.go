@@ -12,8 +12,8 @@ type Precision struct {
 }
 
 type Statistics interface {
-	Download(entity *entity.StatisticsDownload) error
-	CheckUpdate(entity *entity.StatisticsUpdate) error
+	Download(entity *entity.StatisticsDownload) (bool, error)
+	CheckUpdate(entity *entity.StatisticsUpdate) (bool, error)
 	Deal() error
 	RealtimeDownload(scriptId int64) ([]int64, error)
 	RealtimeUpdate(scriptId int64) ([]int64, error)

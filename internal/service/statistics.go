@@ -35,8 +35,10 @@ func NewStatistics(statisSvc service.Statistics, serviceSvc service2.Script) Sta
 func (s *statistics) handlerQueue() {
 	for {
 		record := <-s.queue
-		if err := s.Statistics.Record(record.scriptId, record.scriptCodeId, record.user, record.ip, record.ua, record.statisticsToken, record.download); err != nil {
+		if ok, err := s.Statistics.Record(record.scriptId, record.scriptCodeId, record.user, record.ip, record.ua, record.statisticsToken, record.download); err != nil {
 			glog.Warningf("statis record error: %v", err)
+		} else if !ok {
+			continue
 		}
 		if record.download {
 			if err := s.serviceSvc.Download(record.scriptId); err != nil {

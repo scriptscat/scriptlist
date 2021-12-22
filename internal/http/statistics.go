@@ -107,10 +107,10 @@ func (s *Statistics) download(c *gin.Context) {
 	//if !hmac.Equal(h.Sum(nil), b) {
 	//	return
 	//}
-	if ok, _ := db.Cache.Has("csrf:" + c.GetHeader("X-CSRF-Token")); !ok {
+	if ok, _ := db.Cache.Has("csrf:" + c.GetHeader("X-CSRF-Token")); ok {
 		return
 	}
-	_ = db.Cache.Del("csrf:" + c.GetHeader("X-CSRF-Token"))
+	_ = db.Cache.Set("csrf:"+c.GetHeader("X-CSRF-Token"), "1", cache.WithTTL(time.Hour))
 
 	var code *entity.ScriptCode
 	var err error
@@ -122,7 +122,18 @@ func (s *Statistics) download(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	_ = s.statisSvc.Record(id, code.ID, uid, c.ClientIP(), ua, getStatisticsToken(c), true)
+	go func() {
+		ok, err := s.statisSvc.Record(id, code.ID, uid, c.ClientIP(), ua, getStatisticsToken(c), true)
+		if err != nil {
+			logrus.Errorf("statis download record %v: %v", id, err)
+			return
+		}
+		if ok {
+			if err := s.scriptSvc.Download(id); err != nil {
+				logrus.Errorf("download record %v: %v", id, err)
+			}
+		}
+	}()
 }
 
 func (s *Statistics) Registry(ctx context.Context, r *gin.Engine) {
@@ -133,7 +144,6 @@ func (s *Statistics) Registry(ctx context.Context, r *gin.Engine) {
 
 	rgg = rg.Group("/script/:id")
 	rgg.GET("/csrf", csrf.CsrfMiddleware(), func(c *gin.Context) {
-		db.Cache.Set("csrf:"+csrf.Token(c), "true", cache.WithTTL(time.Hour))
 		c.JSON(http.StatusOK, gin.H{"csrf": csrf.Token(c)})
 	})
 	rgg.POST("/download", csrf.CsrfMiddleware(), s.download)

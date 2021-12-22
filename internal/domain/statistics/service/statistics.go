@@ -10,7 +10,7 @@ import (
 )
 
 type Statistics interface {
-	Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error
+	Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) (bool, error)
 	TodayDownload(scriptId int64) (int64, error)
 	TotalDownload(scriptId int64) (int64, error)
 	TodayUpdate(scriptId int64) (int64, error)
@@ -37,7 +37,7 @@ func NewStatistics(repo repository.Statistics) Statistics {
 	return ret
 }
 
-func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error {
+func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) (bool, error) {
 	item := &entity.StatisticsDownload{
 		UserId:          user,
 		Ip:              ip,

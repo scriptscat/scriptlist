@@ -93,11 +93,11 @@ func (s *statistics) Deal() error {
 	}
 }
 
-func (s *statistics) Download(entity *entity.StatisticsDownload) error {
+func (s *statistics) Download(entity *entity.StatisticsDownload) (bool, error) {
 	return s.save(entity, "download")
 }
 
-func (s *statistics) save(entity entity.Statistics, op string) error {
+func (s *statistics) save(entity entity.Statistics, op string) (bool, error) {
 	key := "statistics:script:" + op + ":" + fmt.Sprintf("%d", entity.GetScriptId())
 	date := time.Now().Format("2006/01/02")
 	// 丢定时任务里合并
@@ -109,10 +109,14 @@ func (s *statistics) save(entity entity.Statistics, op string) error {
 	db.Redis.Incr(context.Background(), key+":total:pv")
 	// 丢定时任务里清理
 	db.Redis.HIncrBy(context.Background(), key+":realtime", strconv.FormatInt(time.Now().Unix()/60, 10), 1)
-	return db.Db.Create(entity).Error
+	if err := db.Db.Create(entity).Error; err != nil {
+		return false, err
+	}
+	// 判断ip是否操作过了
+	return db.Redis.SetNX(context.Background(), key+":ip:exist:day:"+date, "1", time.Hour*24).Result()
 }
 
-func (s *statistics) CheckUpdate(entity *entity.StatisticsUpdate) error {
+func (s *statistics) CheckUpdate(entity *entity.StatisticsUpdate) (bool, error) {
 	return s.save(entity, "update")
 }
 

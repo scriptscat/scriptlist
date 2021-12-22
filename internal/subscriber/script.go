@@ -172,7 +172,7 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
 	content := fmt.Sprintf("%s<hr/><a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该脚本反馈的关注",
 		issueInfo.Content,
-		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, level := range list {
@@ -244,7 +244,7 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 	}
 	title := "[" + scriptInfo.Name + "]" + issueInfo.Title
 	content := fmt.Sprintf("<a href=\"%s\">点击查看原文</a><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该脚本反馈评论的关注",
-		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(issueInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
+		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10)+"/issue/"+strconv.FormatInt(issueInfo.ID, 10),
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	switch commentInfo.Type {
