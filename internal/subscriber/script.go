@@ -79,7 +79,8 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, service.ScriptWatchLevelIssueComment); err != nil {
 		logrus.Errorf("watch err:%v", err)
 	}
-
+	return nil
+	// 暂时先屏蔽用户关注
 	title := user.Username + " 发布了一个新脚本: " + scriptInfo.Name
 	content := fmt.Sprintf("<h2><a href=\"%s\">%s</a></h2><hr/>您可以在<a href='%s'>个人设置页面</a>中取消本邮件的通知,或者取消对该作者的关注",
 		config.AppConfig.FrontendUrl+"script-show-page/"+strconv.FormatInt(scriptInfo.ID, 10), scriptInfo.Name,
