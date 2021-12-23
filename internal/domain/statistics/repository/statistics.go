@@ -113,7 +113,7 @@ func (s *statistics) save(entity entity.Statistics, op string) (bool, error) {
 		return false, err
 	}
 	// 判断ip是否操作过了
-	return db.Redis.SetNX(context.Background(), key+":ip:exist:day:"+date, "1", time.Hour*24).Result()
+	return db.Redis.SetNX(context.Background(), key+":ip:exist:day:"+date+":"+entity.GetIp(), "1", time.Hour*24).Result()
 }
 
 func (s *statistics) CheckUpdate(entity *entity.StatisticsUpdate) (bool, error) {
