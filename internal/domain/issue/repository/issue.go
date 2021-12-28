@@ -15,7 +15,7 @@ func NewIssue() Issue {
 	return &issue{db: db.Db}
 }
 
-func (i *issue) List(scriptId int64, keyword string, labels []string, status int, page request.Pages) ([]*entity.ScriptIssue, int64, error) {
+func (i *issue) List(scriptId int64, keyword string, labels []string, status int, page *request.Pages) ([]*entity.ScriptIssue, int64, error) {
 	list := make([]*entity.ScriptIssue, 0)
 	find := i.db.Model(&entity.ScriptIssue{}).Where("script_id=?", scriptId).Order("createtime desc")
 	if keyword != "" {

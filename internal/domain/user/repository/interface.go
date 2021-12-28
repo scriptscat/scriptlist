@@ -18,8 +18,8 @@ type User interface {
 
 type Follow interface {
 	Find(uid, follow int64) (*entity.HomeFollow, error)
-	List(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error)
-	FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error)
+	List(uid int64, page *request.Pages) ([]*entity.HomeFollow, int64, error)
+	FollowerList(uid int64, page *request.Pages) ([]*entity.HomeFollow, int64, error)
 	Save(homeFollow *entity.HomeFollow) error
 	Delete(uid, follow int64) error
 }

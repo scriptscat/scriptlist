@@ -16,16 +16,16 @@ type SearchList struct {
 type Script interface {
 	Find(id int64) (*entity.Script, error)
 	Save(script *entity.Script) error
-	List(search *SearchList, page request.Pages) ([]*entity.Script, int64, error)
+	List(search *SearchList, page *request.Pages) ([]*entity.Script, int64, error)
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
-	FindSyncScript(page request.Pages) ([]*entity.Script, error)
+	FindSyncScript(page *request.Pages) ([]*entity.Script, error)
 }
 
 type ScriptCode interface {
 	Find(id int64) (*entity.ScriptCode, error)
 	Save(script *entity.ScriptCode) error
 	FindByVersion(scriptId int64, version string) (*entity.ScriptCode, error)
-	List(script, status int64) ([]*entity.ScriptCode, error)
+	List(script, status int64, page *request.Pages) ([]*entity.ScriptCode, int64, error)
 	SaveDefinition(definition *entity.LibDefinition) error
 	SaveScriptDomain(domain *entity.ScriptDomain) error
 	FindScriptDomain(scriptId int64, domain string) (*entity.ScriptDomain, error)

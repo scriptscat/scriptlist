@@ -47,8 +47,8 @@ func (s *ScriptIssue) getIssueId(c *gin.Context) int64 {
 func (s *ScriptIssue) list(c *gin.Context) {
 	handle(c, func() interface{} {
 		script := s.getScriptId(c)
-		page := request2.Pages{}
-		if err := c.ShouldBind(&page); err != nil {
+		page := &request2.Pages{}
+		if err := c.ShouldBind(page); err != nil {
 			return err
 		}
 		var labels []string
@@ -193,8 +193,8 @@ func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 func (s *ScriptIssue) commentList(c *gin.Context) {
 	handle(c, func() interface{} {
 		issue := s.getIssueId(c)
-		page := request2.Pages{}
-		if err := c.ShouldBind(&page); err != nil {
+		page := &request2.Pages{}
+		if err := c.ShouldBind(page); err != nil {
 			return err
 		}
 		list, err := s.issueSvc.CommentList(issue, page)

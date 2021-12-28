@@ -38,7 +38,7 @@ func (s *script) Save(script *entity.Script) error {
 	return s.db.Save(script).Error
 }
 
-func (s *script) List(search *SearchList, page request.Pages) ([]*entity.Script, int64, error) {
+func (s *script) List(search *SearchList, page *request.Pages) ([]*entity.Script, int64, error) {
 	list := make([]*entity.Script, 0)
 	scriptTbName := (&entity.Script{}).TableName()
 	find := s.db.Model(&entity.Script{})
@@ -106,7 +106,7 @@ func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, err
 	return ret, nil
 }
 
-func (s *script) FindSyncScript(page request.Pages) ([]*entity.Script, error) {
+func (s *script) FindSyncScript(page *request.Pages) ([]*entity.Script, error) {
 	ret := make([]*entity.Script, 0)
 	find := db.Db.Model(&entity.Script{}).Where("sync_url!=null or sync_url!=''")
 	if page != request.AllPage {

@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/scriptscat/scriptlist/internal/domain/script/repository"
 	"github.com/scriptscat/scriptlist/internal/domain/user/service"
 	"github.com/scriptscat/scriptlist/internal/http/dto/request"
 	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptlist/internal/service"
@@ -73,8 +75,8 @@ func (u *User) info(ctx *gin.Context) {
 			return err
 		}
 		resp["user"] = userinfo
-		_, num, _ := u.svc.FollowList(userinfo.UID, request.Pages{})
-		_, num2, _ := u.svc.FollowerList(userinfo.UID, request.Pages{})
+		_, num, _ := u.svc.FollowList(userinfo.UID, &request.Pages{})
+		_, num2, _ := u.svc.FollowerList(userinfo.UID, &request.Pages{})
 		resp["follow"] = gin.H{
 			"following": num,
 			"followers": num2,
@@ -100,11 +102,18 @@ func (u *User) scripts(ctx *gin.Context) {
 		//if err := ctx.ShouldBind(&page); err != nil {
 		//	return err
 		//}
-		ret, err := u.scriptSvc.GetUserScript(uid, self, request.AllPage)
+
+		list, err := u.scriptSvc.GetScriptList(&repository.SearchList{
+			Uid: uid, Self: self,
+			Domain:  ctx.Query("domain"),
+			Sort:    ctx.Query("sort"),
+			Status:  cnt.ACTIVE,
+			Keyword: ctx.Query("keyword"),
+		}, request.AllPage)
 		if err != nil {
 			return err
 		}
-		return ret
+		return list
 	})
 }
 

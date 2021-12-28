@@ -1,6 +1,6 @@
 package request
 
-var AllPage = Pages{P: -1, C: -1}
+var AllPage = &Pages{P: -1, C: -1}
 
 type Pages struct {
 	P int `form:"page" binding:"number" label:"页码" json:"page"`

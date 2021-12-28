@@ -67,7 +67,7 @@ func (mr *MockUserMockRecorder) Follow(uid, follow interface{}) *gomock.Call {
 }
 
 // FollowList mocks base method.
-func (m *MockUser) FollowList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
+func (m *MockUser) FollowList(uid int64, page *request.Pages) ([]*entity.HomeFollow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FollowList", uid, page)
 	ret0, _ := ret[0].([]*entity.HomeFollow)
@@ -83,7 +83,7 @@ func (mr *MockUserMockRecorder) FollowList(uid, page interface{}) *gomock.Call {
 }
 
 // FollowerList mocks base method.
-func (m *MockUser) FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
+func (m *MockUser) FollowerList(uid int64, page *request.Pages) ([]*entity.HomeFollow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FollowerList", uid, page)
 	ret0, _ := ret[0].([]*entity.HomeFollow)

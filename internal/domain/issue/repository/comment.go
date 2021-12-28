@@ -15,7 +15,7 @@ func NewComment() IssueComment {
 	return &comment{db: db.Db}
 }
 
-func (c *comment) List(issue int64, status int, page request.Pages) ([]*entity.ScriptIssueComment, error) {
+func (c *comment) List(issue int64, status int, page *request.Pages) ([]*entity.ScriptIssueComment, error) {
 	list := make([]*entity.ScriptIssueComment, 0)
 	find := c.db.Model(&entity.ScriptIssueComment{}).Where("issue_id=? and status=?", issue, status).
 		Limit(page.Size()).Offset((page.Page() - 1) * page.Size())

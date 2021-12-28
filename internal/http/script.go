@@ -308,8 +308,8 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 
 func (s *Script) list(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
-		req := request2.Pages{}
-		if err := ctx.ShouldBind(&req); err != nil {
+		page := &request2.Pages{}
+		if err := ctx.ShouldBind(page); err != nil {
 			return err
 		}
 		categorys := make([]int64, 0)
@@ -327,7 +327,7 @@ func (s *Script) list(ctx *gin.Context) {
 			Sort:     ctx.Query("sort"),
 			Status:   cnt.ACTIVE,
 			Keyword:  ctx.Query("keyword"),
-		}, req)
+		}, page)
 		if err != nil {
 			return err
 		}
@@ -353,7 +353,11 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 func (s *Script) versions(ctx *gin.Context) {
 	handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("script"))
-		list, err := s.scriptSvc.GetScriptCodeList(id)
+		page := &request2.Pages{}
+		if err := ctx.ShouldBind(page); err != nil {
+			return err
+		}
+		list, err := s.scriptSvc.GetScriptCodeList(id, page)
 		if err != nil {
 			return err
 		}

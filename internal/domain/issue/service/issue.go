@@ -31,7 +31,7 @@ var Label = map[string]*entity.IssueLabel{
 }
 
 type Issue interface {
-	List(script int64, keyword string, labels []string, status int, page request.Pages) ([]*entity.ScriptIssue, int64, error)
+	List(script int64, keyword string, labels []string, status int, page *request.Pages) ([]*entity.ScriptIssue, int64, error)
 	Issue(script, user int64, title, content string, label []string) (*entity.ScriptIssue, error)
 	UpdateIssue(issue, user int64, title, content string) error
 	GetIssue(issue int64) (*entity.ScriptIssue, error)
@@ -42,7 +42,7 @@ type Issue interface {
 	Close(issue, operator int64) (*entity.ScriptIssueComment, error)
 	Label(issue, operator int64, label []string) (*entity.ScriptIssueComment, error)
 
-	CommentList(issue int64, page request.Pages) ([]*entity.ScriptIssueComment, error)
+	CommentList(issue int64, page *request.Pages) ([]*entity.ScriptIssueComment, error)
 	GetComment(commentId int64) (*entity.ScriptIssueComment, error)
 	Comment(issue, user int64, content string) (*entity.ScriptIssueComment, error)
 	UpdateComment(comment, user int64, content string) error
@@ -61,7 +61,7 @@ func NewIssue(issueRepo repository.Issue, commentRepo repository.IssueComment) I
 	}
 }
 
-func (i *issue) List(script int64, keyword string, label []string, status int, page request.Pages) ([]*entity.ScriptIssue, int64, error) {
+func (i *issue) List(script int64, keyword string, label []string, status int, page *request.Pages) ([]*entity.ScriptIssue, int64, error) {
 	return i.issueRepo.List(script, keyword, label, status, page)
 }
 
@@ -238,7 +238,7 @@ func (i *issue) Label(issueId, operator int64, label []string) (*entity.ScriptIs
 	})
 }
 
-func (i *issue) CommentList(issue int64, page request.Pages) ([]*entity.ScriptIssueComment, error) {
+func (i *issue) CommentList(issue int64, page *request.Pages) ([]*entity.ScriptIssueComment, error) {
 	return i.commentRepo.List(issue, cnt.ACTIVE, page)
 }
 

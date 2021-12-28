@@ -24,13 +24,13 @@ const (
 )
 
 type Script interface {
-	Search(search *repository.SearchList, page request.Pages) ([]*entity.Script, int64, error)
-	UserScript(uid int64, self bool, page request.Pages) ([]*entity.Script, int64, error)
+	Search(search *repository.SearchList, page *request.Pages) ([]*entity.Script, int64, error)
+	UserScript(uid int64, self bool, page *request.Pages) ([]*entity.Script, int64, error)
 	Info(id int64) (*entity.Script, error)
 	GetCode(id int64) (*entity.ScriptCode, error)
 	GetScriptVersion(scriptId int64, version string) (*entity.ScriptCode, error)
 	GetLatestVersion(scriptId int64) (*entity.ScriptCode, error)
-	VersionList(id int64) ([]*entity.ScriptCode, error)
+	VersionList(id int64, page *request.Pages) ([]*entity.ScriptCode, int64, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	Download(id int64) error
 	Update(id int64) error
@@ -39,7 +39,7 @@ type Script interface {
 	CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
 	GetCodeDefinition(codeid int64) (*entity.LibDefinition, error)
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
-	FindSyncScript(page request.Pages) ([]*entity.Script, error)
+	FindSyncScript(page *request.Pages) ([]*entity.Script, error)
 }
 
 type script struct {
@@ -76,11 +76,11 @@ func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, cat
 	return ret
 }
 
-func (s *script) Search(search *repository.SearchList, page request.Pages) ([]*entity.Script, int64, error) {
+func (s *script) Search(search *repository.SearchList, page *request.Pages) ([]*entity.Script, int64, error) {
 	return s.scriptRepo.List(search, page)
 }
 
-func (s *script) UserScript(uid int64, self bool, page request.Pages) ([]*entity.Script, int64, error) {
+func (s *script) UserScript(uid int64, self bool, page *request.Pages) ([]*entity.Script, int64, error) {
 	return s.scriptRepo.List(&repository.SearchList{
 		Uid:    uid,
 		Self:   self,
@@ -105,8 +105,8 @@ func (s *script) Info(id int64) (*entity.Script, error) {
 	return nil, errs.ErrScriptNotFound
 }
 
-func (s *script) VersionList(id int64) ([]*entity.ScriptCode, error) {
-	return s.codeRepo.List(id, cnt.ACTIVE)
+func (s *script) VersionList(id int64, page *request.Pages) ([]*entity.ScriptCode, int64, error) {
+	return s.codeRepo.List(id, cnt.ACTIVE, page)
 }
 
 func (s *script) GetCategory() ([]*entity.ScriptCategoryList, error) {
@@ -375,7 +375,7 @@ func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, err
 	return s.scriptRepo.FindSyncPrefix(uid, prefix)
 }
 
-func (s *script) FindSyncScript(page request.Pages) ([]*entity.Script, error) {
+func (s *script) FindSyncScript(page *request.Pages) ([]*entity.Script, error) {
 	return s.scriptRepo.FindSyncScript(page)
 }
 
@@ -388,7 +388,7 @@ func (s *script) GetScriptVersion(scriptId int64, version string) (*entity.Scrip
 }
 
 func (s *script) GetLatestVersion(scriptId int64) (*entity.ScriptCode, error) {
-	codes, err := s.VersionList(scriptId)
+	codes, _, err := s.codeRepo.List(scriptId, cnt.ACTIVE, &request.Pages{})
 	if err != nil {
 		return nil, err
 	}

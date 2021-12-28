@@ -27,7 +27,7 @@ func (f *follow) Find(uid, follow int64) (*entity.HomeFollow, error) {
 	return ret, nil
 }
 
-func (f *follow) List(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
+func (f *follow) List(uid int64, page *request.Pages) ([]*entity.HomeFollow, int64, error) {
 	list := make([]*entity.HomeFollow, 0)
 	find := f.db.Model(&entity.HomeFollow{}).Where("uid=?", uid)
 	var count int64
@@ -43,7 +43,7 @@ func (f *follow) List(uid int64, page request.Pages) ([]*entity.HomeFollow, int6
 	return list, count, nil
 }
 
-func (f *follow) FollowerList(uid int64, page request.Pages) ([]*entity.HomeFollow, int64, error) {
+func (f *follow) FollowerList(uid int64, page *request.Pages) ([]*entity.HomeFollow, int64, error) {
 	list := make([]*entity.HomeFollow, 0)
 	find := f.db.Model(&entity.HomeFollow{}).Where("followuid=?", uid)
 	var count int64

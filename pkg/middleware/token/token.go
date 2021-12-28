@@ -28,7 +28,7 @@ func Middleware(cache cache.Cache, enforce bool, option ...Option) gin.HandlerFu
 				auths := strings.Split(token, " ")
 				if len(auths) != 2 {
 					ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-						"code": 1000, "msg": "token string is empty",
+						"code": 1000, "msg": "请先登录后再进行操作",
 					})
 					return
 				} else {
@@ -39,7 +39,7 @@ func Middleware(cache cache.Cache, enforce bool, option ...Option) gin.HandlerFu
 		if token == "" {
 			if enforce {
 				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-					"code": 1001, "msg": "token string is empty",
+					"code": 1001, "msg": "请先登录后再进行操作",
 				})
 			}
 			return

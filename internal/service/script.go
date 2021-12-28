@@ -23,9 +23,8 @@ import (
 
 type Script interface {
 	GetScript(id int64, version string, withcode bool) (*respond2.ScriptInfo, error)
-	GetScriptList(search *repository.SearchList, page request2.Pages) (*respond2.List, error)
-	GetUserScript(uid int64, self bool, page request2.Pages) (*respond2.List, error)
-	GetScriptCodeList(id int64) ([]*respond2.ScriptCode, error)
+	GetScriptList(search *repository.SearchList, page *request2.Pages) (*respond2.List, error)
+	GetScriptCodeList(id int64, page *request2.Pages) (*respond2.List, error)
 	GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error)
 	GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond2.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
@@ -37,7 +36,7 @@ type Script interface {
 	UpdateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error
 	SyncScript(uid, id int64) error
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
-	FindSyncScript(page request2.Pages) ([]*entity.Script, error)
+	FindSyncScript(page *request2.Pages) ([]*entity.Script, error)
 }
 
 type script struct {
@@ -82,50 +81,24 @@ func (s *script) GetScript(id int64, version string, withcode bool) (*respond2.S
 }
 
 func (s *script) GetLatestScriptCode(id int64, withcode bool) (*respond2.ScriptCode, error) {
-	codes, err := s.scriptSvc.VersionList(id)
+	code, err := s.scriptSvc.GetLatestVersion(id)
 	if err != nil {
 		return nil, err
 	}
-	if len(codes) == 0 {
-		return nil, errs.ErrScriptAudit
-	}
-	user, err := s.userSvc.UserInfo(codes[0].UserId)
-	ret := respond2.ToScriptCode(user, codes[0])
+	user, err := s.userSvc.UserInfo(code.UserId)
+	ret := respond2.ToScriptCode(user, code)
 	if withcode {
-		ret.Meta = codes[0].Meta
-		ret.Code = codes[0].Code
-		if d, err := s.scriptSvc.GetCodeDefinition(codes[0].ID); err == nil {
+		ret.Meta = code.Meta
+		ret.Code = code.Code
+		if d, err := s.scriptSvc.GetCodeDefinition(code.ID); err == nil {
 			ret.Definition = d.Definition
 		}
 	}
 	return ret, err
 }
 
-func (s *script) GetScriptList(search *repository.SearchList, page request2.Pages) (*respond2.List, error) {
+func (s *script) GetScriptList(search *repository.SearchList, page *request2.Pages) (*respond2.List, error) {
 	list, total, err := s.scriptSvc.Search(search, page)
-	if err != nil {
-		return nil, err
-	}
-	ret := make([]*respond2.Script, len(list))
-	for i, v := range list {
-		user, _ := s.userSvc.UserInfo(v.UserId)
-		latest, err := s.GetLatestScriptCode(v.ID, false)
-		if err != nil {
-			glog.Errorf("GetLatestScriptCode: %v", err)
-		}
-		if latest != nil {
-			ret[i] = respond2.ToScript(user, v, latest)
-			s.join(ret[i])
-		}
-	}
-	return &respond2.List{
-		List:  ret,
-		Total: total,
-	}, nil
-}
-
-func (s *script) GetUserScript(uid int64, self bool, page request2.Pages) (*respond2.List, error) {
-	list, total, err := s.scriptSvc.UserScript(uid, self, page)
 	if err != nil {
 		return nil, err
 	}
@@ -156,8 +129,8 @@ func (s *script) join(script *respond2.Script) {
 	script.ScoreNum, _ = s.scoreSvc.Count(script.ID)
 }
 
-func (s *script) GetScriptCodeList(id int64) ([]*respond2.ScriptCode, error) {
-	list, err := s.scriptSvc.VersionList(id)
+func (s *script) GetScriptCodeList(id int64, page *request2.Pages) (*respond2.List, error) {
+	list, num, err := s.scriptSvc.VersionList(id, page)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +139,10 @@ func (s *script) GetScriptCodeList(id int64) ([]*respond2.ScriptCode, error) {
 		user, _ := s.userSvc.UserInfo(v.UserId)
 		ret[i] = respond2.ToScriptCode(user, v)
 	}
-	return ret, nil
+	return &respond2.List{
+		List:  list,
+		Total: num,
+	}, nil
 }
 
 func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond2.ScriptCode, error) {
@@ -328,6 +304,6 @@ func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, err
 	return s.scriptSvc.FindSyncPrefix(uid, prefix)
 }
 
-func (s *script) FindSyncScript(page request2.Pages) ([]*entity.Script, error) {
+func (s *script) FindSyncScript(page *request2.Pages) ([]*entity.Script, error) {
 	return s.scriptSvc.FindSyncScript(page)
 }
