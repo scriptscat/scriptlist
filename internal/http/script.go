@@ -281,9 +281,8 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 func (s *Script) getScriptMeta(ctx *gin.Context) {
 	uid, _ := userId(ctx)
 	id := utils.StringToInt64(ctx.Param("id"))
-	version := ctx.Query("version")
 	if id == 0 {
-		id, version = s.parseScriptInfo(ctx.Request.RequestURI)
+		id, _ = s.parseScriptInfo(ctx.Request.RequestURI)
 	}
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
@@ -291,12 +290,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		return
 	}
 	var code *respond.ScriptCode
-	var err error
-	if version != "" {
-		code, err = s.scriptSvc.GetScriptCodeByVersion(id, version, false)
-	} else {
-		code, err = s.scriptSvc.GetLatestScriptCode(id, false)
-	}
+	code, err := s.scriptSvc.GetLatestScriptCode(id, false)
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return

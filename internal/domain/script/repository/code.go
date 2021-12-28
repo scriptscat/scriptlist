@@ -6,7 +6,6 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
 	request2 "github.com/scriptscat/scriptlist/internal/http/dto/request"
-	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
 	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"gorm.io/gorm"
@@ -73,27 +72,32 @@ func (c *code) dependkey(scriptId int64) string {
 	return fmt.Sprintf("script:code:list:%d", scriptId)
 }
 
+type cacheList struct {
+	List  []*entity.ScriptCode
+	Total int64
+}
+
 func (c *code) List(script, status int64, page *request2.Pages) ([]*entity.ScriptCode, int64, error) {
-	list := &respond.List{
+	cacheList := &cacheList{
 		List:  make([]*entity.ScriptCode, 0),
 		Total: 0,
 	}
-	if err := db.Cache.GetOrSet(fmt.Sprintf("script:code:list:%d:%d:%d:%d", script, status, page.Page(), page.Size()), &list, func() (interface{}, error) {
+	if err := db.Cache.GetOrSet(fmt.Sprintf("script:code:list:%d:%d:%d:%d", script, status, page.Page(), page.Size()), cacheList, func() (interface{}, error) {
 		find := c.db.Model(&entity.ScriptCode{}).Where("script_id=? and status=?", script, status).Order("createtime desc")
-		if err := find.Count(&list.Total).Error; err != nil {
+		if err := find.Count(&cacheList.Total).Error; err != nil {
 			return nil, err
 		}
 		if page != request2.AllPage {
 			find = find.Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
 		}
-		if err := find.Scan(&list.List).Error; err != nil {
+		if err := find.Scan(&cacheList.List).Error; err != nil {
 			return nil, err
 		}
-		return list, nil
+		return cacheList, nil
 	}, cache.WithTTL(time.Minute), cache.WithKeyDepend(db.Cache, c.dependkey(script))); err != nil {
 		return nil, 0, err
 	}
-	return list.List.([]*entity.ScriptCode), list.Total, nil
+	return cacheList.List, cacheList.Total, nil
 }
 
 func (c *code) FindByVersion(scriptId int64, version string) (*entity.ScriptCode, error) {
