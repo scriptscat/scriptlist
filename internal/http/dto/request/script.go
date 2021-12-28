@@ -16,7 +16,7 @@ type CreateScript struct {
 	// 公开类型：1 公开 2 半公开
 	Public    int    `form:"public" binding:"required" label:"公开类型"`
 	Unwell    int    `form:"unwell" binding:"required" label:"不适内容"`
-	Changelog string `form:"changelog" binding:"max=1024" label:"更新日志"`
+	Changelog string `form:"changelog" binding:"max=102400" label:"更新日志"`
 }
 
 type UpdateScript struct {
@@ -38,7 +38,7 @@ type UpdateScriptCode struct {
 	Content    string `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
 	Code       string `form:"code" binding:"required,max=10485760" label:"脚本代码"`
 	Definition string `form:"definition" binding:"max=102400" label:"库的定义文件"`
-	Changelog  string `form:"changelog" binding:"max=1024" label:"更新日志"`
+	Changelog  string `form:"changelog" binding:"max=102400" label:"更新日志"`
 	// 公开类型：1 公开 2 半公开
 	Public int `form:"public" binding:"required,number" label:"公开类型"`
 	Unwell int `form:"unwell" binding:"required,number" label:"不适内容"`

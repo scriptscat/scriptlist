@@ -59,7 +59,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 		if err != nil {
 			return err
 		}
-		ret := make([]*respond.Issue, len(list))
+		ret := make([]interface{}, len(list))
 		for k, v := range list {
 			u, _ := s.userSvc.UserInfo(v.UserID)
 			ret[k] = respond.ToIssue(u, v)
@@ -201,7 +201,7 @@ func (s *ScriptIssue) commentList(c *gin.Context) {
 		if err != nil {
 			return err
 		}
-		ret := make([]*respond.IssueComment, len(list))
+		ret := make([]interface{}, len(list))
 		for k, v := range list {
 			u, _ := s.userSvc.UserInfo(v.UserID)
 			ret[k] = respond.ToIssueComment(u, v)

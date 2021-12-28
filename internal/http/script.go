@@ -70,12 +70,12 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 		if ctx.Writer.Status() != http.StatusNotFound {
 			return
 		}
-		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") || strings.HasSuffix(ctx.Request.RequestURI, ".user.sub.js") {
+		if strings.HasSuffix(ctx.Request.URL.Path, ".user.js") || strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
 			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.downloadScript(ctx)
 			}
-		} else if strings.HasSuffix(ctx.Request.RequestURI, ".meta.js") {
+		} else if strings.HasSuffix(ctx.Request.URL.Path, ".meta.js") {
 			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.getScriptMeta(ctx)
@@ -83,12 +83,12 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 		}
 	})
 	r.GET("/scripts/code/:id/*name", func(ctx *gin.Context) {
-		if strings.HasSuffix(ctx.Request.RequestURI, ".user.js") || strings.HasSuffix(ctx.Request.RequestURI, ".user.sub.js") {
+		if strings.HasSuffix(ctx.Request.URL.Path, ".user.js") || strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
 			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.downloadScript(ctx)
 			}
-		} else if strings.HasSuffix(ctx.Request.RequestURI, ".meta.js") {
+		} else if strings.HasSuffix(ctx.Request.URL.Path, ".meta.js") {
 			tokenAuth(ctx)
 			if !ctx.IsAborted() {
 				s.getScriptMeta(ctx)
@@ -252,7 +252,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 	id := utils.StringToInt64(ctx.Param("id"))
 	version := ctx.Query("version")
 	if id == 0 {
-		id, version = s.parseScriptInfo(ctx.Request.RequestURI)
+		id, version = s.parseScriptInfo(ctx.Request.URL.Path)
 	}
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 {
@@ -282,7 +282,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 	uid, _ := userId(ctx)
 	id := utils.StringToInt64(ctx.Param("id"))
 	if id == 0 {
-		id, _ = s.parseScriptInfo(ctx.Request.RequestURI)
+		id, _ = s.parseScriptInfo(ctx.Request.URL.Path)
 	}
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {

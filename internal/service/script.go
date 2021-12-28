@@ -102,7 +102,7 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request2.Pag
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*respond2.Script, len(list))
+	ret := make([]interface{}, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.UserInfo(v.UserId)
 		latest, err := s.GetLatestScriptCode(v.ID, false)
@@ -110,8 +110,9 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request2.Pag
 			glog.Errorf("GetLatestScriptCode: %v", err)
 		}
 		if latest != nil {
-			ret[i] = respond2.ToScript(user, v, latest)
-			s.join(ret[i])
+			item := respond2.ToScript(user, v, latest)
+			s.join(item)
+			ret[i] = item
 		}
 	}
 	return &respond2.List{
@@ -134,13 +135,13 @@ func (s *script) GetScriptCodeList(id int64, page *request2.Pages) (*respond2.Li
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*respond2.ScriptCode, len(list))
+	ret := make([]interface{}, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.UserInfo(v.UserId)
 		ret[i] = respond2.ToScriptCode(user, v)
 	}
 	return &respond2.List{
-		List:  list,
+		List:  ret,
 		Total: num,
 	}, nil
 }
@@ -183,7 +184,7 @@ func (s *script) ScoreList(id int64, page *request2.Pages) (*respond2.List, erro
 	if err != nil {
 		return nil, err
 	}
-	resp := make([]*respond2.ScriptScore, len(list))
+	resp := make([]interface{}, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.UserInfo(v.UserId)
 		resp[i] = respond2.ToScriptScore(user, v)

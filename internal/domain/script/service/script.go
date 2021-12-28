@@ -189,6 +189,7 @@ func (s *script) CreateScriptCode(uid, id int64, req *request.UpdateScriptCode) 
 		Type:        script.Type,
 		Public:      req.Public,
 		Unwell:      req.Unwell,
+		Changelog:   req.Changelog,
 	}); err != nil {
 		return err
 	}
