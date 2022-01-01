@@ -100,7 +100,7 @@ func (s *script) List(search *SearchList, page *request.Pages) ([]*entity.Script
 
 func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
 	ret := make([]*entity.Script, 0)
-	if err := db.Db.Model(&entity.Script{}).Where("user_id=? and sync_url=?", uid, prefix+"%").Scan(&ret).Error; err != nil {
+	if err := db.Db.Model(&entity.Script{}).Where("user_id=? and sync_url like ?", uid, prefix+"%").Scan(&ret).Error; err != nil {
 		return nil, err
 	}
 	return ret, nil

@@ -78,9 +78,9 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 		})
 	case error:
 		err := resp.(error)
-		logrus.Errorf("%s - %s: %v", ctx.Request.RequestURI, ctx.ClientIP(), err)
+		logrus.Errorf("%s - %s: %+v", ctx.Request.RequestURI, ctx.ClientIP(), err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"code": -1, "msg": "系统错误",
+			"code": -1001, "msg": "系统错误",
 		})
 	case *respond.List:
 		list := resp.(*respond.List)

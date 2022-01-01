@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -23,7 +24,8 @@ func GinLogger() []gin.HandlerFunc {
 		gin.ForceConsoleColor()
 		w = io.MultiWriter(w, os.Stdout)
 	}
-	return []gin.HandlerFunc{gin.LoggerWithWriter(w), gin.RecoveryWithWriter(w, func(c *gin.Context, err interface{}) {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"code": -1000, "msg": "系统错误"})
+	return []gin.HandlerFunc{gin.LoggerWithWriter(w), gin.RecoveryWithWriter(w, func(ctx *gin.Context, err interface{}) {
+		logrus.Errorf("%s - %s: %+v", ctx.Request.RequestURI, ctx.ClientIP(), err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"code": -1000, "msg": "系统错误"})
 	})}
 }

@@ -14,7 +14,7 @@ func InitLogs() {
 	var w io.Writer = &lumberjack.Logger{
 		Filename:   "./logs/runtime/runtime.log",
 		MaxSize:    2,
-		MaxBackups: 10,
+		MaxBackups: 30,
 		MaxAge:     30,
 		LocalTime:  true,
 		Compress:   false,
@@ -25,7 +25,7 @@ func InitLogs() {
 		Filename:   "./logs/errors/errors.log",
 		MaxSize:    2,
 		MaxBackups: 30,
-		MaxAge:     1,
+		MaxAge:     30,
 		LocalTime:  true,
 		Compress:   false,
 	}, f))

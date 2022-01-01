@@ -251,8 +251,6 @@ func (s *script) SyncScript(uid, id int64) error {
 		return errs.NewBadRequestError(1000, "同步链接为空")
 	}
 	req := &request2.UpdateScriptCode{
-		//Name:        script.Name,
-		//Description: script.Description,
 		Content:    script.Content,
 		Definition: "",
 		Changelog:  "",

@@ -210,8 +210,8 @@ func (s *Script) webhook(c *gin.Context) {
 				}
 			}
 			list = append(list, listtmp...)
-			var success []gin.H
-			var error []gin.H
+			success := make([]gin.H, 0)
+			error := make([]gin.H, 0)
 			for _, v := range list {
 				if v.SyncMode != service3.SyncModeAuto {
 					continue
@@ -220,7 +220,7 @@ func (s *Script) webhook(c *gin.Context) {
 					logrus.Errorf("Github hook SyncScript: %v", err)
 					error = append(error, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
 				} else {
-					success = append(success, gin.H{"id": v.ID, "name": v.Name, "err": err.Error()})
+					success = append(success, gin.H{"id": v.ID, "name": v.Name})
 				}
 			}
 			return gin.H{
