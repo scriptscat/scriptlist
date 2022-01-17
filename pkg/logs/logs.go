@@ -12,7 +12,7 @@ import (
 func InitLogs() {
 	logrus.SetReportCaller(true)
 	var w io.Writer = &lumberjack.Logger{
-		Filename:   "./logs/runtime/runtime.log",
+		Filename:   "./runtime/logs/runtime.log",
 		MaxSize:    2,
 		MaxBackups: 30,
 		MaxAge:     30,
@@ -22,7 +22,7 @@ func InitLogs() {
 	f := &logrus.JSONFormatter{}
 	logrus.SetFormatter(f)
 	logrus.AddHook(NewErrorFile(&lumberjack.Logger{
-		Filename:   "./logs/errors/errors.log",
+		Filename:   "./runtime/errors/errors.log",
 		MaxSize:    2,
 		MaxBackups: 30,
 		MaxAge:     30,

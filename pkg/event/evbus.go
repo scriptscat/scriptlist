@@ -73,9 +73,11 @@ func (n *EvBusSubscriber) Unsubscribe() error {
 
 func (n *EvBusSubscriber) handle(h Handler) func(data *Message, opts PublishOptions) {
 	n._handle = func(data *Message, opts PublishOptions) {
-		if err := h(data); err != nil {
-			logrus.Errorf("event bus subscriber handler %v err: %v", n.topic, err)
-		}
+		go func() {
+			if err := h(data); err != nil {
+				logrus.Errorf("event bus subscriber handler %v err: %v", n.topic, err)
+			}
+		}()
 	}
 	return n._handle
 }
