@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/golang/glog"
 	"github.com/scriptscat/scriptlist/internal/domain/script/broker"
 	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
@@ -40,6 +41,7 @@ type Script interface {
 	GetCodeDefinition(codeid int64) (*entity.LibDefinition, error)
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 	FindSyncScript(page *request.Pages) ([]*entity.Script, error)
+	HotKeyword() ([]redis.Z, error)
 }
 
 type script struct {
@@ -397,4 +399,8 @@ func (s *script) GetLatestVersion(scriptId int64) (*entity.ScriptCode, error) {
 		return nil, errs.ErrScriptAudit
 	}
 	return codes[0], nil
+}
+
+func (s *script) HotKeyword() ([]redis.Z, error) {
+	return s.scriptRepo.HotKeyword()
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
 	"github.com/scriptscat/scriptlist/internal/http/dto/request"
 )
@@ -19,6 +20,7 @@ type Script interface {
 	List(search *SearchList, page *request.Pages) ([]*entity.Script, int64, error)
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 	FindSyncScript(page *request.Pages) ([]*entity.Script, error)
+	HotKeyword() ([]redis.Z, error)
 }
 
 type ScriptCode interface {

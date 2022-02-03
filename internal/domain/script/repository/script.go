@@ -1,15 +1,19 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
 	"github.com/scriptscat/scriptlist/internal/http/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/db"
 	"gorm.io/gorm"
 )
+
+const SearchHotKeyword = "script:search:hot_keyword"
 
 type script struct {
 	db *gorm.DB
@@ -76,6 +80,7 @@ func (s *script) List(search *SearchList, page *request.Pages) ([]*entity.Script
 	}
 
 	if search.Keyword != "" {
+		db.Redis.ZIncrBy(context.Background(), SearchHotKeyword, 1, search.Keyword)
 		find = find.Where("name like ? or description like ?", "%"+search.Keyword+"%", "%"+search.Keyword+"%")
 	}
 	if search.Status != cnt.UNKNOWN {
@@ -116,4 +121,8 @@ func (s *script) FindSyncScript(page *request.Pages) ([]*entity.Script, error) {
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (s *script) HotKeyword() ([]redis.Z, error) {
+	return db.Redis.ZRangeWithScores(context.Background(), SearchHotKeyword, 0, 10).Result()
 }

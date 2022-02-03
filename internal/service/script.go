@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	repository2 "github.com/scriptscat/scriptlist/internal/domain/safe/repository"
@@ -37,6 +38,7 @@ type Script interface {
 	SyncScript(uid, id int64) error
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 	FindSyncScript(page *request2.Pages) ([]*entity.Script, error)
+	HotKeyword() ([]redis.Z, error)
 }
 
 type script struct {
@@ -305,4 +307,8 @@ func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, err
 
 func (s *script) FindSyncScript(page *request2.Pages) ([]*entity.Script, error) {
 	return s.scriptSvc.FindSyncScript(page)
+}
+
+func (s *script) HotKeyword() ([]redis.Z, error) {
+	return s.scriptSvc.HotKeyword()
 }

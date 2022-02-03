@@ -97,6 +97,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	})
 	rg := r.Group("/api/v1/scripts")
 	rg.GET("", s.list)
+	rg.GET("/hot", s.hot)
 	rg.POST("", userAuth(true), s.add)
 	rgg := rg.Group("/:script", userAuth(true))
 	rgg.PUT("", s.update)
@@ -126,6 +127,16 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg.GET("", s.category)
 
 	r.Any("/api/v1/webhook/:uid", s.webhook)
+}
+
+func (s *Script) hot(c *gin.Context) {
+	handle(c, func() interface{} {
+		result, err := s.scriptSvc.HotKeyword()
+		if err != nil {
+			return err
+		}
+		return result
+	})
 }
 
 func (s *Script) iswatch(c *gin.Context) {
