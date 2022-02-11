@@ -124,5 +124,5 @@ func (s *script) FindSyncScript(page *request.Pages) ([]*entity.Script, error) {
 }
 
 func (s *script) HotKeyword() ([]redis.Z, error) {
-	return db.Redis.ZRangeWithScores(context.Background(), SearchHotKeyword, 0, 10).Result()
+	return db.Redis.ZRevRangeWithScores(context.Background(), SearchHotKeyword, 0, 10).Result()
 }
