@@ -13,6 +13,15 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+func Errs(err ...error) error {
+	for _, v := range err {
+		if v != nil {
+			return v
+		}
+	}
+	return nil
+}
+
 func StringToInt(i string) int {
 	ret, _ := strconv.Atoi(i)
 	return ret

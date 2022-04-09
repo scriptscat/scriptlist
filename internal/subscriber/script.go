@@ -6,29 +6,29 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/scriptscat/scriptlist/internal/domain/issue/broker"
-	service4 "github.com/scriptscat/scriptlist/internal/domain/issue/service"
-	service2 "github.com/scriptscat/scriptlist/internal/domain/notify/service"
-	broker2 "github.com/scriptscat/scriptlist/internal/domain/script/broker"
-	"github.com/scriptscat/scriptlist/internal/domain/script/service"
-	service3 "github.com/scriptscat/scriptlist/internal/domain/user/service"
-	"github.com/scriptscat/scriptlist/internal/http/dto/request"
-	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
-	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
+	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
+	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/service/issue/broker"
+	service5 "github.com/scriptscat/scriptlist/internal/service/issue/service"
+	service2 "github.com/scriptscat/scriptlist/internal/service/notify/service"
+	broker2 "github.com/scriptscat/scriptlist/internal/service/script/broker"
+	service6 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	service3 "github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/sirupsen/logrus"
 )
 
 type ScriptSubscriber struct {
 	notifySvc           service2.Sender
-	scriptWatchSvc      service.ScriptWatch
-	scriptIssueWatchSvc service4.ScriptIssueWatch
-	scriptIssue         service4.Issue
-	scriptSvc           service.Script
+	scriptWatchSvc      service6.ScriptWatch
+	scriptIssueWatchSvc service5.ScriptIssueWatch
+	scriptIssue         service5.Issue
+	scriptSvc           service6.Script
 	userSvc             service3.User
 }
 
-func NewScriptSubscriber(notifySvc service2.Sender, scriptWatchSvc service.ScriptWatch,
-	scriptIssueWatchSvc service4.ScriptIssueWatch, scriptIssue service4.Issue, scriptSvc service.Script, userSvc service3.User) *ScriptSubscriber {
+func NewScriptSubscriber(notifySvc service2.Sender, scriptWatchSvc service6.ScriptWatch,
+	scriptIssueWatchSvc service5.ScriptIssueWatch, scriptIssue service5.Issue, scriptSvc service6.Script, userSvc service3.User) *ScriptSubscriber {
 	return &ScriptSubscriber{
 		notifySvc:           notifySvc,
 		scriptWatchSvc:      scriptWatchSvc,
@@ -76,7 +76,7 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	}
 
 	// 脚本作者自己默认关注自己的脚本
-	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, service.ScriptWatchLevelIssueComment); err != nil {
+	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, service6.ScriptWatchLevelIssueComment); err != nil {
 		logrus.Errorf("watch err:%v", err)
 	}
 	return nil
@@ -129,7 +129,7 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, v := range list {
-		if v < service.ScriptWatchLevelVersion {
+		if v < service6.ScriptWatchLevelVersion {
 			continue
 		}
 		u, err := n.userSvc.SelfInfo(uid)
@@ -177,11 +177,11 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, level := range list {
-		if level < service.ScriptWatchLevelIssue {
+		if level < service6.ScriptWatchLevelIssue {
 			continue
 		}
 		// 对issueComment级别的默认监听issue
-		if level >= service.ScriptWatchLevelIssueComment {
+		if level >= service6.ScriptWatchLevelIssueComment {
 			_ = n.scriptIssueWatchSvc.Watch(issue, uid)
 		}
 		u, err := n.userSvc.SelfInfo(uid)
@@ -249,12 +249,12 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	switch commentInfo.Type {
-	case service4.CommentTypeComment:
+	case service5.CommentTypeComment:
 		title += " 有新评论"
 		content = commentInfo.Content + "<hr/>" + content
-	case service4.CommentTypeOpen:
+	case service5.CommentTypeOpen:
 		title += " 打开"
-	case service4.CommentTypeClose:
+	case service5.CommentTypeClose:
 		title += " 关闭"
 	default:
 		return nil

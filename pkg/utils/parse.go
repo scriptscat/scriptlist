@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/scriptscat/scriptlist/internal/domain/script/entity"
+	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 )
 

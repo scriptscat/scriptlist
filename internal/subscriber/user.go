@@ -3,24 +3,24 @@ package subscriber
 import (
 	"context"
 
-	service4 "github.com/scriptscat/scriptlist/internal/domain/issue/service"
-	service2 "github.com/scriptscat/scriptlist/internal/domain/notify/service"
-	"github.com/scriptscat/scriptlist/internal/domain/script/broker"
-	"github.com/scriptscat/scriptlist/internal/domain/script/service"
-	service3 "github.com/scriptscat/scriptlist/internal/domain/user/service"
+	service5 "github.com/scriptscat/scriptlist/internal/service/issue/service"
+	service2 "github.com/scriptscat/scriptlist/internal/service/notify/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/broker"
+	service6 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	service3 "github.com/scriptscat/scriptlist/internal/service/user/service"
 )
 
 type UserSubscriber struct {
 	notifySvc           service2.Sender
-	scriptWatchSvc      service.ScriptWatch
-	scriptIssueWatchSvc service4.ScriptIssueWatch
-	scriptIssue         service4.Issue
-	scriptSvc           service.Script
+	scriptWatchSvc      service6.ScriptWatch
+	scriptIssueWatchSvc service5.ScriptIssueWatch
+	scriptIssue         service5.Issue
+	scriptSvc           service6.Script
 	userSvc             service3.User
 }
 
-func NewUserSubscriber(notifySvc service2.Sender, scriptWatchSvc service.ScriptWatch,
-	scriptIssueWatchSvc service4.ScriptIssueWatch, scriptIssue service4.Issue, scriptSvc service.Script, userSvc service3.User) *UserSubscriber {
+func NewUserSubscriber(notifySvc service2.Sender, scriptWatchSvc service6.ScriptWatch,
+	scriptIssueWatchSvc service5.ScriptIssueWatch, scriptIssue service5.Issue, scriptSvc service6.Script, userSvc service3.User) *UserSubscriber {
 	return &UserSubscriber{
 		notifySvc:           notifySvc,
 		scriptWatchSvc:      scriptWatchSvc,

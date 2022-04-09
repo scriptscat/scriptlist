@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	service3 "github.com/scriptscat/scriptlist/internal/domain/user/service"
-	mock_service "github.com/scriptscat/scriptlist/internal/domain/user/service/mock"
-	"github.com/scriptscat/scriptlist/internal/http/dto/respond"
+	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	service3 "github.com/scriptscat/scriptlist/internal/service/user/service"
+	"github.com/scriptscat/scriptlist/internal/service/user/service/mock"
 )
 
 func TestScriptSubscriber_parseContent(t *testing.T) {

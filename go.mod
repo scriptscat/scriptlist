@@ -13,6 +13,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.1
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 	github.com/golang/mock v1.6.0
+	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
 	github.com/gorilla/csrf v1.7.1
 	github.com/kr/text v0.2.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1

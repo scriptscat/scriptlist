@@ -3,7 +3,7 @@ package oauth
 import (
 	"encoding/json"
 
-	"github.com/scriptscat/scriptlist/internal/pkg/config"
+	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 

@@ -2,8 +2,8 @@ package service
 
 import (
 	"github.com/golang/glog"
-	service2 "github.com/scriptscat/scriptlist/internal/domain/script/service"
-	"github.com/scriptscat/scriptlist/internal/domain/statistics/service"
+	service2 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	"github.com/scriptscat/scriptlist/internal/service/statistics/service"
 )
 
 type Statistics interface {
