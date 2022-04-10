@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
-	github.com/gin-gonic/gin v1.7.2
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
@@ -15,11 +15,12 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
 	github.com/gorilla/csrf v1.7.1
-	github.com/kr/text v0.2.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sergi/go-diff v1.1.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0
+	github.com/swaggo/gin-swagger v1.4.1
+	github.com/swaggo/swag v1.8.1
 	github.com/weppos/publicsuffix-go v0.15.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

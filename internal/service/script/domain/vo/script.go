@@ -1,14 +1,15 @@
-package respond
+package vo
 
 import (
 	"encoding/json"
 
 	entity2 "github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
+	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
 type Script struct {
-	*User
+	*vo.User
 	Script       *ScriptCode `json:"script"`
 	ID           int64       `json:"id"`
 	PostId       int64       `json:"post_id"`
@@ -22,6 +23,7 @@ type Script struct {
 	Type         int         `json:"type"`
 	Public       int         `json:"public"`
 	Unwell       int         `json:"unwell"`
+	Archive      int32       `json:"archive"`
 	TodayInstall int64       `json:"today_install"`
 	TotalInstall int64       `json:"total_install"`
 	Createtime   int64       `json:"createtime"`
@@ -42,7 +44,7 @@ type ScriptInfo struct {
 }
 
 type ScriptCode struct {
-	*User
+	*vo.User
 	ID         int64       `json:"id" form:"id"`
 	UserId     int64       `json:"user_id" form:"user_id"`
 	Meta       string      `json:"meta,omitempty" form:"meta"`
@@ -57,7 +59,7 @@ type ScriptCode struct {
 }
 
 type ScriptScore struct {
-	*User
+	*vo.User
 	ID       int64 `gorm:"column:id" json:"id" form:"id"`
 	UserId   int64 `gorm:"column:user_id;index:user_script,unique;index:user" json:"user_id" form:"user_id"`
 	ScriptId int64 `gorm:"column:script_id;index:user_script,unique;index:script" json:"script_id" form:"script_id"`
@@ -69,7 +71,7 @@ type ScriptScore struct {
 	Updatetime int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
 
-func ToScriptScore(user *User, score *entity2.ScriptScore) *ScriptScore {
+func ToScriptScore(user *vo.User, score *entity2.ScriptScore) *ScriptScore {
 	return &ScriptScore{
 		User:       user,
 		ID:         score.ID,
@@ -82,7 +84,7 @@ func ToScriptScore(user *User, score *entity2.ScriptScore) *ScriptScore {
 	}
 }
 
-func ToScript(user *User, script *entity2.Script, code *ScriptCode) *Script {
+func ToScript(user *vo.User, script *entity2.Script, code *ScriptCode) *Script {
 	ret := &Script{
 		User:        user,
 		Script:      code,
@@ -95,13 +97,14 @@ func ToScript(user *User, script *entity2.Script, code *ScriptCode) *Script {
 		Type:        script.Type,
 		Public:      script.Public,
 		Unwell:      script.Unwell,
+		Archive:     script.Archive,
 		Createtime:  script.Createtime,
 		Updatetime:  script.Updatetime,
 	}
 	return ret
 }
 
-func ToScriptInfo(user *User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
+func ToScriptInfo(user *vo.User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
 	ret := &ScriptInfo{
 		Script:  ToScript(user, script, code),
 		Content: script.Content,
@@ -117,7 +120,7 @@ func ToScriptInfo(user *User, script *entity2.Script, code *ScriptCode) *ScriptI
 	return ret
 }
 
-func ToScriptCode(user *User, code *entity2.ScriptCode) *ScriptCode {
+func ToScriptCode(user *vo.User, code *entity2.ScriptCode) *ScriptCode {
 	data := make(map[string]interface{})
 	_ = json.Unmarshal([]byte(code.MetaJson), &data)
 	domains := make(map[string]struct{})

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/robfig/cron/v3"
+	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/logs"
 	token2 "github.com/scriptscat/scriptlist/internal/infrastructure/middleware/token"
@@ -16,18 +17,21 @@ import (
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service5 "github.com/scriptscat/scriptlist/internal/service"
-	service9 "github.com/scriptscat/scriptlist/internal/service/issue/service"
+	application2 "github.com/scriptscat/scriptlist/internal/service/issue/application"
+	api2 "github.com/scriptscat/scriptlist/internal/service/issue/interface/api"
 	service7 "github.com/scriptscat/scriptlist/internal/service/notify/service"
 	service6 "github.com/scriptscat/scriptlist/internal/service/resource/service"
 	"github.com/scriptscat/scriptlist/internal/service/safe/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/interface/api"
-	service10 "github.com/scriptscat/scriptlist/internal/service/script/service"
 	service4 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	service2 "github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/internal/subscriber"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	pkgValidator "github.com/scriptscat/scriptlist/pkg/utils/validator"
 	"github.com/sirupsen/logrus"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 type Service interface {
@@ -91,6 +95,14 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 	}
 }
 
+// StartApi 初始化路由
+// Swagger spec:
+// @title                       脚本猫列表
+// @version                     1.0
+// @securityDefinitions.apikey  BearerAuth
+// @in                          header
+// @name                        Authorization
+// @BasePath                    /api/v1
 func StartApi(db *persistence.Repositories) error {
 	token2.TokenAuth = func(enforce bool) func(ctx *gin.Context) {
 		return token2.Middleware(db.Cache, enforce, token2.WithExpired(TokenAuthMaxAge))
@@ -100,18 +112,18 @@ func StartApi(db *persistence.Repositories) error {
 	binding.Validator = pkgValidator.NewValidator()
 	c := cron.New()
 	userSvc := service2.NewUser(db.User.User, db.User.Follow)
-	scriptSvc := service10.NewScript(db.Script.Script, db.Script.Code,
+	scriptApp := application.NewScript(db.Script.Script, db.Script.Code,
 		db.Script.Category, db.Script.Statistics)
 	statisSvc := service4.NewStatistics(db.Statistics.Statistics)
-	scoreSvc := service10.NewScore(db.Script.Score)
+	scoreSvc := application.NewScore(db.Script.Score)
 	rateSvc := service.NewRate(db.Safe.Rate)
 	notifySvc := service7.NewSender(config.AppConfig.Email, config.AppConfig.EmailNotify)
-	issueSvc := service9.NewIssue(db.Issue.Issue, db.Issue.IssueComment)
-	issueWatchSvc := service9.NewWatch(db.Issue.IssueWatch)
-	scriptWatchSvc := service10.NewWatch(db.Script.ScriptWatch)
+	issueSvc := application2.NewIssue(db.Issue.Issue, db.Issue.IssueComment)
+	issueWatchSvc := application2.NewWatch(db.Issue.IssueWatch)
+	scriptWatchSvc := application.NewWatch(db.Script.ScriptWatch)
 
 	script := service5.NewScript(userSvc,
-		scriptSvc,
+		scriptApp,
 		scoreSvc,
 		statisSvc,
 		rateSvc,
@@ -136,24 +148,30 @@ func StartApi(db *persistence.Repositories) error {
 		}
 	}
 
-	statis := service5.NewStatistics(statisSvc, scriptSvc)
+	statis := service5.NewStatistics(statisSvc, scriptApp)
 
 	r := gin.New()
 	r.Use(logs.GinLogger()...)
 
 	Registry(ctx, r,
-		api.NewScript(script, statis, userSvc, notifySvc, scriptWatchSvc, c),
+		api.NewScript(script, scriptApp, statis, userSvc, notifySvc, scriptWatchSvc, c),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), db),
 		NewResource(service6.NewResource(db.Resource.Resource), rateSvc),
-		NewStatistics(db, statisSvc, scriptSvc, c),
+		NewStatistics(db, statisSvc, scriptApp, c),
 		NewUser(db, userSvc, script),
-		NewScriptIssue(scriptSvc, userSvc, notifySvc, issueSvc, issueWatchSvc),
+		api2.NewScriptIssue(scriptApp, userSvc, notifySvc, issueSvc, issueWatchSvc),
 	)
 
 	Subscriber(ctx,
-		subscriber.NewScriptSubscriber(notifySvc, scriptWatchSvc, issueWatchSvc, issueSvc, scriptSvc, userSvc),
+		subscriber.NewScriptSubscriber(notifySvc, scriptWatchSvc, issueWatchSvc, issueSvc, scriptApp, userSvc),
 	)
 
 	c.Start()
+
+	if config.AppConfig.Mode == "debug" {
+		url := ginSwagger.URL("/swagger/doc.json")
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	}
+
 	return r.Run(":" + strconv.Itoa(config.AppConfig.WebPort))
 }

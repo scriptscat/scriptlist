@@ -19,5 +19,5 @@ func NewRepositories(redis *redis.Client) *Repositories {
 }
 
 func (r *Repositories) AutoMigrate() error {
-	return utils.Errs()
+	return utils.ErrFunc()
 }

@@ -25,8 +25,12 @@ func NewRepositories(db *gorm.DB, redis *redis.Client) *IssueRepositories {
 }
 
 func (r *IssueRepositories) AutoMigrate() error {
-	return utils.Errs(
-		r.db.AutoMigrate(&entity.ScriptIssue{}),
-		r.db.AutoMigrate(&entity.ScriptIssueComment{}),
+	return utils.ErrFunc(
+		func() error {
+			return r.db.AutoMigrate(&entity.ScriptIssue{})
+		},
+		func() error {
+			return r.db.AutoMigrate(&entity.ScriptIssueComment{})
+		},
 	)
 }

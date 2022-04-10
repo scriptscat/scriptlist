@@ -13,10 +13,19 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func Errs(err ...error) error {
-	for _, v := range err {
-		if v != nil {
-			return v
+func ErrFunc(funcs ...func() error) error {
+	for _, v := range funcs {
+		if err := v(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Errs(errs ...error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
 		}
 	}
 	return nil

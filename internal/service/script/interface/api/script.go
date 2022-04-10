@@ -16,13 +16,13 @@ import (
 	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/middleware/token"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptlist/internal/service"
 	service4 "github.com/scriptscat/scriptlist/internal/service/notify/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
-	service5 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/domain/vo"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/utils"
@@ -32,23 +32,24 @@ import (
 
 type Script struct {
 	scriptSvc service2.Script
+	scriptApp application.Script
 	statisSvc service2.Statistics
 	userSvc   service.User
 	notifySvc service4.Sender
-	watchSvc  service5.ScriptWatch
+	watchSvc  application.ScriptWatch
 }
 
-func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, watchSvc service5.ScriptWatch, c *cron.Cron) *Script {
+func NewScript(svc service2.Script, app application.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, watchSvc application.ScriptWatch, c *cron.Cron) *Script {
 	// crontab 定时检查更新
 	c.AddFunc("0 */6 * * *", func() {
 		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
-		list, err := svc.FindSyncScript(request.AllPage)
+		list, err := app.FindSyncScript(request.AllPage)
 		if err != nil {
 			logrus.Errorf("Timing synchronization find script list: %v", err)
 			return
 		}
 		for _, v := range list {
-			if v.SyncMode != service5.SyncModeAuto {
+			if v.SyncMode != application.SyncModeAuto {
 				continue
 			}
 			if err := svc.SyncScript(v.UserId, v.ID); err != nil {
@@ -58,6 +59,7 @@ func NewScript(svc service2.Script, statisSvc service2.Statistics, userSvc servi
 	})
 	return &Script{
 		scriptSvc: svc,
+		scriptApp: app,
 		statisSvc: statisSvc,
 		userSvc:   userSvc,
 		notifySvc: notify,
@@ -103,6 +105,9 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rg.POST("", token.UserAuth(true), s.add)
 	rgg := rg.Group("/:script", token.UserAuth(true))
 	rgg.PUT("", s.update)
+	rgg.DELETE("", s.delete)
+	rgg.PUT("/archive", s.archive)
+	rgg.DELETE("/archive", s.unarchive)
 	rgg.PUT("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
@@ -131,9 +136,26 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	r.Any("/api/v1/webhook/:uid", s.webhook)
 }
 
+// @Summary      删除脚本
+// @Description  删除脚本
+// @ID           script-delete
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @Success      200
+// @Failure      403
+// @Router       /scripts/{scriptId} [DELETE]
+func (s *Script) delete(ctx *gin.Context) {
+	httputils.Handle(ctx, func() interface{} {
+		user, _ := token.UserInfo(ctx)
+		id := utils.StringToInt64(ctx.Param("script"))
+		return s.scriptApp.Delete(user, id)
+	})
+}
+
 func (s *Script) hot(c *gin.Context) {
 	httputils.Handle(c, func() interface{} {
-		result, err := s.scriptSvc.HotKeyword()
+		result, err := s.scriptApp.HotKeyword()
 		if err != nil {
 			return err
 		}
@@ -157,7 +179,7 @@ func (s *Script) watch(c *gin.Context) {
 	httputils.Handle(c, func() interface{} {
 		script := utils.StringToInt64(c.Param("script"))
 		uid, _ := token.UserId(c)
-		return s.watchSvc.Watch(script, uid, service5.ScriptWatchLevel(utils.StringToInt(c.PostForm("level"))))
+		return s.watchSvc.Watch(script, uid, application.ScriptWatchLevel(utils.StringToInt(c.PostForm("level"))))
 	})
 }
 
@@ -206,7 +228,7 @@ func (s *Script) webhook(c *gin.Context) {
 			if data.Repository.FullName == "" {
 				return errs.NewBadRequestError(1001, "仓库地址错误")
 			}
-			list, err := s.scriptSvc.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
+			list, err := s.scriptApp.FindSyncPrefix(uid, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 			if err != nil {
 				logrus.Errorf("Github hook FindSyncPrefix err: %v", err)
 				return gin.H{
@@ -214,7 +236,7 @@ func (s *Script) webhook(c *gin.Context) {
 					"error":   nil,
 				}
 			}
-			listtmp, err := s.scriptSvc.FindSyncPrefix(uid, "https://github.com/"+data.Repository.FullName)
+			listtmp, err := s.scriptApp.FindSyncPrefix(uid, "https://github.com/"+data.Repository.FullName)
 			if err != nil {
 				logrus.Errorf("Github hook FindSyncPrefix err: %v", err)
 				return gin.H{
@@ -226,7 +248,7 @@ func (s *Script) webhook(c *gin.Context) {
 			success := make([]gin.H, 0)
 			error := make([]gin.H, 0)
 			for _, v := range list {
-				if v.SyncMode != service5.SyncModeAuto {
+				if v.SyncMode != application.SyncModeAuto {
 					continue
 				}
 				if err := s.scriptSvc.SyncScript(uid, v.ID); err != nil {
@@ -275,7 +297,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}
-	var code *respond.ScriptCode
+	var code *vo.ScriptCode
 	var err error
 	if version != "" {
 		code, err = s.scriptSvc.GetScriptCodeByVersion(id, version, true)
@@ -302,7 +324,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}
-	var code *respond.ScriptCode
+	var code *vo.ScriptCode
 	code, err := s.scriptSvc.GetLatestScriptCode(id, false)
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
@@ -492,6 +514,15 @@ func (s *Script) add(ctx *gin.Context) {
 	})
 }
 
+// @Summary      更新脚本
+// @Description  更新脚本
+// @ID           script-update
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @Success      200       {object}  request.UpdateScript
+// @Failure      403
+// @Router       /scripts/{scriptId} [PUT]
 func (s *Script) update(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("script"))
@@ -507,6 +538,15 @@ func (s *Script) update(ctx *gin.Context) {
 	})
 }
 
+// @Summary      更新脚本代码
+// @Description  更新脚本代码
+// @ID           script-update-code
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @Success      200       {object}  request.UpdateScriptCode
+// @Failure      403
+// @Router       /scripts/{scriptId}/code [PUT]
 func (s *Script) updatecode(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("script"))
@@ -549,5 +589,39 @@ func (s *Script) diff(c *gin.Context) {
 		return gin.H{
 			"diff": diff.Diff(s1.Code, s2.Code),
 		}
+	})
+}
+
+// @Summary      设置脚本归档
+// @Description  归档后无法再发issue、更新脚本
+// @ID           script-archive
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @Success      200
+// @Failure      403
+// @Router       /scripts/{scriptId}/archive [PUT]
+func (s *Script) archive(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		user, _ := token.UserInfo(c)
+		id := utils.StringToInt64(c.Param("script"))
+		return s.scriptApp.Archive(user, id, 1)
+	})
+}
+
+// @Summary      取消脚本归档
+// @Description  归档后无法再发issue、更新脚本
+// @ID           script-un-archive
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @Success      200
+// @Failure      403
+// @Router       /scripts/{scriptId}/archive [DELETE]
+func (s *Script) unarchive(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		user, _ := token.UserInfo(c)
+		id := utils.StringToInt64(c.Param("script"))
+		return s.scriptApp.Archive(user, id, 0)
 	})
 }

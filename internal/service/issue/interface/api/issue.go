@@ -10,12 +10,13 @@ import (
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
 	respond2 "github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	"github.com/scriptscat/scriptlist/internal/service/issue/application"
 	entity2 "github.com/scriptscat/scriptlist/internal/service/issue/domain/entity"
-	service5 "github.com/scriptscat/scriptlist/internal/service/issue/service"
 	service4 "github.com/scriptscat/scriptlist/internal/service/notify/service"
+	service2 "github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
-	service2 "github.com/scriptscat/scriptlist/internal/service/script/service"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
+	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
@@ -23,11 +24,11 @@ type ScriptIssue struct {
 	scriptSvc     service2.Script
 	userSvc       service.User
 	notifySvc     service4.Sender
-	issueSvc      service5.Issue
-	issueWatchSvc service5.ScriptIssueWatch
+	issueSvc      application.Issue
+	issueWatchSvc application.ScriptIssueWatch
 }
 
-func NewScriptIssue(scriptSvc service2.Script, userSvc service.User, notifySvc service4.Sender, issueSvc service5.Issue, issueWatchSvc service5.ScriptIssueWatch) *ScriptIssue {
+func NewScriptIssue(scriptSvc service2.Script, userSvc service.User, notifySvc service4.Sender, issueSvc application.Issue, issueWatchSvc application.ScriptIssueWatch) *ScriptIssue {
 	return &ScriptIssue{
 		scriptSvc:     scriptSvc,
 		userSvc:       userSvc,
@@ -46,7 +47,7 @@ func (s *ScriptIssue) getIssueId(c *gin.Context) int64 {
 }
 
 func (s *ScriptIssue) list(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		script := s.getScriptId(c)
 		page := &request.Pages{}
 		if err := c.ShouldBind(page); err != nil {
@@ -73,16 +74,19 @@ func (s *ScriptIssue) list(c *gin.Context) {
 }
 
 func (s *ScriptIssue) post(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		scriptId := s.getScriptId(c)
 		user, _ := token.UserInfo(c)
 		req := request.Issue{}
 		if err := c.ShouldBind(&req); err != nil {
 			return err
 		}
-		_, err := s.scriptSvc.Info(scriptId)
+		script, err := s.scriptSvc.Info(scriptId)
 		if err != nil {
 			return err
+		}
+		if script.Archive != 0 {
+			return errs.ErrScriptArchived
 		}
 		var labels []string
 		if req.Label != "" {
@@ -97,7 +101,7 @@ func (s *ScriptIssue) post(c *gin.Context) {
 }
 
 func (s *ScriptIssue) get(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		issueId := s.getIssueId(c)
 		issue, err := s.issueSvc.GetIssue(issueId)
 		if err != nil {
@@ -109,11 +113,14 @@ func (s *ScriptIssue) get(c *gin.Context) {
 }
 
 func (s *ScriptIssue) put(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		issueId := s.getIssueId(c)
 		user, _ := token.UserId(c)
 		req := request.Issue{}
 		if err := c.ShouldBind(&req); err != nil {
+			return err
+		}
+		if _, _, err := s.isOperate(issueId, user); err != nil {
 			return err
 		}
 		return s.issueSvc.UpdateIssue(issueId, user, req.Title, req.Content)
@@ -121,7 +128,7 @@ func (s *ScriptIssue) put(c *gin.Context) {
 }
 
 func (s *ScriptIssue) del(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		issueId := s.getIssueId(c)
 		user, _ := token.UserId(c)
 		if _, _, err := s.isOperate(issueId, user); err != nil {
@@ -132,7 +139,7 @@ func (s *ScriptIssue) del(c *gin.Context) {
 }
 
 func (s *ScriptIssue) putLabels(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		issueId := s.getIssueId(c)
 		user, _ := token.UserId(c)
 		if _, _, err := s.isOperate(issueId, user); err != nil {
@@ -156,6 +163,9 @@ func (s *ScriptIssue) isOperate(issueId, user int64) (*entity2.ScriptIssue, *ent
 	if err != nil {
 		return nil, nil, err
 	}
+	if script.Archive != 0 {
+		return nil, nil, errs.ErrScriptArchived
+	}
 	if issue.UserID != user {
 		if script.UserId != user {
 			return nil, nil, errs.NewError(http.StatusForbidden, 1001, "没有权限删除")
@@ -166,7 +176,7 @@ func (s *ScriptIssue) isOperate(issueId, user int64) (*entity2.ScriptIssue, *ent
 
 func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		handle(c, func() interface{} {
+		httputils.Handle(c, func() interface{} {
 			issueId := s.getIssueId(c)
 			user, _ := token.UserInfo(c)
 			_, err := s.userSvc.UserInfo(user.UID)
@@ -192,7 +202,7 @@ func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 }
 
 func (s *ScriptIssue) commentList(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		issue := s.getIssueId(c)
 		page := &request.Pages{}
 		if err := c.ShouldBind(page); err != nil {
@@ -219,16 +229,19 @@ func (s *ScriptIssue) getCommentId(c *gin.Context) int64 {
 }
 
 func (s *ScriptIssue) comment(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		issueId := s.getIssueId(c)
 		user, _ := token.UserInfo(c)
 		issue, err := s.issueSvc.GetIssue(issueId)
 		if err != nil {
 			return err
 		}
-		_, err = s.scriptSvc.Info(issue.ScriptID)
+		script, err := s.scriptSvc.Info(issue.ScriptID)
 		if err != nil {
 			return err
+		}
+		if script.Archive != 0 {
+			return errs.ErrScriptArchived
 		}
 		content := c.PostForm("content")
 		comment, err := s.issueSvc.Comment(issueId, user.UID, content)
@@ -244,40 +257,53 @@ func (s *ScriptIssue) comment(c *gin.Context) {
 }
 
 func (s *ScriptIssue) commentUpdate(c *gin.Context) {
-	handle(c, func() interface{} {
-		commentId := s.getCommentId(c)
-		user, _ := token.UserInfo(c)
-		return s.issueSvc.UpdateComment(commentId, user.UID, c.PostForm("content"))
-	})
-}
-
-func (s *ScriptIssue) commentDel(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		commentId := s.getCommentId(c)
 		user, _ := token.UserInfo(c)
 		comment, err := s.issueSvc.GetComment(commentId)
 		if err != nil {
 			return err
 		}
-		if comment.UserID != user.UID {
-			issue, err := s.issueSvc.GetIssue(comment.IssueID)
-			if err != nil {
-				return err
-			}
-			script, err := s.scriptSvc.Info(issue.ScriptID)
-			if err != nil {
-				return err
-			}
-			if script.UserId != user.UID {
-				return errs.NewError(http.StatusForbidden, 1000, "没有权限删除评论")
-			}
+		issue, err := s.issueSvc.GetIssue(comment.IssueID)
+		if err != nil {
+			return err
 		}
-		return s.issueSvc.DelComment(commentId)
+		script, err := s.scriptSvc.Info(issue.ScriptID)
+		if err != nil {
+			return err
+		}
+		if script.Archive != 0 {
+			return errs.ErrScriptArchived
+		}
+		return s.issueSvc.UpdateComment(commentId, user.UID, c.PostForm("content"))
+	})
+}
+
+func (s *ScriptIssue) commentDel(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		commentId := s.getCommentId(c)
+		user, _ := token.UserInfo(c)
+		comment, err := s.issueSvc.GetComment(commentId)
+		if err != nil {
+			return err
+		}
+		issue, err := s.issueSvc.GetIssue(comment.IssueID)
+		if err != nil {
+			return err
+		}
+		script, err := s.scriptSvc.Info(issue.ScriptID)
+		if err != nil {
+			return err
+		}
+		if script.Archive != 0 {
+			return errs.ErrScriptArchived
+		}
+		return s.issueSvc.DelComment(commentId, user.UID)
 	})
 }
 
 func (s *ScriptIssue) iswatch(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		issueId := s.getIssueId(c)
 		_, err := s.issueSvc.GetIssue(issueId)
@@ -295,7 +321,7 @@ func (s *ScriptIssue) iswatch(c *gin.Context) {
 }
 
 func (s *ScriptIssue) watch(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		issueId := s.getIssueId(c)
 		_, err := s.issueSvc.GetIssue(issueId)
@@ -307,7 +333,7 @@ func (s *ScriptIssue) watch(c *gin.Context) {
 }
 
 func (s *ScriptIssue) unwatch(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		issueId := s.getIssueId(c)
 		_, err := s.issueSvc.GetIssue(issueId)

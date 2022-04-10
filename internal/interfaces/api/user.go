@@ -10,11 +10,11 @@ import (
 	"github.com/scriptscat/scriptlist/internal/infrastructure/middleware/token"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/persistence"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptlist/internal/service"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
+	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	"github.com/scriptscat/scriptlist/pkg/utils"
@@ -66,7 +66,7 @@ func (u *User) info(ctx *gin.Context) {
 			return errs.NewError(http.StatusBadRequest, 1000, "请指定用户")
 		}
 		dUid := utils.StringToInt64(uid)
-		var userinfo *respond.User
+		var userinfo *vo.User
 		var err error
 		if self {
 			userinfo, err = u.svc.SelfInfo(dUid)

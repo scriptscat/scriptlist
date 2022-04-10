@@ -6,6 +6,7 @@ import (
 )
 
 func RunMigrations(db *gorm.DB) error {
+	return nil
 	return run(db)
 }
 

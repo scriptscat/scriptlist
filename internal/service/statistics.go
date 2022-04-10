@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/golang/glog"
-	service2 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	service2 "github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/statistics/service"
 )
 

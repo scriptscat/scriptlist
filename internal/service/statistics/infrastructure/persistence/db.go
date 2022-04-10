@@ -15,13 +15,18 @@ type StatisRepositories struct {
 
 func NewRepositories(db *gorm.DB, redis *redis.Client) *StatisRepositories {
 	return &StatisRepositories{
+		db:         db,
 		Statistics: NewStatistics(db, redis),
 	}
 }
 
 func (r *StatisRepositories) AutoMigrate() error {
-	return utils.Errs(
-		r.db.AutoMigrate(&entity.StatisticsDownload{}),
-		r.db.AutoMigrate(&entity.StatisticsUpdate{}),
+	return utils.ErrFunc(
+		func() error {
+			return r.db.AutoMigrate(&entity.StatisticsDownload{})
+		},
+		func() error {
+			return r.db.AutoMigrate(&entity.StatisticsUpdate{})
+		},
 	)
 }

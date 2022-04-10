@@ -46,14 +46,16 @@ func NewRepositories(db *gorm.DB, redis *goRedis.Client, cache cache.Cache) *Rep
 }
 
 func (r *Repositories) Migrations() error {
-	return utils.Errs(
-		r.Script.AutoMigrate(),
-		r.Resource.AutoMigrate(),
-		r.Statistics.AutoMigrate(),
-		r.User.AutoMigrate(),
-		r.Safe.AutoMigrate(),
-		r.Issue.AutoMigrate(),
-		migrations.RunMigrations(r.Db),
+	return utils.ErrFunc(
+		r.Script.AutoMigrate,
+		r.Resource.AutoMigrate,
+		r.Statistics.AutoMigrate,
+		r.User.AutoMigrate,
+		r.Safe.AutoMigrate,
+		r.Issue.AutoMigrate,
+		func() error {
+			return migrations.RunMigrations(r.Db)
+		},
 	)
 }
 

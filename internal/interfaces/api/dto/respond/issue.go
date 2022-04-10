@@ -4,10 +4,11 @@ import (
 	"strings"
 
 	"github.com/scriptscat/scriptlist/internal/service/issue/domain/entity"
+	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 )
 
 type Issue struct {
-	*User
+	*vo.User
 	ID         int64    `json:"id"`
 	ScriptID   int64    `json:"script_id"`
 	UserID     int64    `json:"user_id"`
@@ -19,7 +20,7 @@ type Issue struct {
 	Updatetime int64    `json:"updatetime"`
 }
 
-func ToIssue(user *User, issue *entity.ScriptIssue) *Issue {
+func ToIssue(user *vo.User, issue *entity.ScriptIssue) *Issue {
 	return &Issue{
 		User:       user,
 		ID:         issue.ID,
@@ -35,7 +36,7 @@ func ToIssue(user *User, issue *entity.ScriptIssue) *Issue {
 }
 
 type IssueComment struct {
-	*User
+	*vo.User
 	ID         int64  `gorm:"column:id;type:bigint(20);primary_key;AUTO_INCREMENT" json:"id"`
 	IssueID    int64  `gorm:"column:issue_id;type:bigint(20);index:issue_id;NOT NULL" json:"issue_id"`
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);NOT NULL" json:"user_id"`
@@ -46,7 +47,7 @@ type IssueComment struct {
 	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)" json:"updatetime"`
 }
 
-func ToIssueComment(user *User, issue *entity.ScriptIssueComment) *IssueComment {
+func ToIssueComment(user *vo.User, issue *entity.ScriptIssueComment) *IssueComment {
 	return &IssueComment{
 		User:       user,
 		ID:         issue.ID,

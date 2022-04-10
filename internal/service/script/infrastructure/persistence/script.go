@@ -110,7 +110,8 @@ func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, err
 
 func (s *script) FindSyncScript(page *request.Pages) ([]*entity.Script, error) {
 	ret := make([]*entity.Script, 0)
-	find := s.db.Model(&entity.Script{}).Where("sync_url!=null or sync_url!=''")
+	find := s.db.Model(&entity.Script{}).Where(
+		"(sync_url!=null or sync_url!='') and status=? and archive=0", cnt.ACTIVE)
 	if page != request.AllPage {
 		find = find.Limit(page.Size()).Offset(page.Page() - 1*page.Size())
 	}

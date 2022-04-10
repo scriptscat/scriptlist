@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
@@ -14,19 +13,20 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	repository2 "github.com/scriptscat/scriptlist/internal/service/safe/domain/repository"
 	service4 "github.com/scriptscat/scriptlist/internal/service/safe/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
-	service5 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/domain/vo"
 	service3 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
 )
 
 type Script interface {
-	GetScript(id int64, version string, withcode bool) (*respond.ScriptInfo, error)
+	GetScript(id int64, version string, withcode bool) (*vo.ScriptInfo, error)
 	GetScriptList(search *repository.SearchList, page *request.Pages) (*respond.List, error)
 	GetScriptCodeList(id int64, page *request.Pages) (*respond.List, error)
-	GetLatestScriptCode(id int64, withcode bool) (*respond.ScriptCode, error)
-	GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond.ScriptCode, error)
+	GetLatestScriptCode(id int64, withcode bool) (*vo.ScriptCode, error)
+	GetScriptCodeByVersion(id int64, version string, withcode bool) (*vo.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	AddScore(uid int64, id int64, score *request.Score) (bool, error)
 	ScoreList(id int64, page *request.Pages) (*respond.List, error)
@@ -35,20 +35,17 @@ type Script interface {
 	UpdateScript(uid, id int64, req *request.UpdateScript) error
 	UpdateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
 	SyncScript(uid, id int64) error
-	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
-	FindSyncScript(page *request.Pages) ([]*entity.Script, error)
-	HotKeyword() ([]redis.Z, error)
 }
 
 type script struct {
 	userSvc   service.User
-	scriptSvc service5.Script
-	scoreSvc  service5.Score
+	scriptSvc application.Script
+	scoreSvc  application.Score
 	statisSvc service3.Statistics
 	rateSvc   service4.Rate
 }
 
-func NewScript(userSvc service.User, scriptSvc service5.Script, scoreSvc service5.Score, statisSvc service3.Statistics, rateSvc service4.Rate, c *cron.Cron) Script {
+func NewScript(userSvc service.User, scriptSvc application.Script, scoreSvc application.Score, statisSvc service3.Statistics, rateSvc service4.Rate, c *cron.Cron) Script {
 	return &script{
 		userSvc:   userSvc,
 		scriptSvc: scriptSvc,
@@ -58,7 +55,7 @@ func NewScript(userSvc service.User, scriptSvc service5.Script, scoreSvc service
 	}
 }
 
-func (s *script) GetScript(id int64, version string, withcode bool) (*respond.ScriptInfo, error) {
+func (s *script) GetScript(id int64, version string, withcode bool) (*vo.ScriptInfo, error) {
 	script, err := s.scriptSvc.Info(id)
 	if err != nil {
 		return nil, err
@@ -72,18 +69,18 @@ func (s *script) GetScript(id int64, version string, withcode bool) (*respond.Sc
 		return nil, err
 	}
 
-	ret := respond.ToScriptInfo(user, script, latest)
+	ret := vo.ToScriptInfo(user, script, latest)
 	s.join(ret.Script)
 	return ret, nil
 }
 
-func (s *script) GetLatestScriptCode(id int64, withcode bool) (*respond.ScriptCode, error) {
+func (s *script) GetLatestScriptCode(id int64, withcode bool) (*vo.ScriptCode, error) {
 	code, err := s.scriptSvc.GetLatestVersion(id)
 	if err != nil {
 		return nil, err
 	}
 	user, err := s.userSvc.UserInfo(code.UserId)
-	ret := respond.ToScriptCode(user, code)
+	ret := vo.ToScriptCode(user, code)
 	if withcode {
 		ret.Meta = code.Meta
 		ret.Code = code.Code
@@ -107,7 +104,7 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request.Page
 			glog.Errorf("GetLatestScriptCode: %v", err)
 		}
 		if latest != nil {
-			item := respond.ToScript(user, v, latest)
+			item := vo.ToScript(user, v, latest)
 			s.join(item)
 			ret[i] = item
 		}
@@ -118,7 +115,7 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request.Page
 	}, nil
 }
 
-func (s *script) join(script *respond.Script) {
+func (s *script) join(script *vo.Script) {
 	// 统计
 	script.TotalInstall, _ = s.statisSvc.TotalDownload(script.ID)
 	script.TodayInstall, _ = s.statisSvc.TodayDownload(script.ID)
@@ -135,7 +132,7 @@ func (s *script) GetScriptCodeList(id int64, page *request.Pages) (*respond.List
 	ret := make([]interface{}, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.UserInfo(v.UserId)
-		ret[i] = respond.ToScriptCode(user, v)
+		ret[i] = vo.ToScriptCode(user, v)
 	}
 	return &respond.List{
 		List:  ret,
@@ -143,7 +140,7 @@ func (s *script) GetScriptCodeList(id int64, page *request.Pages) (*respond.List
 	}, nil
 }
 
-func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool) (*respond.ScriptCode, error) {
+func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool) (*vo.ScriptCode, error) {
 	if version == "" {
 		return s.GetLatestScriptCode(id, withcode)
 	}
@@ -155,7 +152,7 @@ func (s *script) GetScriptCodeByVersion(id int64, version string, withcode bool)
 		return nil, errs.ErrScriptCodeIsNil
 	}
 	user, _ := s.userSvc.UserInfo(code.UserId)
-	ret := respond.ToScriptCode(user, code)
+	ret := vo.ToScriptCode(user, code)
 	if withcode {
 		ret.Code = code.Code
 		if d, err := s.scriptSvc.GetCodeDefinition(code.ID); err == nil {
@@ -184,7 +181,7 @@ func (s *script) ScoreList(id int64, page *request.Pages) (*respond.List, error)
 	resp := make([]interface{}, len(list))
 	for i, v := range list {
 		user, _ := s.userSvc.UserInfo(v.UserId)
-		resp[i] = respond.ToScriptScore(user, v)
+		resp[i] = vo.ToScriptScore(user, v)
 	}
 
 	return &respond.List{
@@ -223,7 +220,7 @@ func (s *script) UpdateScript(uid, id int64, req *request.UpdateScript) error {
 		if err := s.scriptSvc.UpdateScript(uid, id, req); err != nil {
 			return err
 		}
-		if req.SyncMode == service5.SyncModeManual {
+		if req.SyncMode == application.SyncModeManual {
 			return s.SyncScript(uid, id)
 		}
 		return nil
@@ -294,16 +291,4 @@ func (s *script) requestSyncUrl(syncUrl string) (string, error) {
 	}
 	defer resp.Body.Close()
 	return string(b), nil
-}
-
-func (s *script) FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error) {
-	return s.scriptSvc.FindSyncPrefix(uid, prefix)
-}
-
-func (s *script) FindSyncScript(page *request.Pages) ([]*entity.Script, error) {
-	return s.scriptSvc.FindSyncScript(page)
-}
-
-func (s *script) HotKeyword() ([]redis.Z, error) {
-	return s.scriptSvc.HotKeyword()
 }

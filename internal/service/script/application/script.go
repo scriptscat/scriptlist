@@ -1,4 +1,4 @@
-package service
+package application
 
 import (
 	"encoding/json"
@@ -16,6 +16,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	persistence2 "github.com/scriptscat/scriptlist/internal/service/script/infrastructure/persistence"
+	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -43,6 +44,8 @@ type Script interface {
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 	FindSyncScript(page *request2.Pages) ([]*entity.Script, error)
 	HotKeyword() ([]redis.Z, error)
+	Archive(user *vo.User, id int64, archive int32) error
+	Delete(user *vo.User, id int64) error
 }
 
 type script struct {
@@ -177,9 +180,6 @@ func (s *script) CreateScriptCode(uid, id int64, req *request2.UpdateScriptCode)
 	if err != nil {
 		return err
 	}
-	if script.UserId != uid {
-		return errs.ErrScriptForbidden
-	}
 	//if script.Type == entity.LIBRARY_TYPE {
 	//	script.Name = req.Name
 	//	script.Description = req.Description
@@ -201,17 +201,9 @@ func (s *script) CreateScriptCode(uid, id int64, req *request2.UpdateScriptCode)
 }
 
 func (s *script) createScriptCode(uid int64, script *entity.Script, req *request2.CreateScript) error {
-	script.Content = req.Content
-	script.Public = req.Public
-	script.Unwell = req.Unwell
-	script.Updatetime = time.Now().Unix()
-	code := &entity.ScriptCode{
-		UserId:     uid,
-		Version:    time.Now().Format("20060102150405"),
-		Changelog:  req.Changelog,
-		Status:     cnt.ACTIVE,
-		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
+	code, err := script.CreateScriptCode(uid, req)
+	if err != nil {
+		return err
 	}
 	switch req.Type {
 	case entity.USERSCRIPT_TYPE, entity.SUBSCRIBE_TYPE:
@@ -405,4 +397,26 @@ func (s *script) GetLatestVersion(scriptId int64) (*entity.ScriptCode, error) {
 
 func (s *script) HotKeyword() ([]redis.Z, error) {
 	return s.scriptRepo.HotKeyword()
+}
+
+func (s *script) Archive(user *vo.User, id int64, archive int32) error {
+	script, err := s.scriptRepo.Find(id)
+	if err != nil {
+		return err
+	}
+	if err := script.SetArchive(user, archive); err != nil {
+		return err
+	}
+	return s.scriptRepo.Save(script)
+}
+
+func (s *script) Delete(user *vo.User, id int64) error {
+	script, err := s.scriptRepo.Find(id)
+	if err != nil {
+		return err
+	}
+	if err := script.Delete(user); err != nil {
+		return err
+	}
+	return s.scriptRepo.Save(script)
 }

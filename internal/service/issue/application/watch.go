@@ -1,4 +1,4 @@
-package service
+package application
 
 import (
 	"github.com/scriptscat/scriptlist/internal/service/issue/domain/repository"

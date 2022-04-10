@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	entity2 "github.com/scriptscat/scriptlist/internal/service/user/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/repository"
+	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/datatypes"
 )
@@ -23,8 +23,8 @@ const (
 
 //go:generate mockgen -source ./user.go -destination ./mock/user.go
 type User interface {
-	UserInfo(id int64) (*respond.User, error)
-	SelfInfo(id int64) (*respond.User, error)
+	UserInfo(id int64) (*vo.User, error)
+	SelfInfo(id int64) (*vo.User, error)
 	GetUserWebhook(uid int64) (string, error)
 	RegenWebhook(uid int64) (string, error)
 	GetUserByWebhook(token string) (int64, error)
@@ -35,7 +35,7 @@ type User interface {
 	Unfollow(uid, follow int64) error
 	FollowList(uid int64, page *request.Pages) ([]*entity2.HomeFollow, int64, error)
 	FollowerList(uid int64, page *request.Pages) ([]*entity2.HomeFollow, int64, error)
-	FindByUsername(username string, self bool) (*respond.User, error)
+	FindByUsername(username string, self bool) (*vo.User, error)
 }
 
 type user struct {
@@ -50,49 +50,49 @@ func NewUser(userRepo repository.User, followRepo repository.Follow) User {
 	}
 }
 
-func (u *user) UserInfo(id int64) (*respond.User, error) {
+func (u *user) UserInfo(id int64) (*vo.User, error) {
 	user, err := u.userRepo.Find(id)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
-		return respond.ToUser(user), errs.ErrUserNotFound
+		return vo.ToUser(user), errs.ErrUserNotFound
 	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组
-		return respond.ToUser(user), errs.ErrUserIsBan
+		return vo.ToUser(user), errs.ErrUserIsBan
 	}
-	return respond.ToUser(user), nil
+	return vo.ToUser(user), nil
 }
 
-func (u *user) SelfInfo(id int64) (*respond.User, error) {
+func (u *user) SelfInfo(id int64) (*vo.User, error) {
 	user, err := u.userRepo.Find(id)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
-		return respond.ToSelfUser(user), errs.ErrUserNotFound
+		return vo.ToSelfUser(user), errs.ErrUserNotFound
 	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组
-		return respond.ToSelfUser(user), errs.ErrUserIsBan
+		return vo.ToSelfUser(user), errs.ErrUserIsBan
 	}
-	return respond.ToSelfUser(user), nil
+	return vo.ToSelfUser(user), nil
 }
 
-func (u *user) FindByUsername(username string, self bool) (*respond.User, error) {
+func (u *user) FindByUsername(username string, self bool) (*vo.User, error) {
 	user, err := u.userRepo.FindByUsername(username)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
-		return respond.ToSelfUser(user), errs.ErrUserNotFound
+		return vo.ToSelfUser(user), errs.ErrUserNotFound
 	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组
-		return respond.ToSelfUser(user), errs.ErrUserIsBan
+		return vo.ToSelfUser(user), errs.ErrUserIsBan
 	}
-	return respond.ToSelfUser(user), nil
+	return vo.ToSelfUser(user), nil
 }
 
 func (u *user) GetUserWebhook(uid int64) (string, error) {

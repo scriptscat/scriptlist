@@ -4,13 +4,17 @@ ifeq ($(GOOS),windows)
 	SUFFIX=.exe
 endif
 
+swagger:
+	swag fmt -g internal/interfaces/api/apis.go
+	swag init -g internal/interfaces/api/apis.go --parseDependency --parseDepth 2
+
 linux: generate
 	CGO_ENABLE=0 GOOS=linux go build -o scriptlist ./cmd/app
 
 build: generate
 	go build -o scriptlist$(SUFFIX) ./cmd/app
 
-generate:
+generate: swagger
 	go generate ./... -x
 
 test:

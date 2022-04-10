@@ -8,27 +8,27 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
+	application2 "github.com/scriptscat/scriptlist/internal/service/issue/application"
 	"github.com/scriptscat/scriptlist/internal/service/issue/broker"
-	service5 "github.com/scriptscat/scriptlist/internal/service/issue/service"
 	service2 "github.com/scriptscat/scriptlist/internal/service/notify/service"
+	"github.com/scriptscat/scriptlist/internal/service/script/application"
 	broker2 "github.com/scriptscat/scriptlist/internal/service/script/broker"
-	service6 "github.com/scriptscat/scriptlist/internal/service/script/service"
+	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	service3 "github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/sirupsen/logrus"
 )
 
 type ScriptSubscriber struct {
 	notifySvc           service2.Sender
-	scriptWatchSvc      service6.ScriptWatch
-	scriptIssueWatchSvc service5.ScriptIssueWatch
-	scriptIssue         service5.Issue
-	scriptSvc           service6.Script
+	scriptWatchSvc      application.ScriptWatch
+	scriptIssueWatchSvc application2.ScriptIssueWatch
+	scriptIssue         application2.Issue
+	scriptSvc           application.Script
 	userSvc             service3.User
 }
 
-func NewScriptSubscriber(notifySvc service2.Sender, scriptWatchSvc service6.ScriptWatch,
-	scriptIssueWatchSvc service5.ScriptIssueWatch, scriptIssue service5.Issue, scriptSvc service6.Script, userSvc service3.User) *ScriptSubscriber {
+func NewScriptSubscriber(notifySvc service2.Sender, scriptWatchSvc application.ScriptWatch,
+	scriptIssueWatchSvc application2.ScriptIssueWatch, scriptIssue application2.Issue, scriptSvc application.Script, userSvc service3.User) *ScriptSubscriber {
 	return &ScriptSubscriber{
 		notifySvc:           notifySvc,
 		scriptWatchSvc:      scriptWatchSvc,
@@ -76,7 +76,7 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	}
 
 	// 脚本作者自己默认关注自己的脚本
-	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, service6.ScriptWatchLevelIssueComment); err != nil {
+	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, application.ScriptWatchLevelIssueComment); err != nil {
 		logrus.Errorf("watch err:%v", err)
 	}
 	return nil
@@ -129,7 +129,7 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, v := range list {
-		if v < service6.ScriptWatchLevelVersion {
+		if v < application.ScriptWatchLevelVersion {
 			continue
 		}
 		u, err := n.userSvc.SelfInfo(uid)
@@ -177,11 +177,11 @@ func (n *ScriptSubscriber) NotifyScriptIssueCreate(script, issue int64) error {
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	for uid, level := range list {
-		if level < service6.ScriptWatchLevelIssue {
+		if level < application.ScriptWatchLevelIssue {
 			continue
 		}
 		// 对issueComment级别的默认监听issue
-		if level >= service6.ScriptWatchLevelIssueComment {
+		if level >= application.ScriptWatchLevelIssueComment {
 			_ = n.scriptIssueWatchSvc.Watch(issue, uid)
 		}
 		u, err := n.userSvc.SelfInfo(uid)
@@ -249,12 +249,12 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 		config.AppConfig.FrontendUrl+"users/notify",
 	)
 	switch commentInfo.Type {
-	case service5.CommentTypeComment:
+	case application2.CommentTypeComment:
 		title += " 有新评论"
 		content = commentInfo.Content + "<hr/>" + content
-	case service5.CommentTypeOpen:
+	case application2.CommentTypeOpen:
 		title += " 打开"
-	case service5.CommentTypeClose:
+	case application2.CommentTypeClose:
 		title += " 关闭"
 	default:
 		return nil
@@ -296,10 +296,10 @@ func (n *ScriptSubscriber) NotifyScriptIssueCommentCreate(issue, comment int64) 
 }
 
 // 解析内容查看是否有艾特的人,返回用户信息
-func (n *ScriptSubscriber) parseContent(content string) ([]*respond.User, error) {
+func (n *ScriptSubscriber) parseContent(content string) ([]*vo.User, error) {
 	r := regexp.MustCompile("@(\\S+)")
 	list := r.FindAllStringSubmatch(content, -1)
-	var users []*respond.User
+	var users []*vo.User
 	for _, v := range list {
 		user, err := n.userSvc.FindByUsername(v[1], true)
 		if err != nil {

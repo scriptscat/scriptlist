@@ -1,0 +1,246 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "脚本猫列表",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/scripts/{scriptId}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新脚本",
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本",
+                "operationId": "script-update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateScript"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除脚本",
+                "tags": [
+                    "script"
+                ],
+                "summary": "删除脚本",
+                "operationId": "script-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/archive": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "归档后无法再发issue、更新脚本",
+                "tags": [
+                    "script"
+                ],
+                "summary": "设置脚本归档",
+                "operationId": "script-archive",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "归档后无法再发issue、更新脚本",
+                "tags": [
+                    "script"
+                ],
+                "summary": "取消脚本归档",
+                "operationId": "script-un-archive",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/code": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新脚本代码",
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本代码",
+                "operationId": "script-update-code",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateScriptCode"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "request.UpdateScript": {
+            "type": "object",
+            "properties": {
+                "contentUrl": {
+                    "type": "string",
+                    "maxLength": 1024
+                },
+                "definitionUrl": {
+                    "type": "string",
+                    "maxLength": 1024
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 102400
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "syncMode": {
+                    "type": "integer"
+                },
+                "syncUrl": {
+                    "description": "公开类型：1 公开 2 半公开\nPublic int `form:\"public\" binding:\"required,number\" label:\"公开类型\"`\nUnwell int `form:\"unwell\" binding:\"required,number\" label:\"不适内容\"`\n监听",
+                    "type": "string",
+                    "maxLength": 1024
+                }
+            }
+        },
+        "request.UpdateScriptCode": {
+            "type": "object",
+            "required": [
+                "code",
+                "content",
+                "public",
+                "unwell"
+            ],
+            "properties": {
+                "changelog": {
+                    "type": "string",
+                    "maxLength": 102400
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 10485760
+                },
+                "content": {
+                    "description": "Name        string `form:\"name\" binding:\"max=128\" label:\"库的名字\"`\nDescription string `form:\"description\" binding:\"max=102400\" label:\"库的描述\"`",
+                    "type": "string",
+                    "maxLength": 102400
+                },
+                "definition": {
+                    "type": "string",
+                    "maxLength": 102400
+                },
+                "public": {
+                    "description": "公开类型：1 公开 2 半公开",
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

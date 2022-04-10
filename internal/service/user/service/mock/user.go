@@ -8,9 +8,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
-	"github.com/scriptscat/scriptlist/internal/service/user/domain/entity"
+	request "github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
+	entity "github.com/scriptscat/scriptlist/internal/service/user/domain/entity"
+	vo "github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	datatypes "gorm.io/datatypes"
 )
 
@@ -38,10 +38,10 @@ func (m *MockUser) EXPECT() *MockUserMockRecorder {
 }
 
 // FindByUsername mocks base method.
-func (m *MockUser) FindByUsername(username string, self bool) (*respond.User, error) {
+func (m *MockUser) FindByUsername(username string, self bool) (*vo.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUsername", username, self)
-	ret0, _ := ret[0].(*respond.User)
+	ret0, _ := ret[0].(*vo.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -174,10 +174,10 @@ func (mr *MockUserMockRecorder) RegenWebhook(uid interface{}) *gomock.Call {
 }
 
 // SelfInfo mocks base method.
-func (m *MockUser) SelfInfo(id int64) (*respond.User, error) {
+func (m *MockUser) SelfInfo(id int64) (*vo.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfInfo", id)
-	ret0, _ := ret[0].(*respond.User)
+	ret0, _ := ret[0].(*vo.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -217,10 +217,10 @@ func (mr *MockUserMockRecorder) Unfollow(uid, follow interface{}) *gomock.Call {
 }
 
 // UserInfo mocks base method.
-func (m *MockUser) UserInfo(id int64) (*respond.User, error) {
+func (m *MockUser) UserInfo(id int64) (*vo.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserInfo", id)
-	ret0, _ := ret[0].(*respond.User)
+	ret0, _ := ret[0].(*vo.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

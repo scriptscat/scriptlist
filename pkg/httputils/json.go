@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
-	"github.com/scriptscat/scriptlist/pkg/errs"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	pkgValidator "github.com/scriptscat/scriptlist/pkg/utils/validator"
 	"github.com/sirupsen/logrus"
 )

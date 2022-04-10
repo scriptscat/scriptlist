@@ -1,4 +1,4 @@
-package service
+package application
 
 import (
 	"net/http"
@@ -46,7 +46,7 @@ type Issue interface {
 	GetComment(commentId int64) (*entity.ScriptIssueComment, error)
 	Comment(issue, user int64, content string) (*entity.ScriptIssueComment, error)
 	UpdateComment(comment, user int64, content string) error
-	DelComment(commentId int64) error
+	DelComment(commentId, uid int64) error
 }
 
 type issue struct {
@@ -292,10 +292,13 @@ func (i *issue) UpdateComment(commentId, user int64, content string) error {
 	return i.commentRepo.Save(comment)
 }
 
-func (i *issue) DelComment(commentId int64) error {
+func (i *issue) DelComment(commentId int64, uid int64) error {
 	comment, err := i.GetComment(commentId)
 	if err != nil {
 		return err
+	}
+	if comment.UserID != uid || comment.Type != CommentTypeComment {
+		return errs.NewError(http.StatusForbidden, 1001, "没有权限进行删除")
 	}
 	comment.Status = cnt.DELETE
 	comment.Updatetime = time.Now().Unix()

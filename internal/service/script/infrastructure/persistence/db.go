@@ -5,7 +5,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
-	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -32,15 +31,15 @@ func NewRepositories(db *gorm.DB, redis *redis.Client, cache cache.Cache) *Repos
 }
 
 func (r *Repositories) AutoMigrate() error {
-	return utils.Errs(
-		r.db.AutoMigrate(&entity.Script{}),
-		r.db.AutoMigrate(&entity.ScriptCode{}),
-		r.db.AutoMigrate(&entity.ScriptCategory{}),
-		r.db.AutoMigrate(&entity.ScriptCategoryList{}),
-		r.db.AutoMigrate(&entity.ScriptScore{}),
-		r.db.AutoMigrate(&entity.ScriptStatistics{}),
-		r.db.AutoMigrate(&entity.ScriptDateStatistics{}),
-		r.db.AutoMigrate(&entity.ScriptDomain{}),
-		r.db.AutoMigrate(&entity.LibDefinition{}),
+	return r.db.AutoMigrate(
+		&entity.Script{},
+		&entity.ScriptCode{},
+		&entity.ScriptCategory{},
+		&entity.ScriptCategoryList{},
+		&entity.ScriptScore{},
+		&entity.ScriptStatistics{},
+		&entity.ScriptDateStatistics{},
+		&entity.ScriptDomain{},
+		&entity.LibDefinition{},
 	)
 }

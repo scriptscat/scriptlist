@@ -32,7 +32,7 @@ func (e *EvBusBroker) Options() Options {
 
 func (e *EvBusBroker) Publish(topic string, data *Message, opt ...PublishOption) error {
 	options := NewPublishOptions(opt...)
-	bus.Publish(topic, data, options)
+	go bus.Publish(topic, data, options)
 	return nil
 }
 

@@ -1,0 +1,168 @@
+basePath: /api/v1
+definitions:
+  request.UpdateScript:
+    properties:
+      contentUrl:
+        maxLength: 1024
+        type: string
+      definitionUrl:
+        maxLength: 1024
+        type: string
+      description:
+        maxLength: 102400
+        type: string
+      name:
+        maxLength: 128
+        type: string
+      syncMode:
+        type: integer
+      syncUrl:
+        description: |-
+          公开类型：1 公开 2 半公开
+          Public int `form:"public" binding:"required,number" label:"公开类型"`
+          Unwell int `form:"unwell" binding:"required,number" label:"不适内容"`
+          监听
+        maxLength: 1024
+        type: string
+    type: object
+  request.UpdateScriptCode:
+    properties:
+      changelog:
+        maxLength: 102400
+        type: string
+      code:
+        maxLength: 10485760
+        type: string
+      content:
+        description: |-
+          Name        string `form:"name" binding:"max=128" label:"库的名字"`
+          Description string `form:"description" binding:"max=102400" label:"库的描述"`
+        maxLength: 102400
+        type: string
+      definition:
+        maxLength: 102400
+        type: string
+      public:
+        description: 公开类型：1 公开 2 半公开
+        type: integer
+      unwell:
+        type: integer
+    required:
+    - code
+    - content
+    - public
+    - unwell
+    type: object
+info:
+  contact: {}
+  title: 脚本猫列表
+  version: "1.0"
+paths:
+  /scripts/{scriptId}:
+    delete:
+      description: 删除脚本
+      operationId: script-delete
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 删除脚本
+      tags:
+      - script
+    put:
+      description: 更新脚本
+      operationId: script-update
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.UpdateScript'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 更新脚本
+      tags:
+      - script
+  /scripts/{scriptId}/archive:
+    delete:
+      description: 归档后无法再发issue、更新脚本
+      operationId: script-un-archive
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 取消脚本归档
+      tags:
+      - script
+    put:
+      description: 归档后无法再发issue、更新脚本
+      operationId: script-archive
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 设置脚本归档
+      tags:
+      - script
+  /scripts/{scriptId}/code:
+    put:
+      description: 更新脚本代码
+      operationId: script-update-code
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.UpdateScriptCode'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 更新脚本代码
+      tags:
+      - script
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
