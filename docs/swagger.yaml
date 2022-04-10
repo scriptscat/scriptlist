@@ -1,29 +1,20 @@
 basePath: /api/v1
 definitions:
-  request.UpdateScript:
+  entity.ScriptCategoryList:
     properties:
-      contentUrl:
-        maxLength: 1024
-        type: string
-      definitionUrl:
-        maxLength: 1024
-        type: string
-      description:
-        maxLength: 102400
-        type: string
-      name:
-        maxLength: 128
-        type: string
-      syncMode:
+      createtime:
         type: integer
-      syncUrl:
-        description: |-
-          公开类型：1 公开 2 半公开
-          Public int `form:"public" binding:"required,number" label:"公开类型"`
-          Unwell int `form:"unwell" binding:"required,number" label:"不适内容"`
-          监听
-        maxLength: 1024
+      id:
+        type: integer
+      name:
         type: string
+      num:
+        description: 本分类下脚本数量
+        type: integer
+      sort:
+        type: integer
+      updatetime:
+        type: integer
     type: object
   request.UpdateScriptCode:
     properties:
@@ -53,11 +44,288 @@ definitions:
     - public
     - unwell
     type: object
+  vo.Script:
+    properties:
+      archive:
+        type: integer
+      avatar:
+        type: string
+      createtime:
+        type: integer
+      description:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      is_manager:
+        type: boolean
+      name:
+        type: string
+      post_id:
+        type: integer
+      public:
+        type: integer
+      score:
+        type: integer
+      score_num:
+        type: integer
+      script:
+        $ref: '#/definitions/vo.ScriptCode'
+      status:
+        type: integer
+      today_install:
+        type: integer
+      total_install:
+        type: integer
+      type:
+        type: integer
+      uid:
+        type: integer
+      unwell:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  vo.ScriptCode:
+    properties:
+      avatar:
+        type: string
+      changelog:
+        type: string
+      code:
+        type: string
+      createtime:
+        type: integer
+      definition:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      meta:
+        type: string
+      meta_json: {}
+      script_id:
+        type: integer
+      status:
+        type: integer
+      uid:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+      version:
+        type: string
+    type: object
+  vo.ScriptInfo:
+    properties:
+      archive:
+        type: integer
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      description:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      is_manager:
+        type: boolean
+      name:
+        type: string
+      post_id:
+        type: integer
+      public:
+        type: integer
+      score:
+        type: integer
+      score_num:
+        type: integer
+      script:
+        $ref: '#/definitions/vo.ScriptCode'
+      setting:
+        $ref: '#/definitions/vo.ScriptSetting'
+      status:
+        type: integer
+      today_install:
+        type: integer
+      total_install:
+        type: integer
+      type:
+        type: integer
+      uid:
+        type: integer
+      unwell:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  vo.ScriptScore:
+    properties:
+      avatar:
+        type: string
+      createtime:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      message:
+        description: 评分原因
+        type: string
+      score:
+        description: 评分,五星制,50
+        type: integer
+      script_id:
+        type: integer
+      uid:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  vo.ScriptSetting:
+    properties:
+      content_url:
+        type: string
+      definition_url:
+        type: string
+      sync_mode:
+        type: integer
+      sync_url:
+        type: string
+    type: object
 info:
   contact: {}
   title: 脚本猫列表
   version: "1.0"
 paths:
+  /category:
+    get:
+      description: 脚本分类列表
+      operationId: script-category
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.ScriptCategoryList'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 脚本分类列表
+      tags:
+      - script-category
+  /scripts:
+    get:
+      description: 脚本列表
+      operationId: script-list
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 页大小
+        in: query
+        name: count
+        type: integer
+      - description: 分类id以','分割
+        in: query
+        name: category
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.Script'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 脚本列表
+      tags:
+      - script
+    post:
+      description: 创建脚本
+      operationId: script-create
+      parameters:
+      - description: 脚本详细描述
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: 脚本代码
+        in: formData
+        name: code
+        required: true
+        type: string
+      - description: 库的名字,当脚本类型为脚本调用库时必填
+        in: formData
+        name: name
+        type: string
+      - description: 库的描述,当脚本类型为脚本调用库时必填
+        in: formData
+        name: description
+        type: string
+      - description: 库的定义文件,当脚本类型为脚本调用库时必填
+        in: formData
+        name: definition
+        type: string
+      - description: 脚本类型 1 用户脚本 2 脚本调用库 3 订阅脚本
+        in: formData
+        name: type
+        required: true
+        type: integer
+      - description: 公开类型 1 公开 2 半公开
+        in: formData
+        name: public
+        required: true
+        type: integer
+      - description: 不适内容
+        in: formData
+        name: unwell
+        required: true
+        type: integer
+      - description: 更新日志
+        in: formData
+        name: changelog
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 创建脚本
+      tags:
+      - script
   /scripts/{scriptId}:
     delete:
       description: 删除脚本
@@ -79,7 +347,7 @@ paths:
       tags:
       - script
     put:
-      description: 更新脚本
+      description: 更新脚本配置
       operationId: script-update
       parameters:
       - description: 脚本id
@@ -87,16 +355,38 @@ paths:
         name: scriptId
         required: true
         type: integer
+      - description: 库的名字,当脚本类型为脚本调用库时必填
+        in: formData
+        name: name
+        type: string
+      - description: 库的描述,当脚本类型为脚本调用库时必填
+        in: formData
+        name: description
+        type: string
+      - description: 代码同步url
+        in: formData
+        name: sync_url
+        type: string
+      - description: 详细描述同步url
+        in: formData
+        name: content_url
+        type: string
+      - description: 定义文件同步url
+        in: formData
+        name: definition_url
+        type: string
+      - description: 同步模式
+        in: formData
+        name: sync_mode
+        type: integer
       responses:
         "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/request.UpdateScript'
+          description: ""
         "403":
           description: ""
       security:
       - BearerAuth: []
-      summary: 更新脚本
+      summary: 更新脚本配置
       tags:
       - script
   /scripts/{scriptId}/archive:
@@ -139,6 +429,27 @@ paths:
       tags:
       - script
   /scripts/{scriptId}/code:
+    get:
+      description: 脚本代码
+      operationId: script-code
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptInfo'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 脚本代码
+      tags:
+      - script
     put:
       description: 更新脚本代码
       operationId: script-update-code
@@ -158,6 +469,105 @@ paths:
       security:
       - BearerAuth: []
       summary: 更新脚本代码
+      tags:
+      - script
+  /scripts/{scriptId}/score:
+    get:
+      description: 自己的评分
+      operationId: script-score-self
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptScore'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 自己的评分
+      tags:
+      - script-score
+    put:
+      description: 发表评分
+      operationId: script-score-put
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 分数
+        in: formData
+        name: score
+        required: true
+        type: integer
+      - description: 评论
+        in: formData
+        name: message
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 发表评分
+      tags:
+      - script-score
+  /scripts/{scriptId}/versions:
+    get:
+      description: 版本列表
+      operationId: script-version
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptCode'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 版本列表
+      tags:
+      - script
+  /scripts/{scriptId}/versions/{version}/code:
+    get:
+      description: 获取脚本指定版本代码
+      operationId: script-version-code
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 版本号
+        in: path
+        name: version
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptCode'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 获取脚本指定版本代码
       tags:
       - script
 securityDefinitions:

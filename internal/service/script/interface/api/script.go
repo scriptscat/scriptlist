@@ -21,6 +21,7 @@ import (
 	service2 "github.com/scriptscat/scriptlist/internal/service"
 	service4 "github.com/scriptscat/scriptlist/internal/service/notify/service"
 	"github.com/scriptscat/scriptlist/internal/service/script/application"
+	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/vo"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
@@ -335,6 +336,17 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 	_, _ = ctx.Writer.WriteString(code.Meta)
 }
 
+// @Summary      脚本列表
+// @Description  脚本列表
+// @ID           script-list
+// @Tags         script
+// @Security     BearerAuth
+// @param        page      query     integer  false  "页码"
+// @param        count     query     integer  false  "页大小"
+// @param        category  query     string   false  "分类id以','分割"
+// @Success      200       {object}  vo.Script
+// @Failure      403
+// @Router       /scripts [GET]
 func (s *Script) list(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		page := &request.Pages{}
@@ -364,6 +376,25 @@ func (s *Script) list(ctx *gin.Context) {
 	})
 }
 
+// @Summary      脚本信息
+// @Description  脚本信息
+// @ID           script-info
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId        path      integer  true   "脚本id"
+// @Success      200       {object}  vo.ScriptInfo
+// @Failure      403
+// @Router       /scripts/{scriptId} [GET]
+
+// @Summary      脚本代码
+// @Description  脚本代码
+// @ID           script-code
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true   "脚本id"
+// @Success      200       {object}  vo.ScriptInfo
+// @Failure      403
+// @Router       /scripts/{scriptId}/code [GET]
 func (s *Script) get(withcode bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		httputils.Handle(ctx, func() interface{} {
@@ -379,6 +410,15 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 	}
 }
 
+// @Summary      版本列表
+// @Description  版本列表
+// @ID           script-version
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @Success      200       {object}  vo.ScriptCode
+// @Failure      403
+// @Router       /scripts/{scriptId}/versions [GET]
 func (s *Script) versions(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("script"))
@@ -394,6 +434,27 @@ func (s *Script) versions(ctx *gin.Context) {
 	})
 }
 
+// @Summary      获取脚本指定版本
+// @Description  获取脚本指定版本
+// @ID           script-version-info
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @param        version   path      string   true  "版本号"
+// @Success      200       {object}  vo.ScriptCode
+// @Failure      403
+// @Router       /scripts/{scriptId}/versions/{version} [GET]
+
+// @Summary      获取脚本指定版本代码
+// @Description  获取脚本指定版本代码
+// @ID           script-version-code
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @param        version   path      string   true  "版本号"
+// @Success      200       {object}  vo.ScriptCode
+// @Failure      403
+// @Router       /scripts/{scriptId}/versions/{version}/code [GET]
 func (s *Script) versionsGet(withcode bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		httputils.Handle(ctx, func() interface{} {
@@ -408,6 +469,16 @@ func (s *Script) versionsGet(withcode bool) gin.HandlerFunc {
 	}
 }
 
+var _ = entity.ScriptCategoryList{}
+
+// @Summary      脚本分类列表
+// @Description  脚本分类列表
+// @ID           script-category
+// @Tags         script-category
+// @Security     BearerAuth
+// @Success      200  {object}  entity.ScriptCategoryList
+// @Failure      403
+// @Router       /category [GET]
 func (s *Script) category(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		list, err := s.scriptSvc.GetCategory()
@@ -418,6 +489,17 @@ func (s *Script) category(ctx *gin.Context) {
 	})
 }
 
+// @Summary      发表评分
+// @Description  发表评分
+// @ID           script-score-put
+// @Tags         script-score
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @param        score     formData  integer  true   "分数"
+// @param        message   formData  string   false  "评论"
+// @Success      200
+// @Failure      403
+// @Router       /scripts/{scriptId}/score [PUT]
 func (s *Script) putScore(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		user, ok := token.UserInfo(ctx)
@@ -466,6 +548,17 @@ func (s *Script) putScore(ctx *gin.Context) {
 	})
 }
 
+// @Summary      评分列表
+// @Description  评分列表
+// @ID           script-score-list
+// @Tags         script-score
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true  "脚本id"
+// @param        page      query     integer  false  "页码"
+// @param        count     query     integer  false  "页大小"
+// @Success      200       {object}  vo.ScriptScore
+// @Failure      403
+// @Router       /scripts/{scriptId}/score [GET]
 func (s *Script) scoreList(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		id := utils.StringToInt64(ctx.Param("script"))
@@ -481,6 +574,15 @@ func (s *Script) scoreList(ctx *gin.Context) {
 	})
 }
 
+// @Summary      自己的评分
+// @Description  自己的评分
+// @ID           script-score-self
+// @Tags         script-score
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true   "脚本id"
+// @Success      200       {object}  vo.ScriptScore
+// @Failure      403
+// @Router       /scripts/{scriptId}/score [GET]
 func (s *Script) selfScore(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		uid, ok := token.UserId(ctx)
@@ -496,6 +598,23 @@ func (s *Script) selfScore(ctx *gin.Context) {
 	})
 }
 
+// @Summary      创建脚本
+// @Description  创建脚本
+// @ID           script-create
+// @Tags         script
+// @Security     BearerAuth
+// @param        content      formData  string  true   "脚本详细描述"
+// @param        code         formData  string  true   "脚本代码"
+// @param        name         formData  string  false  "库的名字,当脚本类型为脚本调用库时必填"
+// @param        description  formData  string  false  "库的描述,当脚本类型为脚本调用库时必填"
+// @param        definition   formData  string  false  "库的定义文件,当脚本类型为脚本调用库时必填"
+// @param        type         formData  int     true   "脚本类型 1 用户脚本 2 脚本调用库 3 订阅脚本"
+// @param        public       formData  int     true   "公开类型 1 公开 2 半公开"
+// @param        unwell       formData  int     true   "不适内容"
+// @param        changelog    formData  string  true   "更新日志"
+// @Success      200
+// @Failure      403
+// @Router       /scripts [POST]
 func (s *Script) add(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		uid, ok := token.UserId(ctx)
@@ -514,13 +633,19 @@ func (s *Script) add(ctx *gin.Context) {
 	})
 }
 
-// @Summary      更新脚本
-// @Description  更新脚本
+// @Summary      更新脚本配置
+// @Description  更新脚本配置
 // @ID           script-update
 // @Tags         script
 // @Security     BearerAuth
 // @param        scriptId  path      integer  true  "脚本id"
-// @Success      200       {object}  request.UpdateScript
+// @param        name            formData  string   false  "库的名字,当脚本类型为脚本调用库时必填"
+// @param        description     formData  string   false  "库的描述,当脚本类型为脚本调用库时必填"
+// @param        sync_url        formData  string   false  "代码同步url"
+// @param        content_url     formData  string   false  "详细描述同步url"
+// @param        definition_url  formData  string   false  "定义文件同步url"
+// @param        sync_mode       formData  int      false  "同步模式"
+// @Success      200
 // @Failure      403
 // @Router       /scripts/{scriptId} [PUT]
 func (s *Script) update(ctx *gin.Context) {

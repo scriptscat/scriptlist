@@ -7,6 +7,161 @@
     },
     "basePath": "/api/v1",
     "paths": {
+        "/category": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "脚本分类列表",
+                "tags": [
+                    "script-category"
+                ],
+                "summary": "脚本分类列表",
+                "operationId": "script-category",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.ScriptCategoryList"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "脚本列表",
+                "tags": [
+                    "script"
+                ],
+                "summary": "脚本列表",
+                "operationId": "script-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页大小",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "分类id以','分割",
+                        "name": "category",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.Script"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建脚本",
+                "tags": [
+                    "script"
+                ],
+                "summary": "创建脚本",
+                "operationId": "script-create",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "脚本详细描述",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "脚本代码",
+                        "name": "code",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "库的名字,当脚本类型为脚本调用库时必填",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "库的描述,当脚本类型为脚本调用库时必填",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "库的定义文件,当脚本类型为脚本调用库时必填",
+                        "name": "definition",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "脚本类型 1 用户脚本 2 脚本调用库 3 订阅脚本",
+                        "name": "type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "公开类型 1 公开 2 半公开",
+                        "name": "public",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "不适内容",
+                        "name": "unwell",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "更新日志",
+                        "name": "changelog",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/scripts/{scriptId}": {
             "put": {
                 "security": [
@@ -14,11 +169,11 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "更新脚本",
+                "description": "更新脚本配置",
                 "tags": [
                     "script"
                 ],
-                "summary": "更新脚本",
+                "summary": "更新脚本配置",
                 "operationId": "script-update",
                 "parameters": [
                     {
@@ -27,14 +182,47 @@
                         "name": "scriptId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "库的名字,当脚本类型为脚本调用库时必填",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "库的描述,当脚本类型为脚本调用库时必填",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "代码同步url",
+                        "name": "sync_url",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "详细描述同步url",
+                        "name": "content_url",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "定义文件同步url",
+                        "name": "definition_url",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "同步模式",
+                        "name": "sync_mode",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/request.UpdateScript"
-                        }
+                        "description": ""
                     },
                     "403": {
                         "description": ""
@@ -135,6 +323,39 @@
             }
         },
         "/scripts/{scriptId}/code": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "脚本代码",
+                "tags": [
+                    "script"
+                ],
+                "summary": "脚本代码",
+                "operationId": "script-code",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptInfo"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -168,35 +389,185 @@
                     }
                 }
             }
+        },
+        "/scripts/{scriptId}/score": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "自己的评分",
+                "tags": [
+                    "script-score"
+                ],
+                "summary": "自己的评分",
+                "operationId": "script-score-self",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptScore"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "发表评分",
+                "tags": [
+                    "script-score"
+                ],
+                "summary": "发表评分",
+                "operationId": "script-score-put",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "分数",
+                        "name": "score",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "评论",
+                        "name": "message",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/versions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "版本列表",
+                "tags": [
+                    "script"
+                ],
+                "summary": "版本列表",
+                "operationId": "script-version",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptCode"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/versions/{version}/code": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取脚本指定版本代码",
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本指定版本代码",
+                "operationId": "script-version-code",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "版本号",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptCode"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "request.UpdateScript": {
+        "entity.ScriptCategoryList": {
             "type": "object",
             "properties": {
-                "contentUrl": {
-                    "type": "string",
-                    "maxLength": 1024
-                },
-                "definitionUrl": {
-                    "type": "string",
-                    "maxLength": 1024
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 102400
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "syncMode": {
+                "createtime": {
                     "type": "integer"
                 },
-                "syncUrl": {
-                    "description": "公开类型：1 公开 2 半公开\nPublic int `form:\"public\" binding:\"required,number\" label:\"公开类型\"`\nUnwell int `form:\"unwell\" binding:\"required,number\" label:\"不适内容\"`\n监听",
-                    "type": "string",
-                    "maxLength": 1024
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "num": {
+                    "description": "本分类下脚本数量",
+                    "type": "integer"
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
                 }
             }
         },
@@ -232,6 +603,271 @@
                 },
                 "unwell": {
                     "type": "integer"
+                }
+            }
+        },
+        "vo.Script": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "type": "integer"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "is_manager": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "score_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "$ref": "#/definitions/vo.ScriptCode"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "today_install": {
+                    "type": "integer"
+                },
+                "total_install": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "vo.ScriptCode": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "changelog": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "definition": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "meta": {
+                    "type": "string"
+                },
+                "meta_json": {},
+                "script_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "vo.ScriptInfo": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "type": "integer"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "is_manager": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "score_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "$ref": "#/definitions/vo.ScriptCode"
+                },
+                "setting": {
+                    "$ref": "#/definitions/vo.ScriptSetting"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "today_install": {
+                    "type": "integer"
+                },
+                "total_install": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "vo.ScriptScore": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "评分原因",
+                    "type": "string"
+                },
+                "score": {
+                    "description": "评分,五星制,50",
+                    "type": "integer"
+                },
+                "script_id": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "vo.ScriptSetting": {
+            "type": "object",
+            "properties": {
+                "content_url": {
+                    "type": "string"
+                },
+                "definition_url": {
+                    "type": "string"
+                },
+                "sync_mode": {
+                    "type": "integer"
+                },
+                "sync_url": {
+                    "type": "string"
                 }
             }
         }
