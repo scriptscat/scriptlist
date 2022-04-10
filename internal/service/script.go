@@ -9,7 +9,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	repository2 "github.com/scriptscat/scriptlist/internal/service/safe/domain/repository"
 	service4 "github.com/scriptscat/scriptlist/internal/service/safe/service"
@@ -19,17 +18,18 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/vo"
 	service3 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
+	"github.com/scriptscat/scriptlist/pkg/httputils"
 )
 
 type Script interface {
 	GetScript(id int64, version string, withcode bool) (*vo.ScriptInfo, error)
-	GetScriptList(search *repository.SearchList, page *request.Pages) (*respond.List, error)
-	GetScriptCodeList(id int64, page *request.Pages) (*respond.List, error)
+	GetScriptList(search *repository.SearchList, page *request.Pages) (*httputils.List, error)
+	GetScriptCodeList(id int64, page *request.Pages) (*httputils.List, error)
 	GetLatestScriptCode(id int64, withcode bool) (*vo.ScriptCode, error)
 	GetScriptCodeByVersion(id int64, version string, withcode bool) (*vo.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
 	AddScore(uid int64, id int64, score *request.Score) (bool, error)
-	ScoreList(id int64, page *request.Pages) (*respond.List, error)
+	ScoreList(id int64, page *request.Pages) (*httputils.List, error)
 	UserScore(uid, id int64) (*entity.ScriptScore, error)
 	CreateScript(uid int64, req *request.CreateScript) (*entity.Script, error)
 	UpdateScript(uid, id int64, req *request.UpdateScript) error
@@ -91,7 +91,7 @@ func (s *script) GetLatestScriptCode(id int64, withcode bool) (*vo.ScriptCode, e
 	return ret, err
 }
 
-func (s *script) GetScriptList(search *repository.SearchList, page *request.Pages) (*respond.List, error) {
+func (s *script) GetScriptList(search *repository.SearchList, page *request.Pages) (*httputils.List, error) {
 	list, total, err := s.scriptSvc.Search(search, page)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request.Page
 			ret[i] = item
 		}
 	}
-	return &respond.List{
+	return &httputils.List{
 		List:  ret,
 		Total: total,
 	}, nil
@@ -124,7 +124,7 @@ func (s *script) join(script *vo.Script) {
 	script.ScoreNum, _ = s.scoreSvc.Count(script.ID)
 }
 
-func (s *script) GetScriptCodeList(id int64, page *request.Pages) (*respond.List, error) {
+func (s *script) GetScriptCodeList(id int64, page *request.Pages) (*httputils.List, error) {
 	list, num, err := s.scriptSvc.VersionList(id, page)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (s *script) GetScriptCodeList(id int64, page *request.Pages) (*respond.List
 		user, _ := s.userSvc.UserInfo(v.UserId)
 		ret[i] = vo.ToScriptCode(user, v)
 	}
-	return &respond.List{
+	return &httputils.List{
 		List:  ret,
 		Total: num,
 	}, nil
@@ -173,7 +173,7 @@ func (s *script) AddScore(uid int64, id int64, score *request.Score) (bool, erro
 	return s.scoreSvc.AddScore(uid, id, score)
 }
 
-func (s *script) ScoreList(id int64, page *request.Pages) (*respond.List, error) {
+func (s *script) ScoreList(id int64, page *request.Pages) (*httputils.List, error) {
 	list, total, err := s.scoreSvc.ScoreList(id, page)
 	if err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func (s *script) ScoreList(id int64, page *request.Pages) (*respond.List, error)
 		resp[i] = vo.ToScriptScore(user, v)
 	}
 
-	return &respond.List{
+	return &httputils.List{
 		List:  resp,
 		Total: total,
 	}, nil

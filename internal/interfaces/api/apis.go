@@ -14,7 +14,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/infrastructure/logs"
 	token2 "github.com/scriptscat/scriptlist/internal/infrastructure/middleware/token"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/persistence"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service5 "github.com/scriptscat/scriptlist/internal/service"
 	application2 "github.com/scriptscat/scriptlist/internal/service/issue/application"
@@ -27,6 +26,7 @@ import (
 	service4 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	service2 "github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/internal/subscriber"
+	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	pkgValidator "github.com/scriptscat/scriptlist/pkg/utils/validator"
 	"github.com/sirupsen/logrus"
@@ -81,8 +81,8 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"code": -1001, "msg": "系统错误",
 		})
-	case *respond.List:
-		list := resp.(*respond.List)
+	case *httputils.List:
+		list := resp.(*httputils.List)
 		ctx.JSON(http.StatusOK, gin.H{
 			"code": 0, "msg": "ok", "list": list.List, "total": list.Total,
 		})

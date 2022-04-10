@@ -66,7 +66,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 			u, _ := s.userSvc.UserInfo(v.UserID)
 			ret[k] = respond2.ToIssue(u, v)
 		}
-		return &respond2.List{
+		return &httputils.List{
 			List:  ret,
 			Total: total,
 		}
@@ -217,7 +217,7 @@ func (s *ScriptIssue) commentList(c *gin.Context) {
 			u, _ := s.userSvc.UserInfo(v.UserID)
 			ret[k] = respond2.ToIssueComment(u, v)
 		}
-		return &respond2.List{
+		return &httputils.List{
 			List:  ret,
 			Total: int64(len(ret)),
 		}
