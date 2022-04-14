@@ -112,7 +112,7 @@ func StartApi(db *persistence.Repositories) error {
 	binding.Validator = pkgValidator.NewValidator()
 	c := cron.New()
 	userSvc := service2.NewUser(db.User.User, db.User.Follow)
-	scriptApp := application.NewScript(db.Script.Script, db.Script.Code,
+	scriptApp := application.NewScript(db, db.Script.Script, db.Script.Code,
 		db.Script.Category, db.Script.Statistics)
 	statisSvc := service4.NewStatistics(db.Statistics.Statistics)
 	scoreSvc := application.NewScore(db.Script.Score)

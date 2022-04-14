@@ -9,7 +9,7 @@ swagger:
 	swag init -g internal/interfaces/api/apis.go --parseDependency --parseDepth 2
 
 linux: generate
-	CGO_ENABLE=0 GOOS=linux go build -o scriptlist ./cmd/app
+	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o scriptlist ./cmd/app
 
 build: generate
 	go build -o scriptlist$(SUFFIX) ./cmd/app

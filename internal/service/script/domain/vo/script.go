@@ -10,24 +10,25 @@ import (
 
 type Script struct {
 	*vo.User
-	Script       *ScriptCode `json:"script"`
-	ID           int64       `json:"id"`
-	PostId       int64       `json:"post_id"`
-	UserId       int64       `json:"user_id"`
-	IsManager    bool        `json:"is_manager"`
-	Name         string      `json:"name"`
-	Description  string      `json:"description"`
-	Status       int64       `json:"status"`
-	Score        int64       `json:"score"`
-	ScoreNum     int64       `json:"score_num"`
-	Type         int         `json:"type"`
-	Public       int         `json:"public"`
-	Unwell       int         `json:"unwell"`
-	Archive      int32       `json:"archive"`
-	TodayInstall int64       `json:"today_install"`
-	TotalInstall int64       `json:"total_install"`
-	Createtime   int64       `json:"createtime"`
-	Updatetime   int64       `json:"updatetime"`
+	Script       *ScriptCode                   `json:"script"`
+	ID           int64                         `json:"id"`
+	PostId       int64                         `json:"post_id"`
+	UserId       int64                         `json:"user_id"`
+	IsManager    bool                          `json:"is_manager"`
+	Name         string                        `json:"name"`
+	Description  string                        `json:"description"`
+	Category     []*entity2.ScriptCategoryList `json:"category"`
+	Status       int64                         `json:"status"`
+	Score        int64                         `json:"score"`
+	ScoreNum     int64                         `json:"score_num"`
+	Type         int                           `json:"type"`
+	Public       int                           `json:"public"`
+	Unwell       int                           `json:"unwell"`
+	Archive      int32                         `json:"archive"`
+	TodayInstall int64                         `json:"today_install"`
+	TotalInstall int64                         `json:"total_install"`
+	Createtime   int64                         `json:"createtime"`
+	Updatetime   int64                         `json:"updatetime"`
 }
 
 type ScriptSetting struct {
@@ -84,7 +85,7 @@ func ToScriptScore(user *vo.User, score *entity2.ScriptScore) *ScriptScore {
 	}
 }
 
-func ToScript(user *vo.User, script *entity2.Script, code *ScriptCode) *Script {
+func ToScript(user *vo.User, script *entity2.Script, code *ScriptCode, category []*entity2.ScriptCategoryList) *Script {
 	ret := &Script{
 		User:        user,
 		Script:      code,
@@ -93,6 +94,7 @@ func ToScript(user *vo.User, script *entity2.Script, code *ScriptCode) *Script {
 		UserId:      script.UserId,
 		Name:        script.Name,
 		Description: script.Description,
+		Category:    category,
 		Status:      script.Status,
 		Type:        script.Type,
 		Public:      script.Public,
@@ -104,9 +106,9 @@ func ToScript(user *vo.User, script *entity2.Script, code *ScriptCode) *Script {
 	return ret
 }
 
-func ToScriptInfo(user *vo.User, script *entity2.Script, code *ScriptCode) *ScriptInfo {
+func ToScriptInfo(user *vo.User, script *entity2.Script, code *ScriptCode, category []*entity2.ScriptCategoryList) *ScriptInfo {
 	ret := &ScriptInfo{
-		Script:  ToScript(user, script, code),
+		Script:  ToScript(user, script, code, category),
 		Content: script.Content,
 	}
 	if user.UID == script.UserId {

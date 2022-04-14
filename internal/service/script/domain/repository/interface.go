@@ -46,6 +46,7 @@ type Category interface {
 	List() ([]*entity.ScriptCategoryList, error)
 	LinkCategory(script, category int64) error
 	Save(category *entity.ScriptCategoryList) error
+	GetCategoryByScriptId(scriptId int64) ([]*entity.ScriptCategoryList, error)
 }
 
 type Statistics interface {

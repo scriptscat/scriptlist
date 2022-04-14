@@ -28,6 +28,7 @@ const (
 
 type Script interface {
 	Search(search *repository.SearchList, page *request2.Pages) ([]*entity.Script, int64, error)
+	GetScriptCategory(id int64) ([]*entity.ScriptCategoryList, error)
 	UserScript(uid int64, self bool, page *request2.Pages) ([]*entity.Script, int64, error)
 	Info(id int64) (*entity.Script, error)
 	GetCode(id int64) (*entity.ScriptCode, error)
@@ -49,7 +50,7 @@ type Script interface {
 }
 
 type script struct {
-	db           persistence.Repositories
+	db           *persistence.Repositories
 	scriptRepo   repository.Script
 	codeRepo     repository.ScriptCode
 	categoryRepo repository.Category
@@ -58,8 +59,9 @@ type script struct {
 	cronCategory *entity.ScriptCategoryList
 }
 
-func NewScript(scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics) Script {
+func NewScript(db *persistence.Repositories, scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics) Script {
 	ret := &script{
+		db:           db,
 		scriptRepo:   scriptRepo,
 		codeRepo:     codeRepo,
 		categoryRepo: categoryRepo,
@@ -265,7 +267,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 			if err := codeRepo.Save(code); err != nil {
 				return err
 			}
-			categoryRepo := persistence2.NewCategory(tx)
+			categoryRepo := persistence2.NewCategory(tx, s.db.Cache)
 			domains := make(map[string]struct{})
 			if _, ok := metaJson["background"]; ok {
 				_ = categoryRepo.LinkCategory(code.ScriptId, s.bgCategory.ID)
@@ -419,4 +421,8 @@ func (s *script) Delete(user *vo.User, id int64) error {
 		return err
 	}
 	return s.scriptRepo.Save(script)
+}
+
+func (s *script) GetScriptCategory(id int64) ([]*entity.ScriptCategoryList, error) {
+	return s.categoryRepo.GetCategoryByScriptId(id)
 }

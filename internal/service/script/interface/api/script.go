@@ -391,7 +391,7 @@ func (s *Script) list(ctx *gin.Context) {
 // @ID           script-code
 // @Tags         script
 // @Security     BearerAuth
-// @param        scriptId  path      integer  true   "脚本id"
+// @param        scriptId        path      integer  true   "脚本id"
 // @Success      200       {object}  vo.ScriptInfo
 // @Failure      403
 // @Router       /scripts/{scriptId}/code [GET]
@@ -415,7 +415,7 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 // @ID           script-version
 // @Tags         script
 // @Security     BearerAuth
-// @param        scriptId  path      integer  true  "脚本id"
+// @param        scriptId  path      integer  true   "脚本id"
 // @Success      200       {object}  vo.ScriptCode
 // @Failure      403
 // @Router       /scripts/{scriptId}/versions [GET]

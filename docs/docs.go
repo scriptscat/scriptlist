@@ -624,6 +624,12 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ScriptCategoryList"
+                    }
+                },
                 "createtime": {
                     "type": "integer"
                 },
@@ -748,6 +754,12 @@ const docTemplate = `{
                 },
                 "avatar": {
                     "type": "string"
+                },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ScriptCategoryList"
+                    }
                 },
                 "content": {
                     "type": "string"

@@ -24,7 +24,7 @@ func NewRepositories(db *gorm.DB, redis *redis.Client, cache cache.Cache) *Repos
 		Script:      NewScript(db, redis),
 		Code:        NewCode(db, cache),
 		Score:       NewScore(db, redis),
-		Category:    NewCategory(db),
+		Category:    NewCategory(db, cache),
 		ScriptWatch: NewScriptWatch(db, redis),
 		Statistics:  NewStatistics(db),
 	}

@@ -15,11 +15,15 @@ type ScriptCategoryList struct {
 	Updatetime int64 `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
 
+func (l *ScriptCategoryList) TableName() string {
+	return config.AppConfig.Mysql.Prefix + "script_category_list"
+}
+
 // ScriptCategory 脚本分类
 type ScriptCategory struct {
 	ID         int64 `gorm:"column:id" json:"id" form:"id"`
-	CategoryId int64 `gorm:"column:category_id;index:category_id" json:"category_id" form:"category_id"`
-	ScriptId   int64 `gorm:"column:script_id;index:script_id" json:"script_id" form:"script_id"`
+	CategoryId int64 `gorm:"column:category_id;index:category_id;index:script_category,unique" json:"category_id" form:"category_id"`
+	ScriptId   int64 `gorm:"column:script_id;index:script_id;index:script_category,unique" json:"script_id" form:"script_id"`
 	Createtime int64 `gorm:"column:createtime" json:"createtime" form:"createtime"`
 	Updatetime int64 `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }

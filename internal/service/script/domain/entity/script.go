@@ -32,9 +32,9 @@ type Script struct {
 	Public      int    `gorm:"column:public;not null;default:1" json:"public"`
 	// 不适内容
 	Unwell        int    `gorm:"column:unwell;not null;default:2" json:"unwell"`
-	SyncUrl       string `gorm:"column:sync_url;type:text;index:sync_url" json:"sync_url"`
-	ContentUrl    string `gorm:"column:content_url;type:text;index:content_url" json:"content_url"`
-	DefinitionUrl string `gorm:"column:definition_url;type:text;index:definition_url" json:"definition_url"`
+	SyncUrl       string `gorm:"column:sync_url;type:text;index:sync_url,length:128" json:"sync_url"`
+	ContentUrl    string `gorm:"column:content_url;type:text;index:content_url,length:128" json:"content_url"`
+	DefinitionUrl string `gorm:"column:definition_url;type:text;index:definition_url,length:128" json:"definition_url"`
 	SyncMode      int    `gorm:"column:sync_mode;type:tinyint(2)"`
 	// 归档
 	Archive    int32 `gorm:"column:archive;type:tinyint(2)" json:"archive"`

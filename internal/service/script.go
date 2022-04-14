@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
@@ -19,6 +18,7 @@ import (
 	service3 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/pkg/httputils"
+	"github.com/sirupsen/logrus"
 )
 
 type Script interface {
@@ -69,7 +69,11 @@ func (s *script) GetScript(id int64, version string, withcode bool) (*vo.ScriptI
 		return nil, err
 	}
 
-	ret := vo.ToScriptInfo(user, script, latest)
+	category, err := s.scriptSvc.GetScriptCategory(id)
+	if err != nil {
+		logrus.Errorf("GetScriptCategory: %v", err)
+	}
+	ret := vo.ToScriptInfo(user, script, latest, category)
 	s.join(ret.Script)
 	return ret, nil
 }
@@ -101,10 +105,14 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request.Page
 		user, _ := s.userSvc.UserInfo(v.UserId)
 		latest, err := s.GetLatestScriptCode(v.ID, false)
 		if err != nil {
-			glog.Errorf("GetLatestScriptCode: %v", err)
+			logrus.Errorf("GetLatestScriptCode: %v", err)
 		}
 		if latest != nil {
-			item := vo.ToScript(user, v, latest)
+			category, err := s.scriptSvc.GetScriptCategory(v.ID)
+			if err != nil {
+				logrus.Errorf("GetScriptCategory: %v", err)
+			}
+			item := vo.ToScript(user, v, latest, category)
 			s.join(item)
 			ret[i] = item
 		}

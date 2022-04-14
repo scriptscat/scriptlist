@@ -615,6 +615,12 @@
                 "avatar": {
                     "type": "string"
                 },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ScriptCategoryList"
+                    }
+                },
                 "createtime": {
                     "type": "integer"
                 },
@@ -739,6 +745,12 @@
                 },
                 "avatar": {
                     "type": "string"
+                },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ScriptCategoryList"
+                    }
                 },
                 "content": {
                     "type": "string"
