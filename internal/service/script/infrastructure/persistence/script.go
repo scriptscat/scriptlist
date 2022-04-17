@@ -44,7 +44,7 @@ func (s *script) List(search *repository.SearchList, page *request.Pages) ([]*en
 	scriptTbName := (&entity.Script{}).TableName()
 	find := s.db.Model(&entity.Script{})
 	if !search.Self {
-		find.Where("public=?", entity.PUBLIC_SCRIPT)
+		find.Where("public=? and unwell=?", entity.PUBLIC_SCRIPT, 2)
 	}
 	if len(search.Category) != 0 {
 		tabname := (&entity.ScriptCategory{}).TableName()

@@ -404,6 +404,9 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 			if err != nil {
 				return err
 			}
+			if ret.Unwell == 1 && uid == 0 {
+				return errs.NewBadRequestError(1000, "该脚本含有不适内容，登录后设置才能访问")
+			}
 			ret.IsManager = uid == ret.UID
 			return ret
 		})
