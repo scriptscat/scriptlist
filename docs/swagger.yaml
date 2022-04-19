@@ -60,6 +60,8 @@ definitions:
         type: string
       email:
         type: string
+      email_status:
+        type: integer
       id:
         type: integer
       is_admin:
@@ -111,6 +113,8 @@ definitions:
         type: string
       email:
         type: string
+      email_status:
+        type: integer
       id:
         type: integer
       is_admin:
@@ -149,6 +153,8 @@ definitions:
         type: string
       email:
         type: string
+      email_status:
+        type: integer
       id:
         type: integer
       is_admin:
@@ -196,6 +202,8 @@ definitions:
         type: integer
       email:
         type: string
+      email_status:
+        type: integer
       id:
         type: integer
       is_admin:
@@ -336,7 +344,7 @@ paths:
       - script
   /scripts/{scriptId}:
     delete:
-      description: 删除脚本
+      description: 删除脚本,只有脚本管理员与超级版主以上的管理员可以操作
       operationId: script-delete
       parameters:
       - description: 脚本id
@@ -397,10 +405,35 @@ paths:
       summary: 更新脚本配置
       tags:
       - script
+  /scripts/{scriptId}/admin:
+    post:
+      description: 管理员管理,允许管理员设置
+      operationId: script-admin
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 操作:unwell 设置为不适脚本,unpublic 设置为非公开脚本,archive设置为归档脚本,delete 删除脚本
+        in: formData
+        name: action
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 管理员管理
+      tags:
+      - script
   /scripts/{scriptId}/archive:
     delete:
       description: 归档后无法再发issue、更新脚本
-      operationId: script-un-archive
+      operationId: script-unarchive
       parameters:
       - description: 脚本id
         in: path
@@ -418,7 +451,7 @@ paths:
       tags:
       - script
     put:
-      description: 归档后无法再发issue、更新脚本
+      description: 归档后无法再发issue、更新脚本,只有脚本管理员与超级版主以上的管理员可以操作
       operationId: script-archive
       parameters:
       - description: 脚本id
@@ -479,15 +512,341 @@ paths:
       summary: 更新脚本代码
       tags:
       - script
-  /scripts/{scriptId}/score:
+  /scripts/{scriptId}/issues:
     get:
-      description: 自己的评分
-      operationId: script-score-self
+      description: 反馈列表
+      operationId: issue-list
       parameters:
       - description: 脚本id
         in: path
         name: scriptId
         required: true
+        type: integer
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 页大小
+        in: query
+        name: count
+        type: integer
+      - description: 关键字
+        in: query
+        name: keyword
+        type: string
+      - description: 标签,多个以逗号分隔
+        in: query
+        name: labels
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 反馈列表
+      tags:
+      - issue
+    post:
+      description: 创建反馈
+      operationId: issue-post
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 内容
+        in: formData
+        name: content
+        type: string
+      - description: 标签,多个以逗号分隔
+        in: formData
+        name: label
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 创建反馈
+      tags:
+      - issue
+  /scripts/{scriptId}/issues/{issueId}:
+    delete:
+      description: 删除反馈，只有发布者、管理员、脚本管理者可以删除
+      operationId: issue-delete
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: query
+        name: issueId
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 删除反馈
+      tags:
+      - issue
+    put:
+      description: 修改反馈标签，只有发布者、管理员、脚本管理者可以修改
+      operationId: issue-put-labels
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: query
+        name: issueId
+        type: integer
+      - description: 标签,多个以逗号分隔
+        in: query
+        name: labels
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 修改反馈标签
+      tags:
+      - issue
+  /scripts/{scriptId}/issues/{issueId}/close:
+    put:
+      description: 关闭反馈，只有发布者、管理员、脚本管理者可以关闭
+      operationId: issue-close
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: query
+        name: issueId
+        type: integer
+      - description: 标签,多个以逗号分隔
+        in: query
+        name: labels
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 关闭反馈
+      tags:
+      - issue
+  /scripts/{scriptId}/issues/{issueId}/comment:
+    post:
+      description: 创建反馈评论
+      operationId: issue-comment-post
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      - description: 内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 创建反馈评论
+      tags:
+      - issue-comment
+  /scripts/{scriptId}/issues/{issueId}/comment/{commentId}:
+    delete:
+      description: 删除反馈评论,只有发布者、管理员、脚本管理者可以删除
+      operationId: issue-comment-delete
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      - description: 评论id
+        in: path
+        name: commentId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 删除反馈评论
+      tags:
+      - issue-comment
+    put:
+      description: 修改反馈评论,只有评论作者可以修改
+      operationId: issue-comment-put
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      - description: 评论id
+        in: path
+        name: commentId
+        required: true
+        type: integer
+      - description: 内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 修改反馈评论
+      tags:
+      - issue-comment
+  /scripts/{scriptId}/issues/{issueId}/watch:
+    delete:
+      description: 取消关注反馈
+      operationId: issue-unwatch
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 取消关注反馈
+      tags:
+      - issue
+    get:
+      description: 是否关注了反馈
+      operationId: issue-is-watch
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 是否关注了反馈
+      tags:
+      - issue
+    post:
+      description: 关注反馈
+      operationId: issue-watch
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 关注反馈
+      tags:
+      - issue
+  /scripts/{scriptId}/score:
+    get:
+      description: 评分列表
+      operationId: script-score-list
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 页大小
+        in: query
+        name: count
         type: integer
       responses:
         "200":
@@ -498,7 +857,7 @@ paths:
           description: ""
       security:
       - BearerAuth: []
-      summary: 自己的评分
+      summary: 评分列表
       tags:
       - script-score
     put:
@@ -527,6 +886,53 @@ paths:
       security:
       - BearerAuth: []
       summary: 发表评分
+      tags:
+      - script-score
+  /scripts/{scriptId}/score/{scoreId}:
+    delete:
+      description: 删除评分, 只有管理员才能删除
+      operationId: script-score-delete
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 评分id
+        in: path
+        name: scoreId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 删除评分
+      tags:
+      - script-score
+  /scripts/{scriptId}/score/self:
+    get:
+      description: 自己的评分
+      operationId: script-score-self
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptScore'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 自己的评分
       tags:
       - script-score
   /scripts/{scriptId}/versions:
@@ -578,6 +984,46 @@ paths:
       summary: 获取脚本指定版本代码
       tags:
       - script
+  /statistics/script/{scriptId}:
+    get:
+      description: 脚本统计数据,只允许管理员、脚本管理员访问
+      operationId: script-statistics
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 脚本统计数据
+      tags:
+      - script-statistics
+  /statistics/script/{scriptId}/realtime:
+    get:
+      description: 脚本实时统计,只允许管理员、脚本管理员访问
+      operationId: script-realtime
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 脚本实时统计
+      tags:
+      - script-statistics
 securityDefinitions:
   BearerAuth:
     in: header

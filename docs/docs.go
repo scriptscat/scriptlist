@@ -244,7 +244,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "删除脚本",
+                "description": "删除脚本,只有脚本管理员与超级版主以上的管理员可以操作",
                 "tags": [
                     "script"
                 ],
@@ -269,6 +269,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/scripts/{scriptId}/admin": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "管理员管理,允许管理员设置",
+                "tags": [
+                    "script"
+                ],
+                "summary": "管理员管理",
+                "operationId": "script-admin",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "操作:unwell 设置为不适脚本,unpublic 设置为非公开脚本,archive设置为归档脚本,delete 删除脚本",
+                        "name": "action",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/scripts/{scriptId}/archive": {
             "put": {
                 "security": [
@@ -276,7 +315,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "归档后无法再发issue、更新脚本",
+                "description": "归档后无法再发issue、更新脚本,只有脚本管理员与超级版主以上的管理员可以操作",
                 "tags": [
                     "script"
                 ],
@@ -311,7 +350,7 @@ const docTemplate = `{
                     "script"
                 ],
                 "summary": "取消脚本归档",
-                "operationId": "script-un-archive",
+                "operationId": "script-unarchive",
                 "parameters": [
                     {
                         "type": "integer",
@@ -399,19 +438,19 @@ const docTemplate = `{
                 }
             }
         },
-        "/scripts/{scriptId}/score": {
+        "/scripts/{scriptId}/issues": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "自己的评分",
+                "description": "反馈列表",
                 "tags": [
-                    "script-score"
+                    "issue"
                 ],
-                "summary": "自己的评分",
-                "operationId": "script-score-self",
+                "summary": "反馈列表",
+                "operationId": "issue-list",
                 "parameters": [
                     {
                         "type": "integer",
@@ -419,6 +458,509 @@ const docTemplate = `{
                         "name": "scriptId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页大小",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键字",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "标签,多个以逗号分隔",
+                        "name": "labels",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建反馈",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "创建反馈",
+                "operationId": "issue-post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "标题",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "内容",
+                        "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "标签,多个以逗号分隔",
+                        "name": "label",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/issues/{issueId}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "修改反馈标签，只有发布者、管理员、脚本管理者可以修改",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "修改反馈标签",
+                "operationId": "issue-put-labels",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "标签,多个以逗号分隔",
+                        "name": "labels",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除反馈，只有发布者、管理员、脚本管理者可以删除",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "删除反馈",
+                "operationId": "issue-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/issues/{issueId}/close": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "关闭反馈，只有发布者、管理员、脚本管理者可以关闭",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "关闭反馈",
+                "operationId": "issue-close",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "标签,多个以逗号分隔",
+                        "name": "labels",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/issues/{issueId}/comment": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建反馈评论",
+                "tags": [
+                    "issue-comment"
+                ],
+                "summary": "创建反馈评论",
+                "operationId": "issue-comment-post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "内容",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/issues/{issueId}/comment/{commentId}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "修改反馈评论,只有评论作者可以修改",
+                "tags": [
+                    "issue-comment"
+                ],
+                "summary": "修改反馈评论",
+                "operationId": "issue-comment-put",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "评论id",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "内容",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除反馈评论,只有发布者、管理员、脚本管理者可以删除",
+                "tags": [
+                    "issue-comment"
+                ],
+                "summary": "删除反馈评论",
+                "operationId": "issue-comment-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "评论id",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/issues/{issueId}/watch": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "是否关注了反馈",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "是否关注了反馈",
+                "operationId": "issue-is-watch",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "关注反馈",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "关注反馈",
+                "operationId": "issue-watch",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "取消关注反馈",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "取消关注反馈",
+                "operationId": "issue-unwatch",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/score": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "评分列表",
+                "tags": [
+                    "script-score"
+                ],
+                "summary": "评分列表",
+                "operationId": "script-score-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页大小",
+                        "name": "count",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -465,6 +1007,80 @@ const docTemplate = `{
                         "description": "评论",
                         "name": "message",
                         "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/score/self": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "自己的评分",
+                "tags": [
+                    "script-score"
+                ],
+                "summary": "自己的评分",
+                "operationId": "script-score-self",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptScore"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/score/{scoreId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除评分, 只有管理员才能删除",
+                "tags": [
+                    "script-score"
+                ],
+                "summary": "删除评分",
+                "operationId": "script-score-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "评分id",
+                        "name": "scoreId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -547,6 +1163,70 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/vo.ScriptCode"
                         }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/statistics/script/{scriptId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "脚本统计数据,只允许管理员、脚本管理员访问",
+                "tags": [
+                    "script-statistics"
+                ],
+                "summary": "脚本统计数据",
+                "operationId": "script-statistics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/statistics/script/{scriptId}/realtime": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "脚本实时统计,只允许管理员、脚本管理员访问",
+                "tags": [
+                    "script-statistics"
+                ],
+                "summary": "脚本实时统计",
+                "operationId": "script-realtime",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
                     },
                     "403": {
                         "description": ""
@@ -639,6 +1319,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "email_status": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -716,6 +1399,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "email_status": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -772,6 +1458,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "email_status": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -843,6 +1532,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "email_status": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"

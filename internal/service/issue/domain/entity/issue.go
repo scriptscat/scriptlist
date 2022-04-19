@@ -1,5 +1,13 @@
 package entity
 
+import (
+	"net/http"
+	"time"
+
+	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+)
+
 type ScriptIssue struct {
 	ID         int64  `gorm:"column:id" json:"id"`
 	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);index:script_id;NOT NULL" json:"script_id"`
@@ -10,6 +18,22 @@ type ScriptIssue struct {
 	Status     int    `gorm:"column:status;type:tinyint(4);default:0;NOT NULL" json:"status"`
 	Createtime int64  `gorm:"column:createtime;type:bigint(20)" json:"createtime"`
 	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)" json:"updatetime"`
+}
+
+func (i *ScriptIssue) checkStatus() error {
+	if i.Status == cnt.DELETE {
+		return errs.NewError(http.StatusNotFound, 1000, "反馈不存在")
+	}
+	return nil
+}
+
+func (i *ScriptIssue) Delete() error {
+	if err := i.checkStatus(); err != nil {
+		return err
+	}
+	i.Status = cnt.DELETE
+	i.Updatetime = time.Now().Unix()
+	return nil
 }
 
 type ScriptIssueComment struct {

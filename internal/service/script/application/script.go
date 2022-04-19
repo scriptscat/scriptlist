@@ -47,6 +47,8 @@ type Script interface {
 	HotKeyword() ([]redis.Z, error)
 	Archive(user *vo.User, id int64, archive int32) error
 	Delete(user *vo.User, id int64) error
+	Unwell(user *vo.User, id int64) error
+	Unpublic(user *vo.User, id int64) error
 }
 
 type script struct {
@@ -137,7 +139,7 @@ const (
 
 func (s *script) CreateScript(uid int64, req *request2.CreateScript) (*entity.Script, error) {
 	script := &entity.Script{
-		UserId:     uid,
+		UserID:     uid,
 		Content:    req.Content,
 		Type:       req.Type,
 		Public:     req.Public,
@@ -157,7 +159,7 @@ func (s *script) UpdateScript(uid, id int64, req *request2.UpdateScript) error {
 	if err != nil {
 		return err
 	}
-	if script.UserId != uid {
+	if script.UserID != uid {
 		return errs.ErrScriptForbidden
 	}
 	//script.Public = req.Public
@@ -425,4 +427,26 @@ func (s *script) Delete(user *vo.User, id int64) error {
 
 func (s *script) GetScriptCategory(id int64) ([]*entity.ScriptCategoryList, error) {
 	return s.categoryRepo.GetCategoryByScriptId(id)
+}
+
+func (s *script) Unwell(user *vo.User, id int64) error {
+	script, err := s.scriptRepo.Find(id)
+	if err != nil {
+		return err
+	}
+	if err := script.SetUnwell(user); err != nil {
+		return err
+	}
+	return s.scriptRepo.Save(script)
+}
+
+func (s *script) Unpublic(user *vo.User, id int64) error {
+	script, err := s.scriptRepo.Find(id)
+	if err != nil {
+		return err
+	}
+	if err := script.SetUnpublic(user); err != nil {
+		return err
+	}
+	return s.scriptRepo.Save(script)
 }

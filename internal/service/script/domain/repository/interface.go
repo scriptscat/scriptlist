@@ -37,6 +37,7 @@ type ScriptCode interface {
 type Score interface {
 	Save(score *entity.ScriptScore) error
 	UserScore(uid, scriptId int64) (*entity.ScriptScore, error)
+	Find(id int64) (*entity.ScriptScore, error)
 	Avg(scriptId int64) (int64, error)
 	Count(scriptId int64) (int64, error)
 	List(scriptId int64, page *request.Pages) ([]*entity.ScriptScore, int64, error)

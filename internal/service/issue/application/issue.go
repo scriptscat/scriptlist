@@ -32,7 +32,7 @@ var Label = map[string]*entity.IssueLabel{
 
 type Issue interface {
 	List(script int64, keyword string, labels []string, status int, page *request.Pages) ([]*entity.ScriptIssue, int64, error)
-	Issue(script, user int64, title, content string, label []string) (*entity.ScriptIssue, error)
+	Issue(script, uid int64, title, content string, label []string) (*entity.ScriptIssue, error)
 	UpdateIssue(issue, user int64, title, content string) error
 	GetIssue(issue int64) (*entity.ScriptIssue, error)
 	DelIssue(issue, operator int64) error
@@ -44,9 +44,9 @@ type Issue interface {
 
 	CommentList(issue int64, page *request.Pages) ([]*entity.ScriptIssueComment, error)
 	GetComment(commentId int64) (*entity.ScriptIssueComment, error)
-	Comment(issue, user int64, content string) (*entity.ScriptIssueComment, error)
+	Comment(issue, uid int64, content string) (*entity.ScriptIssueComment, error)
 	UpdateComment(comment, user int64, content string) error
-	DelComment(commentId, uid int64) error
+	DelComment(commentId int64) error
 }
 
 type issue struct {
@@ -65,7 +65,7 @@ func (i *issue) List(script int64, keyword string, label []string, status int, p
 	return i.issueRepo.List(script, keyword, label, status, page)
 }
 
-func (i *issue) Issue(script, user int64, title, content string, labels []string) (*entity.ScriptIssue, error) {
+func (i *issue) Issue(script, uid int64, title, content string, labels []string) (*entity.ScriptIssue, error) {
 	for _, v := range labels {
 		if _, ok := Label[v]; !ok {
 			return nil, errs.NewBadRequestError(1000, "错误的标签")
@@ -73,7 +73,7 @@ func (i *issue) Issue(script, user int64, title, content string, labels []string
 	}
 	issue := &entity.ScriptIssue{
 		ScriptID:   script,
-		UserID:     user,
+		UserID:     uid,
 		Title:      title,
 		Content:    content,
 		Labels:     strings.Join(labels, ","),
@@ -127,7 +127,14 @@ func (i *issue) GetIssue(issueId int64) (*entity.ScriptIssue, error) {
 }
 
 func (i *issue) DelIssue(issueId int64, operator int64) error {
-	if err := i.changeStatus(issueId, cnt.DELETE); err != nil {
+	issue, err := i.GetIssue(issueId)
+	if err != nil {
+		return err
+	}
+	if err := issue.Delete(); err != nil {
+		return err
+	}
+	if err := i.issueRepo.Save(issue); err != nil {
 		return err
 	}
 	return i.commentRepo.Save(&entity.ScriptIssueComment{
@@ -242,7 +249,7 @@ func (i *issue) CommentList(issue int64, page *request.Pages) ([]*entity.ScriptI
 	return i.commentRepo.List(issue, cnt.ACTIVE, page)
 }
 
-func (i *issue) Comment(issueId, user int64, content string) (*entity.ScriptIssueComment, error) {
+func (i *issue) Comment(issueId int64, uid int64, content string) (*entity.ScriptIssueComment, error) {
 	if content == "" {
 		return nil, errs.NewBadRequestError(1000, "评论内容不能为空")
 	}
@@ -252,7 +259,7 @@ func (i *issue) Comment(issueId, user int64, content string) (*entity.ScriptIssu
 	}
 	ret := &entity.ScriptIssueComment{
 		IssueID:    issueId,
-		UserID:     user,
+		UserID:     uid,
 		Content:    content,
 		Type:       CommentTypeComment,
 		Status:     cnt.ACTIVE,
@@ -292,12 +299,12 @@ func (i *issue) UpdateComment(commentId, user int64, content string) error {
 	return i.commentRepo.Save(comment)
 }
 
-func (i *issue) DelComment(commentId int64, uid int64) error {
+func (i *issue) DelComment(commentId int64) error {
 	comment, err := i.GetComment(commentId)
 	if err != nil {
 		return err
 	}
-	if comment.UserID != uid || comment.Type != CommentTypeComment {
+	if comment.Type != CommentTypeComment {
 		return errs.NewError(http.StatusForbidden, 1001, "没有权限进行删除")
 	}
 	comment.Status = cnt.DELETE

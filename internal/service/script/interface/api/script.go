@@ -34,13 +34,14 @@ import (
 type Script struct {
 	scriptSvc service2.Script
 	scriptApp application.Script
+	scoreApp  application.Score
 	statisSvc service2.Statistics
 	userSvc   service.User
 	notifySvc service4.Sender
 	watchSvc  application.ScriptWatch
 }
 
-func NewScript(svc service2.Script, app application.Script, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, watchSvc application.ScriptWatch, c *cron.Cron) *Script {
+func NewScript(svc service2.Script, app application.Script, score application.Score, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, watchSvc application.ScriptWatch, c *cron.Cron) *Script {
 	// crontab 定时检查更新
 	c.AddFunc("0 */6 * * *", func() {
 		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
@@ -53,7 +54,7 @@ func NewScript(svc service2.Script, app application.Script, statisSvc service2.S
 			if v.SyncMode != application.SyncModeAuto {
 				continue
 			}
-			if err := svc.SyncScript(v.UserId, v.ID); err != nil {
+			if err := svc.SyncScript(v.UserID, v.ID); err != nil {
 				logrus.Errorf("Timing synchronization %v: %v", v.ID, err)
 			}
 		}
@@ -61,6 +62,7 @@ func NewScript(svc service2.Script, app application.Script, statisSvc service2.S
 	return &Script{
 		scriptSvc: svc,
 		scriptApp: app,
+		scoreApp:  score,
 		statisSvc: statisSvc,
 		userSvc:   userSvc,
 		notifySvc: notify,
@@ -109,6 +111,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.DELETE("", s.delete)
 	rgg.PUT("/archive", s.archive)
 	rgg.DELETE("/archive", s.unarchive)
+	rgg.POST("/admin", s.admin)
 	rgg.PUT("/code", s.updatecode)
 	rgg.POST("/sync", s.sync)
 
@@ -125,6 +128,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rggg.GET("", s.scoreList)
 	rggg.PUT("", s.putScore)
 	rggg.GET("/self", s.selfScore)
+	rggg.DELETE("/:scoreId", token.UserAuth(true), s.delScore)
 
 	rgg = rg.Group("/:script/watch", token.UserAuth(true))
 	rgg.GET("", s.iswatch)
@@ -138,7 +142,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 }
 
 // @Summary      删除脚本
-// @Description  删除脚本
+// @Description  删除脚本,只有脚本管理员与超级版主以上的管理员可以操作
 // @ID           script-delete
 // @Tags         script
 // @Security     BearerAuth
@@ -418,7 +422,7 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 // @ID           script-version
 // @Tags         script
 // @Security     BearerAuth
-// @param        scriptId  path      integer  true   "脚本id"
+// @param        scriptId  path      integer  true  "脚本id"
 // @Success      200       {object}  vo.ScriptCode
 // @Failure      403
 // @Router       /scripts/{scriptId}/versions [GET]
@@ -509,12 +513,15 @@ func (s *Script) putScore(ctx *gin.Context) {
 		if !ok {
 			return errs.ErrNotLogin
 		}
+		if user.EmailStatus == 0 {
+			return errs.ErrUserEmailNotVerified
+		}
 		id := utils.StringToInt64(ctx.Param("script"))
 		score := &request.Score{}
 		if err := ctx.ShouldBind(score); err != nil {
 			return err
 		}
-		exist, err := s.scriptSvc.AddScore(user.UID, id, score)
+		exist, err := s.scoreApp.AddScore(user.UID, id, score)
 		if err != nil {
 			return err
 		}
@@ -585,7 +592,7 @@ func (s *Script) scoreList(ctx *gin.Context) {
 // @param        scriptId  path      integer  true   "脚本id"
 // @Success      200       {object}  vo.ScriptScore
 // @Failure      403
-// @Router       /scripts/{scriptId}/score [GET]
+// @Router       /scripts/{scriptId}/score/self [GET]
 func (s *Script) selfScore(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		uid, ok := token.UserId(ctx)
@@ -593,11 +600,40 @@ func (s *Script) selfScore(ctx *gin.Context) {
 			return errs.ErrNotLogin
 		}
 		id := utils.StringToInt64(ctx.Param("script"))
-		ret, err := s.scriptSvc.UserScore(uid, id)
+		ret, err := s.scoreApp.UserScore(uid, id)
 		if err != nil {
 			return err
 		}
 		return ret
+	})
+}
+
+// @Summary      删除评分
+// @Description  删除评分, 只有管理员才能删除
+// @ID           script-score-delete
+// @Tags         script-score
+// @Security     BearerAuth
+// @param        scriptId  path      integer  true   "脚本id"
+// @param        scoreId   path  integer  true  "评分id"
+// @Success      200
+// @Failure      403
+// @Router       /scripts/{scriptId}/score/{scoreId} [DELETE]
+func (s *Script) delScore(ctx *gin.Context) {
+	httputils.Handle(ctx, func() interface{} {
+		user, ok := token.UserInfo(ctx)
+		if !ok {
+			return errs.ErrNotLogin
+		}
+		if !user.IsAdmin.IsAdmin() {
+			return errs.NewError(http.StatusForbidden, 1000, "只有管理员才能删除评分")
+		}
+		scriptId := utils.StringToInt64(ctx.Param("script"))
+		scoreId := utils.StringToInt64(ctx.Param("scoreId"))
+		err := s.scoreApp.Delete(scriptId, scoreId)
+		if err != nil {
+			return err
+		}
+		return nil
 	})
 }
 
@@ -620,15 +656,18 @@ func (s *Script) selfScore(ctx *gin.Context) {
 // @Router       /scripts [POST]
 func (s *Script) add(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
-		uid, ok := token.UserId(ctx)
+		user, ok := token.UserInfo(ctx)
 		if !ok {
 			return errs.ErrNotLogin
+		}
+		if user.EmailStatus == 0 {
+			return errs.ErrUserEmailNotVerified
 		}
 		script := &request.CreateScript{}
 		if err := ctx.ShouldBind(script); err != nil {
 			return err
 		}
-		ret, err := s.scriptSvc.CreateScript(uid, script)
+		ret, err := s.scriptSvc.CreateScript(user.UID, script)
 		if err != nil {
 			return err
 		}
@@ -721,7 +760,7 @@ func (s *Script) diff(c *gin.Context) {
 }
 
 // @Summary      设置脚本归档
-// @Description  归档后无法再发issue、更新脚本
+// @Description  归档后无法再发issue、更新脚本,只有脚本管理员与超级版主以上的管理员可以操作
 // @ID           script-archive
 // @Tags         script
 // @Security     BearerAuth
@@ -739,7 +778,7 @@ func (s *Script) archive(c *gin.Context) {
 
 // @Summary      取消脚本归档
 // @Description  归档后无法再发issue、更新脚本
-// @ID           script-un-archive
+// @ID           script-unarchive
 // @Tags         script
 // @Security     BearerAuth
 // @param        scriptId  path  integer  true  "脚本id"
@@ -751,5 +790,36 @@ func (s *Script) unarchive(c *gin.Context) {
 		user, _ := token.UserInfo(c)
 		id := utils.StringToInt64(c.Param("script"))
 		return s.scriptApp.Archive(user, id, 0)
+	})
+}
+
+// @Summary      管理员管理
+// @Description  管理员管理,允许管理员设置
+// @ID           script-admin
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @param        action    formData  string   true  "操作:unwell 设置为不适脚本,unpublic 设置为非公开脚本,archive设置为归档脚本,delete 删除脚本"
+// @Success      200
+// @Failure      403
+// @Router       /scripts/{scriptId}/admin [POST]
+func (s *Script) admin(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		user, _ := token.UserInfo(c)
+		if !user.IsAdmin.IsAdmin() {
+			return errs.NewError(http.StatusForbidden, 1000, "没有权限")
+		}
+		id := utils.StringToInt64(c.Param("script"))
+		switch c.PostForm("action") {
+		case "unwell":
+			return s.scriptApp.Unwell(user, id)
+		case "unpublic":
+			return s.scriptApp.Unpublic(user, id)
+		case "archive":
+			return s.scriptApp.Archive(user, id, 1)
+		case "delete":
+			return s.scriptApp.Delete(user, id)
+		}
+		return errs.NewError(http.StatusBadRequest, 1000, "操作错误")
 	})
 }

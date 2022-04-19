@@ -115,7 +115,7 @@ func StartApi(db *persistence.Repositories) error {
 	scriptApp := application.NewScript(db, db.Script.Script, db.Script.Code,
 		db.Script.Category, db.Script.Statistics)
 	statisSvc := service4.NewStatistics(db.Statistics.Statistics)
-	scoreSvc := application.NewScore(db.Script.Score)
+	scoreSvc := application.NewScore(db.Script.Script, db.Script.Score)
 	rateSvc := service.NewRate(db.Safe.Rate)
 	notifySvc := service7.NewSender(config.AppConfig.Email, config.AppConfig.EmailNotify)
 	issueSvc := application2.NewIssue(db.Issue.Issue, db.Issue.IssueComment)
@@ -154,10 +154,10 @@ func StartApi(db *persistence.Repositories) error {
 	r.Use(logs.GinLogger()...)
 
 	Registry(ctx, r,
-		api.NewScript(script, scriptApp, statis, userSvc, notifySvc, scriptWatchSvc, c),
+		api.NewScript(script, scriptApp, scoreSvc, statis, userSvc, notifySvc, scriptWatchSvc, c),
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), db),
 		NewResource(service6.NewResource(db.Resource.Resource), rateSvc),
-		NewStatistics(db, statisSvc, scriptApp, c),
+		api.NewStatistics(db, statisSvc, scriptApp, c),
 		NewUser(db, userSvc, script),
 		api2.NewScriptIssue(scriptApp, userSvc, notifySvc, issueSvc, issueWatchSvc),
 	)

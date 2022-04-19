@@ -3,15 +3,17 @@ package vo
 import (
 	"strconv"
 
+	"github.com/scriptscat/scriptlist/internal/service/user/cnt"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/entity"
 )
 
 type User struct {
-	UID      int64  `json:"uid"`
-	Username string `json:"username"`
-	Avatar   string `json:"avatar"`
-	IsAdmin  int64  `json:"is_admin"`
-	Email    string `json:"email,omitempty"`
+	UID         int64          `json:"uid"`
+	Username    string         `json:"username"`
+	Avatar      string         `json:"avatar"`
+	IsAdmin     cnt.AdminLevel `json:"is_admin"`
+	Email       string         `json:"email,omitempty"`
+	EmailStatus int64          `json:"email_status"`
 }
 
 func ToUser(user *entity.User) *User {
@@ -29,7 +31,7 @@ func ToUser(user *entity.User) *User {
 		UID:      user.Uid,
 		Username: user.Username,
 		Avatar:   avatar,
-		IsAdmin:  user.Adminid,
+		IsAdmin:  cnt.AdminLevel(user.Adminid),
 	}
 }
 
@@ -45,10 +47,11 @@ func ToSelfUser(user *entity.User) *User {
 		avatar = "/api/v1/user/avatar/" + strconv.FormatInt(user.Uid, 10)
 	}
 	return &User{
-		UID:      user.Uid,
-		Username: user.Username,
-		Avatar:   avatar,
-		IsAdmin:  user.Adminid,
-		Email:    user.Email,
+		UID:         user.Uid,
+		Username:    user.Username,
+		Avatar:      avatar,
+		IsAdmin:     cnt.AdminLevel(user.Adminid),
+		Email:       user.Email,
+		EmailStatus: user.Emailstatus,
 	}
 }

@@ -28,9 +28,7 @@ type Script interface {
 	GetLatestScriptCode(id int64, withcode bool) (*vo.ScriptCode, error)
 	GetScriptCodeByVersion(id int64, version string, withcode bool) (*vo.ScriptCode, error)
 	GetCategory() ([]*entity.ScriptCategoryList, error)
-	AddScore(uid int64, id int64, score *request.Score) (bool, error)
 	ScoreList(id int64, page *request.Pages) (*httputils.List, error)
-	UserScore(uid, id int64) (*entity.ScriptScore, error)
 	CreateScript(uid int64, req *request.CreateScript) (*entity.Script, error)
 	UpdateScript(uid, id int64, req *request.UpdateScript) error
 	UpdateScriptCode(uid, id int64, req *request.UpdateScriptCode) error
@@ -60,7 +58,7 @@ func (s *script) GetScript(id int64, version string, withcode bool) (*vo.ScriptI
 	if err != nil {
 		return nil, err
 	}
-	user, err := s.userSvc.UserInfo(script.UserId)
+	user, err := s.userSvc.UserInfo(script.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +100,7 @@ func (s *script) GetScriptList(search *repository.SearchList, page *request.Page
 	}
 	ret := make([]interface{}, len(list))
 	for i, v := range list {
-		user, _ := s.userSvc.UserInfo(v.UserId)
+		user, _ := s.userSvc.UserInfo(v.UserID)
 		latest, err := s.GetLatestScriptCode(v.ID, false)
 		if err != nil {
 			logrus.Errorf("GetLatestScriptCode: %v", err)
@@ -174,13 +172,6 @@ func (s *script) GetCategory() ([]*entity.ScriptCategoryList, error) {
 	return s.scriptSvc.GetCategory()
 }
 
-func (s *script) AddScore(uid int64, id int64, score *request.Score) (bool, error) {
-	if _, err := s.scriptSvc.Info(id); err != nil {
-		return false, err
-	}
-	return s.scoreSvc.AddScore(uid, id, score)
-}
-
 func (s *script) ScoreList(id int64, page *request.Pages) (*httputils.List, error) {
 	list, total, err := s.scoreSvc.ScoreList(id, page)
 	if err != nil {
@@ -196,10 +187,6 @@ func (s *script) ScoreList(id int64, page *request.Pages) (*httputils.List, erro
 		List:  resp,
 		Total: total,
 	}, nil
-}
-
-func (s *script) UserScore(uid int64, id int64) (*entity.ScriptScore, error) {
-	return s.scoreSvc.UserScore(uid, id)
 }
 
 func (s *script) CreateScript(uid int64, req *request.CreateScript) (*entity.Script, error) {

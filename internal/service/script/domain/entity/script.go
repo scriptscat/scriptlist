@@ -7,6 +7,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
+	cnt2 "github.com/scriptscat/scriptlist/internal/service/user/cnt"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 )
 
@@ -23,8 +24,8 @@ const (
 
 type Script struct {
 	ID          int64  `gorm:"column:id" json:"id" form:"id"`
-	PostId      int64  `gorm:"column:post_id;index:post_id,unique" json:"post_id" form:"post_id"`
-	UserId      int64  `gorm:"column:user_id;index:user_id" json:"user_id" form:"user_id"`
+	PostID      int64  `gorm:"column:post_id;index:post_id,unique" json:"post_id" form:"post_id"`
+	UserID      int64  `gorm:"column:user_id;index:user_id" json:"user_id" form:"user_id"`
 	Name        string `gorm:"column:name;type:varchar(255)" json:"name" form:"name"`
 	Description string `gorm:"column:description;type:text" json:"description" form:"description"`
 	Content     string `gorm:"column:content;type:mediumtext" json:"content" form:"content"`
@@ -47,8 +48,18 @@ func (s *Script) TableName() string {
 	return "cdb_tampermonkey_script"
 }
 
+func (s *Script) checkStatus() error {
+	switch s.Status {
+	case cnt.ACTIVE:
+		return nil
+	case cnt.AUDIT:
+		return errs.ErrScriptAudit
+	}
+	return errs.ErrScriptNotFound
+}
+
 func (s *Script) checkUser(user *vo.User) error {
-	if user.IsAdmin == 1 || user.UID == s.UserId {
+	if user.IsAdmin == cnt2.Admin || user.IsAdmin == cnt2.SuperModerator || user.UID == s.UserID {
 		return nil
 	}
 	return errs.NewError(http.StatusUnauthorized, 1000, "没有权限操作")
@@ -73,7 +84,10 @@ func (s *Script) Delete(user *vo.User) error {
 }
 
 func (s *Script) CreateScriptCode(uid int64, req *request.CreateScript) (*ScriptCode, error) {
-	if s.UserId != uid {
+	if err := s.checkStatus(); err != nil {
+		return nil, err
+	}
+	if s.UserID != uid {
 		return nil, errs.ErrScriptForbidden
 	}
 	if s.Archive != 0 {
@@ -91,6 +105,58 @@ func (s *Script) CreateScriptCode(uid int64, req *request.CreateScript) (*Script
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}, nil
+}
+
+func (s *Script) AddScore(uid int64, score *ScriptScore, msg *request.Score) (*ScriptScore, error) {
+	if err := s.checkStatus(); err != nil {
+		return nil, err
+	}
+	if score == nil {
+		score = &ScriptScore{
+			UserId:     uid,
+			ScriptId:   s.ID,
+			State:      cnt.ACTIVE,
+			Createtime: time.Now().Unix(),
+		}
+	} else {
+		if score.State != cnt.ACTIVE {
+			return nil, errs.NewBadRequestError(1000, "评分已被删除")
+		}
+	}
+	score.Score = msg.Score
+	score.Message = msg.Message
+	score.Updatetime = time.Now().Unix()
+	return score, nil
+}
+
+func (s *Script) DeleteScore(score *ScriptScore) error {
+	if err := s.checkStatus(); err != nil {
+		return err
+	}
+	if score.State != cnt.ACTIVE {
+		return errs.NewBadRequestError(1000, "评分已被删除")
+	}
+	score.State = cnt.DELETE
+	score.Updatetime = time.Now().Unix()
+	return nil
+}
+
+func (s *Script) SetUnwell(user *vo.User) error {
+	if err := s.checkUser(user); err != nil {
+		return err
+	}
+	s.Unwell = 1
+	s.Updatetime = time.Now().Unix()
+	return nil
+}
+
+func (s *Script) SetUnpublic(user *vo.User) error {
+	if err := s.checkUser(user); err != nil {
+		return err
+	}
+	s.Public = 0
+	s.Updatetime = time.Now().Unix()
+	return nil
 }
 
 type ScriptCode struct {

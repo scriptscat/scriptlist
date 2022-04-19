@@ -14,8 +14,8 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	service2 "github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
-	"github.com/scriptscat/scriptlist/internal/service/script/interface/api"
 	"github.com/scriptscat/scriptlist/internal/service/statistics/service"
+	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -41,15 +41,24 @@ func NewStatistics(db *persistence.Repositories, statisSvc service.Statistics, s
 	return ret
 }
 
+// @Summary      脚本统计数据
+// @Description  脚本统计数据,只允许管理员、脚本管理员访问
+// @ID           script-statistics
+// @Tags         script-statistics
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @Success      200
+// @Failure      403
+// @Router       /statistics/script/{scriptId} [GET]
 func (s *Statistics) scriptStatistics(ctx *gin.Context) {
-	handle(ctx, func() interface{} {
-		user, _ := token.UserId(ctx)
+	httputils.Handle(ctx, func() interface{} {
+		user, _ := token.UserInfo(ctx)
 		id := utils.StringToInt64(ctx.Param("id"))
 		script, err := s.scriptSvc.Info(id)
 		if err != nil {
 			return err
 		}
-		if script.UserId != user {
+		if script.UserID != user.UID || !user.IsAdmin.IsAdmin() {
 			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
 		}
 		now := time.Now().Add(-time.Hour * 24)
@@ -74,15 +83,24 @@ func (s *Statistics) scriptStatistics(ctx *gin.Context) {
 	})
 }
 
+// @Summary      脚本实时统计
+// @Description  脚本实时统计,只允许管理员、脚本管理员访问
+// @ID           script-realtime
+// @Tags         script-statistics
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @Success      200
+// @Failure      403
+// @Router       /statistics/script/{scriptId}/realtime [GET]
 func (s *Statistics) scriptRealtime(ctx *gin.Context) {
-	handle(ctx, func() interface{} {
-		user, _ := token.UserId(ctx)
+	httputils.Handle(ctx, func() interface{} {
+		user, _ := token.UserInfo(ctx)
 		id := utils.StringToInt64(ctx.Param("id"))
 		script, err := s.scriptSvc.Info(id)
 		if err != nil {
 			return err
 		}
-		if script.UserId != user {
+		if script.UserID != user.UID || !user.IsAdmin.IsAdmin() {
 			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
 		}
 		return gin.H{
@@ -129,7 +147,7 @@ func (s *Statistics) download(c *gin.Context) {
 		return
 	}
 	go func() {
-		ok, err := s.statisSvc.Record(id, code.ID, uid, c.ClientIP(), ua, api.GetStatisticsToken(c), true)
+		ok, err := s.statisSvc.Record(id, code.ID, uid, c.ClientIP(), ua, GetStatisticsToken(c), true)
 		if err != nil {
 			logrus.Errorf("statis download record %v: %v", id, err)
 			return

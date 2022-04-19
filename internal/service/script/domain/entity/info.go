@@ -41,6 +41,7 @@ type ScriptScore struct {
 	Score int64 `gorm:"column:score" json:"score" form:"score"`
 	// 评分原因
 	Message    string `gorm:"column:message;type:text" json:"message" form:"message"`
+	State      int32  `gorm:"column:state;type:int(10);default:1" json:"state" form:"state"`
 	Createtime int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`
 	Updatetime int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }

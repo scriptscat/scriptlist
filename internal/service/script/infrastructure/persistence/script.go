@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"gorm.io/gorm"
@@ -26,11 +27,11 @@ func NewScript(db *gorm.DB, redis *redis.Client) repository.Script {
 
 func (s *script) Find(id int64) (*entity.Script, error) {
 	ret := &entity.Script{}
-	if err := s.db.Find(ret, "id=?", id).Error; err != nil {
+	if err := s.db.First(ret, "id=?", id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errs.ErrScriptNotFound
+		}
 		return nil, err
-	}
-	if ret.ID == 0 {
-		return nil, nil
 	}
 	return ret, nil
 }

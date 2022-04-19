@@ -14,6 +14,8 @@ var (
 	ErrScriptCodeExist        = NewError(http.StatusBadRequest, 3006, "脚本版本已经存在")
 	ErrCodeDefinitionNotFound = NewError(http.StatusNotFound, 3007, "代码定义文件未找到")
 	ErrScriptArchived         = NewError(http.StatusBadRequest, 3008, "脚本已归档")
+
+	ErrScoreNotFound = NewError(http.StatusNotFound, 4001, "没有找到评分")
 )
 
 func NewErrScriptSyncNetwork(url string, err error) error {

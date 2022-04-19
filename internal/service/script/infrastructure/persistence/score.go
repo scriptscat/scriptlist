@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"gorm.io/gorm"
@@ -74,7 +75,7 @@ func (s *score) UserScore(uid, scriptId int64) (*entity.ScriptScore, error) {
 	ret := &entity.ScriptScore{}
 	if err := s.db.Where("user_id=? and script_id=?", uid, scriptId).First(ret).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil
+			return nil, errs.ErrScoreNotFound
 		}
 		return nil, err
 	}
@@ -128,4 +129,15 @@ func (s *score) List(scriptId int64, page *request.Pages) ([]*entity.ScriptScore
 		return nil, 0, err
 	}
 	return list, num, nil
+}
+
+func (s *score) Find(id int64) (*entity.ScriptScore, error) {
+	ret := &entity.ScriptScore{}
+	if err := s.db.First(ret, "id=?", id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errs.ErrScoreNotFound
+		}
+		return nil, err
+	}
+	return ret, nil
 }

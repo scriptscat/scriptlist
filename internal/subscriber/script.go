@@ -66,17 +66,17 @@ func (n *ScriptSubscriber) NotifyScriptCreate(script int64) error {
 	if err != nil {
 		return err
 	}
-	user, err := n.userSvc.UserInfo(scriptInfo.UserId)
+	user, err := n.userSvc.UserInfo(scriptInfo.UserID)
 	if err != nil {
 		return err
 	}
-	list, _, err := n.userSvc.FollowerList(scriptInfo.UserId, request.AllPage)
+	list, _, err := n.userSvc.FollowerList(scriptInfo.UserID, request.AllPage)
 	if err != nil {
 		return err
 	}
 
 	// 脚本作者自己默认关注自己的脚本
-	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserId, application.ScriptWatchLevelIssueComment); err != nil {
+	if err := n.scriptWatchSvc.Watch(script, scriptInfo.UserID, application.ScriptWatchLevelIssueComment); err != nil {
 		logrus.Errorf("watch err:%v", err)
 	}
 	return nil
@@ -117,7 +117,7 @@ func (n *ScriptSubscriber) NotifyScriptUpdate(script, code int64) error {
 	if err != nil {
 		return err
 	}
-	user, err := n.userSvc.UserInfo(scriptInfo.UserId)
+	user, err := n.userSvc.UserInfo(scriptInfo.UserID)
 	if err != nil {
 		return err
 	}

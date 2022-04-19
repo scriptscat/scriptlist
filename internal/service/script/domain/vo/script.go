@@ -90,8 +90,8 @@ func ToScript(user *vo.User, script *entity2.Script, code *ScriptCode, category 
 		User:        user,
 		Script:      code,
 		ID:          script.ID,
-		PostId:      script.PostId,
-		UserId:      script.UserId,
+		PostId:      script.PostID,
+		UserId:      script.UserID,
 		Name:        script.Name,
 		Description: script.Description,
 		Category:    category,
@@ -111,7 +111,7 @@ func ToScriptInfo(user *vo.User, script *entity2.Script, code *ScriptCode, categ
 		Script:  ToScript(user, script, code, category),
 		Content: script.Content,
 	}
-	if user.UID == script.UserId {
+	if user.UID == script.UserID {
 		ret.Setting = &ScriptSetting{
 			SyncUrl:       script.SyncUrl,
 			ContentUrl:    script.ContentUrl,
