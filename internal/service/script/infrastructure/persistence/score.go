@@ -120,7 +120,7 @@ func (s *score) Count(scriptId int64) (int64, error) {
 
 func (s *score) List(scriptId int64, page *request.Pages) ([]*entity.ScriptScore, int64, error) {
 	list := make([]*entity.ScriptScore, 0)
-	find := s.db.Model(&entity.ScriptScore{}).Where("script_id=?", scriptId).Order("createtime desc")
+	find := s.db.Model(&entity.ScriptScore{}).Where("script_id=? and state=1", scriptId).Order("createtime desc")
 	var num int64
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err

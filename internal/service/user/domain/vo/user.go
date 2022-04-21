@@ -28,10 +28,11 @@ func ToUser(user *entity.User) *User {
 		avatar = "/api/v1/user/avatar/" + strconv.FormatInt(user.Uid, 10)
 	}
 	return &User{
-		UID:      user.Uid,
-		Username: user.Username,
-		Avatar:   avatar,
-		IsAdmin:  cnt.AdminLevel(user.Adminid),
+		UID:         user.Uid,
+		Username:    user.Username,
+		Avatar:      avatar,
+		IsAdmin:     cnt.AdminLevel(user.Adminid),
+		EmailStatus: user.Emailstatus,
 	}
 }
 

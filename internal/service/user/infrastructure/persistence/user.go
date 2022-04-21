@@ -51,7 +51,7 @@ func (u *user) Find(id int64) (*entity.User, error) {
 			return nil, err
 		}
 		return ret, nil
-	}, cache.WithTTL(time.Hour*24)); err != nil {
+	}, cache.WithTTL(time.Minute)); err != nil {
 		return nil, err
 	}
 	return ret, nil
