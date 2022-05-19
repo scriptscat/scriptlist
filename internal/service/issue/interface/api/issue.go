@@ -521,7 +521,7 @@ func (s *ScriptIssue) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.PUT("/open", s.open(true))
 	rgg.PUT("/close", s.open(false))
 
-	rgg.GET("/comment", s.commentList)
+	rg.GET("/:issue/comment", s.commentList)
 	rgg.POST("/comment", s.comment)
 	rgg.PUT("/comment/:comment", s.commentUpdate)
 	rgg.DELETE("/comment/:comment", s.commentDel)

@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 )
@@ -30,7 +31,7 @@ func (s *score) AddScore(uid, scriptId int64, msg *request.Score) (bool, error) 
 		return false, err
 	}
 	score, err := s.repo.UserScore(uid, scriptId)
-	if err != nil {
+	if err != nil && err != errs.ErrScoreNotFound {
 		return false, err
 	}
 	saveScore, err := script.AddScore(uid, score, msg)

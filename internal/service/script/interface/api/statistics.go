@@ -58,7 +58,7 @@ func (s *Statistics) scriptStatistics(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if script.UserID != user.UID || !user.IsAdmin.IsAdmin() {
+		if !(script.UserID == user.UID || user.IsAdmin.IsAdmin()) {
 			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
 		}
 		now := time.Now().Add(-time.Hour * 24)
@@ -100,7 +100,7 @@ func (s *Statistics) scriptRealtime(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if script.UserID != user.UID || !user.IsAdmin.IsAdmin() {
+		if !(script.UserID == user.UID || user.IsAdmin.IsAdmin()) {
 			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
 		}
 		return gin.H{

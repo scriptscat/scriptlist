@@ -10,9 +10,16 @@ import (
 	"github.com/scriptscat/scriptlist/pkg/utils"
 )
 
-const Userinfo = "userinfo"
-const Userentity = "userentity"
-const AuthToken = "auth_token"
+const (
+	Userinfo   = "userinfo"
+	Userentity = "userentity"
+	AuthToken  = "auth_token"
+)
+
+const (
+	TokenAuthMaxAge = 432000
+	TokenAutoRegen  = 259200
+)
 
 var TokenAuth func(enforce bool) func(ctx *gin.Context)
 var UserAuth func(enforce bool) func(ctx *gin.Context)

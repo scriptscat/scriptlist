@@ -11,9 +11,6 @@ import (
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 )
 
-const TokenAuthMaxAge = 432000
-const TokenAutoRegen = 259200
-
 type Login struct {
 	client *oauth.Client
 	db     *persistence.Repositories
@@ -49,7 +46,7 @@ func (l *Login) oauth(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("token", tokenString, token.TokenAuthMaxAge, "/", "", false, true)
 		if uri := ctx.Query("redirect_uri"); uri != "" {
 			ctx.Redirect(http.StatusFound, uri)
 			return nil

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/repository"
 	"github.com/scriptscat/scriptlist/pkg/utils"
@@ -41,7 +42,7 @@ func (u *user) Find(id int64) (*entity.User, error) {
 				archive := &entity.UserArchive{}
 				if err := u.db.First(archive, "uid=?", id).Error; err != nil {
 					if err == gorm.ErrRecordNotFound {
-						return nil, nil
+						return nil, errs.ErrUserNotFound
 					}
 					return nil, err
 				}

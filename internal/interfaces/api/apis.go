@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -24,6 +25,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/interface/api"
 	service4 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
+	api3 "github.com/scriptscat/scriptlist/internal/service/user/interface/api"
 	service2 "github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/internal/subscriber"
 	"github.com/scriptscat/scriptlist/pkg/httputils"
@@ -105,7 +107,7 @@ func handelResp(ctx *gin.Context, resp interface{}) {
 // @BasePath                    /api/v1
 func StartApi(db *persistence.Repositories) error {
 	token2.TokenAuth = func(enforce bool) func(ctx *gin.Context) {
-		return token2.Middleware(db.Cache, enforce, token2.WithExpired(TokenAuthMaxAge))
+		return token2.Middleware(db.Cache, enforce, token2.WithExpired(token2.TokenAuthMaxAge))
 	}
 
 	ctx := context.Background()
@@ -151,6 +153,9 @@ func StartApi(db *persistence.Repositories) error {
 	statis := service5.NewStatistics(statisSvc, scriptApp)
 
 	r := gin.New()
+	if config.AppConfig.Mode == "debug" {
+		r.Use(cors.Default())
+	}
 	r.Use(logs.GinLogger()...)
 
 	Registry(ctx, r,
@@ -158,7 +163,7 @@ func StartApi(db *persistence.Repositories) error {
 		NewLogin(oauth.NewClient(&config.AppConfig.OAuth), db),
 		NewResource(service6.NewResource(db.Resource.Resource), rateSvc),
 		api.NewStatistics(db, statisSvc, scriptApp, c),
-		NewUser(db, userSvc, script),
+		api3.NewUser(db, userSvc, script),
 		api2.NewScriptIssue(scriptApp, userSvc, notifySvc, issueSvc, issueWatchSvc),
 	)
 

@@ -55,9 +55,6 @@ func (u *user) UserInfo(id int64) (*vo.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
-		return vo.ToUser(user), errs.ErrUserNotFound
-	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组
 		return vo.ToUser(user), errs.ErrUserIsBan
@@ -69,9 +66,6 @@ func (u *user) SelfInfo(id int64) (*vo.User, error) {
 	user, err := u.userRepo.Find(id)
 	if err != nil {
 		return nil, err
-	}
-	if user == nil {
-		return vo.ToSelfUser(user), errs.ErrUserNotFound
 	}
 	if (user.Groupid >= 4 && user.Groupid <= 9) || user.Groupid == 20 {
 		// 禁止访问 禁止发言 等待验证会员 封禁用户组

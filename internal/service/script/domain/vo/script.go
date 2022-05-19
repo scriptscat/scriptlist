@@ -40,8 +40,7 @@ type ScriptSetting struct {
 
 type ScriptInfo struct {
 	*Script
-	Setting *ScriptSetting `json:"setting,omitempty"`
-	Content string         `json:"content" form:"content"`
+	Content string `json:"content" form:"content"`
 }
 
 type ScriptCode struct {
@@ -110,14 +109,6 @@ func ToScriptInfo(user *vo.User, script *entity2.Script, code *ScriptCode, categ
 	ret := &ScriptInfo{
 		Script:  ToScript(user, script, code, category),
 		Content: script.Content,
-	}
-	if user.UID == script.UserID {
-		ret.Setting = &ScriptSetting{
-			SyncUrl:       script.SyncUrl,
-			ContentUrl:    script.ContentUrl,
-			DefinitionUrl: script.DefinitionUrl,
-			SyncMode:      script.SyncMode,
-		}
 	}
 	return ret
 }

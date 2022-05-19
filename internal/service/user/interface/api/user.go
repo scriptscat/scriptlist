@@ -16,6 +16,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
+	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/datatypes"
@@ -37,14 +38,14 @@ func NewUser(db *persistence.Repositories, user service.User, scriptSvc service2
 }
 
 func (u *User) info(ctx *gin.Context) {
-	handle(ctx, func() interface{} {
+	httputils.Handle(ctx, func() interface{} {
 		// 判断是否登录
 		tokenInfo, ok := token.Authtoken(ctx)
 		resp := gin.H{}
 		uid := ctx.Param("uid")
 		self := false
 		if ok {
-			if tokenInfo.Createtime+TokenAutoRegen < time.Now().Unix() {
+			if tokenInfo.Createtime+token.TokenAutoRegen < time.Now().Unix() {
 				// 刷新token
 				tokenString, err := token.GenToken(u.db.Cache, gin.H{
 					"uid":      tokenInfo.Info["uid"],
@@ -54,7 +55,7 @@ func (u *User) info(ctx *gin.Context) {
 				if err != nil {
 					return err
 				}
-				ctx.SetCookie("token", tokenString, TokenAuthMaxAge, "/", "", false, true)
+				ctx.SetCookie("token", tokenString, token.TokenAuthMaxAge, "/", "", false, true)
 				resp["token"] = tokenString
 			}
 			if uid == "" {
@@ -88,7 +89,7 @@ func (u *User) info(ctx *gin.Context) {
 }
 
 func (u *User) scripts(ctx *gin.Context) {
-	handle(ctx, func() interface{} {
+	httputils.Handle(ctx, func() interface{} {
 		sUid := ctx.Param("uid")
 		currentUid, ok := token.UserId(ctx)
 		self := false
@@ -137,7 +138,7 @@ func (u *User) avatar(ctx *gin.Context) {
 }
 
 func (u *User) getwebhook(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		ret, err := u.svc.GetUserWebhook(uid)
 		if err != nil {
@@ -150,7 +151,7 @@ func (u *User) getwebhook(c *gin.Context) {
 }
 
 func (u *User) regenwebhook(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		ret, err := u.svc.RegenWebhook(uid)
 		if err != nil {
@@ -163,7 +164,7 @@ func (u *User) regenwebhook(c *gin.Context) {
 }
 
 func (u *User) config(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		ret, err := u.svc.GetUserConfig(uid)
 		if err != nil {
@@ -174,7 +175,7 @@ func (u *User) config(c *gin.Context) {
 }
 
 func (u *User) notify(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
 		notify := datatypes.JSONMap{
 			service.UserNotifyScore:              c.PostForm(service.UserNotifyScore) == "true",
@@ -189,7 +190,7 @@ func (u *User) notify(c *gin.Context) {
 }
 
 func (u *User) isfollow(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		follow := utils.StringToInt64(c.Param("follow"))
 		uid, _ := token.UserId(c)
 		is, err := u.svc.IsFollow(uid, follow)
@@ -201,7 +202,7 @@ func (u *User) isfollow(c *gin.Context) {
 }
 
 func (u *User) follow(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		follow := utils.StringToInt64(c.Param("follow"))
 		uid, _ := token.UserId(c)
 		return u.svc.Follow(uid, follow)
@@ -209,7 +210,7 @@ func (u *User) follow(c *gin.Context) {
 }
 
 func (u *User) unfollow(c *gin.Context) {
-	handle(c, func() interface{} {
+	httputils.Handle(c, func() interface{} {
 		follow := utils.StringToInt64(c.Param("follow"))
 		uid, _ := token.UserId(c)
 		return u.svc.Unfollow(uid, follow)

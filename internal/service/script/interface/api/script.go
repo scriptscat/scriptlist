@@ -27,7 +27,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/utils"
-	"github.com/scriptscat/scriptlist/pkg/utils/diff"
 	"github.com/sirupsen/logrus"
 )
 
@@ -109,6 +108,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg := rg.Group("/:script", token.UserAuth(true))
 	rgg.PUT("", s.update)
 	rgg.DELETE("", s.delete)
+	rgg.GET("/setting", s.setting)
 	rgg.PUT("/archive", s.archive)
 	rgg.DELETE("/archive", s.unarchive)
 	rgg.POST("/admin", s.admin)
@@ -118,7 +118,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 	rgg = rg.Group("/:script", token.UserAuth(false))
 	rgg.GET("", s.get(false))
 	rgg.GET("/code", s.get(true))
-	rgg.GET("/diff/:v1/:v2", s.diff)
+	//rgg.GET("/diff/:v1/:v2", s.diff)
 	rggg := rgg.Group("/versions")
 	rggg.GET("", s.versions)
 	rggg.GET("/:version", s.versionsGet(false))
@@ -740,24 +740,24 @@ func (s *Script) sync(ctx *gin.Context) {
 	})
 }
 
-func (s *Script) diff(c *gin.Context) {
-	httputils.Handle(c, func() interface{} {
-		id := utils.StringToInt64(c.Param("script"))
-		v1 := c.Param("v1")
-		v2 := c.Param("v2")
-		s1, err := s.scriptSvc.GetScriptCodeByVersion(id, v1, true)
-		if err != nil {
-			return err
-		}
-		s2, err := s.scriptSvc.GetScriptCodeByVersion(id, v2, true)
-		if err != nil {
-			return err
-		}
-		return gin.H{
-			"diff": diff.Diff(s1.Code, s2.Code),
-		}
-	})
-}
+//func (s *Script) diff(c *gin.Context) {
+//	httputils.Handle(c, func() interface{} {
+//		id := utils.StringToInt64(c.Param("script"))
+//		v1 := c.Param("v1")
+//		v2 := c.Param("v2")
+//		s1, err := s.scriptSvc.GetScriptCodeByVersion(id, v1, true)
+//		if err != nil {
+//			return err
+//		}
+//		s2, err := s.scriptSvc.GetScriptCodeByVersion(id, v2, true)
+//		if err != nil {
+//			return err
+//		}
+//		return gin.H{
+//			"diff": diff.Diff(s1.Code, s2.Code),
+//		}
+//	})
+//}
 
 // @Summary      设置脚本归档
 // @Description  归档后无法再发issue、更新脚本,只有脚本管理员与超级版主以上的管理员可以操作
@@ -821,5 +821,30 @@ func (s *Script) admin(c *gin.Context) {
 			return s.scriptApp.Delete(user, id)
 		}
 		return errs.NewError(http.StatusBadRequest, 1000, "操作错误")
+	})
+}
+
+// @Summary      获取脚本设置
+// @Description  获取脚本设置
+// @ID           script-setting
+// @Tags         script
+// @Security     BearerAuth
+// @param        scriptId        path      integer  true   "脚本id"
+// @Success      200       {object}  vo.ScriptSetting
+// @Failure      403
+// @Router       /scripts/{scriptId}/setting [GET]
+func (s *Script) setting(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		id := utils.StringToInt64(c.Param("script"))
+		script, err := s.scriptApp.Info(id)
+		if err != nil {
+			return err
+		}
+		return &vo.ScriptSetting{
+			SyncUrl:       script.SyncUrl,
+			ContentUrl:    script.ContentUrl,
+			DefinitionUrl: script.DefinitionUrl,
+			SyncMode:      script.SyncMode,
+		}
 	})
 }
