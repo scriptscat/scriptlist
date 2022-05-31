@@ -411,7 +411,6 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 			if ret.Unwell == 1 && uid == 0 {
 				return errs.NewBadRequestError(1000, "该脚本含有不适内容，登录后设置才能访问")
 			}
-			ret.IsManager = uid == ret.UID
 			return ret
 		})
 	}
@@ -647,7 +646,7 @@ func (s *Script) delScore(ctx *gin.Context) {
 // @param        name         formData  string  false  "库的名字,当脚本类型为脚本调用库时必填"
 // @param        description  formData  string  false  "库的描述,当脚本类型为脚本调用库时必填"
 // @param        definition   formData  string  false  "库的定义文件,当脚本类型为脚本调用库时必填"
-// @param        type         formData  int     true   "脚本类型 1 用户脚本 2 脚本调用库 3 订阅脚本"
+// @param        type         formData  int     true   "脚本类型 1 用户脚本 2 订阅脚本 3 脚本调用库"
 // @param        public       formData  int     true   "公开类型 1 公开 2 半公开"
 // @param        unwell       formData  int     true   "不适内容"
 // @param        changelog    formData  string  true   "更新日志"
@@ -835,10 +834,14 @@ func (s *Script) admin(c *gin.Context) {
 // @Router       /scripts/{scriptId}/setting [GET]
 func (s *Script) setting(c *gin.Context) {
 	httputils.Handle(c, func() interface{} {
+		uid, _ := token.UserId(c)
 		id := utils.StringToInt64(c.Param("script"))
 		script, err := s.scriptApp.Info(id)
 		if err != nil {
 			return err
+		}
+		if script.UserID != uid {
+			return errs.ErrScriptForbidden
 		}
 		return &vo.ScriptSetting{
 			SyncUrl:       script.SyncUrl,

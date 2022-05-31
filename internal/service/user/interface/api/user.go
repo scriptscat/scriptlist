@@ -177,13 +177,9 @@ func (u *User) config(c *gin.Context) {
 func (u *User) notify(c *gin.Context) {
 	httputils.Handle(c, func() interface{} {
 		uid, _ := token.UserId(c)
-		notify := datatypes.JSONMap{
-			service.UserNotifyScore:              c.PostForm(service.UserNotifyScore) == "true",
-			service.UserNotifyCreateScript:       c.PostForm(service.UserNotifyCreateScript) == "true",
-			service.UserNotifyScriptUpdate:       c.PostForm(service.UserNotifyScriptUpdate) == "true",
-			service.UserNotifyScriptIssue:        c.PostForm(service.UserNotifyScriptIssue) == "true",
-			service.UserNotifyScriptIssueComment: c.PostForm(service.UserNotifyScriptIssueComment) == "true",
-			service.UserNotifyAt:                 c.PostForm(service.UserNotifyAt) == "true",
+		notify := datatypes.JSONMap{}
+		if err := c.ShouldBind(&notify); err != nil {
+			return err
 		}
 		return u.svc.SetUserNotifyConfig(uid, notify)
 	})

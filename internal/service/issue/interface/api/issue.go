@@ -8,10 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/middleware/token"
 	"github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
-	respond2 "github.com/scriptscat/scriptlist/internal/interfaces/api/dto/respond"
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/issue/application"
 	entity2 "github.com/scriptscat/scriptlist/internal/service/issue/domain/entity"
+	respond2 "github.com/scriptscat/scriptlist/internal/service/issue/domain/vo"
+	"github.com/scriptscat/scriptlist/internal/service/issue/interface/dto"
 	service4 "github.com/scriptscat/scriptlist/internal/service/notify/service"
 	service2 "github.com/scriptscat/scriptlist/internal/service/script/application"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
@@ -96,7 +97,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 // @param        title     formData  string   true   "标题"
 // @param        content   formData  string   false  "内容"
 // @param        label     formData  string   false  "标签,多个以逗号分隔"
-// @Success      200
+// @Success      200 {object} vo.Issue
 // @Failure      403
 // @Router       /scripts/{scriptId}/issues [POST]
 func (s *ScriptIssue) post(c *gin.Context) {
@@ -117,11 +118,7 @@ func (s *ScriptIssue) post(c *gin.Context) {
 		if script.Archive != 0 {
 			return errs.ErrScriptArchived
 		}
-		var labels []string
-		if req.Label != "" {
-			labels = strings.Split(req.Label, ",")
-		}
-		issue, err := s.issueSvc.Issue(scriptId, user.UID, req.Title, req.Content, labels)
+		issue, err := s.issueSvc.Issue(scriptId, user.UID, req.Title, req.Content, req.Labels)
 		if err != nil {
 			return err
 		}
@@ -219,12 +216,15 @@ func (s *ScriptIssue) putLabels(c *gin.Context) {
 				return errs.NewError(http.StatusForbidden, 1000, "没有权限进行修改标签操作")
 			}
 		}
-		labels := strings.Split(c.PostForm("labels"), ",")
-		comment, err := s.issueSvc.Label(issueId, user.UID, labels)
+		req := &dto.UpdateLabels{}
+		if err := c.ShouldBind(req); err != nil {
+			return err
+		}
+		comment, err := s.issueSvc.Label(issueId, user.UID, req.Labels)
 		if err != nil {
 			return err
 		}
-		return comment
+		return respond2.ToIssueComment(user, comment)
 	})
 }
 
@@ -299,10 +299,7 @@ func (s *ScriptIssue) open(open bool) func(c *gin.Context) {
 func (s *ScriptIssue) commentList(c *gin.Context) {
 	httputils.Handle(c, func() interface{} {
 		issue := s.getIssueId(c)
-		page := &request.Pages{}
-		if err := c.ShouldBind(page); err != nil {
-			return err
-		}
+		page := request.AllPage
 		list, err := s.issueSvc.CommentList(issue, page)
 		if err != nil {
 			return err
@@ -352,8 +349,11 @@ func (s *ScriptIssue) comment(c *gin.Context) {
 		if script.Archive != 0 {
 			return errs.ErrScriptArchived
 		}
-		content := c.PostForm("content")
-		comment, err := s.issueSvc.Comment(issueId, user.UID, content)
+		req := &request.Content{}
+		if err := c.ShouldBind(&req); err != nil {
+			return err
+		}
+		comment, err := s.issueSvc.Comment(issueId, user.UID, req.Content)
 		if err != nil {
 			return err
 		}
@@ -465,6 +465,37 @@ func (s *ScriptIssue) iswatch(c *gin.Context) {
 	})
 }
 
+// @Summary      反馈关注列表
+// @Description  反馈关注列表
+// @ID           issue-watch-list
+// @Tags         issue
+// @Security     BearerAuth
+// @param        scriptId  path  integer  true  "脚本id"
+// @param        issueId   path  integer  true  "反馈id"
+// @Success      200 {object} vo.IssueWatch
+// @Failure      403
+// @Router       /scripts/{scriptId}/issues/{issueId}/watchs [GET]
+func (s *ScriptIssue) watchlist(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		issueId := s.getIssueId(c)
+		list, err := s.issueWatchSvc.WatchList(issueId)
+		if err != nil {
+			return err
+		}
+		resp := make([]*respond2.IssueWatch, 0)
+		for _, v := range list {
+			info, err := s.userSvc.UserInfo(v)
+			if err == nil {
+				resp = append(resp, respond2.ToIssueWatch(info))
+			}
+		}
+		return httputils.List{
+			List:  resp,
+			Total: int64(len(resp)),
+		}
+	})
+}
+
 // @Summary      关注反馈
 // @Description  关注反馈
 // @ID           issue-watch
@@ -526,6 +557,7 @@ func (s *ScriptIssue) Registry(ctx context.Context, r *gin.Engine) {
 	rgg.PUT("/comment/:comment", s.commentUpdate)
 	rgg.DELETE("/comment/:comment", s.commentDel)
 
+	rgg.GET("/watchs", s.watchlist)
 	rgg.GET("/watch", s.iswatch)
 	rgg.POST("/watch", s.watch)
 	rgg.DELETE("/watch", s.unwatch)

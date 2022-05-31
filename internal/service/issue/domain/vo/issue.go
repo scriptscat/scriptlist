@@ -1,4 +1,4 @@
-package respond
+package vo
 
 import (
 	"strings"
@@ -21,6 +21,10 @@ type Issue struct {
 }
 
 func ToIssue(user *vo.User, issue *entity.ScriptIssue) *Issue {
+	var labels []string
+	if issue.Labels != "" {
+		labels = strings.Split(issue.Labels, ",")
+	}
 	return &Issue{
 		User:       user,
 		ID:         issue.ID,
@@ -28,7 +32,7 @@ func ToIssue(user *vo.User, issue *entity.ScriptIssue) *Issue {
 		UserID:     issue.UserID,
 		Title:      issue.Title,
 		Content:    issue.Content,
-		Labels:     strings.Split(issue.Labels, ","),
+		Labels:     labels,
 		Status:     issue.Status,
 		Createtime: issue.Createtime,
 		Updatetime: issue.Updatetime,
@@ -58,5 +62,15 @@ func ToIssueComment(user *vo.User, issue *entity.ScriptIssueComment) *IssueComme
 		Status:     issue.Status,
 		Createtime: issue.Createtime,
 		Updatetime: issue.Updatetime,
+	}
+}
+
+type IssueWatch struct {
+	*vo.User
+}
+
+func ToIssueWatch(user *vo.User) *IssueWatch {
+	return &IssueWatch{
+		User: user,
 	}
 }

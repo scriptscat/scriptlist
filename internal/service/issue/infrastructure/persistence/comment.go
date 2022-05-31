@@ -17,8 +17,10 @@ func NewComment(db *gorm.DB) repository.IssueComment {
 
 func (c *comment) List(issue int64, status int, page *request.Pages) ([]*entity.ScriptIssueComment, error) {
 	list := make([]*entity.ScriptIssueComment, 0)
-	find := c.db.Model(&entity.ScriptIssueComment{}).Where("issue_id=? and status=?", issue, status).
-		Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
+	find := c.db.Model(&entity.ScriptIssueComment{}).Where("issue_id=? and status=?", issue, status)
+	if page != request.AllPage {
+		find = find.Limit(page.Size()).Offset((page.Page() - 1) * page.Size())
+	}
 	if err := find.Scan(&list).Error; err != nil {
 		return nil, err
 	}

@@ -14,7 +14,6 @@ type Script struct {
 	ID           int64                         `json:"id"`
 	PostId       int64                         `json:"post_id"`
 	UserId       int64                         `json:"user_id"`
-	IsManager    bool                          `json:"is_manager"`
 	Name         string                        `json:"name"`
 	Description  string                        `json:"description"`
 	Category     []*entity2.ScriptCategoryList `json:"category"`

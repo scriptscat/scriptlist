@@ -17,7 +17,7 @@ func GetCodeMeta(code string) (string, string, int, error) {
 		reg = regexp.MustCompile("\\/\\/\\s*==UserScript==([\\s\\S]+?)\\/\\/\\s*==\\/UserScript==")
 		ret = reg.FindString(code)
 		if ret == "" {
-			return "", "", 0, errors.New("错误的格式")
+			return "", "", 0, errors.New("无法解析到UserScript,请输入正确的UserScript")
 		}
 		scriptType = entity.SUBSCRIBE_TYPE
 	}

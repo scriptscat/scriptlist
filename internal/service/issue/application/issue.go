@@ -200,7 +200,10 @@ func (i *issue) Label(issueId, operator int64, label []string) (*entity.ScriptIs
 	if err != nil {
 		return nil, err
 	}
-	oldLabel := strings.Split(issue.Labels, ",")
+	var oldLabel []string
+	if issue.Labels != "" {
+		oldLabel = strings.Split(issue.Labels, ",")
+	}
 	oldLabelMap := make(map[string]struct{})
 	for _, v := range oldLabel {
 		oldLabelMap[v] = struct{}{}

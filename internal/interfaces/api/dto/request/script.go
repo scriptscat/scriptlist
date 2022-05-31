@@ -14,7 +14,8 @@ type CreateScript struct {
 	// 脚本类型：1 用户脚本 2 脚本调用库 3 订阅脚本
 	Type int `form:"type" binding:"required" label:"脚本类型"`
 	// 公开类型：1 公开 2 半公开
-	Public    int    `form:"public" binding:"required" label:"公开类型"`
+	Public int `form:"public" binding:"required" label:"公开类型"`
+	// 不适内容: 1 不适 2 适用
 	Unwell    int    `form:"unwell" binding:"required" label:"不适内容"`
 	Changelog string `form:"changelog" binding:"max=102400" label:"更新日志"`
 }
@@ -26,10 +27,10 @@ type UpdateScript struct {
 	//Public int `form:"public" binding:"required,number" label:"公开类型"`
 	//Unwell int `form:"unwell" binding:"required,number" label:"不适内容"`
 	// 监听
-	SyncUrl       string `form:"sync_url" binding:"omitempty,url,max=1024" label:"代码同步url"`
-	ContentUrl    string `form:"content_url" binding:"omitempty,url,max=1024" label:"详细描述同步url"`
-	DefinitionUrl string `form:"definition_url" binding:"omitempty,url,max=1024" label:"定义文件同步url"`
-	SyncMode      int    `form:"sync_mode" binding:"number" label:"同步模式"`
+	SyncUrl       string `form:"sync_url" binding:"omitempty,url,max=1024" json:"sync_url" label:"代码同步url"`
+	ContentUrl    string `form:"content_url" binding:"omitempty,url,max=1024" json:"content_url" label:"详细描述同步url"`
+	DefinitionUrl string `form:"definition_url" binding:"omitempty,url,max=1024" json:"definition_url" label:"定义文件同步url"`
+	SyncMode      int    `form:"sync_mode" binding:"number" json:"sync_mode" label:"同步模式"`
 }
 
 type UpdateScriptCode struct {
