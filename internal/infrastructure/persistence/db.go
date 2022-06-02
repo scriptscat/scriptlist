@@ -6,7 +6,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	goRedis "github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
-	"github.com/scriptscat/scriptlist/internal/infrastructure/persistence/migrations"
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
 	persistence6 "github.com/scriptscat/scriptlist/internal/service/issue/infrastructure/persistence"
 	persistence2 "github.com/scriptscat/scriptlist/internal/service/resource/infrastructure/persistence"
@@ -14,7 +13,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/script/infrastructure/persistence"
 	persistence3 "github.com/scriptscat/scriptlist/internal/service/statistics/infrastructure/persistence"
 	persistence4 "github.com/scriptscat/scriptlist/internal/service/user/infrastructure/persistence"
-	"github.com/scriptscat/scriptlist/pkg/utils"
+	"github.com/scriptscat/scriptlist/migrations"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -46,17 +45,7 @@ func NewRepositories(db *gorm.DB, redis *goRedis.Client, cache cache.Cache) *Rep
 }
 
 func (r *Repositories) Migrations() error {
-	return utils.ErrFunc(
-		r.Script.AutoMigrate,
-		r.Resource.AutoMigrate,
-		r.Statistics.AutoMigrate,
-		r.User.AutoMigrate,
-		r.Safe.AutoMigrate,
-		r.Issue.AutoMigrate,
-		func() error {
-			return migrations.RunMigrations(r.Db)
-		},
-	)
+	return migrations.RunMigrations(r.Db)
 }
 
 func (r *Repositories) MockDB() (*Repositories, *sql.DB, sqlmock.Sqlmock) {

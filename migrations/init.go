@@ -6,8 +6,12 @@ import (
 )
 
 func RunMigrations(db *gorm.DB) error {
-	return nil
-	return run(db)
+	return run(db,
+		T1654137068,
+		T1654137843,
+		T1654138003,
+		T1654138087,
+	)
 }
 
 func run(db *gorm.DB, fs ...func() *gormigrate.Migration) error {

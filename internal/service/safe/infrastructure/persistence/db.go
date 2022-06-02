@@ -3,7 +3,6 @@ package persistence
 import (
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/service/safe/domain/repository"
-	"github.com/scriptscat/scriptlist/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -16,8 +15,4 @@ func NewRepositories(redis *redis.Client) *SafeRepositories {
 	return &SafeRepositories{
 		Rate: NewRate(redis),
 	}
-}
-
-func (r *SafeRepositories) AutoMigrate() error {
-	return utils.ErrFunc()
 }

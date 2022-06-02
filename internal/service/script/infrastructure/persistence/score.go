@@ -54,21 +54,32 @@ func (s *score) Save(score *entity.ScriptScore) error {
 	if err := s.db.First(old, "id=?", score.ID).Error; err != nil {
 		return err
 	}
-	if score.Score != old.Score && s.db.Model(&entity.ScriptStatistics{}).Where("script_id=?", score.ScriptId).Updates(map[string]interface{}{
-		"score": gorm.Expr("score+?", score.Score-old.Score),
-	}).RowsAffected == 0 {
-		if err := s.db.Save(&entity.ScriptStatistics{
-			ScriptId:   score.ScriptId,
-			Score:      score.Score,
-			ScoreCount: 1,
-		}).Error; err != nil {
+	if score.State == 1 {
+		if score.Score != old.Score && s.db.Model(&entity.ScriptStatistics{}).Where("script_id=?", score.ScriptId).Updates(map[string]interface{}{
+			"score": gorm.Expr("score+?", score.Score-old.Score),
+		}).RowsAffected == 0 {
+			if err := s.db.Save(&entity.ScriptStatistics{
+				ScriptId:   score.ScriptId,
+				Score:      score.Score,
+				ScoreCount: 1,
+			}).Error; err != nil {
+				return err
+			}
+		}
+		if err := s.redis.IncrBy(context.Background(), s.scorekey(score.ScriptId, "score"), score.Score-old.Score).Err(); err != nil {
 			return err
 		}
+		return s.db.Save(score).Error
 	}
-	if err := s.redis.IncrBy(context.Background(), s.scorekey(score.ScriptId, "score"), score.Score-old.Score).Err(); err != nil {
+	if s.db.Model(&entity.ScriptStatistics{}).Where("script_id=?", score.ScriptId).Updates(map[string]interface{}{
+		"score": gorm.Expr("score-?", old.Score),
+	}).RowsAffected == 0 {
+		return nil
+	}
+	if err := s.redis.IncrBy(context.Background(), s.scorekey(score.ScriptId, "score"), -old.Score).Err(); err != nil {
 		return err
 	}
-	return s.db.Updates(score).Error
+	return s.db.Save(score).Error
 }
 
 func (s *score) UserScore(uid, scriptId int64) (*entity.ScriptScore, error) {

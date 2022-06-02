@@ -3,7 +3,6 @@ package persistence
 import (
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
-	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"gorm.io/gorm"
 )
@@ -28,18 +27,4 @@ func NewRepositories(db *gorm.DB, redis *redis.Client, cache cache.Cache) *Repos
 		ScriptWatch: NewScriptWatch(db, redis),
 		Statistics:  NewStatistics(db),
 	}
-}
-
-func (r *Repositories) AutoMigrate() error {
-	return r.db.AutoMigrate(
-		&entity.Script{},
-		&entity.ScriptCode{},
-		&entity.ScriptCategory{},
-		&entity.ScriptCategoryList{},
-		&entity.ScriptScore{},
-		&entity.ScriptStatistics{},
-		&entity.ScriptDateStatistics{},
-		&entity.ScriptDomain{},
-		&entity.LibDefinition{},
-	)
 }

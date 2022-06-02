@@ -184,7 +184,13 @@ func (s *Script) watch(c *gin.Context) {
 	httputils.Handle(c, func() interface{} {
 		script := utils.StringToInt64(c.Param("script"))
 		uid, _ := token.UserId(c)
-		return s.watchSvc.Watch(script, uid, application.ScriptWatchLevel(utils.StringToInt(c.PostForm("level"))))
+		level := struct {
+			Level application.ScriptWatchLevel `json:"level"`
+		}{}
+		if err := c.BindJSON(&level); err != nil {
+			return err
+		}
+		return s.watchSvc.Watch(script, uid, level.Level)
 	})
 }
 

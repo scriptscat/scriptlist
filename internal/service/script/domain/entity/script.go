@@ -58,6 +58,7 @@ func (s *Script) checkStatus() error {
 	return errs.ErrScriptNotFound
 }
 
+// 允许管理员、超级管理员、作者自己操作
 func (s *Script) checkUser(user *vo.User) error {
 	if user.IsAdmin == cnt2.Admin || user.IsAdmin == cnt2.SuperModerator || user.UID == s.UserID {
 		return nil
@@ -118,10 +119,8 @@ func (s *Script) AddScore(uid int64, score *ScriptScore, msg *request.Score) (*S
 			State:      cnt.ACTIVE,
 			Createtime: time.Now().Unix(),
 		}
-	} else {
-		if score.State != cnt.ACTIVE {
-			return nil, errs.NewBadRequestError(1000, "评分已被删除")
-		}
+	} else if score.State != cnt.ACTIVE {
+		return nil, errs.NewBadRequestError(1000, "评分已被删除")
 	}
 	score.Score = msg.Score
 	score.Message = msg.Message
