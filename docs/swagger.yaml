@@ -44,6 +44,56 @@ definitions:
     - public
     - unwell
     type: object
+  vo.Issue:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      email:
+        type: string
+      email_status:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      labels:
+        items:
+          type: string
+        type: array
+      script_id:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+      uid:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  vo.IssueWatch:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      email_status:
+        type: integer
+      is_admin:
+        type: integer
+      uid:
+        type: integer
+      username:
+        type: string
+    type: object
   vo.Script:
     properties:
       archive:
@@ -66,8 +116,6 @@ definitions:
         type: integer
       is_admin:
         type: integer
-      is_manager:
-        type: boolean
       name:
         type: string
       post_id:
@@ -159,8 +207,6 @@ definitions:
         type: integer
       is_admin:
         type: integer
-      is_manager:
-        type: boolean
       name:
         type: string
       post_id:
@@ -173,8 +219,6 @@ definitions:
         type: integer
       script:
         $ref: '#/definitions/vo.ScriptCode'
-      setting:
-        $ref: '#/definitions/vo.ScriptSetting'
       status:
         type: integer
       today_install:
@@ -312,7 +356,7 @@ paths:
         in: formData
         name: definition
         type: string
-      - description: 脚本类型 1 用户脚本 2 脚本调用库 3 订阅脚本
+      - description: 脚本类型 1 用户脚本 2 订阅脚本 3 脚本调用库
         in: formData
         name: type
         required: true
@@ -576,7 +620,9 @@ paths:
         type: string
       responses:
         "200":
-          description: ""
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.Issue'
         "403":
           description: ""
       security:
@@ -830,6 +876,33 @@ paths:
       summary: 关注反馈
       tags:
       - issue
+  /scripts/{scriptId}/issues/{issueId}/watchs:
+    get:
+      description: 反馈关注列表
+      operationId: issue-watch-list
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      - description: 反馈id
+        in: path
+        name: issueId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.IssueWatch'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 反馈关注列表
+      tags:
+      - issue
   /scripts/{scriptId}/score:
     get:
       description: 评分列表
@@ -935,6 +1008,28 @@ paths:
       summary: 自己的评分
       tags:
       - script-score
+  /scripts/{scriptId}/setting:
+    get:
+      description: 获取脚本设置
+      operationId: script-setting
+      parameters:
+      - description: 脚本id
+        in: path
+        name: scriptId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptSetting'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 获取脚本设置
+      tags:
+      - script
   /scripts/{scriptId}/versions:
     get:
       description: 版本列表

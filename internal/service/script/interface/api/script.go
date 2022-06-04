@@ -24,6 +24,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/vo"
+	service3 "github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	"github.com/scriptscat/scriptlist/internal/service/user/service"
 	"github.com/scriptscat/scriptlist/pkg/httputils"
 	"github.com/scriptscat/scriptlist/pkg/utils"
@@ -319,7 +320,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
-	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, GetStatisticsToken(ctx), true)
+	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, GetStatisticsToken(ctx), service3.DOWNLOAD_STATISTICS)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Code)
 }
@@ -341,7 +342,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
-	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, GetStatisticsToken(ctx), false)
+	_ = s.statisSvc.Record(id, code.ID, uid, ctx.ClientIP(), ua, GetStatisticsToken(ctx), service3.UPDATE_STATISTICS)
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Meta)
 }
@@ -391,7 +392,7 @@ func (s *Script) list(ctx *gin.Context) {
 // @ID           script-info
 // @Tags         script
 // @Security     BearerAuth
-// @param        scriptId        path      integer  true   "脚本id"
+// @param        scriptId  path      integer  true  "脚本id"
 // @Success      200       {object}  vo.ScriptInfo
 // @Failure      403
 // @Router       /scripts/{scriptId} [GET]
@@ -401,7 +402,7 @@ func (s *Script) list(ctx *gin.Context) {
 // @ID           script-code
 // @Tags         script
 // @Security     BearerAuth
-// @param        scriptId        path      integer  true   "脚本id"
+// @param        scriptId  path      integer  true  "脚本id"
 // @Success      200       {object}  vo.ScriptInfo
 // @Failure      403
 // @Router       /scripts/{scriptId}/code [GET]
@@ -410,12 +411,19 @@ func (s *Script) get(withcode bool) gin.HandlerFunc {
 		httputils.Handle(ctx, func() interface{} {
 			uid, _ := token.UserId(ctx)
 			id := utils.StringToInt64(ctx.Param("script"))
+			ua := ctx.GetHeader("User-Agent")
+			if id == 0 || ua == "" {
+				return errs.ErrScriptNotFound
+			}
 			ret, err := s.scriptSvc.GetScript(id, "", withcode)
 			if err != nil {
 				return err
 			}
 			if ret.Unwell == 1 && uid == 0 {
 				return errs.NewBadRequestError(1000, "该脚本含有不适内容，登录后设置才能访问")
+			}
+			if !withcode {
+				_ = s.statisSvc.Record(id, ret.Script.ID, uid, ctx.ClientIP(), ua, GetStatisticsToken(ctx), service3.VIEW_STATISTICS)
 			}
 			return ret
 		})

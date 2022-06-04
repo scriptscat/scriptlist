@@ -7,7 +7,8 @@ import (
 )
 
 type Statistics interface {
-	Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error
+	// Record 数据统计
+	Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download string) error
 }
 
 type statistics struct {
@@ -19,7 +20,7 @@ type statistics struct {
 type recordParam struct {
 	scriptId, scriptCodeId, user int64
 	ip, ua, statisticsToken      string
-	download                     bool
+	download                     string
 }
 
 func NewStatistics(statisSvc service.Statistics, serviceSvc service2.Script) Statistics {
@@ -40,11 +41,11 @@ func (s *statistics) handlerQueue() {
 		} else if !ok {
 			continue
 		}
-		if record.download {
+		if record.download == service.DOWNLOAD_STATISTICS {
 			if err := s.serviceSvc.Download(record.scriptId); err != nil {
 				glog.Warningf("script statis record download: %v", err)
 			}
-		} else {
+		} else if record.download == service.UPDATE_STATISTICS {
 			if err := s.serviceSvc.Update(record.scriptId); err != nil {
 				glog.Warningf("script statis record update: %v", err)
 			}
@@ -52,7 +53,7 @@ func (s *statistics) handlerQueue() {
 	}
 }
 
-func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download bool) error {
+func (s *statistics) Record(scriptId, scriptCodeId, user int64, ip, ua, statisticsToken string, download string) error {
 	s.queue <- &recordParam{
 		scriptId:        scriptId,
 		scriptCodeId:    scriptCodeId,

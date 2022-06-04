@@ -11,6 +11,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/service/statistics/domain/repository"
 	"github.com/scriptscat/scriptlist/internal/service/statistics/entity"
+	"github.com/scriptscat/scriptlist/internal/service/statistics/service"
 	"github.com/scriptscat/scriptlist/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -77,6 +78,7 @@ func (s *statistics) Deal() error {
 				s.redis.HSet(context.Background(), prefix+":day:"+split[5], date, number)
 				s.redis.Expire(context.Background(), v, time.Hour*24*30)
 			} else if strings.HasSuffix(v, "realtime") {
+				// 实时数据清理
 				list, err := s.redis.HGetAll(context.Background(), v).Result()
 				if err != nil {
 					logrus.Infof("hgetall %s: %v", v, err)
@@ -104,67 +106,88 @@ func (s *statistics) Download(entity *entity.StatisticsDownload) (bool, error) {
 	return s.save(entity, "download")
 }
 
+func (s *statistics) CheckUpdate(entity *entity.StatisticsUpdate) (bool, error) {
+	return s.save(entity, "update")
+}
+
+func (s *statistics) PageView(entity *entity.StatisticsPageView) (bool, error) {
+	return s.save(entity, "view")
+}
+
 func (s *statistics) save(entity entity.Statistics, op string) (bool, error) {
 	key := "statistics:script:" + op + ":" + fmt.Sprintf("%d", entity.GetScriptId())
 	date := time.Now().Format("2006/01/02")
 	// 丢定时任务里合并
+	// 储存统计token计算uv
 	s.redis.PFAdd(context.Background(), key+fmt.Sprintf(":day:uv:%s", date), entity.GetStatisticsToken())
 	if entity.GetUserId() != 0 {
+		// 储存用户id计算member
 		s.redis.PFAdd(context.Background(), key+fmt.Sprintf(":day:member:%s", date), entity.GetUserId())
 	}
+	// 日pv
 	s.redis.HIncrBy(context.Background(), key+":day:pv", date, 1)
+	// 总pv
 	s.redis.Incr(context.Background(), key+":total:pv")
 	// 丢定时任务里清理
 	s.redis.HIncrBy(context.Background(), key+":realtime", strconv.FormatInt(time.Now().Unix()/60, 10), 1)
-	if err := s.db.Create(entity).Error; err != nil {
-		return false, err
+	if op != service.VIEW_STATISTICS {
+		if err := s.db.Create(entity).Error; err != nil {
+			return false, err
+		}
 	}
 	// 判断ip是否操作过了
 	return s.redis.SetNX(context.Background(), key+":ip:exist:day:"+date+":"+entity.GetIp(), "1", time.Hour*24).Result()
 }
 
-func (s *statistics) CheckUpdate(entity *entity.StatisticsUpdate) (bool, error) {
-	return s.save(entity, "update")
-}
-
-func (s *statistics) WeeklyUv(scriptId int64, t time.Time) (int64, error) {
-	return s.weekly(scriptId, "uv", t)
-}
-
-func (s *statistics) WeeklyMember(scriptId int64, t time.Time) (int64, error) {
-	return s.weekly(scriptId, "member", t)
-}
-
-func (s *statistics) weekly(scriptId int64, op string, t time.Time) (int64, error) {
-	weeklyKey := fmt.Sprintf("statistics:script:weekly:%d:%s:%s", scriptId, op, t.Format("2006/01/02"))
-	if s.redis.Exists(context.Background(), weeklyKey).Val() != 1 {
-		var weeklyDay []string
+// DaysUvNum 获取某一段时间某一个操作的uv或者member数量
+// op: download, update, view
+// member: member, uv
+func (s *statistics) DaysUvNum(scriptId int64, op, member string, days int, t time.Time) (int64, error) {
+	if days == 1 {
+		ret, err := s.redis.PFCount(context.Background(),
+			fmt.Sprintf("statistics:script:%s:%d:day:%s:%s", op, scriptId, member, t.Format("2006/01/02")),
+		).Result()
+		if err != nil {
+			return 0, err
+		}
+		return ret, nil
+	}
+	key := fmt.Sprintf("statistics:script:cache:uv:%d:%s:%s", scriptId, op, t.Format("2006/01/02"))
+	if s.redis.Exists(context.Background(), key).Val() != 1 {
+		var dayKey []string
 		t := t
-		for i := 1; i <= 7; i++ {
-			weeklyDay = append(weeklyDay,
-				fmt.Sprintf("statistics:script:download:%d:day:%s:%s", scriptId, op, t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")),
-				fmt.Sprintf("statistics:script:update:%d:day:%s:%s", scriptId, op, t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")),
+		for i := 1; i <= days; i++ {
+			dayKey = append(dayKey,
+				fmt.Sprintf("statistics:script:%s:%d:day:%s:%s", op, scriptId, member, t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")),
 			)
 		}
-		s.redis.PFMerge(context.Background(), weeklyKey, weeklyDay...)
+		s.redis.PFMerge(context.Background(), key, dayKey...)
 	}
-	ret, err := s.redis.PFCount(context.Background(), weeklyKey).Result()
+	ret, err := s.redis.PFCount(context.Background(), key).Result()
 	if err != nil {
 		return 0, err
 	}
-	s.redis.Expire(context.Background(), weeklyKey, time.Hour*24*15)
+	s.redis.Expire(context.Background(), key, time.Hour*24*15)
 	return ret, nil
 }
 
-func (s *statistics) RealtimeDownload(scriptId int64) ([]int64, error) {
-	return s.realtime(scriptId, "download")
+// DaysPvNum 获取某一段时间某一个操作的pv数量
+// op: download, update, view
+func (s *statistics) DaysPvNum(scriptId int64, op string, days int, t time.Time) (int64, error) {
+	var num int64
+	key := fmt.Sprintf("statistics:script:%s:%d:day:pv", op, scriptId)
+	for i := 0; i < days; i++ {
+		val, err := s.redis.HGet(context.Background(), key, t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")).Int64()
+		if err != nil {
+			continue
+		}
+		num += val
+	}
+	return num, nil
 }
 
-func (s *statistics) RealtimeUpdate(scriptId int64) ([]int64, error) {
-	return s.realtime(scriptId, "update")
-}
-
-func (s *statistics) realtime(scriptId int64, op string) ([]int64, error) {
+// Realtime 获取某操作的实时记录
+func (s *statistics) Realtime(scriptId int64, op string) ([]int64, error) {
 	var ret []int64
 	t := time.Now().Unix() / 60
 	for i := int64(0); i < 15; i++ {
@@ -174,28 +197,8 @@ func (s *statistics) realtime(scriptId int64, op string) ([]int64, error) {
 	return ret, nil
 }
 
+// TotalPv 获取某操作的总pv数量
 func (s *statistics) TotalPv(scriptId int64, op string) (int64, error) {
 	key := "statistics:script:" + op + ":" + fmt.Sprintf("%d", scriptId) + ":total:pv"
 	return s.redis.Get(context.Background(), key).Int64()
-}
-
-func (s *statistics) DayPv(scriptId int64, op string, day time.Time) (int64, error) {
-	key := "statistics:script:" + op + ":" + fmt.Sprintf("%d", scriptId) + ":day:pv"
-	return s.redis.HGet(context.Background(), key, day.Format("2006/01/02")).Int64()
-}
-
-func (s *statistics) DayUv(scriptId int64, op string, day time.Time) (int64, error) {
-	if day.Format("2006/01/02") == time.Now().Format("2006/01/02") {
-		return s.redis.PFCount(context.Background(), "statistics:script:"+op+":"+fmt.Sprintf("%d", scriptId)+":day:uv").Result()
-	}
-	key := "statistics:script:" + op + ":" + fmt.Sprintf("%d", scriptId) + ":day:uv"
-	return s.redis.HGet(context.Background(), key, day.Format("2006/01/02")).Int64()
-}
-
-func (s *statistics) DayMember(scriptId int64, op string, day time.Time) (int64, error) {
-	if day.Format("2006/01/02") == time.Now().Format("2006/01/02") {
-		return s.redis.PFCount(context.Background(), "statistics:script:"+op+":"+fmt.Sprintf("%d", scriptId)+":day:member").Result()
-	}
-	key := "statistics:script:" + op + ":" + fmt.Sprintf("%d", scriptId) + ":day:member"
-	return s.redis.HGet(context.Background(), key, day.Format("2006/01/02")).Int64()
 }

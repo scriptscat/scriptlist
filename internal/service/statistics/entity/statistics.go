@@ -13,6 +13,8 @@ type StatisticsDownload struct {
 
 type StatisticsUpdate StatisticsDownload
 
+type StatisticsPageView StatisticsDownload
+
 type Statistics interface {
 	GetUserId() int64
 	GetScriptId() int64
@@ -58,5 +60,25 @@ func (s *StatisticsUpdate) GetUa() string {
 }
 
 func (s *StatisticsUpdate) GetStatisticsToken() string {
+	return s.StatisticsToken
+}
+
+func (s *StatisticsPageView) GetUserId() int64 {
+	return s.UserId
+}
+
+func (s *StatisticsPageView) GetScriptId() int64 {
+	return s.ScriptId
+}
+
+func (s *StatisticsPageView) GetIp() string {
+	return s.Ip
+}
+
+func (s *StatisticsPageView) GetUa() string {
+	return s.Ua
+}
+
+func (s *StatisticsPageView) GetStatisticsToken() string {
 	return s.StatisticsToken
 }

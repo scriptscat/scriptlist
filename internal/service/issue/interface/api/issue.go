@@ -97,7 +97,7 @@ func (s *ScriptIssue) list(c *gin.Context) {
 // @param        title     formData  string   true   "标题"
 // @param        content   formData  string   false  "内容"
 // @param        label     formData  string   false  "标签,多个以逗号分隔"
-// @Success      200 {object} vo.Issue
+// @Success      200       {object}  respond2.Issue
 // @Failure      403
 // @Router       /scripts/{scriptId}/issues [POST]
 func (s *ScriptIssue) post(c *gin.Context) {
@@ -442,8 +442,8 @@ func (s *ScriptIssue) commentDel(c *gin.Context) {
 // @ID           issue-is-watch
 // @Tags         issue
 // @Security     BearerAuth
-// @param        scriptId  path  integer  true  "脚本id"
-// @param        issueId   path  integer  true  "反馈id"
+// @param        scriptId  path      integer  true  "脚本id"
+// @param        issueId   path      integer  true  "反馈id"
 // @Success      200
 // @Failure      403
 // @Router       /scripts/{scriptId}/issues/{issueId}/watch [GET]
@@ -472,7 +472,7 @@ func (s *ScriptIssue) iswatch(c *gin.Context) {
 // @Security     BearerAuth
 // @param        scriptId  path  integer  true  "脚本id"
 // @param        issueId   path  integer  true  "反馈id"
-// @Success      200 {object} vo.IssueWatch
+// @Success      200       {object}  respond2.IssueWatch
 // @Failure      403
 // @Router       /scripts/{scriptId}/issues/{issueId}/watchs [GET]
 func (s *ScriptIssue) watchlist(c *gin.Context) {

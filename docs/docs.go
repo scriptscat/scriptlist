@@ -134,7 +134,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "脚本类型 1 用户脚本 2 脚本调用库 3 订阅脚本",
+                        "description": "脚本类型 1 用户脚本 2 订阅脚本 3 脚本调用库",
                         "name": "type",
                         "in": "formData",
                         "required": true
@@ -541,7 +541,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.Issue"
+                        }
                     },
                     "403": {
                         "description": ""
@@ -929,6 +932,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/scripts/{scriptId}/issues/{issueId}/watchs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "反馈关注列表",
+                "tags": [
+                    "issue"
+                ],
+                "summary": "反馈关注列表",
+                "operationId": "issue-watch-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "反馈id",
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.IssueWatch"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/scripts/{scriptId}/score": {
             "get": {
                 "security": [
@@ -1086,6 +1131,41 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": ""
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/setting": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取脚本设置",
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本设置",
+                "operationId": "script-setting",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "脚本id",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptSetting"
+                        }
                     },
                     "403": {
                         "description": ""
@@ -1295,6 +1375,82 @@ const docTemplate = `{
                 }
             }
         },
+        "vo.Issue": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "email_status": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "script_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "vo.IssueWatch": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "email_status": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "vo.Script": {
             "type": "object",
             "properties": {
@@ -1327,9 +1483,6 @@ const docTemplate = `{
                 },
                 "is_admin": {
                     "type": "integer"
-                },
-                "is_manager": {
-                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -1468,9 +1621,6 @@ const docTemplate = `{
                 "is_admin": {
                     "type": "integer"
                 },
-                "is_manager": {
-                    "type": "boolean"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -1488,9 +1638,6 @@ const docTemplate = `{
                 },
                 "script": {
                     "$ref": "#/definitions/vo.ScriptCode"
-                },
-                "setting": {
-                    "$ref": "#/definitions/vo.ScriptSetting"
                 },
                 "status": {
                     "type": "integer"

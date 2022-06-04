@@ -91,20 +91,19 @@ func (u *User) info(ctx *gin.Context) {
 func (u *User) scripts(ctx *gin.Context) {
 	httputils.Handle(ctx, func() interface{} {
 		sUid := ctx.Param("uid")
-		currentUid, ok := token.UserId(ctx)
+		currentUid, _ := token.UserId(ctx)
 		self := false
 		uid := utils.StringToInt64(sUid)
 		if uid == 0 {
-			if !ok {
-				return errs.NewError(http.StatusBadRequest, 1000, "请指定用户")
-			}
-			uid = currentUid
+			return errs.NewError(http.StatusBadRequest, 1000, "请指定用户")
+		}
+		if uid == currentUid {
 			self = true
 		}
-		//page := request.Pages{}
-		//if err := ctx.ShouldBind(&page); err != nil {
-		//	return err
-		//}
+		page := &request.Pages{}
+		if err := ctx.ShouldBind(page); err != nil {
+			return err
+		}
 
 		list, err := u.scriptSvc.GetScriptList(&repository.SearchList{
 			Uid: uid, Self: self,
@@ -112,7 +111,7 @@ func (u *User) scripts(ctx *gin.Context) {
 			Sort:    ctx.Query("sort"),
 			Status:  cnt.ACTIVE,
 			Keyword: ctx.Query("keyword"),
-		}, request.AllPage)
+		}, page)
 		if err != nil {
 			return err
 		}
@@ -218,7 +217,6 @@ func (u *User) Registry(ctx context.Context, r *gin.Engine) {
 	rgg := rg.Group("", token.TokenAuth(false))
 	rgg.GET("/info", u.info)
 	rgg.GET("/info/:uid", u.info)
-	rgg.GET("/scripts", u.scripts)
 	rgg.GET("/scripts/:uid", u.scripts)
 	rgg.GET("/avatar/:uid", u.avatar)
 

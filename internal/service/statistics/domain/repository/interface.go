@@ -14,13 +14,10 @@ type Precision struct {
 type Statistics interface {
 	Download(entity *entity.StatisticsDownload) (bool, error)
 	CheckUpdate(entity *entity.StatisticsUpdate) (bool, error)
+	PageView(entity *entity.StatisticsPageView) (bool, error)
 	Deal() error
-	RealtimeDownload(scriptId int64) ([]int64, error)
-	RealtimeUpdate(scriptId int64) ([]int64, error)
-	WeeklyUv(scriptId int64, t time.Time) (int64, error)
-	WeeklyMember(scriptId int64, t time.Time) (int64, error)
+	Realtime(scriptId int64, op string) ([]int64, error)
+	DaysUvNum(scriptId int64, op, member string, days int, t time.Time) (int64, error)
+	DaysPvNum(scriptId int64, op string, days int, t time.Time) (int64, error)
 	TotalPv(scriptId int64, op string) (int64, error)
-	DayPv(scriptId int64, op string, day time.Time) (int64, error)
-	DayUv(scriptId int64, op string, day time.Time) (int64, error)
-	DayMember(scriptId int64, op string, day time.Time) (int64, error)
 }

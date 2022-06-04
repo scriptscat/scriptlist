@@ -61,23 +61,33 @@ func (s *Statistics) scriptStatistics(ctx *gin.Context) {
 		if !(script.UserID == user.UID || user.IsAdmin.IsAdmin()) {
 			return errs.NewError(http.StatusForbidden, 1000, "没有权限访问")
 		}
-		now := time.Now().Add(-time.Hour * 24)
-		lastweekly := time.Now().Add(-time.Hour * 24 * 7)
+		now := time.Now()
+		yesterday := time.Now().Add(-time.Hour * 24)
 		return gin.H{
 			"download": gin.H{
-				"uv":            s.ignoreError(s.statisSvc.DownloadUv(script.ID, 7, now)),
-				"uv-lastweekly": s.ignoreError(s.statisSvc.DownloadUv(script.ID, 7, lastweekly)),
-				"pv":            s.ignoreError(s.statisSvc.DownloadPv(script.ID, 30, now)),
-				"realtime":      s.ignoreError(s.statisSvc.RealtimeDownload(script.ID)),
+				"uv":           s.ignoreError(s.statisSvc.DownloadUv(script.ID, 30, now)),
+				"pv":           s.ignoreError(s.statisSvc.DownloadPv(script.ID, 30, now)),
+				"today-uv":     s.ignoreError(s.statisSvc.DownloadUvNum(script.ID, 1, now)),
+				"yesterday-uv": s.ignoreError(s.statisSvc.DownloadUvNum(script.ID, 1, yesterday)),
+				"week-uv":      s.ignoreError(s.statisSvc.DownloadUvNum(script.ID, 7, now)),
 			},
 			"update": gin.H{
-				"uv":            s.ignoreError(s.statisSvc.UpdateUv(script.ID, 7, now)),
-				"uv-lastweekly": s.ignoreError(s.statisSvc.UpdateUv(script.ID, 7, lastweekly)),
-				"pv":            s.ignoreError(s.statisSvc.UpdatePv(script.ID, 30, now)),
-				"realtime":      s.ignoreError(s.statisSvc.RealtimeUpdate(script.ID)),
+				"uv":           s.ignoreError(s.statisSvc.UpdateUv(script.ID, 30, now)),
+				"pv":           s.ignoreError(s.statisSvc.UpdatePv(script.ID, 30, now)),
+				"today-uv":     s.ignoreError(s.statisSvc.UpdateUvNum(script.ID, 1, now)),
+				"yesterday-uv": s.ignoreError(s.statisSvc.UpdateUvNum(script.ID, 1, yesterday)),
+				"week-uv":      s.ignoreError(s.statisSvc.UpdateUvNum(script.ID, 7, now)),
 			},
-			"member": gin.H{
-				"num": s.ignoreError(s.statisSvc.WeeklyUv(script.ID)),
+			"page": gin.H{
+				"today-pv":         s.ignoreError(s.statisSvc.PagePvNum(script.ID, 1, now)),
+				"yesterday-pv":     s.ignoreError(s.statisSvc.PagePvNum(script.ID, 1, yesterday)),
+				"week-pv":          s.ignoreError(s.statisSvc.PagePvNum(script.ID, 7, now)),
+				"today-uv":         s.ignoreError(s.statisSvc.PageUvNum(script.ID, 1, "uv", now)),
+				"yesterday-uv":     s.ignoreError(s.statisSvc.PageUvNum(script.ID, 1, "uv", yesterday)),
+				"week-uv":          s.ignoreError(s.statisSvc.PageUvNum(script.ID, 7, "uv", now)),
+				"today-member":     s.ignoreError(s.statisSvc.PageUvNum(script.ID, 1, "member", now)),
+				"yesterday-member": s.ignoreError(s.statisSvc.PageUvNum(script.ID, 1, "member", yesterday)),
+				"week-member":      s.ignoreError(s.statisSvc.PageUvNum(script.ID, 7, "member", now)),
 			},
 		}
 	})
@@ -147,7 +157,7 @@ func (s *Statistics) download(c *gin.Context) {
 		return
 	}
 	go func() {
-		ok, err := s.statisSvc.Record(id, code.ID, uid, c.ClientIP(), ua, GetStatisticsToken(c), true)
+		ok, err := s.statisSvc.Record(id, code.ID, uid, c.ClientIP(), ua, GetStatisticsToken(c), service.DOWNLOAD_STATISTICS)
 		if err != nil {
 			logrus.Errorf("statis download record %v: %v", id, err)
 			return
