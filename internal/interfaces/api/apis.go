@@ -115,7 +115,7 @@ func StartApi(db *persistence.Repositories) error {
 	c := cron.New()
 	userSvc := service2.NewUser(db.User.User, db.User.Follow)
 	scriptApp := application.NewScript(db, db.Script.Script, db.Script.Code,
-		db.Script.Category, db.Script.Statistics)
+		db.Script.Category, db.Script.Statistics, c)
 	statisSvc := service4.NewStatistics(db.Statistics.Statistics)
 	scoreSvc := application.NewScore(db.Script.Script, db.Script.Score)
 	rateSvc := service.NewRate(db.Safe.Rate)

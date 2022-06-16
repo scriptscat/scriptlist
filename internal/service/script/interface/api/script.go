@@ -42,6 +42,15 @@ type Script struct {
 }
 
 func NewScript(svc service2.Script, app application.Script, score application.Score, statisSvc service2.Statistics, userSvc service.User, notify service4.Sender, watchSvc application.ScriptWatch, c *cron.Cron) *Script {
+	ret := &Script{
+		scriptSvc: svc,
+		scriptApp: app,
+		scoreApp:  score,
+		statisSvc: statisSvc,
+		userSvc:   userSvc,
+		notifySvc: notify,
+		watchSvc:  watchSvc,
+	}
 	// crontab 定时检查更新
 	c.AddFunc("0 */6 * * *", func() {
 		// 数据量大时可能要加入翻页，未来可能集群，要记得分布式处理
@@ -59,15 +68,7 @@ func NewScript(svc service2.Script, app application.Script, score application.Sc
 			}
 		}
 	})
-	return &Script{
-		scriptSvc: svc,
-		scriptApp: app,
-		scoreApp:  score,
-		statisSvc: statisSvc,
-		userSvc:   userSvc,
-		notifySvc: notify,
-		watchSvc:  watchSvc,
-	}
+	return ret
 }
 
 func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
@@ -103,6 +104,7 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 		}
 	})
 	rg := r.Group("/api/v1/scripts")
+	r.GET("/api/v1/admin/refresh-search", token.UserAuth(true), s.refreshSearch)
 	rg.GET("", s.list)
 	rg.GET("/hot", s.hot)
 	rg.POST("", token.UserAuth(true), s.add)
@@ -355,6 +357,8 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 // @param        page      query     integer  false  "页码"
 // @param        count     query     integer  false  "页大小"
 // @param        category  query     string   false  "分类id以','分割"
+// @param        keyword   query     string   false  "搜索关键字"
+// @param        sort      query     string   false  "排序方式"
 // @Success      200       {object}  vo.Script
 // @Failure      403
 // @Router       /scripts [GET]
@@ -843,7 +847,7 @@ func (s *Script) admin(c *gin.Context) {
 // @Tags         script
 // @Security     BearerAuth
 // @param        scriptId        path      integer  true   "脚本id"
-// @Success      200       {object}  vo.ScriptSetting
+// @Success      200  {object}  vo.ScriptSetting
 // @Failure      403
 // @Router       /scripts/{scriptId}/setting [GET]
 func (s *Script) setting(c *gin.Context) {
@@ -863,5 +867,26 @@ func (s *Script) setting(c *gin.Context) {
 			DefinitionUrl: script.DefinitionUrl,
 			SyncMode:      script.SyncMode,
 		}
+	})
+}
+
+// @Summary      刷新搜索缓存
+// @Description  刷新搜索缓存
+// @ID           script-search-refresh
+// @Tags         script
+// @Security     BearerAuth
+// @Success      200       {object}  vo.ScriptSetting
+// @Failure      403
+// @Router       /admin/refresh-search [GET]
+func (s *Script) refreshSearch(c *gin.Context) {
+	httputils.Handle(c, func() interface{} {
+		user, _ := token.UserInfo(c)
+		if user.IsAdmin != 1 {
+			return nil
+		}
+		if err := s.scriptApp.RefreshGoFound(); err != nil {
+			return err
+		}
+		return gin.H{"ok": "ok"}
 	})
 }

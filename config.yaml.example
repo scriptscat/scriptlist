@@ -45,3 +45,4 @@ emailNotify:
   user: admin@qq.org
   password: 123456
 
+goFound: http://127.0.0.1:5678

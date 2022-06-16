@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -11,18 +12,24 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
+	"github.com/scriptscat/scriptlist/pkg/gofound"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 const SearchHotKeyword = "script:search:hot_keyword"
 
 type script struct {
-	db    *gorm.DB
-	redis *redis.Client
+	statistics repository.Statistics
+	db         *gorm.DB
+	redis      *redis.Client
+	found      *gofound.GOFound
 }
 
-func NewScript(db *gorm.DB, redis *redis.Client) repository.Script {
-	return &script{db: db, redis: redis}
+func NewScript(db *gorm.DB, redis *redis.Client, found *gofound.GOFound) repository.Script {
+	return &script{db: db, redis: redis, found: found,
+		statistics: NewStatistics(db),
+	}
 }
 
 func (s *script) Find(id int64) (*entity.Script, error) {
@@ -37,7 +44,93 @@ func (s *script) Find(id int64) (*entity.Script, error) {
 }
 
 func (s *script) Save(script *entity.Script) error {
-	return s.db.Save(script).Error
+	save := false
+	if script.ID > 0 && (script.Public == 0 || script.Unwell == 1 || script.Status != cnt.ACTIVE) {
+		if err := s.deleteByGOFound(script.ID); err != nil {
+			logrus.WithField("id", script.ID).WithError(err).Errorf("delete by gofound error")
+		}
+	} else {
+		save = true
+	}
+	if err := s.db.Save(script).Error; err != nil {
+		return err
+	}
+	if save {
+		if err := s.PutGoFound(script); err != nil {
+			logrus.WithField("id", script.ID).WithError(err).Errorf("put by gofound error")
+		}
+	}
+	return nil
+}
+
+type goFoundModel struct {
+	*entity.Script
+	TodayDownload int64 `json:"today_download"`
+	TotalDownload int64 `json:"total_download"`
+	Score         int64 `json:"score"`
+}
+
+func (s *script) PutGoFound(script *entity.Script) error {
+	total, today, err := s.statistics.FindByScriptId(script.ID)
+	if err != nil {
+		return err
+	}
+	if total == nil {
+		total = &entity.ScriptStatistics{}
+	}
+	if today == nil {
+		today = &entity.ScriptDateStatistics{}
+	}
+	return s.found.PutIndex("scripts", uint32(script.ID),
+		script.Content+script.Name+script.Description,
+		&goFoundModel{
+			Script:        script,
+			TotalDownload: total.Download,
+			TodayDownload: today.Download,
+			Score:         total.Score,
+		})
+}
+
+func (s *script) deleteByGOFound(id int64) error {
+	return s.found.RemoveIndex("scripts", uint32(id))
+}
+
+func (s *script) Search(search *repository.SearchList, page *request.Pages) ([]*entity.Script, int64, error) {
+	exp := search.Sort
+	if exp != "" {
+		exp = "[document." + exp + "]"
+	}
+	search.Keyword = strings.TrimSpace(search.Keyword)
+	ret := make([]*entity.Script, 0)
+	info, err := gofound.QueryIndex[*entity.Script](s.found, "scripts", &gofound.QueryIndexRequest{
+		Query:    search.Keyword,
+		Page:     page.Page(),
+		Limit:    page.Size(),
+		Order:    gofound.ORDER_DESC,
+		ScoreExp: exp,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, v := range info.Documents {
+		ret = append(ret, v.Document)
+	}
+	for _, word := range info.Words {
+		s.redis.ZIncrBy(context.Background(), SearchHotKeyword, 1, word)
+		//// 高亮
+		//for i := range ret {
+		//	ret[i].Name = strings.ReplaceAll(ret[i].Name, word,
+		//		fmt.Sprintf("%s%s%s", "<span style='color:red'>", word, "</span>"))
+		//	ret[i].Description = strings.ReplaceAll(ret[i].Description, word,
+		//		fmt.Sprintf("%s%s%s", "<span style='color:red'>", word, "</span>"))
+		//}
+	}
+	s.redis.ZIncrBy(context.Background(), SearchHotKeyword, 1, search.Keyword)
+	return ret, int64(info.Total), nil
+}
+
+func (s *script) DropGoFound() error {
+	return s.found.DropDatabase("scripts")
 }
 
 func (s *script) List(search *repository.SearchList, page *request.Pages) ([]*entity.Script, int64, error) {

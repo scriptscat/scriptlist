@@ -55,3 +55,22 @@ func (s *statistics) Update(id int64) error {
 	}
 	return nil
 }
+
+func (s *statistics) FindByScriptId(id int64) (*entity.ScriptStatistics, *entity.ScriptDateStatistics, error) {
+	ret := &entity.ScriptStatistics{}
+	if err := s.db.First(ret, "script_id=?", id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil, nil
+		}
+		return nil, nil, err
+	}
+	date := &entity.ScriptDateStatistics{}
+	if err := s.db.First(date, "script_id=? and date=?", id,
+		time.Now().Format("2006-01-02")).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ret, nil, nil
+		}
+		return nil, nil, err
+	}
+	return ret, date, nil
+}

@@ -4,6 +4,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
+	"github.com/scriptscat/scriptlist/pkg/gofound"
 	"gorm.io/gorm"
 )
 
@@ -17,10 +18,10 @@ type Repositories struct {
 	Statistics  repository.Statistics
 }
 
-func NewRepositories(db *gorm.DB, redis *redis.Client, cache cache.Cache) *Repositories {
+func NewRepositories(db *gorm.DB, redis *redis.Client, cache cache.Cache, goFound *gofound.GOFound) *Repositories {
 	return &Repositories{
 		db:          db,
-		Script:      NewScript(db, redis),
+		Script:      NewScript(db, redis, goFound),
 		Code:        NewCode(db, cache),
 		Score:       NewScore(db, redis),
 		Category:    NewCategory(db, cache),

@@ -1,4 +1,3 @@
-basePath: /api/v1
 definitions:
   entity.ScriptCategoryList:
     properties:
@@ -285,6 +284,22 @@ info:
   title: 脚本猫列表
   version: "1.0"
 paths:
+  /admin/refresh-search:
+    get:
+      description: 刷新搜索缓存
+      operationId: script-search-refresh
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/vo.ScriptSetting'
+        "403":
+          description: ""
+      security:
+      - BearerAuth: []
+      summary: 刷新搜索缓存
+      tags:
+      - script
   /category:
     get:
       description: 脚本分类列表
@@ -317,6 +332,14 @@ paths:
       - description: 分类id以','分割
         in: query
         name: category
+        type: string
+      - description: 搜索关键字
+        in: query
+        name: keyword
+        type: string
+      - description: 排序方式
+        in: query
+        name: sort
         type: string
       responses:
         "200":

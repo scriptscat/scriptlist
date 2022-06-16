@@ -3,7 +3,6 @@ package database
 import (
 	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
 	"gorm.io/driver/mysql"
-	//"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )

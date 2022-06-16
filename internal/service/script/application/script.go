@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/glog"
+	"github.com/robfig/cron/v3"
 	"github.com/scriptscat/scriptlist/internal/infrastructure/persistence"
 	request2 "github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
@@ -18,6 +19,7 @@ import (
 	persistence2 "github.com/scriptscat/scriptlist/internal/service/script/infrastructure/persistence"
 	"github.com/scriptscat/scriptlist/internal/service/user/domain/vo"
 	"github.com/scriptscat/scriptlist/pkg/utils"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -49,6 +51,7 @@ type Script interface {
 	Delete(user *vo.User, id int64) error
 	Unwell(user *vo.User, id int64) error
 	Unpublic(user *vo.User, id int64) error
+	RefreshGoFound() error
 }
 
 type script struct {
@@ -61,7 +64,9 @@ type script struct {
 	cronCategory *entity.ScriptCategoryList
 }
 
-func NewScript(db *persistence.Repositories, scriptRepo repository.Script, codeRepo repository.ScriptCode, categoryRepo repository.Category, statisRepo repository.Statistics) Script {
+func NewScript(db *persistence.Repositories, scriptRepo repository.Script,
+	codeRepo repository.ScriptCode, categoryRepo repository.Category,
+	statisRepo repository.Statistics, c *cron.Cron) Script {
 	ret := &script{
 		db:           db,
 		scriptRepo:   scriptRepo,
@@ -84,11 +89,19 @@ func NewScript(db *persistence.Repositories, scriptRepo repository.Script, codeR
 		panic(err)
 	}
 
+	// 定时将数据更新到gofound
+	c.AddFunc("0 */2 * * *", func() {
+		ret.updateToGoFound()
+	})
+
 	return ret
 }
 
 func (s *script) Search(search *repository.SearchList, page *request2.Pages) ([]*entity.Script, int64, error) {
-	return s.scriptRepo.List(search, page)
+	if search.Keyword == "" {
+		return s.scriptRepo.List(search, page)
+	}
+	return s.scriptRepo.Search(search, page)
 }
 
 func (s *script) UserScript(uid int64, self bool, page *request2.Pages) ([]*entity.Script, int64, error) {
@@ -260,7 +273,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 			}
 		}
 		if err := s.db.Db.Transaction(func(tx *gorm.DB) error {
-			scriptRepo := persistence2.NewScript(tx, s.db.Redis)
+			scriptRepo := persistence2.NewScript(tx, s.db.Redis, s.db.GOFound)
 			if err := scriptRepo.Save(script); err != nil {
 				return err
 			}
@@ -329,7 +342,7 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 		script.Description = req.Description
 		code.Code = req.Code
 		if err := s.db.Db.Transaction(func(tx *gorm.DB) error {
-			scriptRepo := persistence2.NewScript(tx, s.db.Redis)
+			scriptRepo := persistence2.NewScript(tx, s.db.Redis, s.db.GOFound)
 			if err := scriptRepo.Save(script); err != nil {
 				return err
 			}
@@ -449,4 +462,37 @@ func (s *script) Unpublic(user *vo.User, id int64) error {
 		return err
 	}
 	return s.scriptRepo.Save(script)
+}
+
+func (s *script) updateToGoFound() {
+	page := request2.Pages{
+		P: 1,
+		C: 20,
+	}
+	for {
+		list, _, err := s.Search(&repository.SearchList{
+			Status: cnt.ACTIVE,
+		}, &page)
+		if err != nil {
+			logrus.WithError(err).Errorf("get scriptlist error")
+			break
+		}
+		if list == nil {
+			break
+		}
+		for _, v := range list {
+			if err := s.scriptRepo.PutGoFound(v); err != nil {
+				logrus.WithError(err).WithField("id", v.ID).Error("put go found error")
+			}
+		}
+		page.P++
+	}
+}
+
+func (s *script) RefreshGoFound() error {
+	if err := s.scriptRepo.DropGoFound(); err != nil {
+		logrus.WithError(err).Error("refresh drop go found error")
+	}
+	go s.updateToGoFound()
+	return nil
 }

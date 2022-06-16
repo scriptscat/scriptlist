@@ -21,6 +21,9 @@ type Script interface {
 	FindSyncPrefix(uid int64, prefix string) ([]*entity.Script, error)
 	FindSyncScript(page *request.Pages) ([]*entity.Script, error)
 	HotKeyword() ([]redis.Z, error)
+	PutGoFound(script *entity.Script) error
+	DropGoFound() error
+	Search(search *SearchList, page *request.Pages) ([]*entity.Script, int64, error)
 }
 
 type ScriptCode interface {
@@ -53,6 +56,7 @@ type Category interface {
 type Statistics interface {
 	Download(id int64) error
 	Update(id int64) error
+	FindByScriptId(id int64) (*entity.ScriptStatistics, *entity.ScriptDateStatistics, error)
 }
 
 type Watch struct {

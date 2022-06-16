@@ -12,6 +12,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
 	"github.com/scriptscat/scriptlist/internal/pkg/database"
 	"github.com/scriptscat/scriptlist/internal/pkg/kvdb"
+	"github.com/scriptscat/scriptlist/pkg/gofound"
 )
 
 func main() {
@@ -43,7 +44,8 @@ func main() {
 		log.Fatal("cache kvdb error: ", err)
 	}
 	cache := cache.NewRedisCache(cacheKv)
-	repo := persistence.NewRepositories(db, redis, cache)
+	goFound := gofound.NewGOFound(config.AppConfig.GOFound)
+	repo := persistence.NewRepositories(db, redis, cache, goFound)
 	if err := repo.Migrations(); err != nil {
 		log.Fatal("database error: ", err)
 	}

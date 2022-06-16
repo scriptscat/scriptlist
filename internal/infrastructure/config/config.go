@@ -16,7 +16,8 @@ type Config struct {
 	OAuth       OAuth `yaml:"oauth"`
 	WebPort     int   `yaml:"webPort"`
 	Email       Email
-	EmailNotify Email `yaml:"emailNotify"`
+	EmailNotify Email  `yaml:"emailNotify"`
+	GOFound     string `yaml:"goFound"`
 }
 
 type Redis struct {

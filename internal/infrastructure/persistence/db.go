@@ -14,6 +14,7 @@ import (
 	persistence3 "github.com/scriptscat/scriptlist/internal/service/statistics/infrastructure/persistence"
 	persistence4 "github.com/scriptscat/scriptlist/internal/service/user/infrastructure/persistence"
 	"github.com/scriptscat/scriptlist/migrations"
+	"github.com/scriptscat/scriptlist/pkg/gofound"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -21,6 +22,7 @@ import (
 type Repositories struct {
 	Db         *gorm.DB
 	Redis      *goRedis.Client
+	GOFound    *gofound.GOFound
 	Cache      cache.Cache
 	Script     *persistence.Repositories
 	Statistics *persistence3.StatisRepositories
@@ -30,12 +32,13 @@ type Repositories struct {
 	Issue      *persistence6.IssueRepositories
 }
 
-func NewRepositories(db *gorm.DB, redis *goRedis.Client, cache cache.Cache) *Repositories {
+func NewRepositories(db *gorm.DB, redis *goRedis.Client, cache cache.Cache, goFound *gofound.GOFound) *Repositories {
 	return &Repositories{
 		Db:         db,
 		Redis:      redis,
+		GOFound:    goFound,
 		Cache:      cache,
-		Script:     persistence.NewRepositories(db, redis, cache),
+		Script:     persistence.NewRepositories(db, redis, cache, goFound),
 		Resource:   persistence2.NewRepositories(redis),
 		Statistics: persistence3.NewRepositories(db, redis),
 		User:       persistence4.NewRepositories(db, redis, cache),

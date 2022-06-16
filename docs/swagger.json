@@ -5,8 +5,33 @@
         "contact": {},
         "version": "1.0"
     },
-    "basePath": "/api/v1",
     "paths": {
+        "/admin/refresh-search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "刷新搜索缓存",
+                "tags": [
+                    "script"
+                ],
+                "summary": "刷新搜索缓存",
+                "operationId": "script-search-refresh",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vo.ScriptSetting"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/category": {
             "get": {
                 "security": [
@@ -63,6 +88,18 @@
                         "type": "string",
                         "description": "分类id以','分割",
                         "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "搜索关键字",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "排序方式",
+                        "name": "sort",
                         "in": "query"
                     }
                 ],
