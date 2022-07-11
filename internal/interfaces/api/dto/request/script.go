@@ -11,6 +11,7 @@ type CreateScript struct {
 	Name        string `form:"name" binding:"max=128" label:"库的名字"`
 	Description string `form:"description" binding:"max=102400" label:"库的描述"`
 	Definition  string `form:"definition" binding:"max=102400" label:"库的定义文件"`
+	Version     string `form:"version" binding:"max=128" label:"库的版本"`
 	// 脚本类型：1 用户脚本 2 脚本调用库 3 订阅脚本
 	Type int `form:"type" binding:"required" label:"脚本类型"`
 	// 公开类型：1 公开 2 半公开
@@ -36,6 +37,7 @@ type UpdateScript struct {
 type UpdateScriptCode struct {
 	//Name        string `form:"name" binding:"max=128" label:"库的名字"`
 	//Description string `form:"description" binding:"max=102400" label:"库的描述"`
+	Version    string `form:"version" binding:"required,max=128" label:"库的版本号"`
 	Content    string `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
 	Code       string `form:"code" binding:"required,max=10485760" label:"脚本代码"`
 	Definition string `form:"definition" binding:"max=102400" label:"库的定义文件"`

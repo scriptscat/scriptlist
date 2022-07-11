@@ -100,7 +100,7 @@ func (s *Script) CreateScriptCode(uid int64, req *request.CreateScript) (*Script
 	s.Updatetime = time.Now().Unix()
 	return &ScriptCode{
 		UserId:     uid,
-		Version:    time.Now().Format("20060102150405"),
+		Version:    req.Version,
 		Changelog:  req.Changelog,
 		Status:     cnt.ACTIVE,
 		Createtime: time.Now().Unix(),

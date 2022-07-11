@@ -207,6 +207,7 @@ func (s *script) CreateScriptCode(uid, id int64, req *request2.UpdateScriptCode)
 		Name:        script.Name,
 		Description: script.Description,
 		Definition:  req.Definition,
+		Version:     req.Version,
 		Type:        script.Type,
 		Public:      req.Public,
 		Unwell:      req.Unwell,
@@ -337,6 +338,14 @@ func (s *script) createScriptCode(uid int64, script *entity.Script, req *request
 		}
 		if req.Description == "" {
 			return errs.NewBadRequestError(1005, "库的描述不能为空")
+		}
+		if req.Version == "" {
+			return errs.NewBadRequestError(1006, "库的版本不能为空")
+		}
+		if ok, err := s.codeRepo.FindByVersion(script.ID, req.Version); err != nil {
+			return err
+		} else if ok != nil {
+			return errs.ErrScriptCodeExist
 		}
 		script.Name = req.Name
 		script.Description = req.Description
@@ -477,7 +486,7 @@ func (s *script) updateToGoFound() {
 			logrus.WithError(err).Errorf("get scriptlist error")
 			break
 		}
-		if list == nil {
+		if len(list) == 0 {
 			break
 		}
 		for _, v := range list {

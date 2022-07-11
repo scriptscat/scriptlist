@@ -19,9 +19,15 @@ func NewGOFound(addr string) *GOFound {
 func (g *GOFound) request(api string, method string, body []byte) ([]byte, error) {
 	url := g.addr + "/api/" + api
 	payload := bytes.NewReader(body)
-	req, _ := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, url, payload)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
-	res, _ := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
 }
@@ -68,7 +74,7 @@ func QueryIndex[T any](g *GOFound, db string, queryParam *QueryIndexRequest) (*Q
 
 func (g *GOFound) RemoveIndex(db string, id uint32) error {
 	b, _ := json.Marshal(&RemoveIndexRequest{ID: id})
-	respBody, err := g.request("remove?database="+db, http.MethodPost, b)
+	respBody, err := g.request("index/remove?database="+db, http.MethodPost, b)
 	if err != nil {
 		return err
 	}

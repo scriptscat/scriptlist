@@ -103,6 +103,13 @@ func (s *Script) Registry(ctx context.Context, r *gin.Engine) {
 			}
 		}
 	})
+	// @require  https://scriptcat.org/lib/117/1.0.1/qwe1.js
+	r.GET("/lib/:id/:version/:name", func(ctx *gin.Context) {
+		tokenAuth(ctx)
+		if !ctx.IsAborted() {
+			s.downloadScript(ctx)
+		}
+	})
 	rg := r.Group("/api/v1/scripts")
 	r.GET("/api/v1/admin/refresh-search", token.UserAuth(true), s.refreshSearch)
 	rg.GET("", s.list)
@@ -300,6 +307,12 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 	uid, _ := token.UserId(ctx)
 	id := utils.StringToInt64(ctx.Param("id"))
 	version := ctx.Query("version")
+	if version == "" {
+		version = ctx.Param("version")
+	}
+	if version == "latest" {
+		version = ""
+	}
 	if id == 0 {
 		id, version = s.parseScriptInfo(ctx.Request.URL.Path)
 	}
