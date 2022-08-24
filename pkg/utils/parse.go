@@ -24,7 +24,7 @@ func GetCodeMeta(code string) (string, string, int, error) {
 	// 处理
 	reg2 := regexp.MustCompile("(?im)^//\\s*@(updateurl|downloadurl)($|\\s+(.+?)$)\\s+")
 	ret = reg2.ReplaceAllString(ret, "")
-	code = reg.ReplaceAllString(code, ret)
+	code = reg.ReplaceAllLiteralString(code, ret)
 	return code, ret, scriptType, nil
 }
 

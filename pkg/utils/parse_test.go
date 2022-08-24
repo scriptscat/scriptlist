@@ -8,6 +8,7 @@ import (
 func TestGetCodeMeta(t *testing.T) {
 	meta := `// ==UserScript==
 // @name         bilibili自动签到
+// @description  一键查看挂载到window上的非原生属性，并注入一个$searchKey函数搜索属性名。
 // @namespace    wyz
 // @version      1.1.3
 // @author       wyz
