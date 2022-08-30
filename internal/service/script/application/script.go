@@ -1,8 +1,11 @@
 package application
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -193,6 +196,12 @@ func (s *script) UpdateScript(uid, id int64, req *request2.UpdateScript) error {
 }
 
 func (s *script) CreateScriptCode(uid, id int64, req *request2.UpdateScriptCode) error {
+	if ok, err := s.db.Redis.SetNX(context.Background(), "script:update:lock:"+strconv.FormatInt(id, 10), "1", time.Second*10).Result(); err != nil {
+		return err
+	} else if !ok {
+		return errs.NewError(http.StatusBadRequest, -1, "脚本正在更新中，请稍后再试")
+	}
+	defer s.db.Redis.Del(context.Background(), "script:update:lock:"+strconv.FormatInt(id, 10))
 	script, err := s.Info(id)
 	if err != nil {
 		return err
