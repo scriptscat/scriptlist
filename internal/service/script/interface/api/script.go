@@ -391,11 +391,12 @@ func (s *Script) list(ctx *gin.Context) {
 			}
 		}
 		list, err := s.scriptSvc.GetScriptList(&repository.SearchList{
-			Category: categorys,
-			Domain:   ctx.Query("domain"),
-			Sort:     ctx.Query("sort"),
-			Status:   cnt.ACTIVE,
-			Keyword:  ctx.Query("keyword"),
+			Category:   categorys,
+			Domain:     ctx.Query("domain"),
+			Sort:       ctx.Query("sort"),
+			Status:     cnt.ACTIVE,
+			Keyword:    ctx.Query("keyword"),
+			ScriptType: utils.StringToInt(ctx.Query("script_type")),
 		}, page)
 		if err != nil {
 			return err

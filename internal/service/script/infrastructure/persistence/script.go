@@ -98,7 +98,12 @@ func (s *script) deleteByGOFound(id int64) error {
 func (s *script) Search(search *repository.SearchList, page *request.Pages) ([]*entity.Script, int64, error) {
 	exp := search.Sort
 	if exp != "" {
-		exp = "[document." + exp + "]"
+		switch exp {
+		case "today_download":
+			exp = "[document." + exp + "]+score*500"
+		default:
+			exp = "[document." + exp + "]"
+		}
 	}
 	search.Keyword = strings.TrimSpace(search.Keyword)
 	ret := make([]*entity.Script, 0)
@@ -139,6 +144,18 @@ func (s *script) List(search *repository.SearchList, page *request.Pages) ([]*en
 	find := s.db.Model(&entity.Script{})
 	if !search.Self {
 		find.Where("public=? and unwell=?", entity.PUBLIC_SCRIPT, 2)
+	}
+	if search.ScriptType != 0 {
+		switch search.ScriptType {
+		case 1: // 用户脚本
+			find = find.Where("type=1")
+		case 2: // 库
+			find = find.Where("type=3")
+		case 3: // 后台脚本
+			// 在application/script.go 中处理
+		case 4: // 定时脚本
+			// 在application/script.go 中处理
+		}
 	}
 	if len(search.Category) != 0 {
 		tabname := (&entity.ScriptCategory{}).TableName()

@@ -101,6 +101,18 @@ func NewScript(db *persistence.Repositories, scriptRepo repository.Script,
 }
 
 func (s *script) Search(search *repository.SearchList, page *request2.Pages) ([]*entity.Script, int64, error) {
+	switch search.ScriptType {
+	case 3:
+		if search.Category == nil {
+			search.Category = make([]int64, 0)
+		}
+		search.Category = append(search.Category, s.bgCategory.ID)
+	case 4:
+		if search.Category == nil {
+			search.Category = make([]int64, 0)
+		}
+		search.Category = append(search.Category, s.cronCategory.ID)
+	}
 	if search.Keyword == "" {
 		return s.scriptRepo.List(search, page)
 	}

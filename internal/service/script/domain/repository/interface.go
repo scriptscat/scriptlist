@@ -12,6 +12,7 @@ type SearchList struct {
 	Category              []int64
 	Status                int64
 	Keyword, Sort, Domain string
+	ScriptType            int
 }
 
 type Script interface {
