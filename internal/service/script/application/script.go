@@ -93,7 +93,7 @@ func NewScript(db *persistence.Repositories, scriptRepo repository.Script,
 	}
 
 	// 定时将数据更新到gofound
-	c.AddFunc("0 */2 * * *", func() {
+	c.AddFunc("0 3,10,12,14,16,19,22,0 * * *", func() {
 		ret.updateToGoFound()
 	})
 
@@ -432,14 +432,7 @@ func (s *script) GetScriptVersion(scriptId int64, version string) (*entity.Scrip
 }
 
 func (s *script) GetLatestVersion(scriptId int64) (*entity.ScriptCode, error) {
-	codes, _, err := s.codeRepo.List(scriptId, cnt.ACTIVE, &request2.Pages{})
-	if err != nil {
-		return nil, err
-	}
-	if len(codes) == 0 {
-		return nil, errs.ErrScriptAudit
-	}
-	return codes[0], nil
+	return s.codeRepo.GetLatestVersion(scriptId)
 }
 
 func (s *script) HotKeyword() ([]redis.Z, error) {

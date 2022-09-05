@@ -6,6 +6,8 @@ import (
 
 	request2 "github.com/scriptscat/scriptlist/internal/interfaces/api/dto/request"
 	"github.com/scriptscat/scriptlist/internal/pkg/cache"
+	"github.com/scriptscat/scriptlist/internal/pkg/cnt"
+	"github.com/scriptscat/scriptlist/internal/pkg/errs"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/entity"
 	"github.com/scriptscat/scriptlist/internal/service/script/domain/repository"
 	"gorm.io/gorm"
@@ -91,10 +93,27 @@ func (c *code) List(script, status int64, page *request2.Pages) ([]*entity.Scrip
 			return nil, err
 		}
 		return cacheList, nil
-	}, cache.WithTTL(time.Minute), cache.WithKeyDepend(c.cache, c.dependkey(script))); err != nil {
+	}, cache.WithTTL(time.Hour), cache.WithKeyDepend(c.cache, c.dependkey(script))); err != nil {
 		return nil, 0, err
 	}
 	return cacheList.List, cacheList.Total, nil
+}
+
+func (c *code) GetLatestVersion(scriptId int64) (*entity.ScriptCode, error) {
+	ret := &entity.ScriptCode{}
+	if err := c.cache.GetOrSet(fmt.Sprintf("script:code:latest:%d", scriptId), ret, func() (interface{}, error) {
+		codes, _, err := c.List(scriptId, cnt.ACTIVE, &request2.Pages{})
+		if err != nil {
+			return nil, err
+		}
+		if len(codes) == 0 {
+			return nil, errs.ErrScriptAudit
+		}
+		return codes[0], nil
+	}, cache.WithTTL(time.Hour), cache.WithKeyDepend(c.cache, c.dependkey(scriptId))); err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func (c *code) FindByVersion(scriptId int64, version string) (*entity.ScriptCode, error) {

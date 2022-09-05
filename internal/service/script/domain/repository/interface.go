@@ -32,6 +32,7 @@ type ScriptCode interface {
 	Save(script *entity.ScriptCode) error
 	FindByVersion(scriptId int64, version string) (*entity.ScriptCode, error)
 	List(script, status int64, page *request.Pages) ([]*entity.ScriptCode, int64, error)
+	GetLatestVersion(scriptId int64) (*entity.ScriptCode, error)
 	SaveDefinition(definition *entity.LibDefinition) error
 	SaveScriptDomain(domain *entity.ScriptDomain) error
 	FindScriptDomain(scriptId int64, domain string) (*entity.ScriptDomain, error)
