@@ -1,14 +1,7 @@
-
-/config.yaml
 .docker
 .idea
+./runtime
+*.log
 
+config.yaml
 scriptlist
-
-/resource
-
-/logs
-
-*.wasm
-
-runtime

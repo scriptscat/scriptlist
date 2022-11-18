@@ -1,57 +1,38 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"log"
 
-	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/scriptlist/internal/infrastructure/config"
-	"github.com/scriptscat/scriptlist/internal/infrastructure/logs"
-	"github.com/scriptscat/scriptlist/internal/infrastructure/persistence"
-	"github.com/scriptscat/scriptlist/internal/interfaces/api"
-	"github.com/scriptscat/scriptlist/internal/pkg/cache"
-	"github.com/scriptscat/scriptlist/internal/pkg/database"
-	"github.com/scriptscat/scriptlist/internal/pkg/kvdb"
-	"github.com/scriptscat/scriptlist/pkg/gofound"
+	"github.com/codfrm/cago"
+	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/server/http"
+	"github.com/scriptscat/scriptlist/internal/api"
+	"github.com/scriptscat/scriptlist/migrations"
 )
 
 func main() {
-	cfg := "config.yaml"
-	flag.StringVar(&cfg, "config", cfg, "配置文件")
-	flag.Parse()
-	if err := config.Init(cfg); err != nil {
-		log.Fatal("config error: ", err)
-	}
-	logs.InitLogs()
-
-	switch config.AppConfig.Mode {
-	case "debug":
-		gin.SetMode(gin.DebugMode)
-	case "prod":
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	db, err := database.NewDatabase(config.AppConfig.Mysql, config.AppConfig.Mode == gin.DebugMode)
+	ctx := context.Background()
+	cfg, err := configs.NewConfig("scriptlist")
 	if err != nil {
-		log.Fatal("database error: ", err)
+		log.Fatalf("load config err: %v", err)
 	}
-	redis, err := kvdb.NewKvDb(config.AppConfig.Redis)
+	err = cago.New(ctx, cfg).
+		Registry(cago.FuncComponent(logger.Logger)).
+		Registry(cago.FuncComponent(trace.Trace)).
+		Registry(cago.FuncComponent(db.Database)).
+		Registry(cago.FuncComponent(redis.Redis)).
+		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
+			return migrations.RunMigrations(db.Default())
+		})).
+		RegistryCancel(http.Http(api.Router)).
+		Start()
 	if err != nil {
-		log.Fatal("kvdb error: ", err)
+		log.Fatalf("start err: %v", err)
+		return
 	}
-	cacheKv, err := kvdb.NewKvDb(config.AppConfig.Cache)
-	if err != nil {
-		log.Fatal("cache kvdb error: ", err)
-	}
-	cache := cache.NewRedisCache(cacheKv)
-	goFound := gofound.NewGOFound(config.AppConfig.GOFound)
-	repo := persistence.NewRepositories(db, redis, cache, goFound)
-	if err := repo.Migrations(); err != nil {
-		log.Fatal("database error: ", err)
-	}
-
-	if err := api.StartApi(repo); err != nil {
-		log.Fatal("apis error: ", err)
-	}
-
 }

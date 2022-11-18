@@ -1,24 +1,35 @@
 
-SUFFIX=
-ifeq ($(GOOS),windows)
-	SUFFIX=.exe
+check-cago:
+ifneq ($(which cago),)
+	go install github.com/codfrm/cago
 endif
 
-swagger:
-	swag fmt -g internal/interfaces/api/apis.go
-	swag init -g internal/interfaces/api/apis.go --parseDependency --parseDepth 2
+check-mockgen:
+ifneq ($(which mockgen),)
+	go install github.com/golang/mock/mockgen
+endif
 
-linux:
-	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o scriptlist ./cmd/app
+check-golangci-lint:
+ifneq ($(which golangci-lint),)
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+endif
 
-build: generate
-	go build -o scriptlist$(SUFFIX) ./cmd/app
+swagger: check-cago
+	cago gen swag
 
-generate: swagger
-	go generate ./... -x
+lint: check-golangci-lint
+	golangci-lint run
 
-test:
+test: lint
 	go test -v ./...
 
-wasm:
-	GOOS=js GOARCH=wasm go build -o scriptlist.wasm ./cmd/wasm
+coverage.out cover:
+	go test -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -func=coverage.out
+
+html-cover: coverage.out
+	go tool cover -html=coverage.out
+	go tool cover -func=coverage.out
+
+generate: check-mockgen swagger
+	go generate ./... -x
