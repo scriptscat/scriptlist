@@ -63,6 +63,8 @@ ingress:
           pathType: ImplementationSpecific
         - path: /lib
           pathType: ImplementationSpecific
+        - path: /swagger
+          pathType: ImplementationSpecific
   tls:
     - secretName: scriptcat-org-tls
       hosts:
