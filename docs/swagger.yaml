@@ -10,8 +10,58 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  user.InfoResponse:
+    type: object
+  user.OAuthCallbackResponse:
+    properties:
+      redirectUri:
+        type: string
+      uID:
+        type: integer
+    type: object
 info:
   title: 脚本站 API 文档
   version: 2.0.0
-paths: {}
+paths:
+  /login/oauth:
+    get:
+      consumes:
+      - application/json
+      description: 第三方登录
+      parameters:
+      - in: query
+        name: code
+        type: string
+      - in: query
+        name: redirectUri
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.OAuthCallbackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 第三方登录
+  /user/info:
+    get:
+      consumes:
+      - application/json
+      description: 用户信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.InfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 用户信息
 swagger: "2.0"

@@ -6,11 +6,12 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
-	"github.com/codfrm/cago/server/http"
+	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
 	"github.com/scriptscat/scriptlist/migrations"
 )
@@ -26,10 +27,11 @@ func main() {
 		Registry(cago.FuncComponent(trace.Trace)).
 		Registry(cago.FuncComponent(db.Database)).
 		Registry(cago.FuncComponent(redis.Redis)).
+		Registry(cago.FuncComponent(cache.Cache)).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).
-		RegistryCancel(http.Http(api.Router)).
+		RegistryCancel(mux.Http(api.Router)).
 		Start()
 	if err != nil {
 		log.Fatalf("start err: %v", err)
