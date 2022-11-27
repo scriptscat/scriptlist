@@ -10,13 +10,29 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  user.CurrentUserResponse:
+    properties:
+      avatar:
+        type: string
+      uid:
+        type: integer
+      username:
+        type: string
+    type: object
   user.InfoResponse:
+    properties:
+      avatar:
+        type: string
+      uid:
+        type: integer
+      username:
+        type: string
     type: object
   user.OAuthCallbackResponse:
     properties:
-      redirectUri:
+      redirect_uri:
         type: string
-      uID:
+      uid:
         type: integer
     type: object
 info:
@@ -41,7 +57,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.OAuthCallbackResponse'
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.OAuthCallbackResponse'
+              msg:
+                type: string
         "400":
           description: Bad Request
           schema:
@@ -51,17 +73,50 @@ paths:
     get:
       consumes:
       - application/json
-      description: 用户信息
+      description: 获取当前登录的用户信息
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.InfoResponse'
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.CurrentUserResponse'
+              msg:
+                type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
-      summary: 用户信息
+      summary: 获取当前登录的用户信息
+  /user/info/:uid:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定用户信息
+      parameters:
+      - in: query
+        name: uID
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.InfoResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取指定用户信息
 swagger: "2.0"

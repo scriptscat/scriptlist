@@ -2,13 +2,17 @@ package user
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/codfrm/cago/pkg/i18n"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
+	"github.com/scriptscat/scriptlist/internal/repository"
 )
 
 type IUser interface {
-	// Info 用户信息
-	Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error)
+	// UserInfo 获取用户信息
+	UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, error)
 }
 
 type user struct {
@@ -20,7 +24,18 @@ func User() IUser {
 	return defaultUser
 }
 
-// Info 用户信息
-func (u *user) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
-	return nil, nil
+// UserInfo 获取用户信息
+func (u *user) UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, error) {
+	user, err := repository.User().Find(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, i18n.NewError(ctx, code.UserNotFound)
+	}
+	return &api.InfoResponse{
+		UID:      user.UID,
+		Username: user.Username,
+		Avatar:   "/api/v2/user/avatar/" + strconv.FormatInt(user.UID, 10),
+	}, nil
 }

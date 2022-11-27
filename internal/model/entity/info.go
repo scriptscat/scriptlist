@@ -1,4 +1,4 @@
-package script
+package entity
 
 // ScriptCategoryList 拥有的分类列表
 type ScriptCategoryList struct {

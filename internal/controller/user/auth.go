@@ -56,8 +56,6 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 	}
 }
 
-func (a *Auth) Middleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user.Auth().Middleware(c)
-	}
+func (a *Auth) Middleware(force bool) gin.HandlerFunc {
+	return user.Auth().Middleware(force)
 }

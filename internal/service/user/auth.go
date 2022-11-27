@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/repository"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -22,7 +23,7 @@ type IAuth interface {
 	// OAuthCallback 第三方登录
 	OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest) (*api.OAuthCallbackResponse, error)
 	// Middleware 处理鉴权中间件
-	Middleware(ctx *gin.Context)
+	Middleware(force bool) gin.HandlerFunc
 	// Get 获取用户鉴权信息
 	Get(ctx context.Context) *model.AuthInfo
 }
@@ -60,26 +61,47 @@ func (a *auth) OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest)
 }
 
 // Middleware 鉴权中间件
-func (a *auth) Middleware(ctx *gin.Context) {
-	session := sessions.Ctx(ctx)
-	uid, _ := session.Get("uid").(int64)
-	if uid == 0 {
-		httputils.HandleResp(ctx, httputils.NewError(
-			http.StatusUnauthorized, -1, "未登录",
-		))
-		return
+func (a *auth) Middleware(force bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		session := sessions.Ctx(ctx)
+		uid, _ := session.Get("uid").(int64)
+		if uid == 0 {
+			if force {
+				httputils.HandleResp(ctx, httputils.NewError(
+					http.StatusUnauthorized, -1, "未登录",
+				))
+			} else {
+				ctx.Next()
+			}
+			return
+		}
+		// 获取用户信息
+		user, err := repository.User().Find(ctx, uid)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		if err := user.IsBanned(ctx); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		// 设置用户信息,链路追踪和日志也添加上用户信息
+		authInfo := &model.AuthInfo{
+			UID:           uid,
+			Username:      user.Username,
+			Email:         user.Email,
+			EmailVerified: !(user.Emailstatus == 0),
+			AdminLevel:    model.AdminLevel(user.Adminid),
+		}
+		trace.SpanFromContext(ctx.Request.Context()).SetAttributes(
+			attribute.Int64("uid", uid),
+		)
+
+		ctx.Request = ctx.Request.WithContext(context.WithValue(
+			logger.ContextWithLogger(ctx.Request.Context(), logger.Ctx(ctx.Request.Context()).
+				With(zap.Int64("uid", uid))),
+			model.AuthInfo{}, authInfo))
 	}
-	// 设置用户信息,链路追踪和日志也添加上用户信息
-	authInfo := &model.AuthInfo{
-		UID: uid,
-	}
-	trace.SpanFromContext(ctx.Request.Context()).SetAttributes(
-		attribute.Int64("uid", uid),
-	)
-	ctx.Request = ctx.Request.WithContext(context.WithValue(
-		logger.ContextWithLogger(ctx.Request.Context(), logger.Ctx(ctx.Request.Context()).
-			With(zap.Int64("uid", uid))),
-		model.AuthInfo{}, authInfo))
 }
 
 // Get 获取用户鉴权信息

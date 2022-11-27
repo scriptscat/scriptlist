@@ -1,9 +1,15 @@
-package user
+package entity
 
-import "gorm.io/datatypes"
+import (
+	"context"
+	"net/http"
+
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
+)
 
 type User struct {
-	Uid                int64  `gorm:"column:uid" json:"uid" form:"uid"`
+	UID                int64  `gorm:"column:uid" json:"uid" form:"uid"`
 	Email              string `gorm:"column:email" json:"email" form:"email"`
 	Username           string `gorm:"column:username" json:"username" form:"username"`
 	Password           string `gorm:"column:password" json:"password" form:"password"`
@@ -38,10 +44,10 @@ func (u *UserArchive) TableName() string {
 	return "pre_common_member_archive"
 }
 
-type UserConfig struct {
-	ID         int64             `gorm:"column:id" json:"id" form:"id"`
-	Uid        int64             `gorm:"column:uid;index:user_id,unique" json:"uid" form:"uid"`
-	Notify     datatypes.JSONMap `gorm:"column:notify" json:"notify" form:"uid"`
-	Createtime int64             `gorm:"column:createtime" json:"createtime" form:"createtime"`
-	Updatetime int64             `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
+func (u *User) IsBanned(ctx context.Context) error {
+	if (u.Groupid >= 4 && u.Groupid <= 9) || u.Groupid == 20 || u.Freeze == 1 {
+		// 禁止访问 禁止发言 等待验证会员 封禁用户组
+		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserIsBanned)
+	}
+	return nil
 }

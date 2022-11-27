@@ -1,4 +1,4 @@
-package issue
+package entity
 
 type ScriptIssue struct {
 	ID         int64  `gorm:"column:id" json:"id"`

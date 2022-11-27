@@ -1,4 +1,4 @@
-package statistics
+package entity
 
 type StatisticsDownload struct {
 	ID              int64  `gorm:"column:id" json:"id" form:"id"`

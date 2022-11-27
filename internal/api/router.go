@@ -7,6 +7,7 @@ import (
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/user"
+	_ "github.com/scriptscat/scriptlist/internal/repository/persistence"
 )
 
 // Router 路由表
@@ -20,20 +21,34 @@ func Router(r *mux.Router) error {
 	))
 	auth := user.NewAuth()
 	// 用户-auth
+	rg := r.Group("/")
 	{
-		rg := r.Group("/")
 		if err := rg.Bind(auth); err != nil {
 			return err
 		}
 	}
+	// 用户
 	{
-		rg := r.Group("/")
-		rg.Use(auth.Middleware())
 		controller := user.NewUser()
-		if err := rg.Bind(controller); err != nil {
-			return err
+		authRg := r.Group("/")
+		{
+			authRg.Use(auth.Middleware(true))
+			if err := authRg.Bind(
+				controller.CurrentUser,
+			); err != nil {
+				return err
+			}
+		}
+		rg := r.Group("/")
+		{
+			if err := rg.Bind(
+				controller,
+			); err != nil {
+				return err
+			}
 		}
 	}
+	// 脚本
 
 	return nil
 }

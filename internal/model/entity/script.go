@@ -1,4 +1,4 @@
-package script
+package entity
 
 const (
 	UserscriptType = iota + 1

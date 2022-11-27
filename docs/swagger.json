@@ -32,7 +32,17 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.OAuthCallbackResponse"
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.OAuthCallbackResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "400": {
@@ -46,19 +56,72 @@
         },
         "/user/info": {
             "get": {
-                "description": "用户信息",
+                "description": "获取当前登录的用户信息",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "用户信息",
+                "summary": "获取当前登录的用户信息",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.InfoResponse"
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.CurrentUserResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/info/:uid": {
+            "get": {
+                "description": "获取指定用户信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "获取指定用户信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "uID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.InfoResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "400": {
@@ -86,16 +149,41 @@
                 }
             }
         },
+        "user.CurrentUserResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "user.InfoResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
         },
         "user.OAuthCallbackResponse": {
             "type": "object",
             "properties": {
-                "redirectUri": {
+                "redirect_uri": {
                     "type": "string"
                 },
-                "uID": {
+                "uid": {
                     "type": "integer"
                 }
             }
