@@ -10,6 +10,33 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  httputils.PageResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Item'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  script.Item:
+    properties:
+      id:
+        type: integer
+    type: object
+  script.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Item'
+          type: object
+        type: array
+      o2313:
+        type: string
+      total:
+        type: integer
+    type: object
   user.CurrentUserResponse:
     properties:
       avatar:
@@ -49,7 +76,7 @@ paths:
         name: code
         type: string
       - in: query
-        name: redirectUri
+        name: redirect_uri
         type: string
       produces:
       - application/json
@@ -69,6 +96,29 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 第三方登录
+  /script/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.ListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本列表
   /user/info:
     get:
       consumes:
@@ -92,14 +142,15 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取当前登录的用户信息
-  /user/info/:uid:
+  /user/info/{uid}:
     get:
       consumes:
       - application/json
       description: 获取指定用户信息
       parameters:
-      - in: query
-        name: uID
+      - in: path
+        name: uid
+        required: true
         type: integer
       produces:
       - application/json

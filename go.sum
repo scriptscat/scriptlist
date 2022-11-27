@@ -80,6 +80,12 @@ github.com/cncf/xds/go v0.0.0-20210805033703-aa0b78936158/go.mod h1:eXthEFrGJvWH
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/codfrm/cago v0.0.0-20221127020712-12f77e513a52 h1:WEUT/CS6qnccJHaEdJKmzi3Bx9vD0mC2rLBLeFou66E=
 github.com/codfrm/cago v0.0.0-20221127020712-12f77e513a52/go.mod h1:Oce4NUCUx+n5ank39T6GhxIrquiSwCasP39QDt4rgJM=
+github.com/codfrm/cago v0.0.0-20221127053143-cf759985113e h1:8Nz1ly8acrG/Qrht7w+aW5mEETjr7oc9SU0Vh+ENC+g=
+github.com/codfrm/cago v0.0.0-20221127053143-cf759985113e/go.mod h1:Oce4NUCUx+n5ank39T6GhxIrquiSwCasP39QDt4rgJM=
+github.com/codfrm/cago v0.0.0-20221127072610-f9ae5e670943 h1:uE51n23Bo+XPnYb1wb88NEH2ZT30EmslNdZweO2Y/b8=
+github.com/codfrm/cago v0.0.0-20221127072610-f9ae5e670943/go.mod h1:Oce4NUCUx+n5ank39T6GhxIrquiSwCasP39QDt4rgJM=
+github.com/codfrm/cago v0.0.0-20221127075503-543bc1a82181 h1:WoRH8OTypcQ5KlezNQlggu2F99KcifvPcbVDckSShZQ=
+github.com/codfrm/cago v0.0.0-20221127075503-543bc1a82181/go.mod h1:Oce4NUCUx+n5ank39T6GhxIrquiSwCasP39QDt4rgJM=
 github.com/coreos/go-semver v0.3.0 h1:wkHLiw0WNATZnSG7epLsujiMCgPAc9xhjJ4tgnAxmfM=
 github.com/coreos/go-semver v0.3.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=

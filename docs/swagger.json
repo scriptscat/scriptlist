@@ -24,7 +24,7 @@
                     },
                     {
                         "type": "string",
-                        "name": "redirectUri",
+                        "name": "redirect_uri",
                         "in": "query"
                     }
                 ],
@@ -38,6 +38,42 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/user.OAuthCallbackResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/script/list": {
+            "get": {
+                "description": "获取脚本列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "获取脚本列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.ListResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -90,7 +126,7 @@
                 }
             }
         },
-        "/user/info/:uid": {
+        "/user/info/{uid}": {
             "get": {
                 "description": "获取指定用户信息",
                 "consumes": [
@@ -103,8 +139,9 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "name": "uID",
-                        "in": "query"
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -146,6 +183,47 @@
                 "msg": {
                     "description": "错误信息",
                     "type": "string"
+                }
+            }
+        },
+        "httputils.PageResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Item"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.Item": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.ListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Item"
+                    }
+                },
+                "o2313": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
