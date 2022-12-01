@@ -20,6 +20,11 @@ definitions:
       total:
         type: integer
     type: object
+  script.CreateResponse:
+    properties:
+      id:
+        type: integer
+    type: object
   script.Item:
     properties:
       id:
@@ -32,8 +37,6 @@ definitions:
           $ref: '#/definitions/script.Item'
           type: object
         type: array
-      o2313:
-        type: string
       total:
         type: integer
     type: object
@@ -96,11 +99,17 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 第三方登录
-  /script/list:
-    get:
+      tags:
+      - user
+  /script:
+    post:
       consumes:
       - application/json
-      description: 获取脚本列表
+      description: 创建脚本
+      parameters:
+      - in: body
+        name: body
+        type: object
       produces:
       - application/json
       responses:
@@ -111,15 +120,17 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/script.ListResponse'
+                $ref: '#/definitions/script.CreateResponse'
               msg:
                 type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
-      summary: 获取脚本列表
-  /user/info:
+      summary: 创建脚本
+      tags:
+      - script
+  /user:
     get:
       consumes:
       - application/json
@@ -142,7 +153,9 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取当前登录的用户信息
-  /user/info/{uid}:
+      tags:
+      - user
+  /user/{uid}/info:
     get:
       consumes:
       - application/json
@@ -170,4 +183,6 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取指定用户信息
+      tags:
+      - user
 swagger: "2.0"

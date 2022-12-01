@@ -18,13 +18,13 @@ func NewUser() repository.IUser {
 	return &user{}
 }
 
-func (u *user) userkey(id int64) string {
+func (u *user) userKey(id int64) string {
 	return fmt.Sprintf("user:%d", id)
 }
 
 func (u *user) Find(ctx context.Context, id int64) (*entity.User, error) {
 	ret := &entity.User{}
-	if err := cache.Ctx(ctx).GetOrSet(u.userkey(id), func() (interface{}, error) {
+	if err := cache.Ctx(ctx).GetOrSet(u.userKey(id), func() (interface{}, error) {
 		ret := &entity.User{}
 		if err := db.Ctx(ctx).First(ret, "uid=?", id).Error; err != nil {
 			if db.RecordNotFound(err) {

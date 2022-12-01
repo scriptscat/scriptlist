@@ -15,6 +15,9 @@
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "user"
+                ],
                 "summary": "第三方登录",
                 "parameters": [
                     {
@@ -54,16 +57,26 @@
                 }
             }
         },
-        "/script/list": {
-            "get": {
-                "description": "获取脚本列表",
+        "/script": {
+            "post": {
+                "description": "创建脚本",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "获取脚本列表",
+                "tags": [
+                    "script"
+                ],
+                "summary": "创建脚本",
+                "parameters": [
+                    {
+                        "type": "object",
+                        "name": "body",
+                        "in": "body"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -73,7 +86,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/script.ListResponse"
+                                    "$ref": "#/definitions/script.CreateResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -90,7 +103,7 @@
                 }
             }
         },
-        "/user/info": {
+        "/user": {
             "get": {
                 "description": "获取当前登录的用户信息",
                 "consumes": [
@@ -98,6 +111,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "user"
                 ],
                 "summary": "获取当前登录的用户信息",
                 "responses": {
@@ -126,7 +142,7 @@
                 }
             }
         },
-        "/user/info/{uid}": {
+        "/user/{uid}/info": {
             "get": {
                 "description": "获取指定用户信息",
                 "consumes": [
@@ -134,6 +150,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "user"
                 ],
                 "summary": "获取指定用户信息",
                 "parameters": [
@@ -201,6 +220,14 @@
                 }
             }
         },
+        "script.CreateResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "script.Item": {
             "type": "object",
             "properties": {
@@ -218,9 +245,6 @@
                         "type": "object",
                         "$ref": "#/definitions/script.Item"
                     }
-                },
-                "o2313": {
-                    "type": "string"
                 },
                 "total": {
                     "type": "integer"

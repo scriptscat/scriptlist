@@ -1,4 +1,4 @@
-package cnt
+package consts
 
 const (
 	// UNKNOWN 未知
