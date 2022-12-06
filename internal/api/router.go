@@ -52,14 +52,14 @@ func Router(r *mux.Router) error {
 	// 脚本
 	{
 		controller := script.NewScript()
-		//authRg := r.Group("/")
+		authRg := r.Group("/")
 		{
-			//authRg.Use(auth.Middleware(true))
-			//if err := authRg.Bind(
-			//	controller.CurrentUser,
-			//); err != nil {
-			//	return err
-			//}
+			authRg.Use(auth.Middleware(true))
+			if err := authRg.Bind(
+				controller.Create,
+			); err != nil {
+				return err
+			}
 		}
 		rg := r.Group("/")
 		{

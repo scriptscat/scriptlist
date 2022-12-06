@@ -30,11 +30,10 @@ func main() {
 		Registry(cago.FuncComponent(db.Database)).
 		Registry(cago.FuncComponent(redis.Redis)).
 		Registry(cago.FuncComponent(cache.Cache)).
-		Registry(cago.FuncComponent(broker.Broker)).
+		Registry(broker.WithCallback(consumer.Consumer)).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).
-		Registry(cago.FuncComponent(consumer.Consumer)).
 		RegistryCancel(mux.Http(api.Router)).
 		Start()
 	if err != nil {

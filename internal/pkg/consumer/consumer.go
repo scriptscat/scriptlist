@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/broker"
+	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/scriptscat/scriptlist/pkg/producer"
 )
 
 // Consumer 消费者
-func Consumer(ctx context.Context, cfg *configs.Config) error {
-	_, err := broker.Default().Subscribe(ctx,
+func Consumer(ctx context.Context, broker broker.Broker) error {
+	_, err := broker.Subscribe(ctx,
 		producer.ScriptCreateTopic, scriptCreateHandler,
 	)
 	if err != nil {

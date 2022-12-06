@@ -72,9 +72,11 @@
                 "summary": "创建脚本",
                 "parameters": [
                     {
-                        "type": "object",
                         "name": "body",
-                        "in": "body"
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.CreateRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -217,6 +219,44 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "script.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "changelog": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "public": {
+                    "description": "公开类型：1 公开 2 半公开",
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "脚本类型：1 用户脚本 2 脚本调用库 3 订阅脚本",
+                    "type": "integer"
+                },
+                "unwell": {
+                    "description": "不适内容: 1 不适 2 适用",
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },

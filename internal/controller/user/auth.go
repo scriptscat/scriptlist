@@ -21,8 +21,20 @@ func NewAuth() *Auth {
 }
 
 func (a *Auth) Router(r *mux.Router) error {
+	if configs.Default().Debug && configs.Default().Env == configs.DEV {
+		r.GET("/login/debug", a.Debug())
+	}
 	r.GET("/login/oauth", a.OAuthCallback())
 	return nil
+}
+
+func (a *Auth) Debug() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// 设置session
+		session := sessions.Ctx(ctx)
+		session.Set("uid", int64(1))
+		_ = session.Save()
+	}
 }
 
 // OAuthCallback 第三方登录回调
