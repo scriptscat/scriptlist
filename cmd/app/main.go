@@ -14,7 +14,7 @@ import (
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
-	"github.com/scriptscat/scriptlist/internal/pkg/consumer"
+	"github.com/scriptscat/scriptlist/internal/task/consumer"
 	"github.com/scriptscat/scriptlist/migrations"
 )
 

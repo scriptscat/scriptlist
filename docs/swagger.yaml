@@ -35,14 +35,14 @@ definitions:
       name:
         type: string
       public:
+        $ref: '#/definitions/script.Public'
         description: 公开类型：1 公开 2 半公开
-        type: integer
       type:
+        $ref: '#/definitions/script.Type'
         description: 脚本类型：1 用户脚本 2 脚本调用库 3 订阅脚本
-        type: integer
       unwell:
+        $ref: '#/definitions/script.UnwellContent'
         description: '不适内容: 1 不适 2 适用'
-        type: integer
       version:
         type: string
     type: object
@@ -66,6 +66,35 @@ definitions:
       total:
         type: integer
     type: object
+  script.Public:
+    description: |-
+      Public enum type:
+      - PublicScript: 1
+      - PrivateScript: 2
+    enum:
+    - 1
+    - 2
+    type: integer
+  script.Type:
+    description: |-
+      Type enum type:
+      - UserscriptType: 1
+      - SubscribeType: 2
+      - LibraryType: 3
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+  script.UnwellContent:
+    description: |-
+      UnwellContent enum type:
+      - Unwell: 1
+      - Well: 2
+    enum:
+    - 1
+    - 2
+    type: integer
   user.CurrentUserResponse:
     properties:
       avatar:
