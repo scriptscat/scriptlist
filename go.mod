@@ -3,10 +3,12 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
-	github.com/codfrm/cago v0.0.0-20221210114855-bac5b1062a49
+	github.com/codfrm/cago v0.0.0-20221211101646-9fd563184806
+	github.com/elastic/go-elasticsearch/v8 v8.5.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/swaggo/swag v1.8.6
 	go.opentelemetry.io/otel v1.11.1
 	go.uber.org/zap v1.24.0
@@ -26,6 +28,7 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
 	github.com/gin-contrib/sessions v0.0.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect

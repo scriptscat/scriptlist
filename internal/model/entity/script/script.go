@@ -1,5 +1,17 @@
 package script
 
+import (
+	"context"
+	"encoding/json"
+	"regexp"
+	"strings"
+
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
+	"github.com/scriptscat/scriptlist/internal/pkg/consts"
+	"github.com/scriptscat/scriptlist/internal/service/user"
+)
+
 type Type int
 
 const (
@@ -31,7 +43,7 @@ const (
 
 type Script struct {
 	ID            int64         `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	PostID        int64         `gorm:"column:post_id;type:bigint(20);index:post_id,unique"`
+	PostID        int64         `gorm:"column:post_id;type:bigint(20);index:post_id"`
 	UserID        int64         `gorm:"column:user_id;type:bigint(20);index:user_id"`
 	Name          string        `gorm:"column:name;type:varchar(255)"`
 	Description   string        `gorm:"column:description;type:text"`
@@ -53,6 +65,17 @@ func (s *Script) TableName() string {
 	return "cdb_tampermonkey_script"
 }
 
+// CheckPermission 检查操作权限
+func (s *Script) CheckPermission(ctx context.Context) error {
+	if s.UserID != user.Auth().Get(ctx).UID {
+		return i18n.NewError(ctx, code.UserNotPermission)
+	}
+	if s.Status != consts.ACTIVE {
+		return i18n.NewError(ctx, code.ScriptNotActive)
+	}
+	return nil
+}
+
 type Code struct {
 	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);index:user_id"`
@@ -71,11 +94,67 @@ func (s *Code) TableName() string {
 	return "cdb_tampermonkey_script_code"
 }
 
+func (s *Code) UpdateCode(ctx context.Context, scriptCode string) (map[string][]string, error) {
+	// 解析脚本的元数据
+	scriptCodeStr, meta, err := parseCodeMeta(ctx, scriptCode)
+	if err != nil {
+		return nil, err
+	}
+	// 解析元数据
+	metaJson := parseMetaToJson(meta)
+	if len(metaJson["name"]) == 0 {
+		return nil, i18n.NewError(ctx, code.ScriptNameIsEmpty)
+	}
+	if len(metaJson["description"]) == 0 {
+		return nil, i18n.NewError(ctx, code.ScriptDescIsEmpty)
+	}
+	if len(metaJson["version"]) == 0 {
+		return nil, i18n.NewError(ctx, code.ScriptVersionIsEmpty)
+	}
+	b, err := json.Marshal(metaJson)
+	if err != nil {
+		return nil, i18n.NewError(ctx, code.ScriptParseFailed)
+	}
+	s.Code = scriptCodeStr
+	s.Meta = meta
+	s.MetaJson = string(b)
+	s.Version = metaJson["version"][0]
+	return metaJson, nil
+}
+
+// 解析脚本的元数据
+func parseCodeMeta(ctx context.Context, scriptCode string) (string, string, error) {
+	reg := regexp.MustCompile(`\/\/\s*==UserScript==([\s\S]+?)\/\/\s*==\/UserScript==`)
+	ret := reg.FindString(scriptCode)
+	if ret == "" {
+		return "", "", i18n.NewError(ctx, code.ScriptParseFailed)
+	}
+	// 移除updateurl和downloadurl
+	reg2 := regexp.MustCompile(`(?im)^//\s*@(updateurl|downloadurl)($|\s+(.+?)$)\s+`)
+	ret = reg2.ReplaceAllString(ret, "")
+	scriptCode = reg.ReplaceAllLiteralString(scriptCode, ret)
+	return scriptCode, ret, nil
+}
+
+func parseMetaToJson(meta string) map[string][]string {
+	reg := regexp.MustCompile(`(?im)^//\s*@(.+?)($|\s+(.+?)$)`)
+	list := reg.FindAllStringSubmatch(meta, -1)
+	ret := make(map[string][]string)
+	for _, v := range list {
+		v[1] = strings.ToLower(v[1])
+		if _, ok := ret[v[1]]; !ok {
+			ret[v[1]] = make([]string, 0)
+		}
+		ret[v[1]] = append(ret[v[1]], strings.TrimSpace(v[3]))
+	}
+	return ret
+}
+
 type LibDefinition struct {
-	ID         int64  `gorm:"column:id"                                 json:"id"         form:"id"`
-	UserId     int64  `gorm:"column:user_id;index:user_id;not null"     json:"user_id"    form:"user_id"`
-	ScriptId   int64  `gorm:"column:script_id;index:script_id;not null" json:"script_id"  form:"script_id"`
-	CodeId     int64  `gorm:"column:code_id;index:code_id;not null"     json:"code_id"    form:"code_id"`
-	Definition string `gorm:"column:definition;not null"                json:"definition" form:"definition"`
-	Createtime int64  `gorm:"column:createtime;type:bigint"             json:"createtime" form:"createtime"`
+	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	UserID     int64  `gorm:"column:user_id;type:bigint(20);not null;index:user_id"`
+	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);not null;index:script_id"`
+	CodeID     int64  `gorm:"column:code_id;type:bigint(20);not null;index:code_id"`
+	Definition string `gorm:"column:definition;type:longtext;not null"`
+	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
 }

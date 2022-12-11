@@ -1,25 +1,5 @@
 package entity
 
-// ScriptCategoryList 拥有的分类列表
-type ScriptCategoryList struct {
-	ID   int64  `gorm:"column:id" json:"id" form:"id"`
-	Name string `gorm:"column:name;type:varchar(255)" json:"name" form:"name"`
-	// 本分类下脚本数量
-	Num        int64 `gorm:"column:num" json:"num" form:"num"`
-	Sort       int32 `gorm:"column:sort;type:int(10);index:category_sort" json:"sort" form:"sort"`
-	Createtime int64 `gorm:"column:createtime" json:"createtime" form:"createtime"`
-	Updatetime int64 `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
-}
-
-// ScriptCategory 脚本分类
-type ScriptCategory struct {
-	ID         int64 `gorm:"column:id" json:"id" form:"id"`
-	CategoryId int64 `gorm:"column:category_id;index:category_id;index:script_category,unique" json:"category_id" form:"category_id"`
-	ScriptId   int64 `gorm:"column:script_id;index:script_id;index:script_category,unique" json:"script_id" form:"script_id"`
-	Createtime int64 `gorm:"column:createtime" json:"createtime" form:"createtime"`
-	Updatetime int64 `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
-}
-
 // ScriptScore 脚本评分
 type ScriptScore struct {
 	ID       int64 `gorm:"column:id" json:"id" form:"id"`

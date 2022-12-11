@@ -1,1 +1,0 @@
-// ==UserScript==\n// @name         New Userscript\n// @namespace    https://bbs.tampermonkey.net.cn/\n// @version      0.1.0\n// @description  try to take over the world!\n// @author       You\n// @match        https://bbs.tampermonkey.net.cn/\n// ==/UserScript==\n\n(function() {\n    'use strict';\n\n    // Your code here...\n})();

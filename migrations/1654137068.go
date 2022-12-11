@@ -14,8 +14,8 @@ func T1654137068() *gormigrate.Migration {
 			return tx.AutoMigrate(
 				&script.Script{},
 				&script.Code{},
-				&entity.ScriptCategory{},
-				&entity.ScriptCategoryList{},
+				&script.ScriptCategory{},
+				&script.ScriptCategoryList{},
 				&entity.ScriptScore{},
 				&entity.ScriptStatistics{},
 				&entity.ScriptDateStatistics{},
@@ -27,8 +27,8 @@ func T1654137068() *gormigrate.Migration {
 			return tx.Migrator().DropTable(
 				&script.Script{},
 				&script.Code{},
-				&entity.ScriptCategory{},
-				&entity.ScriptCategoryList{},
+				&script.ScriptCategory{},
+				&script.ScriptCategoryList{},
 				&entity.ScriptScore{},
 				&entity.ScriptStatistics{},
 				&entity.ScriptDateStatistics{},

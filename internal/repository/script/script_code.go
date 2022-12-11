@@ -1,4 +1,4 @@
-package repository
+package script
 
 import (
 	"context"
@@ -11,6 +11,8 @@ type IScriptCode interface {
 	Create(ctx context.Context, scriptCode *entity.Code) error
 	Update(ctx context.Context, scriptCode *entity.Code) error
 	Delete(ctx context.Context, id int64) error
+
+	FindByVersion(ctx context.Context, scriptId int64, version string) (*entity.Code, error)
 }
 
 var defaultScriptCode IScriptCode

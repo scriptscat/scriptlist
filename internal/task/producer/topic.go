@@ -1,6 +1,6 @@
 package producer
 
 const (
-	// ScriptCreateTopic 创建脚本
-	ScriptCreateTopic = "script.create"
+	ScriptCreateTopic     = "script.create"      // 创建脚本
+	ScriptCodeUpdateTopic = "script.code.update" // 更新脚本代码
 )

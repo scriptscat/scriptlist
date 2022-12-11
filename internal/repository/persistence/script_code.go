@@ -5,13 +5,13 @@ import (
 
 	"github.com/codfrm/cago/database/db"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	"github.com/scriptscat/scriptlist/internal/repository"
+	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
 )
 
 type scriptCode struct {
 }
 
-func NewScriptCode() repository.IScriptCode {
+func NewScriptCode() script2.IScriptCode {
 	return &scriptCode{}
 }
 
@@ -36,4 +36,15 @@ func (u *scriptCode) Update(ctx context.Context, scriptCode *entity.Code) error 
 
 func (u *scriptCode) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&entity.Code{ID: id}).Error
+}
+
+func (u *scriptCode) FindByVersion(ctx context.Context, scriptId int64, version string) (*entity.Code, error) {
+	ret := &entity.Code{}
+	if err := db.Ctx(ctx).First(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
 }
