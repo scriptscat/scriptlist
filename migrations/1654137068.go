@@ -19,7 +19,7 @@ func T1654137068() *gormigrate.Migration {
 				&entity.ScriptScore{},
 				&entity.ScriptStatistics{},
 				&entity.ScriptDateStatistics{},
-				&entity.ScriptDomain{},
+				&script.ScriptDomain{},
 				&script.LibDefinition{},
 			)
 		},
@@ -32,7 +32,7 @@ func T1654137068() *gormigrate.Migration {
 				&entity.ScriptScore{},
 				&entity.ScriptStatistics{},
 				&entity.ScriptDateStatistics{},
-				&entity.ScriptDomain{},
+				&script.ScriptDomain{},
 				&script.LibDefinition{},
 			)
 		},

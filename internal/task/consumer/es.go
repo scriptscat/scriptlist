@@ -47,6 +47,11 @@ func (e *esSync) queryScore(ctx context.Context, id int64) (float64, error) {
 	return 0, nil
 }
 
+func (e *esSync) queryDomain(ctx context.Context, id int64) ([]string, error) {
+
+	return nil, nil
+}
+
 func (e *esSync) syncScript(ctx context.Context, event broker.Event, update bool) error {
 	msg, err := producer.ParseScriptCreateMsg(event.Message())
 	if err != nil {
@@ -64,6 +69,7 @@ func (e *esSync) syncScript(ctx context.Context, event broker.Event, update bool
 		TotalDownload: 0,
 		TodayDownload: 0,
 		Score:         0,
+		Domain:        nil,
 		Category:      nil,
 		Public:        int(msg.Script.Public),
 		Unwell:        int(msg.Script.Unwell),

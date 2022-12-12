@@ -194,6 +194,9 @@ paths:
       - application/json
       description: 获取脚本列表
       parameters:
+      - in: query
+        name: keyword
+        type: string
       - description: '1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
         name: type
@@ -201,12 +204,6 @@ paths:
       - in: query
         name: sort
         type: string
-      - in: query
-        name: page
-        type: integer
-      - in: query
-        name: limit
-        type: integer
       produces:
       - application/json
       responses:

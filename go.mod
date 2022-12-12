@@ -3,15 +3,17 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
-	github.com/codfrm/cago v0.0.0-20221211101646-9fd563184806
+	github.com/codfrm/cago v0.0.0-20221212121536-c0f2dfc6dea8
 	github.com/elastic/go-elasticsearch/v8 v8.5.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/swaggo/swag v1.8.6
+	github.com/weppos/publicsuffix-go v0.20.0
 	go.opentelemetry.io/otel v1.11.1
 	go.uber.org/zap v1.24.0
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/datatypes v1.0.7
 	gorm.io/gorm v1.24.1
 )
@@ -94,6 +96,7 @@ require (
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37 // indirect
 	google.golang.org/grpc v1.51.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

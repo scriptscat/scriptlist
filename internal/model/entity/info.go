@@ -32,13 +32,3 @@ type ScriptDateStatistics struct {
 	Download int64  `gorm:"column:download;default:0" json:"download" form:"download"`
 	Update   int64  `gorm:"column:update;default:0" json:"update" form:"update"`
 }
-
-// ScriptDomain 脚本域名
-type ScriptDomain struct {
-	ID            int64  `gorm:"column:id" json:"id" form:"id"`
-	Domain        string `gorm:"column:domain;type:varchar(255);index:domain_script,unique" json:"domain" form:"domain"`
-	DomainReverse string `gorm:"column:domain_reverse;type:varchar(255);index:domain_reverse" json:"domain_reverse" form:"domain_reverse"`
-	ScriptId      int64  `gorm:"column:script_id;index:script_id;index:domain_script,unique" json:"script_id" form:"script_id"`
-	ScriptCodeId  int64  `gorm:"column:script_code_id" json:"script_code_id" form:"script_code_id"`
-	Createtime    int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`
-}
