@@ -5,7 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// T1670770912
 func T1670770912() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "1670770912",

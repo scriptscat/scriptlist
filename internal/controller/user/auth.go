@@ -7,7 +7,6 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/middleware/sessions"
 	"github.com/codfrm/cago/pkg/utils/httputils"
-	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
 	"github.com/scriptscat/scriptlist/internal/service/user"
@@ -18,14 +17,6 @@ type Auth struct {
 
 func NewAuth() *Auth {
 	return &Auth{}
-}
-
-func (a *Auth) Router(r *mux.Router) error {
-	if configs.Default().Debug && configs.Default().Env == configs.DEV {
-		r.GET("/login/debug", a.Debug())
-	}
-	r.GET("/login/oauth", a.OAuthCallback())
-	return nil
 }
 
 func (a *Auth) Debug() gin.HandlerFunc {

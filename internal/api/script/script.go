@@ -62,7 +62,7 @@ type CreateResponse struct {
 
 // UpdateCodeRequest 更新脚本/库代码
 type UpdateCodeRequest struct {
-	mux.Meta ` path:"/script/:id/code" method:"PUT"`
+	mux.Meta `path:"/script/:id/code" method:"PUT"`
 	ID       int64 `uri:"id" binding:"required"`
 	//Name string `form:"name" binding:"max=128" label:"库的名字"`
 	//Description string `form:"description" binding:"max=102400" label:"库的描述"`
@@ -76,4 +76,12 @@ type UpdateCodeRequest struct {
 }
 
 type UpdateCodeResponse struct {
+}
+
+// MigrateEsRequest 全量迁移数据到es
+type MigrateEsRequest struct {
+	mux.Meta `path:"/scripts/migrate/es" method:"POST"`
+}
+
+type MigrateEsResponse struct {
 }

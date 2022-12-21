@@ -7,8 +7,7 @@ import (
 	cron "github.com/robfig/cron/v3"
 )
 
-// 定时任务
-
+// Crontab 定时任务
 func Crontab(ctx context.Context, config *configs.Config) error {
 	c := cron.New()
 	// 定时同步数据到es
@@ -16,7 +15,7 @@ func Crontab(ctx context.Context, config *configs.Config) error {
 	if err != nil {
 		return err
 	}
-	// 定时检查更新
+	// 定时检查脚本更新
 
 	return nil
 }

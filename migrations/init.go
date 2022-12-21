@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// RunMigrations 数据库迁移操作
 func RunMigrations(db *gorm.DB) error {
 	// 添加分布式锁
 	if ok, err := redis.Default().

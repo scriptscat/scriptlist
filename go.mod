@@ -3,7 +3,7 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
-	github.com/codfrm/cago v0.0.0-20221212121536-c0f2dfc6dea8
+	github.com/codfrm/cago v0.0.0-20221221122538-5211ab525e65
 	github.com/elastic/go-elasticsearch/v8 v8.5.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
@@ -17,8 +17,6 @@ require (
 	gorm.io/datatypes v1.0.7
 	gorm.io/gorm v1.24.1
 )
-
-replace github.com/codfrm/cago => ../../cago
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -87,7 +85,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.11.1 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect

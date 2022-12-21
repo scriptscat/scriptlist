@@ -146,7 +146,7 @@ func (s *script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 		domains[domain] = struct{}{}
 	}
 	for domain := range domains {
-		result, err := script2.ScriptDomain().FindByDomain(ctx, id, domain)
+		result, err := script2.Domain().FindByDomain(ctx, id, domain)
 		if err != nil {
 			logger.Ctx(ctx).Error("FindByDomain", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
 			continue
@@ -159,7 +159,7 @@ func (s *script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 				ScriptCodeID:  codeID,
 				Createtime:    time.Now().Unix(),
 			}
-			if err := script2.ScriptDomain().Create(ctx, e); err != nil {
+			if err := script2.Domain().Create(ctx, e); err != nil {
 				logger.Ctx(ctx).Error("Create", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
 			}
 		}

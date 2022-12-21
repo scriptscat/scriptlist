@@ -17,7 +17,7 @@ type IScriptDomain interface {
 
 var defaultScriptDomain IScriptDomain
 
-func ScriptDomain() IScriptDomain {
+func Domain() IScriptDomain {
 	return defaultScriptDomain
 }
 

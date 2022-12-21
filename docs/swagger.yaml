@@ -73,6 +73,8 @@ definitions:
       total:
         type: integer
     type: object
+  script.MigrateEsRequest:
+    type: object
   script.Public:
     description: |-
       Public enum type:
@@ -284,6 +286,34 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新脚本/库代码
+      tags:
+      - script
+  /scripts/migrate/es:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.MigrateEsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.MigrateEsResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
       tags:
       - script
   /user:

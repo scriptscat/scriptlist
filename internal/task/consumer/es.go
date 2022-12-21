@@ -16,7 +16,6 @@ import (
 )
 
 // 同步到es
-
 type esSync struct {
 }
 
