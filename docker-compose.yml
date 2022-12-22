@@ -27,7 +27,7 @@ services:
       - 4161:4161
   nsqd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=hostname
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=hostname # hostname需要修改成实际的ip
     depends_on:
       - nsqlookupd
     ports:

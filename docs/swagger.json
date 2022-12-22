@@ -215,6 +215,7 @@
         },
         "/scripts/migrate/es": {
             "post": {
+                "description": "全量迁移数据到es",
                 "consumes": [
                     "application/json"
                 ],
@@ -224,6 +225,7 @@
                 "tags": [
                     "script"
                 ],
+                "summary": "全量迁移数据到es",
                 "parameters": [
                     {
                         "name": "body",
@@ -457,6 +459,9 @@
             }
         },
         "script.MigrateEsRequest": {
+            "type": "object"
+        },
+        "script.MigrateEsResponse": {
             "type": "object"
         },
         "script.Public": {

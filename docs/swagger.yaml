@@ -75,6 +75,8 @@ definitions:
     type: object
   script.MigrateEsRequest:
     type: object
+  script.MigrateEsResponse:
+    type: object
   script.Public:
     description: |-
       Public enum type:
@@ -292,6 +294,7 @@ paths:
     post:
       consumes:
       - application/json
+      description: 全量迁移数据到es
       parameters:
       - in: body
         name: body
@@ -314,6 +317,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
+      summary: 全量迁移数据到es
       tags:
       - script
   /user:

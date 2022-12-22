@@ -1,11 +1,11 @@
-package persistence
+package script
 
 import (
 	"context"
 
 	"github.com/codfrm/cago/database/db"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
+	script2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 )
 
 type scriptCode struct {
@@ -47,4 +47,9 @@ func (u *scriptCode) FindByVersion(ctx context.Context, scriptId int64, version 
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (u *scriptCode) FindLatest(ctx context.Context, scriptId int64) (*entity.Code, error) {
+	//TODO implement me
+	panic("implement me")
 }

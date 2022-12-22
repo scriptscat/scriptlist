@@ -1,4 +1,4 @@
-package script
+package script_repo
 
 import (
 	"context"
@@ -13,6 +13,7 @@ type IScriptCode interface {
 	Delete(ctx context.Context, id int64) error
 
 	FindByVersion(ctx context.Context, scriptId int64, version string) (*entity.Code, error)
+	FindLatest(ctx context.Context, scriptId int64) (*entity.Code, error)
 }
 
 var defaultScriptCode IScriptCode

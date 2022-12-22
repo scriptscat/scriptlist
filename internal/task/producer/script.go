@@ -9,6 +9,8 @@ import (
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
 )
 
+// 脚本相关消息生产者
+
 type ScriptCreateMsg struct {
 	Script *entity.Script
 	Code   *entity.Code

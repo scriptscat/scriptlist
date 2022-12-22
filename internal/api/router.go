@@ -49,7 +49,7 @@ func Router(root *mux.Router) error {
 			controller.UpdateCode,
 			controller.MigrateEs,
 		)
-		// 处理
+		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), controller.Download())
 		// 无需用户登录的路由组
 		r.Group("/").Bind(

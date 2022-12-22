@@ -1,11 +1,11 @@
-package persistence
+package script
 
 import (
 	"context"
 
 	"github.com/scriptscat/scriptlist/internal/model"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script3 "github.com/scriptscat/scriptlist/internal/repository/script"
+	script3 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 )
 
 type migrate struct {

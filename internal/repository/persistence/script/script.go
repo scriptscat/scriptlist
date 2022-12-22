@@ -1,4 +1,4 @@
-package persistence
+package script
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/scriptscat/scriptlist/internal/model"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
+	script2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 )
 
 type script struct {

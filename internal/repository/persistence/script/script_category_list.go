@@ -1,11 +1,11 @@
-package persistence
+package script
 
 import (
 	"context"
 
 	"github.com/codfrm/cago/database/db"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
+	script2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 )
 
 type scriptCategoryList struct {

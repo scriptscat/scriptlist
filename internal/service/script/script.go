@@ -12,7 +12,7 @@ import (
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/pkg/consts"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
+	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/service/user"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
@@ -27,6 +27,8 @@ type IScript interface {
 	UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*api.UpdateCodeResponse, error)
 	// MigrateEs 全量迁移数据到es
 	MigrateEs()
+	// GetCode 获取脚本代码,version为latest时获取最新版本
+	GetCode(ctx context.Context, id int64, version string) (*entity.Code, error)
 }
 
 type script struct {
@@ -91,7 +93,7 @@ func (s *script) Create(ctx context.Context, req *api.CreateRequest) (*api.Creat
 	}
 
 	// 保存数据库并发送消息
-	if err := script2.Script().Create(ctx, script); err != nil {
+	if err := script_repo.Script().Create(ctx, script); err != nil {
 		logger.Ctx(ctx).Error("script create failed", zap.Error(err))
 		return nil, i18n.NewInternalError(
 			ctx,
@@ -100,7 +102,7 @@ func (s *script) Create(ctx context.Context, req *api.CreateRequest) (*api.Creat
 	}
 	// 保存脚本代码
 	scriptCode.ScriptID = script.ID
-	if err := script2.ScriptCode().Create(ctx, scriptCode); err != nil {
+	if err := script_repo.ScriptCode().Create(ctx, scriptCode); err != nil {
 		logger.Ctx(ctx).Error("script code create failed", zap.Int64("script_id", script.ID), zap.Error(err))
 		return nil, i18n.NewInternalError(
 			ctx,
@@ -111,7 +113,7 @@ func (s *script) Create(ctx context.Context, req *api.CreateRequest) (*api.Creat
 	if definition != nil {
 		definition.ScriptID = script.ID
 		definition.CodeID = scriptCode.ID
-		if err := script2.LibDefinition().Create(ctx, definition); err != nil {
+		if err := script_repo.LibDefinition().Create(ctx, definition); err != nil {
 			logger.Ctx(ctx).Error("script definition create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
 			return nil, i18n.NewInternalError(
 				ctx,
@@ -130,7 +132,7 @@ func (s *script) Create(ctx context.Context, req *api.CreateRequest) (*api.Creat
 // UpdateCode 更新脚本/库代码
 func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*api.UpdateCodeResponse, error) {
 	// 搜索到脚本
-	script, err := script2.Script().Find(ctx, req.ID)
+	script, err := script_repo.Script().Find(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +151,7 @@ func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 	}
 	var definition *entity.LibDefinition
 	if script.Type == entity.LibraryType {
-		oldVersion, err := script2.ScriptCode().FindByVersion(ctx, script.ID, req.Version)
+		oldVersion, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, req.Version)
 		if err != nil {
 			return nil, err
 		}
@@ -172,7 +174,7 @@ func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 		if err != nil {
 			return nil, err
 		}
-		oldVersion, err := script2.ScriptCode().FindByVersion(ctx, script.ID, metaJson["version"][0])
+		oldVersion, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, metaJson["version"][0])
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +193,7 @@ func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 	}
 
 	// 保存数据库并发送消息
-	if err := script2.Script().Update(ctx, script); err != nil {
+	if err := script_repo.Script().Update(ctx, script); err != nil {
 		logger.Ctx(ctx).Error("script update failed", zap.Error(err))
 		return nil, i18n.NewInternalError(
 			ctx,
@@ -200,7 +202,7 @@ func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 	}
 	// 根据id判断是新建还是更新
 	if scriptCode.ID == 0 {
-		if err := script2.ScriptCode().Create(ctx, scriptCode); err != nil {
+		if err := script_repo.ScriptCode().Create(ctx, scriptCode); err != nil {
 			logger.Ctx(ctx).Error("script code create failed", zap.Int64("script_id", script.ID), zap.Error(err))
 			return nil, i18n.NewInternalError(
 				ctx,
@@ -208,7 +210,7 @@ func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 			)
 		}
 	} else {
-		if err := script2.ScriptCode().Update(ctx, scriptCode); err != nil {
+		if err := script_repo.ScriptCode().Update(ctx, scriptCode); err != nil {
 			logger.Ctx(ctx).Error("script code update failed", zap.Int64("script_id", script.ID), zap.Error(err))
 			return nil, i18n.NewInternalError(
 				ctx,
@@ -221,7 +223,7 @@ func (s *script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 	if definition != nil {
 		definition.ScriptID = script.ID
 		definition.CodeID = scriptCode.ID
-		if err := script2.LibDefinition().Create(ctx, definition); err != nil {
+		if err := script_repo.LibDefinition().Create(ctx, definition); err != nil {
 			logger.Ctx(ctx).Error("script definition create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
 			return nil, i18n.NewInternalError(
 				ctx,
@@ -244,7 +246,7 @@ func (s *script) MigrateEs() {
 	ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(trace.LoggerLabel(ctx)...))
 	start := 0
 	for {
-		list, err := script2.Migrate().List(ctx, start, 20)
+		list, err := script_repo.Migrate().List(ctx, start, 20)
 		if err != nil {
 			logger.Ctx(ctx).Error("获取迁移数据失败", zap.Error(err))
 			return
@@ -254,15 +256,23 @@ func (s *script) MigrateEs() {
 			return
 		}
 		for _, item := range list {
-			search, err := script2.Migrate().Convert(ctx, item)
+			search, err := script_repo.Migrate().Convert(ctx, item)
 			if err != nil {
 				logger.Ctx(ctx).Error("转换数据失败", zap.Error(err))
 				continue
 			}
-			if err := script2.Migrate().SaveToEs(ctx, search); err != nil {
+			if err := script_repo.Migrate().SaveToEs(ctx, search); err != nil {
 				logger.Ctx(ctx).Error("保存数据失败", zap.Error(err))
 				continue
 			}
 		}
 	}
+}
+
+// GetCode 获取脚本代码,version为latest时获取最新版本
+func (s *script) GetCode(ctx context.Context, id int64, version string) (*entity.Code, error) {
+	if version == "latest" {
+		return script_repo.ScriptCode().FindLatest(ctx, id)
+	}
+	return script_repo.ScriptCode().FindByVersion(ctx, id, version)
 }

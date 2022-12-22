@@ -1,4 +1,4 @@
-package persistence
+package script
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/codfrm/cago/database/db"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
+	script2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"gorm.io/gorm"
 )
 

@@ -1,4 +1,4 @@
-package script
+package script_repo
 
 import (
 	"context"

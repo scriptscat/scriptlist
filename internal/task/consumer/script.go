@@ -10,7 +10,7 @@ import (
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script"
+	script2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 	"go.uber.org/zap"
@@ -98,7 +98,7 @@ func (s *script) scriptCreateHandler(ctx context.Context, event broker.Event) er
 		}
 	}
 
-	// 发送邮件通知
+	// TODO: 发送邮件通知
 
 	return nil
 }
@@ -124,7 +124,8 @@ func (s *script) scriptCodeUpdate(ctx context.Context, event broker.Event) error
 		return err
 	}
 	logger.Info("update script code")
-	// 发送邮件通知
+	// TODO: 发送邮件通知
+	//notice.Notice().Send()
 	return nil
 }
 

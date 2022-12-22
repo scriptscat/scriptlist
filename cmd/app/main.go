@@ -15,6 +15,8 @@ import (
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
+	"github.com/scriptscat/scriptlist/internal/repository/persistence/script"
+	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/task/consumer"
 	"github.com/scriptscat/scriptlist/internal/task/crontab"
 	"github.com/scriptscat/scriptlist/migrations"
@@ -26,6 +28,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("load config err: %v", err)
 	}
+	// 注册repository
+	script_repo.RegisterScript(script.NewScript())
+	script_repo.RegisterScriptCode(script.NewScriptCode())
+
+	script_repo.RegisterScriptDomain(script.NewScriptDomain())
+	script_repo.RegisterScriptCategory(script.NewScriptCategory())
+	script_repo.RegisterScriptCategoryList(script.NewScriptCategoryList())
+	script_repo.RegisterMigrate(script.NewMigrate())
+
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
 		Registry(cago.FuncComponent(trace.Trace)).

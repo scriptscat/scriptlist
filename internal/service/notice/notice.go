@@ -43,15 +43,15 @@ func (n *notice) MultipleSend(ctx context.Context, toUsers []int64, template int
 		return errors.New("template not found")
 	}
 	var err error
-	var form *entity.User
-	if opts.form != 0 {
-		form, err = repository.User().Find(ctx, opts.form)
+	var from *entity.User
+	if opts.from != 0 {
+		from, err = repository.User().Find(ctx, opts.from)
 		if err != nil {
 			return err
 		}
 	}
 	senderOptions := &sendOptions{
-		form:  form,
+		from:  from,
 		title: opts.title,
 	}
 	tplContent := make(map[SenderType]string)
