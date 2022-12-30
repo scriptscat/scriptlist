@@ -1,4 +1,4 @@
-package notice
+package notice_svc
 
 import (
 	"bytes"
@@ -7,36 +7,36 @@ import (
 	"html/template"
 
 	"github.com/scriptscat/scriptlist/internal/model/entity"
-	"github.com/scriptscat/scriptlist/internal/repository"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 )
 
-type INotice interface {
+type NoticeSvc interface {
 	// Send 根据模板id发送通知给指定用户
 	Send(ctx context.Context, toUser int64, template int, options ...Option) error
 	// MultipleSend 根据模板id发送通知给多个用户
 	MultipleSend(ctx context.Context, toUser []int64, template int, options ...Option) error
 }
 
-type notice struct {
+type noticeSvc struct {
 	senderMap map[SenderType]Sender
 }
 
-var defaultNotice = &notice{
+var defaultNotice = &noticeSvc{
 	senderMap: map[SenderType]Sender{
 		MailSender: &mail{},
 	},
 }
 
-func Notice() INotice {
+func Notice() NoticeSvc {
 	return defaultNotice
 }
 
 // Send 根据模板id发送通知给指定用户
-func (n *notice) Send(ctx context.Context, toUser int64, template int, options ...Option) error {
+func (n *noticeSvc) Send(ctx context.Context, toUser int64, template int, options ...Option) error {
 	return n.MultipleSend(ctx, []int64{toUser}, template, options...)
 }
 
-func (n *notice) MultipleSend(ctx context.Context, toUsers []int64, template int, options ...Option) error {
+func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template int, options ...Option) error {
 	opts := newOptions(options...)
 	tpl, ok := templateMap[template]
 	if !ok {
@@ -45,7 +45,7 @@ func (n *notice) MultipleSend(ctx context.Context, toUsers []int64, template int
 	var err error
 	var from *entity.User
 	if opts.from != 0 {
-		from, err = repository.User().Find(ctx, opts.from)
+		from, err = user_repo.User().Find(ctx, opts.from)
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func (n *notice) MultipleSend(ctx context.Context, toUsers []int64, template int
 		tplContent[senderType] = content
 	}
 	for _, toUser := range toUsers {
-		to, err := repository.User().Find(ctx, toUser)
+		to, err := user_repo.User().Find(ctx, toUser)
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func (n *notice) MultipleSend(ctx context.Context, toUsers []int64, template int
 	return nil
 }
 
-func (n *notice) parseTpl(tpl string, data interface{}) (string, error) {
+func (n *noticeSvc) parseTpl(tpl string, data interface{}) (string, error) {
 	t := template.New("tpl")
 	t = template.Must(t.Parse(tpl))
 	buf := bytes.NewBuffer(nil)

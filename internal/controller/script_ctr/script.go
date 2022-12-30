@@ -1,4 +1,4 @@
-package script
+package script_ctr
 
 import (
 	"context"
@@ -13,9 +13,9 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
-	service "github.com/scriptscat/scriptlist/internal/service/script"
-	"github.com/scriptscat/scriptlist/internal/service/statistics"
-	"github.com/scriptscat/scriptlist/internal/service/user"
+	service2 "github.com/scriptscat/scriptlist/internal/service/script_svc"
+	service3 "github.com/scriptscat/scriptlist/internal/service/statistics_svc"
+	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
@@ -34,16 +34,16 @@ func NewScript() *Script {
 
 // List 获取脚本列表
 func (s *Script) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
-	return service.Script().List(ctx, req)
+	return service2.Script().List(ctx, req)
 }
 
 // Create 创建脚本/库
 func (s *Script) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
-	cancel, err := s.limit.Take(ctx, strconv.FormatInt(user.Auth().Get(ctx).UID, 10))
+	cancel, err := s.limit.Take(ctx, strconv.FormatInt(user_svc.Auth().Get(ctx).UID, 10))
 	if err != nil {
 		return nil, err
 	}
-	resp, err := service.Script().Create(ctx, req)
+	resp, err := service2.Script().Create(ctx, req)
 	if err != nil {
 		if err := cancel(); err != nil {
 			return nil, err
@@ -55,11 +55,11 @@ func (s *Script) Create(ctx context.Context, req *api.CreateRequest) (*api.Creat
 
 // UpdateCode 更新脚本/库代码
 func (s *Script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*api.UpdateCodeResponse, error) {
-	cancel, err := s.limit.Take(ctx, strconv.FormatInt(user.Auth().Get(ctx).UID, 10))
+	cancel, err := s.limit.Take(ctx, strconv.FormatInt(user_svc.Auth().Get(ctx).UID, 10))
 	if err != nil {
 		return nil, err
 	}
-	resp, err := service.Script().UpdateCode(ctx, req)
+	resp, err := service2.Script().UpdateCode(ctx, req)
 	if err != nil {
 		if err := cancel(); err != nil {
 			return nil, err
@@ -71,10 +71,10 @@ func (s *Script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 
 // MigrateEs 全量迁移数据到es
 func (s *Script) MigrateEs(ctx context.Context, req *api.MigrateEsRequest) (*api.MigrateEsResponse, error) {
-	if user.Auth().Get(ctx).AdminLevel != model.Admin {
+	if user_svc.Auth().Get(ctx).AdminLevel != model.Admin {
 		return nil, httputils.NewError(http.StatusForbidden, -1, "无权限")
 	}
-	go service.Script().MigrateEs()
+	go service2.Script().MigrateEs()
 	return &api.MigrateEsResponse{}, nil
 }
 
@@ -120,7 +120,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		return
 	}
 	// 获取脚本
-	code, err := service.Script().GetCode(ctx, id, version)
+	code, err := service2.Script().GetCode(ctx, id, version)
 	if err != nil {
 		httputils.HandleResp(ctx, err)
 		return
@@ -131,14 +131,14 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		UserID:          0,
 		IP:              ctx.ClientIP(),
 		UA:              ua,
-		StatisticsToken: statistics.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics.DownloadStatistics,
+		StatisticsToken: service3.Statistics().GetStatisticsToken(ctx),
+		Download:        service3.DownloadStatistics,
 	}
-	user := user.Auth().Get(ctx)
+	user := user_svc.Auth().Get(ctx)
 	if user != nil {
 		record.UserID = user.UID
 	}
-	err = statistics.Statistics().ScriptRecord(ctx, record)
+	err = service3.Statistics().ScriptRecord(ctx, record)
 	if err != nil {
 		logger.Ctx(ctx).Error("脚本下载统计记录失败", zap.Any("record", record), zap.Error(err))
 	}
@@ -158,7 +158,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		return
 	}
 	// 获取脚本
-	code, err := service.Script().GetCode(ctx, id, "latest")
+	code, err := service2.Script().GetCode(ctx, id, "latest")
 	if err != nil {
 		httputils.HandleResp(ctx, err)
 		return
@@ -169,14 +169,14 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		UserID:          0,
 		IP:              ctx.ClientIP(),
 		UA:              ua,
-		StatisticsToken: statistics.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics.UpdateStatistics,
+		StatisticsToken: service3.Statistics().GetStatisticsToken(ctx),
+		Download:        service3.UpdateStatistics,
 	}
-	user := user.Auth().Get(ctx)
+	user := user_svc.Auth().Get(ctx)
 	if user != nil {
 		record.UserID = user.UID
 	}
-	err = statistics.Statistics().ScriptRecord(ctx, record)
+	err = service3.Statistics().ScriptRecord(ctx, record)
 	if err != nil {
 		logger.Ctx(ctx).Error("脚本下载统计记录失败", zap.Any("record", record), zap.Error(err))
 	}

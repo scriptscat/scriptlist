@@ -7,8 +7,8 @@ import (
 	"github.com/codfrm/cago/middleware/sessions/cache"
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
-	"github.com/scriptscat/scriptlist/internal/controller/script"
-	"github.com/scriptscat/scriptlist/internal/controller/user"
+	controller2 "github.com/scriptscat/scriptlist/internal/controller/script_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
 	_ "github.com/scriptscat/scriptlist/internal/repository/persistence"
 )
 
@@ -21,7 +21,7 @@ func Router(root *mux.Router) error {
 	r.Use(sessions.Middleware("SESSION",
 		cache.NewCacheStore(cache2.Default(), "session"),
 	))
-	auth := user.NewAuth()
+	auth := user_ctr.NewAuth()
 	// 用户-auth
 	{
 		// 调试环境开启简化登录
@@ -32,7 +32,7 @@ func Router(root *mux.Router) error {
 	}
 	// 用户
 	{
-		controller := user.NewUser()
+		controller := user_ctr.NewUser()
 		r.Group("/", auth.Middleware(true)).Bind(
 			controller.CurrentUser, // 获取当前用户信息
 		)
@@ -42,7 +42,7 @@ func Router(root *mux.Router) error {
 	}
 	// 脚本
 	{
-		controller := script.NewScript()
+		controller := controller2.NewScript()
 		// 需要用户登录的路由组
 		r.Group("/", auth.Middleware(true)).Bind(
 			controller.Create,

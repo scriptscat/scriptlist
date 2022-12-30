@@ -1,4 +1,4 @@
-package notice
+package notice_svc
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package statistics
+package statistics_svc
 
 import (
 	"context"
@@ -14,28 +14,28 @@ const (
 	UpdateStatistics   = "update"
 )
 
-// IStatistics 统计平台
-type IStatistics interface {
+// StatisticsSvc 统计平台
+type StatisticsSvc interface {
 	// ScriptRecord 脚本数据统计
 	ScriptRecord(ctx context.Context, data *producer.ScriptStatisticsMsg) error
 	// GetStatisticsToken 获取统计token
 	GetStatisticsToken(ctx *gin.Context) string
 }
 
-type statistics struct {
+type statisticsSvc struct {
 }
 
-var defaultStatistics = &statistics{}
+var defaultStatistics = &statisticsSvc{}
 
-func Statistics() IStatistics {
+func Statistics() StatisticsSvc {
 	return defaultStatistics
 }
 
-func (s *statistics) ScriptRecord(ctx context.Context, data *producer.ScriptStatisticsMsg) error {
+func (s *statisticsSvc) ScriptRecord(ctx context.Context, data *producer.ScriptStatisticsMsg) error {
 	return producer.PublishScriptStatistics(ctx, data)
 }
 
-func (s *statistics) GetStatisticsToken(ctx *gin.Context) string {
+func (s *statisticsSvc) GetStatisticsToken(ctx *gin.Context) string {
 	stk, _ := ctx.Cookie("_statistics")
 	if stk == "" {
 		stk = utils.RandString(32, 2)

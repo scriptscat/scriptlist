@@ -1,4 +1,4 @@
-package user
+package user_svc
 
 import (
 	"context"
@@ -7,26 +7,26 @@ import (
 	"github.com/codfrm/cago/pkg/i18n"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
-	"github.com/scriptscat/scriptlist/internal/repository"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 )
 
-type IUser interface {
+type UserSvc interface {
 	// UserInfo 获取用户信息
 	UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, error)
 }
 
-type user struct {
+type userSvc struct {
 }
 
-var defaultUser = &user{}
+var defaultUser = &userSvc{}
 
-func User() IUser {
+func User() UserSvc {
 	return defaultUser
 }
 
 // UserInfo 获取用户信息
-func (u *user) UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, error) {
-	user, err := repository.User().Find(ctx, uid)
+func (u *userSvc) UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, error) {
+	user, err := user_repo.User().Find(ctx, uid)
 	if err != nil {
 		return nil, err
 	}

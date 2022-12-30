@@ -1,4 +1,4 @@
-package script
+package script_entity
 
 type ScriptDomain struct {
 	ID            int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`

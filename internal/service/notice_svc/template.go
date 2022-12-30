@@ -1,6 +1,8 @@
-package notice
+package notice_svc
 
-import "github.com/scriptscat/scriptlist/internal/service/notice/template"
+import (
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
+)
 
 // 模板id
 

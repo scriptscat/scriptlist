@@ -9,8 +9,8 @@ import (
 	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
-	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
-	script2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	script_repo2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ type script struct {
 
 func (s *script) Subscribe(ctx context.Context, broker broker.Broker) error {
 	var err error
-	s.bgCategory, err = script2.ScriptCategoryList().FindByName(ctx, "后台脚本")
+	s.bgCategory, err = script_repo2.ScriptCategoryList().FindByName(ctx, "后台脚本")
 	if err != nil {
 		return err
 	}
@@ -33,11 +33,11 @@ func (s *script) Subscribe(ctx context.Context, broker broker.Broker) error {
 			Name:       "后台脚本",
 			Createtime: time.Now().Unix(),
 		}
-		if err := script2.ScriptCategoryList().Create(ctx, s.bgCategory); err != nil {
+		if err := script_repo2.ScriptCategoryList().Create(ctx, s.bgCategory); err != nil {
 			return err
 		}
 	}
-	s.cronCategory, err = script2.ScriptCategoryList().FindByName(ctx, "定时脚本")
+	s.cronCategory, err = script_repo2.ScriptCategoryList().FindByName(ctx, "定时脚本")
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (s *script) Subscribe(ctx context.Context, broker broker.Broker) error {
 			Name:       "定时脚本",
 			Createtime: time.Now().Unix(),
 		}
-		if err := script2.ScriptCategoryList().Create(ctx, s.cronCategory); err != nil {
+		if err := script_repo2.ScriptCategoryList().Create(ctx, s.cronCategory); err != nil {
 			return err
 		}
 	}
@@ -85,14 +85,14 @@ func (s *script) scriptCreateHandler(ctx context.Context, event broker.Event) er
 
 	if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
 		// 后台脚本
-		if err := script2.ScriptCategory().LinkCategory(ctx, msg.Script.ID, s.bgCategory.ID); err != nil {
+		if err := script_repo2.ScriptCategory().LinkCategory(ctx, msg.Script.ID, s.bgCategory.ID); err != nil {
 			logger.Error("LinkCategory", zap.Error(err))
 			return err
 		}
 	}
 	if len(metaJson["crontab"]) > 0 {
 		// 定时脚本
-		if err := script2.ScriptCategory().LinkCategory(ctx, msg.Script.ID, s.cronCategory.ID); err != nil {
+		if err := script_repo2.ScriptCategory().LinkCategory(ctx, msg.Script.ID, s.cronCategory.ID); err != nil {
 			logger.Error("LinkCategory", zap.Error(err))
 			return err
 		}
@@ -147,7 +147,7 @@ func (s *script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 		domains[domain] = struct{}{}
 	}
 	for domain := range domains {
-		result, err := script2.Domain().FindByDomain(ctx, id, domain)
+		result, err := script_repo2.Domain().FindByDomain(ctx, id, domain)
 		if err != nil {
 			logger.Ctx(ctx).Error("FindByDomain", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
 			continue
@@ -160,7 +160,7 @@ func (s *script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 				ScriptCodeID:  codeID,
 				Createtime:    time.Now().Unix(),
 			}
-			if err := script2.Domain().Create(ctx, e); err != nil {
+			if err := script_repo2.Domain().Create(ctx, e); err != nil {
 				logger.Ctx(ctx).Error("Create", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
 			}
 		}

@@ -1,10 +1,10 @@
-package user
+package user_ctr
 
 import (
 	"context"
 
 	api "github.com/scriptscat/scriptlist/internal/api/user"
-	service "github.com/scriptscat/scriptlist/internal/service/user"
+	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 )
 
 type User struct {
@@ -16,7 +16,7 @@ func NewUser() *User {
 
 // CurrentUser 获取当前登录的用户信息
 func (u *User) CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
-	resp, err := service.User().UserInfo(ctx, service.Auth().Get(ctx).UID)
+	resp, err := user_svc.User().UserInfo(ctx, user_svc.Auth().Get(ctx).UID)
 	if err != nil {
 		return nil, err
 	}
@@ -25,5 +25,5 @@ func (u *User) CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*a
 
 // Info 获取指定用户信息
 func (u *User) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
-	return service.User().UserInfo(ctx, req.UID)
+	return user_svc.User().UserInfo(ctx, req.UID)
 }

@@ -1,4 +1,4 @@
-package script
+package script_entity
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/pkg/consts"
-	"github.com/scriptscat/scriptlist/internal/service/user"
+	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 )
 
 type Type int
@@ -67,7 +67,7 @@ func (s *Script) TableName() string {
 
 // CheckPermission 检查操作权限
 func (s *Script) CheckPermission(ctx context.Context) error {
-	if s.UserID != user.Auth().Get(ctx).UID {
+	if s.UserID != user_svc.Auth().Get(ctx).UID {
 		return i18n.NewError(ctx, code.UserNotPermission)
 	}
 	if s.Status != consts.ACTIVE {

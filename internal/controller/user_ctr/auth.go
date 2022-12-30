@@ -1,4 +1,4 @@
-package user
+package user_ctr
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
-	"github.com/scriptscat/scriptlist/internal/service/user"
+	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 )
 
 type Auth struct {
@@ -36,7 +36,7 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 			httputils.HandleResp(c, err)
 			return
 		}
-		resp, err := user.Auth().OAuthCallback(c.Request.Context(), req)
+		resp, err := user_svc.Auth().OAuthCallback(c.Request.Context(), req)
 		if err != nil {
 			httputils.HandleResp(c, err)
 			return
@@ -60,5 +60,5 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 }
 
 func (a *Auth) Middleware(force bool) gin.HandlerFunc {
-	return user.Auth().Middleware(force)
+	return user_svc.Auth().Middleware(force)
 }

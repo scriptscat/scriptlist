@@ -3,7 +3,7 @@ package migrations
 import (
 	gormigrate "github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
-	"github.com/scriptscat/scriptlist/internal/model/entity/script"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"gorm.io/gorm"
 )
 
@@ -12,28 +12,28 @@ func T1654137068() *gormigrate.Migration {
 		ID: "1654137068",
 		Migrate: func(tx *gorm.DB) error {
 			return tx.AutoMigrate(
-				&script.Script{},
-				&script.Code{},
-				&script.ScriptCategory{},
-				&script.ScriptCategoryList{},
+				&script_entity.Script{},
+				&script_entity.Code{},
+				&script_entity.ScriptCategory{},
+				&script_entity.ScriptCategoryList{},
 				&entity.ScriptScore{},
 				&entity.ScriptStatistics{},
 				&entity.ScriptDateStatistics{},
-				&script.ScriptDomain{},
-				&script.LibDefinition{},
+				&script_entity.ScriptDomain{},
+				&script_entity.LibDefinition{},
 			)
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return tx.Migrator().DropTable(
-				&script.Script{},
-				&script.Code{},
-				&script.ScriptCategory{},
-				&script.ScriptCategoryList{},
+				&script_entity.Script{},
+				&script_entity.Code{},
+				&script_entity.ScriptCategory{},
+				&script_entity.ScriptCategoryList{},
 				&entity.ScriptScore{},
 				&entity.ScriptStatistics{},
 				&entity.ScriptDateStatistics{},
-				&script.ScriptDomain{},
-				&script.LibDefinition{},
+				&script_entity.ScriptDomain{},
+				&script_entity.LibDefinition{},
 			)
 		},
 	}

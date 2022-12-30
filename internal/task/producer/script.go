@@ -6,7 +6,7 @@ import (
 
 	"github.com/codfrm/cago/pkg/broker"
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
-	entity "github.com/scriptscat/scriptlist/internal/model/entity/script"
+	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
 // 脚本相关消息生产者

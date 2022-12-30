@@ -1,4 +1,4 @@
-package notice
+package notice_svc
 
 import "github.com/scriptscat/scriptlist/internal/model/entity"
 

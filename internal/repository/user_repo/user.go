@@ -1,4 +1,4 @@
-package persistence
+package user_repo
 
 import (
 	"context"
@@ -8,13 +8,26 @@ import (
 	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
-	"github.com/scriptscat/scriptlist/internal/repository"
 )
+
+type UserRepo interface {
+	Find(ctx context.Context, id int64) (*entity.User, error)
+}
+
+var defaultUser UserRepo
+
+func User() UserRepo {
+	return defaultUser
+}
+
+func RegisterUser(i UserRepo) {
+	defaultUser = i
+}
 
 type user struct {
 }
 
-func NewUser() repository.IUser {
+func NewUserRepo() UserRepo {
 	return &user{}
 }
 

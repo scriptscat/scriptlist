@@ -1,4 +1,4 @@
-package user
+package user_svc
 
 import (
 	"context"
@@ -13,13 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
 	"github.com/scriptscat/scriptlist/internal/model"
-	"github.com/scriptscat/scriptlist/internal/repository"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
-type IAuth interface {
+type AuthSvc interface {
 	// OAuthCallback 第三方登录
 	OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest) (*api.OAuthCallbackResponse, error)
 	// Middleware 处理鉴权中间件
@@ -28,17 +28,17 @@ type IAuth interface {
 	Get(ctx context.Context) *model.AuthInfo
 }
 
-type auth struct {
+type authSvc struct {
 }
 
-var defaultAuth = &auth{}
+var defaultAuth = &authSvc{}
 
-func Auth() IAuth {
+func Auth() AuthSvc {
 	return defaultAuth
 }
 
 // OAuthCallback 第三方登录
-func (a *auth) OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest) (*api.OAuthCallbackResponse, error) {
+func (a *authSvc) OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest) (*api.OAuthCallbackResponse, error) {
 	// 请求论坛接口,进行登录
 	config := &oauth.Config{}
 	if err := configs.Default().Scan("oauth.bbs", &config); err != nil {
@@ -61,7 +61,7 @@ func (a *auth) OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest)
 }
 
 // Middleware 鉴权中间件
-func (a *auth) Middleware(force bool) gin.HandlerFunc {
+func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Ctx(ctx)
 		uid, _ := session.Get("uid").(int64)
@@ -76,7 +76,7 @@ func (a *auth) Middleware(force bool) gin.HandlerFunc {
 			return
 		}
 		// 获取用户信息
-		user, err := repository.User().Find(ctx, uid)
+		user, err := user_repo.User().Find(ctx, uid)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
 			return
@@ -105,7 +105,7 @@ func (a *auth) Middleware(force bool) gin.HandlerFunc {
 }
 
 // Get 获取用户鉴权信息
-func (a *auth) Get(ctx context.Context) *model.AuthInfo {
+func (a *authSvc) Get(ctx context.Context) *model.AuthInfo {
 	val := ctx.Value(model.AuthInfo{})
 	if val == nil {
 		return nil
