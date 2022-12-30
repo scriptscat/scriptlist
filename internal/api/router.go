@@ -2,14 +2,13 @@ package api
 
 import (
 	"github.com/codfrm/cago/configs"
-	cache2 "github.com/codfrm/cago/database/cache"
+	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/middleware/sessions"
-	"github.com/codfrm/cago/middleware/sessions/cache"
+	sessionCache "github.com/codfrm/cago/middleware/sessions/cache"
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
-	controller2 "github.com/scriptscat/scriptlist/internal/controller/script_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
-	_ "github.com/scriptscat/scriptlist/internal/repository/persistence"
 )
 
 // Router 路由表
@@ -19,7 +18,7 @@ import (
 func Router(root *mux.Router) error {
 	r := root.Group("/api/v2")
 	r.Use(sessions.Middleware("SESSION",
-		cache.NewCacheStore(cache2.Default(), "session"),
+		sessionCache.NewCacheStore(cache.Default(), "session"),
 	))
 	auth := user_ctr.NewAuth()
 	// 用户-auth
@@ -42,7 +41,7 @@ func Router(root *mux.Router) error {
 	}
 	// 脚本
 	{
-		controller := controller2.NewScript()
+		controller := script_ctr.NewScript()
 		// 需要用户登录的路由组
 		r.Group("/", auth.Middleware(true)).Bind(
 			controller.Create,
@@ -56,6 +55,5 @@ func Router(root *mux.Router) error {
 			controller.List,
 		)
 	}
-
 	return nil
 }
