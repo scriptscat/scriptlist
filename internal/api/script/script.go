@@ -17,11 +17,11 @@ type Item struct {
 
 // ListRequest 获取脚本列表
 type ListRequest struct {
-	mux.Meta              `path:"/script" method:"GET"`
+	mux.Meta              `path:"/scripts" method:"GET"`
 	httputils.PageRequest `form:",inline"`
 	Keyword               string `form:"keyword"`
-	Type                  int    `form:"type" binding:"oneof=1 2 3 4"` // 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
-	Sort                  string `form:"sort" binding:"oneof=today_download total_download score createtime updatetime"`
+	Type                  int    `form:"type,default=1" binding:"oneof=1 2 3 4"` // 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
+	Sort                  string `form:"sort,default=today_download" binding:"oneof=today_download total_download score createtime updatetime"`
 }
 
 type ListResponse struct {
@@ -30,7 +30,7 @@ type ListResponse struct {
 
 // CreateRequest 创建脚本
 type CreateRequest struct {
-	mux.Meta    `path:"/script" method:"POST"`
+	mux.Meta    `path:"/scripts" method:"POST"`
 	Content     string                      `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
 	Code        string                      `form:"code" binding:"required,max=10485760" label:"脚本代码"`
 	Name        string                      `form:"name" binding:"max=128" label:"库的名字"`
@@ -62,7 +62,7 @@ type CreateResponse struct {
 
 // UpdateCodeRequest 更新脚本/库代码
 type UpdateCodeRequest struct {
-	mux.Meta `path:"/script/:id/code" method:"PUT"`
+	mux.Meta `path:"/scripts/:id/code" method:"PUT"`
 	ID       int64 `uri:"id" binding:"required"`
 	//Name string `form:"name" binding:"max=128" label:"库的名字"`
 	//Description string `form:"description" binding:"max=102400" label:"库的描述"`

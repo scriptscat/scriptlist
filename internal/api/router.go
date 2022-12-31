@@ -2,9 +2,6 @@ package api
 
 import (
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/database/cache"
-	"github.com/codfrm/cago/middleware/sessions"
-	sessionCache "github.com/codfrm/cago/middleware/sessions/cache"
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
@@ -17,9 +14,6 @@ import (
 // @BasePath /api/v2
 func Router(root *mux.Router) error {
 	r := root.Group("/api/v2")
-	r.Use(sessions.Middleware("SESSION",
-		sessionCache.NewCacheStore(cache.Default(), "session"),
-	))
 	auth := user_ctr.NewAuth()
 	// 用户-auth
 	{

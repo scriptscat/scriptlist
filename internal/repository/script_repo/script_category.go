@@ -16,6 +16,7 @@ type ScriptCategoryRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	LinkCategory(ctx context.Context, script, category int64) error
+	List(ctx context.Context, script int64) ([]*entity.ScriptCategory, error)
 }
 
 var defaultScriptCategory ScriptCategoryRepo
@@ -75,4 +76,12 @@ func (s *scriptCategoryRepo) LinkCategory(ctx context.Context, script, category 
 		return err
 	}
 	return nil
+}
+
+func (s *scriptCategoryRepo) List(ctx context.Context, script int64) ([]*entity.ScriptCategory, error) {
+	var ret []*entity.ScriptCategory
+	if err := db.Ctx(ctx).Find(&ret, "script_id=?", script).Error; err != nil {
+		return nil, err
+	}
+	return ret, nil
 }

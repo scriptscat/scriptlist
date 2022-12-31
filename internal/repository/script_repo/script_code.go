@@ -69,6 +69,12 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 }
 
 func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64) (*entity.Code, error) {
-	//TODO implement me
-	panic("implement me")
+	ret := &entity.Code{}
+	if err := db.Ctx(ctx).Order("createtime desc").First(ret, "script_id=?", scriptId).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
 }

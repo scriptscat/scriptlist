@@ -42,13 +42,13 @@ definitions:
       name:
         type: string
       public:
-        $ref: '#/definitions/script.Public'
+        $ref: '#/definitions/script_entity.Public'
         description: 公开类型：1 公开 2 半公开
       type:
-        $ref: '#/definitions/script.Type'
+        $ref: '#/definitions/script_entity.Type'
         description: 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
       unwell:
-        $ref: '#/definitions/script.UnwellContent'
+        $ref: '#/definitions/script_entity.UnwellContent'
         description: '不适内容: 1 不适 2 适用'
       version:
         type: string
@@ -77,35 +77,6 @@ definitions:
     type: object
   script.MigrateEsResponse:
     type: object
-  script.Public:
-    description: |-
-      Public enum type:
-      - PublicScript: 1
-      - PrivateScript: 2
-    enum:
-    - 1
-    - 2
-    type: integer
-  script.Type:
-    description: |-
-      Type enum type:
-      - UserscriptType: 1
-      - SubscribeType: 2
-      - LibraryType: 3
-    enum:
-    - 1
-    - 2
-    - 3
-    type: integer
-  script.UnwellContent:
-    description: |-
-      UnwellContent enum type:
-      - Unwell: 1
-      - Well: 2
-    enum:
-    - 1
-    - 2
-    type: integer
   script.UpdateCodeRequest:
     properties:
       changelog:
@@ -119,10 +90,10 @@ definitions:
       id:
         type: integer
       public:
-        $ref: '#/definitions/script.Public'
+        $ref: '#/definitions/script_entity.Public'
         description: 公开类型：1 公开 2 半公开
       unwell:
-        $ref: '#/definitions/script.UnwellContent'
+        $ref: '#/definitions/script_entity.UnwellContent'
       version:
         description: |-
           Name string `form:"name" binding:"max=128" label:"库的名字"`
@@ -131,6 +102,35 @@ definitions:
     type: object
   script.UpdateCodeResponse:
     type: object
+  script_entity.Public:
+    description: |-
+      Public enum type:
+      - PublicScript: 1
+      - PrivateScript: 2
+    enum:
+    - 1
+    - 2
+    type: integer
+  script_entity.Type:
+    description: |-
+      Type enum type:
+      - UserscriptType: 1
+      - SubscribeType: 2
+      - LibraryType: 3
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+  script_entity.UnwellContent:
+    description: |-
+      UnwellContent enum type:
+      - Unwell: 1
+      - Well: 2
+    enum:
+    - 1
+    - 2
+    type: integer
   user.CurrentUserResponse:
     properties:
       avatar:
@@ -192,7 +192,7 @@ paths:
       summary: 第三方登录
       tags:
       - user
-  /script:
+  /scripts:
     get:
       consumes:
       - application/json
@@ -257,7 +257,7 @@ paths:
       summary: 创建脚本
       tags:
       - script
-  /script/{id}/code:
+  /scripts/{id}/code:
     put:
       consumes:
       - application/json
@@ -320,7 +320,7 @@ paths:
       summary: 全量迁移数据到es
       tags:
       - script
-  /user:
+  /users:
     get:
       consumes:
       - application/json
@@ -345,7 +345,7 @@ paths:
       summary: 获取当前登录的用户信息
       tags:
       - user
-  /user/{uid}/info:
+  /users/{uid}/info:
     get:
       consumes:
       - application/json

@@ -241,31 +241,35 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 
 // MigrateEs 全量迁移数据到es
 func (s *scriptSvc) MigrateEs() {
-	ctx, span := trace.Default().Tracer("MigrateEs").Start(context.Background(), "MigrateEs")
-	defer span.End()
-	ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(trace.LoggerLabel(ctx)...))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	start := 0
 	for {
-		list, err := script_repo2.Migrate().List(ctx, start, 20)
-		if err != nil {
-			logger.Ctx(ctx).Error("获取迁移数据失败", zap.Error(err))
-			return
-		}
-		if len(list) == 0 {
-			logger.Ctx(ctx).Info("迁移完成")
-			return
-		}
-		for _, item := range list {
-			search, err := script_repo2.Migrate().Convert(ctx, item)
+		func(ctx context.Context) {
+			ctx, span := trace.Default().Tracer("MigrateEs").Start(context.Background(), "MigrateEs")
+			defer span.End()
+			ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(trace.LoggerLabel(ctx)...))
+			list, err := script_repo2.Migrate().List(ctx, start, 20)
 			if err != nil {
-				logger.Ctx(ctx).Error("转换数据失败", zap.Error(err))
-				continue
+				logger.Ctx(ctx).Error("获取迁移数据失败", zap.Error(err))
+				return
 			}
-			if err := script_repo2.Migrate().SaveToEs(ctx, search); err != nil {
-				logger.Ctx(ctx).Error("保存数据失败", zap.Error(err))
-				continue
+			if len(list) == 0 {
+				logger.Ctx(ctx).Info("迁移完成")
+				return
 			}
-		}
+			for _, item := range list {
+				search, err := script_repo2.Migrate().Convert(ctx, item)
+				if err != nil {
+					logger.Ctx(ctx).Error("转换数据失败", zap.Error(err))
+					continue
+				}
+				if err := script_repo2.Migrate().SaveToEs(ctx, search); err != nil {
+					logger.Ctx(ctx).Error("保存数据失败", zap.Error(err))
+					continue
+				}
+			}
+		}(ctx)
 	}
 }
 

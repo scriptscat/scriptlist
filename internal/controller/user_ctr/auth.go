@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/middleware/sessions"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
@@ -21,10 +20,14 @@ func NewAuth() *Auth {
 
 func (a *Auth) Debug() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// 设置session
-		session := sessions.Ctx(ctx)
-		session.Set("uid", int64(1))
-		_ = session.Save()
+		token, err := user_svc.Auth().Login(ctx.Request.Context(), 1)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		// 设置cookie
+		ctx.SetCookie("login_id", token.ID, user_svc.TokenAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("token", token.Token, user_svc.TokenAuthMaxAge, "/", "", false, true)
 	}
 }
 
@@ -41,13 +44,14 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 			httputils.HandleResp(c, err)
 			return
 		}
-		// 设置session
-		session := sessions.Ctx(c)
-		session.Set("uid", resp.UID)
-		if err := session.Save(); err != nil {
+		token, err := user_svc.Auth().Login(c.Request.Context(), resp.UID)
+		if err != nil {
 			httputils.HandleResp(c, err)
 			return
 		}
+		// 设置cookie
+		c.SetCookie("login_id", token.ID, user_svc.TokenAuthMaxAge, "/", "", false, true)
+		c.SetCookie("token", token.Token, user_svc.TokenAuthMaxAge, "/", "", false, true)
 		// 重定向
 		path := configs.Default().String("website.url")
 		if strings.HasPrefix(resp.RedirectUri, "/") {

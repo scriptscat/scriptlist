@@ -13,22 +13,3 @@ type ScriptScore struct {
 	Createtime int64  `gorm:"column:createtime" json:"createtime" form:"createtime"`
 	Updatetime int64  `gorm:"column:updatetime" json:"updatetime" form:"updatetime"`
 }
-
-// ScriptStatistics 脚本总下载更新统计
-type ScriptStatistics struct {
-	ID         int64 `gorm:"column:id" json:"id" form:"id"`
-	ScriptId   int64 `gorm:"column:script_id;index:script,unique" json:"script_id" form:"script_id"`
-	Download   int64 `gorm:"column:download;default:0" json:"download" form:"download"`
-	Update     int64 `gorm:"column:update;default:0" json:"update" form:"update"`
-	Score      int64 `gorm:"column:score;default:0" json:"score" form:"score"`
-	ScoreCount int64 `gorm:"column:score_count;default:0" json:"score_count" form:"score_count"`
-}
-
-// ScriptDateStatistics 脚本日下载更新统计
-type ScriptDateStatistics struct {
-	ID       int64  `gorm:"column:id" json:"id" form:"id"`
-	ScriptId int64  `gorm:"column:script_id;index:script_date,unique;default:0" json:"script_id" form:"script_id"`
-	Date     string `gorm:"type:varchar(255);column:date;index:script_date,unique;default:0" json:"date" form:"date"`
-	Download int64  `gorm:"column:download;default:0" json:"download" form:"download"`
-	Update   int64  `gorm:"column:update;default:0" json:"update" form:"update"`
-}

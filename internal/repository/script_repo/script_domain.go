@@ -14,6 +14,7 @@ type ScriptDomainRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	FindByDomain(ctx context.Context, id int64, domain string) (*script_entity.ScriptDomain, error)
+	List(ctx context.Context, scriptId int64) ([]*script_entity.ScriptDomain, error)
 }
 
 var defaultScriptDomain ScriptDomainRepo
@@ -59,6 +60,17 @@ func (u *scriptDomainRepo) Delete(ctx context.Context, id int64) error {
 func (u *scriptDomainRepo) FindByDomain(ctx context.Context, id int64, domain string) (*script_entity.ScriptDomain, error) {
 	ret := &script_entity.ScriptDomain{}
 	if err := db.Ctx(ctx).First(ret, "script_id=? and domain=?", id, domain).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *scriptDomainRepo) List(ctx context.Context, scriptId int64) ([]*script_entity.ScriptDomain, error) {
+	var ret []*script_entity.ScriptDomain
+	if err := db.Ctx(ctx).Find(&ret, "script_id=?", scriptId).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}

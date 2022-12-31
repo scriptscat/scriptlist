@@ -57,7 +57,7 @@
                 }
             }
         },
-        "/script": {
+        "/scripts": {
             "get": {
                 "description": "获取脚本列表",
                 "consumes": [
@@ -160,7 +160,55 @@
                 }
             }
         },
-        "/script/{id}/code": {
+        "/scripts/migrate/es": {
+            "post": {
+                "description": "全量迁移数据到es",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "全量迁移数据到es",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.MigrateEsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.MigrateEsResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/code": {
             "put": {
                 "description": "更新脚本/库代码",
                 "consumes": [
@@ -213,55 +261,7 @@
                 }
             }
         },
-        "/scripts/migrate/es": {
-            "post": {
-                "description": "全量迁移数据到es",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "script"
-                ],
-                "summary": "全量迁移数据到es",
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/script.MigrateEsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/script.MigrateEsResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-        "/user": {
+        "/users": {
             "get": {
                 "description": "获取当前登录的用户信息",
                 "consumes": [
@@ -300,7 +300,7 @@
                 }
             }
         },
-        "/user/{uid}/info": {
+        "/users/{uid}/info": {
             "get": {
                 "description": "获取指定用户信息",
                 "consumes": [
@@ -412,15 +412,15 @@
                 },
                 "public": {
                     "description": "公开类型：1 公开 2 半公开",
-                    "$ref": "#/definitions/script.Public"
+                    "$ref": "#/definitions/script_entity.Public"
                 },
                 "type": {
                     "description": "脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)",
-                    "$ref": "#/definitions/script.Type"
+                    "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "description": "不适内容: 1 不适 2 适用",
-                    "$ref": "#/definitions/script.UnwellContent"
+                    "$ref": "#/definitions/script_entity.UnwellContent"
                 },
                 "version": {
                     "type": "string"
@@ -464,31 +464,6 @@
         "script.MigrateEsResponse": {
             "type": "object"
         },
-        "script.Public": {
-            "description": "Public enum type:\n- PublicScript: 1\n- PrivateScript: 2",
-            "type": "integer",
-            "enum": [
-                1,
-                2
-            ]
-        },
-        "script.Type": {
-            "description": "Type enum type:\n- UserscriptType: 1\n- SubscribeType: 2\n- LibraryType: 3",
-            "type": "integer",
-            "enum": [
-                1,
-                2,
-                3
-            ]
-        },
-        "script.UnwellContent": {
-            "description": "UnwellContent enum type:\n- Unwell: 1\n- Well: 2",
-            "type": "integer",
-            "enum": [
-                1,
-                2
-            ]
-        },
         "script.UpdateCodeRequest": {
             "type": "object",
             "properties": {
@@ -509,10 +484,10 @@
                 },
                 "public": {
                     "description": "公开类型：1 公开 2 半公开",
-                    "$ref": "#/definitions/script.Public"
+                    "$ref": "#/definitions/script_entity.Public"
                 },
                 "unwell": {
-                    "$ref": "#/definitions/script.UnwellContent"
+                    "$ref": "#/definitions/script_entity.UnwellContent"
                 },
                 "version": {
                     "description": "Name string `form:\"name\" binding:\"max=128\" label:\"库的名字\"`\nDescription string `form:\"description\" binding:\"max=102400\" label:\"库的描述\"`",
@@ -522,6 +497,31 @@
         },
         "script.UpdateCodeResponse": {
             "type": "object"
+        },
+        "script_entity.Public": {
+            "description": "Public enum type:\n- PublicScript: 1\n- PrivateScript: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ]
+        },
+        "script_entity.Type": {
+            "description": "Type enum type:\n- UserscriptType: 1\n- SubscribeType: 2\n- LibraryType: 3",
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ]
+        },
+        "script_entity.UnwellContent": {
+            "description": "UnwellContent enum type:\n- Unwell: 1\n- Well: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ]
         },
         "user.CurrentUserResponse": {
             "type": "object",

@@ -16,6 +16,7 @@ import (
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/script_statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/task/consumer"
 	"github.com/scriptscat/scriptlist/internal/task/crontab"
@@ -37,6 +38,9 @@ func main() {
 	script_repo.RegisterScriptCategoryList(script_repo.NewScriptCategoryListRepo())
 	script_repo.RegisterMigrate(script_repo.NewMigrateRepo())
 	script_repo.RegisterLibDefinition(script_repo.NewLibDefinitionRepo())
+
+	script_statistics_repo.RegisterScriptDateStatistics(script_statistics_repo.NewScriptDateStatistics())
+	script_statistics_repo.RegisterScriptStatistics(script_statistics_repo.NewScriptStatistics())
 
 	user_repo.RegisterUser(user_repo.NewUserRepo())
 
