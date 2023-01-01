@@ -122,6 +122,10 @@ func (s *Code) UpdateCode(ctx context.Context, scriptCode string) (map[string][]
 	return metaJson, nil
 }
 
+func (s *Code) Fields() string {
+	return "id, user_id, script_id, meta, meta_json, version, changelog, status, createtime, updatetime"
+}
+
 // 解析脚本的元数据
 func parseCodeMeta(ctx context.Context, scriptCode string) (string, string, error) {
 	reg := regexp.MustCompile(`\/\/\s*==UserScript==([\s\S]+?)\/\/\s*==\/UserScript==`)

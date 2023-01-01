@@ -13,8 +13,8 @@ type ScriptCodeRepo interface {
 	Update(ctx context.Context, scriptCode *entity.Code) error
 	Delete(ctx context.Context, id int64) error
 
-	FindByVersion(ctx context.Context, scriptId int64, version string) (*entity.Code, error)
-	FindLatest(ctx context.Context, scriptId int64) (*entity.Code, error)
+	FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error)
+	FindLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error)
 }
 
 var defaultScriptCode ScriptCodeRepo
@@ -57,9 +57,14 @@ func (u *scriptCodeRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&entity.Code{ID: id}).Error
 }
 
-func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, version string) (*entity.Code, error) {
+func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error) {
 	ret := &entity.Code{}
-	if err := db.Ctx(ctx).First(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
+	q := db.Ctx(ctx)
+	// 由于code过大,使用此方法不返回code
+	if !withcode {
+		q = q.Select(ret.Fields())
+	}
+	if err := q.First(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -68,9 +73,13 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 	return ret, nil
 }
 
-func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64) (*entity.Code, error) {
+func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error) {
 	ret := &entity.Code{}
-	if err := db.Ctx(ctx).Order("createtime desc").First(ret, "script_id=?", scriptId).Error; err != nil {
+	q := db.Ctx(ctx)
+	if !withcode {
+		q = q.Select(ret.Fields())
+	}
+	if err := q.Order("createtime desc").First(ret, "script_id=?", scriptId).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}

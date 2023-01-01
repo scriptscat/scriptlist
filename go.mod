@@ -18,7 +18,7 @@ require (
 	gorm.io/gorm v1.24.1
 )
 
-//replace github.com/codfrm/cago => ../../cago
+replace github.com/codfrm/cago => ../../cago
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

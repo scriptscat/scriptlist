@@ -1,6 +1,8 @@
 package notice_svc
 
-import "github.com/scriptscat/scriptlist/internal/model/entity"
+import (
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
+)
 
 type options struct {
 	// from 发送者用户id
@@ -41,7 +43,7 @@ func WithTitle(title string) Option {
 
 type sendOptions struct {
 	// from 发送者用户信息
-	from *entity.User
+	from *user_entity.User
 	// 标题
 	title string
 }

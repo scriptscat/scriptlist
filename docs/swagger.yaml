@@ -12,16 +12,16 @@ definitions:
     type: object
   httputils.PageRequest:
     properties:
-      limit:
+      limit,default=20:
         type: integer
-      page:
+      page,default=1:
         type: integer
     type: object
   httputils.PageResponse:
     properties:
       list:
         items:
-          $ref: '#/definitions/script.Item'
+          $ref: '#/definitions/script.Script'
           type: object
         type: array
       total:
@@ -58,16 +58,56 @@ definitions:
       id:
         type: integer
     type: object
-  script.Item:
+  script.InfoResponse:
     properties:
+      archive:
+        type: integer
+      avatar:
+        type: string
+      category:
+        items:
+          $ref: '#/definitions/script.ScriptCategoryList'
+        type: array
+      createtime:
+        type: integer
+      description:
+        type: string
       id:
         type: integer
+      name:
+        type: string
+      post_id:
+        type: integer
+      public:
+        type: integer
+      score:
+        type: integer
+      score_num:
+        type: integer
+      script:
+        $ref: '#/definitions/script.ScriptCode'
+      status:
+        type: integer
+      today_install:
+        type: integer
+      total_install:
+        type: integer
+      type:
+        type: integer
+      unwell:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
     type: object
   script.ListResponse:
     properties:
       list:
         items:
-          $ref: '#/definitions/script.Item'
+          $ref: '#/definitions/script.Script'
           type: object
         type: array
       total:
@@ -76,6 +116,96 @@ definitions:
   script.MigrateEsRequest:
     type: object
   script.MigrateEsResponse:
+    type: object
+  script.Script:
+    properties:
+      archive:
+        type: integer
+      avatar:
+        type: string
+      category:
+        items:
+          $ref: '#/definitions/script.ScriptCategoryList'
+        type: array
+      createtime:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      post_id:
+        type: integer
+      public:
+        type: integer
+      score:
+        type: integer
+      score_num:
+        type: integer
+      script:
+        $ref: '#/definitions/script.ScriptCode'
+      status:
+        type: integer
+      today_install:
+        type: integer
+      total_install:
+        type: integer
+      type:
+        type: integer
+      unwell:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  script.ScriptCategoryList:
+    properties:
+      createtime:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      num:
+        description: 本分类下脚本数量
+        type: integer
+      sort:
+        type: integer
+      updatetime:
+        type: integer
+    type: object
+  script.ScriptCode:
+    properties:
+      avatar:
+        type: string
+      changelog:
+        type: string
+      code,omitempty:
+        type: string
+      createtime:
+        type: integer
+      definition,omitempty:
+        type: string
+      id:
+        type: integer
+      meta,omitempty:
+        type: string
+      meta_json:
+        type: object
+      script_id:
+        type: integer
+      status:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+      version:
+        type: string
     type: object
   script.UpdateCodeRequest:
     properties:
@@ -156,6 +286,15 @@ definitions:
       uid:
         type: integer
     type: object
+  user_entity.UserInfo:
+    properties:
+      avatar:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
 info:
   title: 脚本站 API 文档
   version: 2.0.0
@@ -201,12 +340,12 @@ paths:
       - in: query
         name: keyword
         type: string
-      - description: '1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
+      - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
-        name: type
+        name: type,default=0
         type: integer
       - in: query
-        name: sort
+        name: sort,default=today_download
         type: string
       produces:
       - application/json
@@ -255,6 +394,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 创建脚本
+      tags:
+      - script
+  /scripts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本信息
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.InfoResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本信息
       tags:
       - script
   /scripts/{id}/code:

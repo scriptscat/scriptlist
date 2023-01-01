@@ -88,7 +88,7 @@ func (m *migrateRepo) Convert(ctx context.Context, e *entity.Script) (*entity.Sc
 		Createtime:  e.Createtime,
 		Updatetime:  e.Updatetime,
 	}
-	code, err := ScriptCode().FindLatest(ctx, e.ID)
+	code, err := ScriptCode().FindLatest(ctx, e.ID, false)
 	if err != nil {
 		return nil, err
 	}

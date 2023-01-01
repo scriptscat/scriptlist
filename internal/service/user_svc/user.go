@@ -2,7 +2,6 @@ package user_svc
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/codfrm/cago/pkg/i18n"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
@@ -36,6 +35,6 @@ func (u *userSvc) UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, e
 	return &api.InfoResponse{
 		UID:      user.UID,
 		Username: user.Username,
-		Avatar:   "/api/v2/user/avatar/" + strconv.FormatInt(user.UID, 10),
+		Avatar:   user.Avatar(),
 	}, nil
 }

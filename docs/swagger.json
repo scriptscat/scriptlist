@@ -78,13 +78,13 @@
                     },
                     {
                         "type": "integer",
-                        "description": "1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
-                        "name": "type",
+                        "description": "0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
+                        "name": "type,default=0",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "sort",
+                        "name": "sort,default=today_download",
                         "in": "query"
                     }
                 ],
@@ -192,6 +192,53 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.MigrateEsResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}": {
+            "get": {
+                "description": "获取脚本信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.InfoResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -366,10 +413,10 @@
         "httputils.PageRequest": {
             "type": "object",
             "properties": {
-                "limit": {
+                "limit,default=20": {
                     "type": "integer"
                 },
-                "page": {
+                "page,default=1": {
                     "type": "integer"
                 }
             }
@@ -381,7 +428,7 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "$ref": "#/definitions/script.Item"
+                        "$ref": "#/definitions/script.Script"
                     }
                 },
                 "total": {
@@ -435,11 +482,71 @@
                 }
             }
         },
-        "script.Item": {
+        "script.InfoResponse": {
             "type": "object",
             "properties": {
+                "archive": {
+                    "type": "integer"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.ScriptCategoryList"
+                    }
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "score_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "$ref": "#/definitions/script.ScriptCode"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "today_install": {
+                    "type": "integer"
+                },
+                "total_install": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -450,7 +557,7 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "$ref": "#/definitions/script.Item"
+                        "$ref": "#/definitions/script.Script"
                     }
                 },
                 "total": {
@@ -463,6 +570,142 @@
         },
         "script.MigrateEsResponse": {
             "type": "object"
+        },
+        "script.Script": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "type": "integer"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.ScriptCategoryList"
+                    }
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "score_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "$ref": "#/definitions/script.ScriptCode"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "today_install": {
+                    "type": "integer"
+                },
+                "total_install": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.ScriptCategoryList": {
+            "type": "object",
+            "properties": {
+                "createtime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "num": {
+                    "description": "本分类下脚本数量",
+                    "type": "integer"
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.ScriptCode": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "changelog": {
+                    "type": "string"
+                },
+                "code,omitempty": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "definition,omitempty": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "meta,omitempty": {
+                    "type": "string"
+                },
+                "meta_json": {
+                    "type": "object"
+                },
+                "script_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
         },
         "script.UpdateCodeRequest": {
             "type": "object",
@@ -559,6 +802,20 @@
                 },
                 "uid": {
                     "type": "integer"
+                }
+            }
+        },
+        "user_entity.UserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

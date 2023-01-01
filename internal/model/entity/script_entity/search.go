@@ -39,6 +39,7 @@ PUT _index_template/scriptlist.script
 }
 */
 
+// ScriptSearch es中储存的数据
 type ScriptSearch struct {
 	ID            int64         `json:"id"`
 	UserID        int64         `json:"user_id"`

@@ -6,7 +6,7 @@ import (
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/scriptscat/scriptlist/internal/model/entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )
@@ -18,7 +18,7 @@ const (
 )
 
 type Sender interface {
-	Send(ctx context.Context, user *entity.User, content string, options *sendOptions) error
+	Send(ctx context.Context, user *user_entity.User, content string, options *sendOptions) error
 }
 
 type mail struct {
@@ -31,7 +31,7 @@ type mailConfig struct {
 	Password string
 }
 
-func (m *mail) Send(ctx context.Context, user *entity.User, content string, options *sendOptions) error {
+func (m *mail) Send(ctx context.Context, user *user_entity.User, content string, options *sendOptions) error {
 	config := &mailConfig{}
 	if err := configs.Default().Scan("mail", config); err != nil {
 		return err

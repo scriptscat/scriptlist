@@ -8,11 +8,54 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 )
 
-type Item struct {
-	ID int64 `json:"id"`
+type Script struct {
+	Script               *ScriptCode `json:"script"`
+	ID                   int64       `json:"id"`
+	user_entity.UserInfo `json:",inline"`
+	PostID               int64                 `json:"post_id"`
+	Name                 string                `json:"name"`
+	Description          string                `json:"description"`
+	Category             []*ScriptCategoryList `json:"category"`
+	Status               int64                 `json:"status"`
+	Score                int64                 `json:"score"`
+	ScoreNum             int64                 `json:"score_num"`
+	Type                 int                   `json:"type"`
+	Public               int                   `json:"public"`
+	Unwell               int                   `json:"unwell"`
+	Archive              int32                 `json:"archive"`
+	TodayInstall         int64                 `json:"today_install"`
+	TotalInstall         int64                 `json:"total_install"`
+	Createtime           int64                 `json:"createtime"`
+	Updatetime           int64                 `json:"updatetime"`
+}
+
+// ScriptCategoryList 拥有的分类列表
+type ScriptCategoryList struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	// 本分类下脚本数量
+	Num        int64 `json:"num"`
+	Sort       int32 `json:"sort"`
+	Createtime int64 `json:"createtime"`
+	Updatetime int64 `json:"updatetime"`
+}
+
+type ScriptCode struct {
+	ID                   int64 `json:"id" form:"id"`
+	user_entity.UserInfo `json:",inline"`
+	Meta                 string      `json:"meta,omitempty"`
+	MetaJson             interface{} `json:"meta_json"`
+	ScriptID             int64       `json:"script_id"`
+	Version              string      `json:"version"`
+	Changelog            string      `json:"changelog"`
+	Status               int64       `json:"status"`
+	Createtime           int64       `json:"createtime"`
+	Code                 string      `json:"code,omitempty"`
+	Definition           string      `json:"definition,omitempty"`
 }
 
 // ListRequest 获取脚本列表
@@ -20,12 +63,12 @@ type ListRequest struct {
 	mux.Meta              `path:"/scripts" method:"GET"`
 	httputils.PageRequest `form:",inline"`
 	Keyword               string `form:"keyword"`
-	Type                  int    `form:"type,default=1" binding:"oneof=1 2 3 4"` // 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
+	Type                  int    `form:"type,default=0" binding:"oneof=0 1 2 3 4"` // 0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
 	Sort                  string `form:"sort,default=today_download" binding:"oneof=today_download total_download score createtime updatetime"`
 }
 
 type ListResponse struct {
-	httputils.PageResponse[*Item] `json:",inline"`
+	httputils.PageResponse[*Script] `json:",inline"`
 }
 
 // CreateRequest 创建脚本
@@ -84,4 +127,14 @@ type MigrateEsRequest struct {
 }
 
 type MigrateEsResponse struct {
+}
+
+// InfoRequest 获取脚本信息
+type InfoRequest struct {
+	mux.Meta `path:"/scripts/:id" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type InfoResponse struct {
+	*Script `json:",inline"`
 }

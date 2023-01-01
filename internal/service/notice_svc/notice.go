@@ -6,7 +6,7 @@ import (
 	"errors"
 	"html/template"
 
-	"github.com/scriptscat/scriptlist/internal/model/entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 )
 
@@ -43,7 +43,7 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 		return errors.New("template not found")
 	}
 	var err error
-	var from *entity.User
+	var from *user_entity.User
 	if opts.from != 0 {
 		from, err = user_repo.User().Find(ctx, opts.from)
 		if err != nil {

@@ -1,8 +1,9 @@
-package entity
+package user_entity
 
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
@@ -50,4 +51,22 @@ func (u *User) IsBanned(ctx context.Context) error {
 		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserIsBanned)
 	}
 	return nil
+}
+
+func (u *User) Avatar() string {
+	return "/api/v2/user/avatar/" + strconv.FormatInt(u.UID, 10)
+}
+
+func (u *User) UserInfo() UserInfo {
+	return UserInfo{
+		UserID:   u.UID,
+		Username: u.Username,
+		Avatar:   u.Avatar(),
+	}
+}
+
+type UserInfo struct {
+	UserID   int64  `json:"user_id"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
 }

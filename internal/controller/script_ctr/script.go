@@ -183,3 +183,8 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 	ctx.Writer.WriteHeader(http.StatusOK)
 	_, _ = ctx.Writer.WriteString(code.Meta)
 }
+
+// Info 获取脚本信息
+func (s *Script) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
+	return script_svc.Script().Info(ctx, req)
+}
