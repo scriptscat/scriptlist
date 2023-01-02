@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/logger"
@@ -51,6 +52,9 @@ func (e *esSync) syncScript(ctx context.Context, event broker.Event, update bool
 	if err != nil {
 		logger.Ctx(ctx).Error("ParseScriptCreateMsg", zap.Error(err), zap.Binary("body", event.Message().Body))
 		return err
+	}
+	if msg.Script == nil {
+		return errors.New("script is nil")
 	}
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.Script.ID), zap.Bool("update", update))
 	search, err := script_repo.Migrate().Convert(ctx, msg.Script)

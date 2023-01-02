@@ -18,7 +18,7 @@ func PublishScriptStatistics(ctx context.Context, msg *ScriptStatisticsMsg) erro
 	if err != nil {
 		return err
 	}
-	return broker.Default().Publish(ctx, ScriptCreateTopic, &broker2.Message{
+	return broker.Default().Publish(ctx, ScriptStatisticTopic, &broker2.Message{
 		Body: body,
 	})
 }

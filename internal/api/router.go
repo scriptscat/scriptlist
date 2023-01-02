@@ -29,6 +29,7 @@ func Router(root *mux.Router) error {
 		r.Group("/", auth.Middleware(true)).Bind(
 			controller.CurrentUser, // 获取当前用户信息
 		)
+		r.GET("/user/avatar/:uid", controller.Avatar())
 		r.Group("/").Bind(
 			controller.Info, // 获取用户信息
 		)
@@ -41,12 +42,21 @@ func Router(root *mux.Router) error {
 			controller.Create,
 			controller.UpdateCode,
 			controller.MigrateEs,
+			controller.Watch,
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), controller.Download())
 		// 无需用户登录的路由组
 		r.Group("/").Bind(
 			controller.List,
+			controller.Info,
+			controller.Code,
+			controller.VersionList,
+			controller.VersionCode,
+		)
+		// 半登录
+		r.Group("/", auth.Middleware(false)).Bind(
+			controller.State,
 		)
 	}
 	return nil

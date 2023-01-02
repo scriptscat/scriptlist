@@ -27,6 +27,64 @@ definitions:
       total:
         type: integer
     type: object
+  model.AdminLevel:
+    description: |-
+      AdminLevel enum type:
+      - Admin: 1
+      - SuperModerator: 2
+      - Moderator: 3
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+  script.CodeResponse:
+    properties:
+      archive:
+        type: integer
+      avatar:
+        type: string
+      category:
+        items:
+          $ref: '#/definitions/script.ScriptCategoryList'
+        type: array
+      content,omitempty:
+        type: string
+      createtime:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      post_id:
+        type: integer
+      public:
+        type: integer
+      score:
+        type: integer
+      score_num:
+        type: integer
+      script:
+        $ref: '#/definitions/script.ScriptCode'
+      status:
+        type: integer
+      today_install:
+        type: integer
+      total_install:
+        type: integer
+      type:
+        type: integer
+      unwell:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
   script.CreateRequest:
     properties:
       changelog:
@@ -68,6 +126,8 @@ definitions:
         items:
           $ref: '#/definitions/script.ScriptCategoryList'
         type: array
+      content,omitempty:
+        type: string
       createtime:
         type: integer
       description:
@@ -127,6 +187,8 @@ definitions:
         items:
           $ref: '#/definitions/script.ScriptCategoryList'
         type: array
+      content,omitempty:
+        type: string
       createtime:
         type: integer
       description:
@@ -207,6 +269,11 @@ definitions:
       version:
         type: string
     type: object
+  script.StateResponse:
+    properties:
+      watch:
+        $ref: '#/definitions/script_entity.ScriptWatchLevel'
+    type: object
   script.UpdateCodeRequest:
     properties:
       changelog:
@@ -232,6 +299,72 @@ definitions:
     type: object
   script.UpdateCodeResponse:
     type: object
+  script.VersionCodeResponse:
+    properties:
+      archive:
+        type: integer
+      avatar:
+        type: string
+      category:
+        items:
+          $ref: '#/definitions/script.ScriptCategoryList'
+        type: array
+      content,omitempty:
+        type: string
+      createtime:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      post_id:
+        type: integer
+      public:
+        type: integer
+      score:
+        type: integer
+      score_num:
+        type: integer
+      script:
+        $ref: '#/definitions/script.ScriptCode'
+      status:
+        type: integer
+      today_install:
+        type: integer
+      total_install:
+        type: integer
+      type:
+        type: integer
+      unwell:
+        type: integer
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  script.VersionListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Script'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  script.WatchRequest:
+    properties:
+      id:
+        type: integer
+      watch:
+        $ref: '#/definitions/script_entity.ScriptWatchLevel'
+    type: object
+  script.WatchResponse:
+    type: object
   script_entity.Public:
     description: |-
       Public enum type:
@@ -240,6 +373,19 @@ definitions:
     enum:
     - 1
     - 2
+    type: integer
+  script_entity.ScriptWatchLevel:
+    description: |-
+      ScriptWatchLevel enum type:
+      - ScriptWatchLevelNone: 1
+      - ScriptWatchLevelVersion: 2
+      - ScriptWatchLevelIssue: 3
+      - ScriptWatchLevelIssueComment: 4
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
     type: integer
   script_entity.Type:
     description: |-
@@ -265,6 +411,10 @@ definitions:
     properties:
       avatar:
         type: string
+      email_status:
+        type: integer
+      is_admin:
+        $ref: '#/definitions/model.AdminLevel'
       uid:
         type: integer
       username:
@@ -274,6 +424,10 @@ definitions:
     properties:
       avatar:
         type: string
+      email_status:
+        type: integer
+      is_admin:
+        $ref: '#/definitions/model.AdminLevel'
       uid:
         type: integer
       username:
@@ -342,7 +496,7 @@ paths:
         type: string
       - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
-        name: type,default=0
+        name: script_type,default=0
         type: integer
       - in: query
         name: sort,default=today_download
@@ -427,12 +581,42 @@ paths:
       tags:
       - script
   /scripts/{id}/code:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本代码信息
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本代码信息
+      tags:
+      - script
     put:
       consumes:
       - application/json
       description: 更新脚本/库代码
       parameters:
-      - name: id
+      - in: path
+        name: id
         required: true
         type: integer
       - in: body
@@ -457,6 +641,134 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新脚本/库代码
+      tags:
+      - script
+  /scripts/{id}/state:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本状态,脚本关注等
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.StateResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本状态,脚本关注等
+      tags:
+      - script
+  /scripts/{id}/versions:
+    get:
+      consumes:
+      - application/json
+      description: 获取版本列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.VersionListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取版本列表
+      tags:
+      - script
+  /scripts/{id}/versions/{version}/code:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定版本代码
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.VersionCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取指定版本代码
+      tags:
+      - script
+  /scripts/{id}/watch:
+    post:
+      consumes:
+      - application/json
+      description: 关注脚本
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.WatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.WatchResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 关注脚本
       tags:
       - script
   /scripts/migrate/es:

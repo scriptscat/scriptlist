@@ -1,6 +1,9 @@
 package user
 
-import "github.com/codfrm/cago/server/mux"
+import (
+	"github.com/codfrm/cago/server/mux"
+	"github.com/scriptscat/scriptlist/internal/model"
+)
 
 // CurrentUserRequest 获取当前登录的用户信息
 type CurrentUserRequest struct {
@@ -18,7 +21,9 @@ type InfoRequest struct {
 }
 
 type InfoResponse struct {
-	UID      int64  `json:"uid"`
-	Username string `json:"username"`
-	Avatar   string `json:"avatar"`
+	UID         int64            `json:"uid"`
+	Username    string           `json:"username"`
+	Avatar      string           `json:"avatar"`
+	IsAdmin     model.AdminLevel `json:"is_admin"`
+	EmailStatus int64            `json:"email_status"`
 }

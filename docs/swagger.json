@@ -79,7 +79,7 @@
                     {
                         "type": "integer",
                         "description": "0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
-                        "name": "type,default=0",
+                        "name": "script_type,default=0",
                         "in": "query"
                     },
                     {
@@ -256,6 +256,51 @@
             }
         },
         "/scripts/{id}/code": {
+            "get": {
+                "description": "获取脚本代码信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本代码信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "更新脚本/库代码",
                 "consumes": [
@@ -272,6 +317,7 @@
                     {
                         "type": "integer",
                         "name": "id",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -292,6 +338,207 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.UpdateCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/state": {
+            "get": {
+                "description": "获取脚本状态,脚本关注等",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本状态,脚本关注等",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.StateResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/versions": {
+            "get": {
+                "description": "获取版本列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取版本列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.VersionListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/versions/{version}/code": {
+            "get": {
+                "description": "获取指定版本代码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取指定版本代码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.VersionCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/watch": {
+            "post": {
+                "description": "关注脚本",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "关注脚本",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.WatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.WatchResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -436,6 +683,86 @@
                 }
             }
         },
+        "model.AdminLevel": {
+            "description": "AdminLevel enum type:\n- Admin: 1\n- SuperModerator: 2\n- Moderator: 3",
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ]
+        },
+        "script.CodeResponse": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "type": "integer"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.ScriptCategoryList"
+                    }
+                },
+                "content,omitempty": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "score_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "$ref": "#/definitions/script.ScriptCode"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "today_install": {
+                    "type": "integer"
+                },
+                "total_install": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "script.CreateRequest": {
             "type": "object",
             "properties": {
@@ -496,6 +823,9 @@
                     "items": {
                         "$ref": "#/definitions/script.ScriptCategoryList"
                     }
+                },
+                "content,omitempty": {
+                    "type": "string"
                 },
                 "createtime": {
                     "type": "integer"
@@ -585,6 +915,9 @@
                     "items": {
                         "$ref": "#/definitions/script.ScriptCategoryList"
                     }
+                },
+                "content,omitempty": {
+                    "type": "string"
                 },
                 "createtime": {
                     "type": "integer"
@@ -707,6 +1040,14 @@
                 }
             }
         },
+        "script.StateResponse": {
+            "type": "object",
+            "properties": {
+                "watch": {
+                    "$ref": "#/definitions/script_entity.ScriptWatchLevel"
+                }
+            }
+        },
         "script.UpdateCodeRequest": {
             "type": "object",
             "properties": {
@@ -741,12 +1082,122 @@
         "script.UpdateCodeResponse": {
             "type": "object"
         },
+        "script.VersionCodeResponse": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "type": "integer"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.ScriptCategoryList"
+                    }
+                },
+                "content,omitempty": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "post_id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "score_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "$ref": "#/definitions/script.ScriptCode"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "today_install": {
+                    "type": "integer"
+                },
+                "total_install": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.VersionListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Script"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.WatchRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "watch": {
+                    "$ref": "#/definitions/script_entity.ScriptWatchLevel"
+                }
+            }
+        },
+        "script.WatchResponse": {
+            "type": "object"
+        },
         "script_entity.Public": {
             "description": "Public enum type:\n- PublicScript: 1\n- PrivateScript: 2",
             "type": "integer",
             "enum": [
                 1,
                 2
+            ]
+        },
+        "script_entity.ScriptWatchLevel": {
+            "description": "ScriptWatchLevel enum type:\n- ScriptWatchLevelNone: 1\n- ScriptWatchLevelVersion: 2\n- ScriptWatchLevelIssue: 3\n- ScriptWatchLevelIssueComment: 4",
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                4
             ]
         },
         "script_entity.Type": {
@@ -772,6 +1223,12 @@
                 "avatar": {
                     "type": "string"
                 },
+                "email_status": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "$ref": "#/definitions/model.AdminLevel"
+                },
                 "uid": {
                     "type": "integer"
                 },
@@ -785,6 +1242,12 @@
             "properties": {
                 "avatar": {
                     "type": "string"
+                },
+                "email_status": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "$ref": "#/definitions/model.AdminLevel"
                 },
                 "uid": {
                     "type": "integer"

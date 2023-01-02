@@ -38,6 +38,7 @@ func main() {
 	script_repo.RegisterScriptCategoryList(script_repo.NewScriptCategoryListRepo())
 	script_repo.RegisterMigrate(script_repo.NewMigrateRepo())
 	script_repo.RegisterLibDefinition(script_repo.NewLibDefinitionRepo())
+	script_repo.RegisterScriptWatch(script_repo.NewScriptWatchRepo())
 
 	script_statistics_repo.RegisterScriptDateStatistics(script_statistics_repo.NewScriptDateStatistics())
 	script_statistics_repo.RegisterScriptStatistics(script_statistics_repo.NewScriptStatistics())

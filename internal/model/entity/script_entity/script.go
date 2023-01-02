@@ -3,6 +3,7 @@ package script_entity
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -41,6 +42,13 @@ const (
 	SyncModeManual                     // 手动同步
 )
 
+type ScriptArchive int
+
+const (
+	IsActive ScriptArchive = iota
+	IsArchive
+)
+
 type Script struct {
 	ID            int64         `gorm:"column:id;type:bigint(20);not null;primary_key"`
 	PostID        int64         `gorm:"column:post_id;type:bigint(20);index:post_id"`
@@ -55,7 +63,7 @@ type Script struct {
 	ContentUrl    string        `gorm:"column:content_url;type:text;index:content_url"`
 	DefinitionUrl string        `gorm:"column:definition_url;type:text;index:definition_url"`
 	SyncMode      SyncMode      `gorm:"column:sync_mode;type:tinyint(2)"`
-	Archive       int32         `gorm:"column:archive;type:tinyint(2)"`
+	Archive       ScriptArchive `gorm:"column:archive;type:tinyint(2)"`
 	Status        int64         `gorm:"column:status;type:bigint(20)"`
 	Createtime    int64         `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime    int64         `gorm:"column:updatetime;type:bigint(20)"`
@@ -65,15 +73,20 @@ func (s *Script) TableName() string {
 	return "cdb_tampermonkey_script"
 }
 
+// CheckOperate 检查是否可以操作
+func (s *Script) CheckOperate(ctx context.Context) error {
+	if s.Status != consts.ACTIVE {
+		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptNotActive)
+	}
+	return nil
+}
+
 // CheckPermission 检查操作权限
 func (s *Script) CheckPermission(ctx context.Context) error {
 	if s.UserID != user_svc.Auth().Get(ctx).UID {
-		return i18n.NewError(ctx, code.UserNotPermission)
+		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserNotPermission)
 	}
-	if s.Status != consts.ACTIVE {
-		return i18n.NewError(ctx, code.ScriptNotActive)
-	}
-	return nil
+	return s.CheckOperate(ctx)
 }
 
 type Code struct {

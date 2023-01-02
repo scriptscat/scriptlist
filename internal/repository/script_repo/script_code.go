@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
@@ -15,6 +16,7 @@ type ScriptCodeRepo interface {
 
 	FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error)
 	FindLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error)
+	List(ctx context.Context, id int64, request httputils.PageRequest) ([]*entity.Code, int64, error)
 }
 
 var defaultScriptCode ScriptCodeRepo
@@ -86,4 +88,18 @@ func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64, withcod
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (u *scriptCodeRepo) List(ctx context.Context, id int64, request httputils.PageRequest) ([]*entity.Code, int64, error) {
+	list := make([]*entity.Code, 0)
+	q := db.Ctx(ctx).Where("script_id=?", id)
+	q = q.Select((&entity.Code{}).Fields())
+	if err := q.Order("createtime desc").Offset(request.GetOffset()).Limit(request.GetLimit()).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, total, nil
 }

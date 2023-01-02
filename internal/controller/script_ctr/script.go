@@ -109,10 +109,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 	}
 	version := ctx.Query("version")
 	if version == "" {
-		version = ctx.Param("version")
-	}
-	if version == "latest" {
-		version = ""
+		version = "latest"
 	}
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
@@ -187,4 +184,29 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 // Info 获取脚本信息
 func (s *Script) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
 	return script_svc.Script().Info(ctx, req)
+}
+
+// Code 获取脚本代码
+func (s *Script) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeResponse, error) {
+	return script_svc.Script().Code(ctx, req)
+}
+
+// VersionList 获取版本列表
+func (s *Script) VersionList(ctx context.Context, req *api.VersionListRequest) (*api.VersionListResponse, error) {
+	return script_svc.Script().VersionList(ctx, req)
+}
+
+// VersionCode 获取指定版本代码
+func (s *Script) VersionCode(ctx context.Context, req *api.VersionCodeRequest) (*api.VersionCodeResponse, error) {
+	return script_svc.Script().VersionCode(ctx, req)
+}
+
+// State 获取脚本状态,脚本关注等
+func (s *Script) State(ctx context.Context, req *api.StateRequest) (*api.StateResponse, error) {
+	return script_svc.Script().State(ctx, req)
+}
+
+// Watch 关注脚本
+func (s *Script) Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error) {
+	return script_svc.Script().Watch(ctx, req)
 }

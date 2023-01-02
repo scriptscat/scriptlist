@@ -36,6 +36,16 @@ type ScriptSvc interface {
 	GetCode(ctx context.Context, id int64, version string) (*entity.Code, error)
 	// Info 获取脚本信息
 	Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error)
+	// Code 获取脚本代码
+	Code(ctx context.Context, req *api.CodeRequest) (*api.CodeResponse, error)
+	// VersionList 获取版本列表
+	VersionList(ctx context.Context, req *api.VersionListRequest) (*api.VersionListResponse, error)
+	// VersionCode 获取指定版本代码
+	VersionCode(ctx context.Context, req *api.VersionCodeRequest) (*api.VersionCodeResponse, error)
+	// State 脚本关注等
+	State(ctx context.Context, req *api.StateRequest) (*api.StateResponse, error)
+	// Watch 关注脚本
+	Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error)
 }
 
 type scriptSvc struct {
@@ -51,7 +61,7 @@ func Script() ScriptSvc {
 func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
 	resp, total, err := script_repo.Script().Search(ctx, &script_repo.SearchOptions{
 		Keyword:  req.Keyword,
-		Type:     req.Type,
+		Type:     req.ScriptType,
 		Sort:     req.Sort,
 		Category: make([]int64, 0),
 	}, req.PageRequest)
@@ -60,7 +70,7 @@ func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListRe
 	}
 	list := make([]*api.Script, 0)
 	for _, item := range resp {
-		data, err := s.script(ctx, item, false)
+		data, err := s.script(ctx, item, false, "")
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +84,7 @@ func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListRe
 	}, nil
 }
 
-func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bool) (*api.Script, error) {
+func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bool, version string) (*api.Script, error) {
 	data := &api.Script{
 		ID:          item.ID,
 		UserInfo:    user_entity.UserInfo{},
@@ -85,7 +95,7 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 		Type:        int(item.Type),
 		Public:      int(item.Public),
 		Unwell:      int(item.Unwell),
-		Archive:     item.Archive,
+		Archive:     int(item.Archive),
 		Createtime:  item.Createtime,
 		Updatetime:  item.Updatetime,
 	}
@@ -105,27 +115,52 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 		data.Score = statistics.Score
 		data.ScoreNum = statistics.ScoreCount
 	}
-	code, err := script_repo.ScriptCode().FindLatest(ctx, item.ID, withcode)
+	var scriptCode *entity.Code
+	if version == "" {
+		scriptCode, err = script_repo.ScriptCode().FindLatest(ctx, item.ID, withcode)
+	} else {
+		scriptCode, err = script_repo.ScriptCode().FindByVersion(ctx, item.ID, version, withcode)
+	}
 	if err != nil {
 		logger.Ctx(ctx).Error("获取脚本代码失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
-	if code != nil {
-		metaJson := make(map[string]interface{})
-		if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
-			logger.Ctx(ctx).Error("json解析失败", zap.Error(err), zap.String("meta", code.MetaJson))
+	if scriptCode == nil {
+		return nil, i18n.NewError(ctx, code.ScriptNotFound)
+	}
+	data.Script = s.scriptCode(ctx, scriptCode)
+	list, err := script_repo.ScriptCategory().List(ctx, item.ID)
+	data.Category = make([]*api.ScriptCategoryList, 0)
+	for _, v := range list {
+		category, err := script_repo.ScriptCategoryList().Find(ctx, v.CategoryID)
+		if err != nil {
+			logger.Ctx(ctx).Error("获取分类信息失败", zap.Error(err), zap.Int64("category_id", v.CategoryID))
 		}
-		data.Script = &api.ScriptCode{
-			ID:         code.ID,
-			MetaJson:   metaJson,
-			ScriptID:   code.ScriptID,
-			Version:    code.Version,
-			Changelog:  code.Changelog,
-			Status:     code.Status,
-			Createtime: code.Createtime,
-			Code:       code.Code,
+		if category != nil {
+			data.Category = append(data.Category, &api.ScriptCategoryList{
+				ID:   category.ID,
+				Name: category.Name,
+			})
 		}
 	}
 	return data, nil
+}
+
+func (s *scriptSvc) scriptCode(ctx context.Context, code *entity.Code) *api.ScriptCode {
+	metaJson := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+		logger.Ctx(ctx).Error("json解析失败", zap.Error(err), zap.String("meta", code.MetaJson))
+	}
+	ret := &api.ScriptCode{
+		ID:         code.ID,
+		MetaJson:   metaJson,
+		ScriptID:   code.ScriptID,
+		Version:    code.Version,
+		Changelog:  code.Changelog,
+		Status:     code.Status,
+		Createtime: code.Createtime,
+		Code:       code.Code,
+	}
+	return ret
 }
 
 // Create 创建脚本
@@ -223,11 +258,10 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 		return nil, err
 	}
 	scriptCode := &entity.Code{
-		UserID:     user_svc.Auth().Get(ctx).UID,
-		ScriptID:   script.ID,
-		Changelog:  req.Changelog,
-		Status:     consts.ACTIVE,
-		Createtime: time.Now().Unix(),
+		UserID:    user_svc.Auth().Get(ctx).UID,
+		ScriptID:  script.ID,
+		Changelog: req.Changelog,
+		Status:    consts.ACTIVE,
 	}
 	var definition *entity.LibDefinition
 	if script.Type == entity.LibraryType {
@@ -264,14 +298,18 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 				return nil, i18n.NewError(ctx, code.ScriptVersionExist)
 			}
 			scriptCode.ID = oldVersion.ID
+			scriptCode.Createtime = oldVersion.Createtime
 		} else {
 			script.Updatetime = time.Now().Unix()
+			scriptCode.Createtime = time.Now().Unix()
 		}
 		// 更新名字和描述
 		script.Name = metaJson["name"][0]
 		script.Description = metaJson["description"][0]
 	}
-
+	script.Content = req.Content
+	script.Public = req.Public
+	script.Unwell = req.Unwell
 	// 保存数据库并发送消息
 	if err := script_repo.Script().Update(ctx, script); err != nil {
 		logger.Ctx(ctx).Error("scriptSvc update failed", zap.Error(err))
@@ -367,11 +405,92 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 	if err != nil {
 		return nil, err
 	}
-	script, err := s.script(ctx, m, true)
+	script, err := s.script(ctx, m, false, "")
 	if err != nil {
 		return nil, err
 	}
+	script.Content = m.Content
 	return &api.InfoResponse{
 		Script: script,
 	}, nil
+}
+
+// Code 获取脚本代码
+func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	script, err := s.script(ctx, m, true, "")
+	if err != nil {
+		return nil, err
+	}
+	script.Content = m.Content
+	return &api.CodeResponse{
+		Script: script,
+	}, nil
+}
+
+// VersionList 获取版本列表
+func (s *scriptSvc) VersionList(ctx context.Context, req *api.VersionListRequest) (*api.VersionListResponse, error) {
+	list, total, err := script_repo.ScriptCode().List(ctx, req.ID, req.PageRequest)
+	if err != nil {
+		return nil, err
+	}
+	ret := &api.VersionListResponse{
+		PageResponse: httputils.PageResponse[*api.ScriptCode]{
+			Total: total,
+			List:  make([]*api.ScriptCode, len(list)),
+		},
+	}
+	for n, v := range list {
+		ret.List[n] = s.scriptCode(ctx, v)
+	}
+	return ret, nil
+}
+
+// VersionCode 获取指定版本代码
+func (s *scriptSvc) VersionCode(ctx context.Context, req *api.VersionCodeRequest) (*api.VersionCodeResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	script, err := s.script(ctx, m, true, req.Version)
+	if err != nil {
+		return nil, err
+	}
+	return &api.VersionCodeResponse{
+		Script: script,
+	}, nil
+}
+
+// State 获取脚本状态,脚本关注等
+func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.StateResponse, error) {
+	var err error
+	user := user_svc.Auth().Get(ctx)
+	var watch entity.ScriptWatchLevel
+	if user != nil {
+		watch, err = script_repo.ScriptWatch().IsWatch(ctx, req.ID, user.UID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &api.StateResponse{
+		Watch: watch,
+	}, nil
+}
+
+// Watch 关注脚本
+func (s *scriptSvc) Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	if err := script_repo.ScriptWatch().Watch(ctx, req.ID, user_svc.Auth().Get(ctx).UID, req.Watch); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }

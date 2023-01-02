@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"regexp"
 	"time"
 
@@ -68,6 +69,9 @@ func (s *script) scriptCreateHandler(ctx context.Context, event broker.Event) er
 			Error("json.Unmarshal", zap.Error(err), zap.String("body", string(event.Message().Body)))
 		return err
 	}
+	if msg.Script == nil {
+		return errors.New("script is nil")
+	}
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.Script.ID))
 
 	// 根据meta信息, 将脚本分类到后台脚本, 定时脚本, 用户脚本
@@ -96,6 +100,11 @@ func (s *script) scriptCreateHandler(ctx context.Context, event broker.Event) er
 			logger.Error("LinkCategory", zap.Error(err))
 			return err
 		}
+	}
+
+	// 关注自己脚本
+	if err := script_repo2.ScriptWatch().Watch(ctx, msg.Script.ID, msg.Script.UserID, entity.ScriptWatchLevelIssueComment); err != nil {
+		logger.Error("Watch", zap.Error(err))
 	}
 
 	// TODO: 发送邮件通知

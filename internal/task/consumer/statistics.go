@@ -25,6 +25,6 @@ func (e *statistics) scriptStatistics(ctx context.Context, event broker.Event) e
 		return err
 	}
 	// TODO: 记录统计数据
-	fmt.Sprintf("msg: %+v", msg)
+	fmt.Printf("msg: %+v", msg)
 	return nil
 }

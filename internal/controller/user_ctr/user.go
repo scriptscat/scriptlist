@@ -2,6 +2,8 @@ package user_ctr
 
 import (
 	"context"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -52,4 +54,24 @@ func (u *User) CurrentUser(gctx *gin.Context, req *api.CurrentUserRequest) (*api
 // Info 获取指定用户信息
 func (u *User) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
 	return user_svc.User().UserInfo(ctx, req.UID)
+}
+
+// Avatar 获取用户头像
+func (u *User) Avatar() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		uid := ctx.Param("uid")
+		resp, err := http.Get("https://bbs.tampermonkey.net.cn/uc_server/avatar.php?uid=" + uid + "&size=middle")
+		if err != nil {
+			ctx.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		defer resp.Body.Close()
+		ctx.Writer.Header().Set("content-type", "image/jpeg")
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			ctx.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		ctx.Writer.Write(b)
+	}
 }

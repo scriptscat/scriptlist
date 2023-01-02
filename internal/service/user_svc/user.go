@@ -5,6 +5,7 @@ import (
 
 	"github.com/codfrm/cago/pkg/i18n"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
+	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 )
@@ -33,8 +34,10 @@ func (u *userSvc) UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, e
 		return nil, i18n.NewError(ctx, code.UserNotFound)
 	}
 	return &api.InfoResponse{
-		UID:      user.UID,
-		Username: user.Username,
-		Avatar:   user.Avatar(),
+		UID:         user.UID,
+		Username:    user.Username,
+		Avatar:      user.Avatar(),
+		IsAdmin:     model.AdminLevel(user.Adminid),
+		EmailStatus: user.Emailstatus,
 	}, nil
 }

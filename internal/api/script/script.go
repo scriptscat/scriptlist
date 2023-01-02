@@ -20,13 +20,14 @@ type Script struct {
 	Name                 string                `json:"name"`
 	Description          string                `json:"description"`
 	Category             []*ScriptCategoryList `json:"category"`
+	Content              string                `json:"content,omitempty"`
 	Status               int64                 `json:"status"`
 	Score                int64                 `json:"score"`
 	ScoreNum             int64                 `json:"score_num"`
 	Type                 int                   `json:"type"`
 	Public               int                   `json:"public"`
 	Unwell               int                   `json:"unwell"`
-	Archive              int32                 `json:"archive"`
+	Archive              int                   `json:"archive"`
 	TodayInstall         int64                 `json:"today_install"`
 	TotalInstall         int64                 `json:"total_install"`
 	Createtime           int64                 `json:"createtime"`
@@ -63,7 +64,7 @@ type ListRequest struct {
 	mux.Meta              `path:"/scripts" method:"GET"`
 	httputils.PageRequest `form:",inline"`
 	Keyword               string `form:"keyword"`
-	Type                  int    `form:"type,default=0" binding:"oneof=0 1 2 3 4"` // 0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
+	ScriptType            int    `form:"script_type,default=0" binding:"oneof=0 1 2 3 4"` // 0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
 	Sort                  string `form:"sort,default=today_download" binding:"oneof=today_download total_download score createtime updatetime"`
 }
 
@@ -137,4 +138,56 @@ type InfoRequest struct {
 
 type InfoResponse struct {
 	*Script `json:",inline"`
+}
+
+// CodeRequest 获取脚本代码信息
+type CodeRequest struct {
+	mux.Meta `path:"/scripts/:id/code" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type CodeResponse struct {
+	*Script `json:",inline"`
+}
+
+// VersionListRequest 获取版本列表
+type VersionListRequest struct {
+	mux.Meta              `path:"/scripts/:id/versions" method:"GET"`
+	httputils.PageRequest `form:",inline"`
+	ID                    int64 `uri:"id" binding:"required"`
+}
+
+type VersionListResponse struct {
+	httputils.PageResponse[*ScriptCode] `json:",inline"`
+}
+
+// VersionCodeRequest 获取指定版本代码
+type VersionCodeRequest struct {
+	mux.Meta `path:"/scripts/:id/versions/:version/code" method:"GET"`
+	ID       int64  `uri:"id" binding:"required"`
+	Version  string `uri:"version" binding:"required"`
+}
+
+type VersionCodeResponse struct {
+	*Script `json:",inline"`
+}
+
+// StateRequest 获取脚本状态,脚本关注等
+type StateRequest struct {
+	mux.Meta `path:"/scripts/:id/state" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type StateResponse struct {
+	Watch script_entity.ScriptWatchLevel `json:"watch"`
+}
+
+// WatchRequest 关注脚本
+type WatchRequest struct {
+	mux.Meta `path:"/scripts/:id/watch" method:"POST"`
+	ID       int64                          `uri:"id" binding:"required"`
+	Watch    script_entity.ScriptWatchLevel `json:"watch" binding:"required,oneof=0 1 2 3"`
+}
+
+type WatchResponse struct {
 }
