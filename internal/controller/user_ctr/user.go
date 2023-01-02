@@ -62,16 +62,16 @@ func (u *User) Avatar() gin.HandlerFunc {
 		uid := ctx.Param("uid")
 		resp, err := http.Get("https://bbs.tampermonkey.net.cn/uc_server/avatar.php?uid=" + uid + "&size=middle")
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			_ = ctx.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 		defer resp.Body.Close()
 		ctx.Writer.Header().Set("content-type", "image/jpeg")
 		b, err := io.ReadAll(resp.Body)
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			_ = ctx.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		ctx.Writer.Write(b)
+		_, _ = ctx.Writer.Write(b)
 	}
 }

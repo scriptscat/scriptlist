@@ -32,21 +32,6 @@ func (e *esSync) scriptCreateHandler(ctx context.Context, event broker.Event) er
 	return e.syncScript(ctx, event, false)
 }
 
-// 查询脚本下载量
-func (e *esSync) queryDownload(ctx context.Context, id int64) (int64, int64, error) {
-	return 0, 0, nil
-}
-
-// 查询脚本分数
-func (e *esSync) queryScore(ctx context.Context, id int64) (float64, error) {
-	return 0, nil
-}
-
-func (e *esSync) queryDomain(ctx context.Context, id int64) ([]string, error) {
-
-	return nil, nil
-}
-
 func (e *esSync) syncScript(ctx context.Context, event broker.Event, update bool) error {
 	msg, err := producer.ParseScriptCreateMsg(event.Message())
 	if err != nil {

@@ -129,6 +129,9 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 	}
 	data.Script = s.scriptCode(ctx, scriptCode)
 	list, err := script_repo.ScriptCategory().List(ctx, item.ID)
+	if err != nil {
+		logger.Ctx(ctx).Error("获取脚本分类失败", zap.Error(err), zap.Int64("script_id", item.ID))
+	}
 	data.Category = make([]*api.ScriptCategoryList, 0)
 	for _, v := range list {
 		category, err := script_repo.ScriptCategoryList().Find(ctx, v.CategoryID)
