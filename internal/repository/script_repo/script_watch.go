@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/codfrm/cago/database/redis"
-	goRedis "github.com/go-redis/redis/v9"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
@@ -71,7 +70,7 @@ func (w *scriptWatchRepo) Unwatch(ctx context.Context, script, user int64) error
 func (w *scriptWatchRepo) IsWatch(ctx context.Context, script, user int64) (script_entity.ScriptWatchLevel, error) {
 	ret, err := redis.Ctx(ctx).HGet(w.key(script), strconv.FormatInt(user, 10)).Int()
 	if err != nil {
-		if err == goRedis.Nil {
+		if redis.Nil(err) {
 			return 0, nil
 		}
 		return 0, err

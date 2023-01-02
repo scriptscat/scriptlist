@@ -3,8 +3,7 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
-	github.com/codfrm/cago v0.0.0-20221231113737-4f6d63965df0
-	github.com/elastic/go-elasticsearch/v8 v8.5.0
+	github.com/codfrm/cago v0.0.0-20230102161244-e4fa234819c6
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
@@ -18,8 +17,6 @@ require (
 	gorm.io/gorm v1.24.1
 )
 
-replace github.com/codfrm/cago => ../../cago
-
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -31,7 +28,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
-	github.com/gin-contrib/sessions v0.0.5 // indirect
+	github.com/elastic/go-elasticsearch/v8 v8.5.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -50,9 +47,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
-	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -61,6 +56,7 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nsqio/go-nsq v1.1.0 // indirect
