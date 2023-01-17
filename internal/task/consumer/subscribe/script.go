@@ -1,4 +1,4 @@
-package consumer
+package subscribe
 
 import (
 	"context"
@@ -12,18 +12,20 @@ import (
 	"github.com/codfrm/cago/pkg/utils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	script_repo2 "github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 	"go.uber.org/zap"
 )
 
-type script struct {
+type Script struct {
 	// 分类id
 	bgCategory   *entity.ScriptCategoryList
 	cronCategory *entity.ScriptCategoryList
 }
 
-func (s *script) Subscribe(ctx context.Context, broker broker.Broker) error {
+func (s *Script) Subscribe(ctx context.Context, broker broker.Broker) error {
 	var err error
 	s.bgCategory, err = script_repo2.ScriptCategoryList().FindByName(ctx, "后台脚本")
 	if err != nil {
@@ -61,8 +63,8 @@ func (s *script) Subscribe(ctx context.Context, broker broker.Broker) error {
 	return err
 }
 
-// 消费脚本创建消息,根据meta信息进行分类和发送邮件通知
-func (s *script) scriptCreateHandler(ctx context.Context, event broker.Event) error {
+// 消费脚本创建消息,根据meta信息进行分类
+func (s *Script) scriptCreateHandler(ctx context.Context, event broker.Event) error {
 	msg, err := producer.ParseScriptCreateMsg(event.Message())
 	if err != nil {
 		logger.Ctx(ctx).
@@ -107,13 +109,11 @@ func (s *script) scriptCreateHandler(ctx context.Context, event broker.Event) er
 		logger.Error("Watch", zap.Error(err))
 	}
 
-	// TODO: 发送邮件通知
-
 	return nil
 }
 
 // 消费脚本代码更新消息,发送邮件通知给关注了的用户
-func (s *script) scriptCodeUpdate(ctx context.Context, event broker.Event) error {
+func (s *Script) scriptCodeUpdate(ctx context.Context, event broker.Event) error {
 	msg, err := producer.ParseScriptCodeUpdateMsg(event.Message())
 	if err != nil {
 		logger.Ctx(ctx).
@@ -133,13 +133,29 @@ func (s *script) scriptCodeUpdate(ctx context.Context, event broker.Event) error
 		return err
 	}
 	logger.Info("update script code")
-	// TODO: 发送邮件通知
-	//notice.Notice().Send()
+
+	list, err := script_repo2.ScriptWatch().ListAll(ctx, msg.Script.ID)
+	if err != nil {
+		logger.Error("获取关注列表失败", zap.Error(err))
+	} else {
+		uids := make([]int64, 0)
+		for _, v := range list {
+			uids = append(uids, v.UserID)
+		}
+		err := notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.ScriptUpdateTemplate, notice_svc.WithParams(&template.ScriptUpdate{
+			ID:      msg.Script.ID,
+			Name:    msg.Script.Name,
+			Version: msg.Code.Version,
+		}))
+		if err != nil {
+			logger.Error("发送邮件失败", zap.Error(err))
+		}
+	}
 	return nil
 }
 
 // 保存脚本相关域名
-func (s *script) saveDomain(ctx context.Context, id, codeID int64, meta map[string][]string) error {
+func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[string][]string) error {
 	domains := make(map[string]struct{})
 	for _, v := range meta["match"] {
 		domain := s.parseMatchDomain(v)
@@ -177,7 +193,7 @@ func (s *script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 	return nil
 }
 
-func (s *script) parseMatchDomain(meta string) string {
+func (s *Script) parseMatchDomain(meta string) string {
 	reg := regexp.MustCompile("(.+?://|^)(.+?)(/|$)")
 	ret := reg.FindStringSubmatch(meta)
 	if len(ret) == 0 || ret[2] == "" {

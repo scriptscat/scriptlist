@@ -8,12 +8,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 )
 
-const (
-	ViewStatistics     = "view"
-	DownloadStatistics = "download"
-	UpdateStatistics   = "update"
-)
-
 // StatisticsSvc 统计平台
 type StatisticsSvc interface {
 	// ScriptRecord 脚本数据统计

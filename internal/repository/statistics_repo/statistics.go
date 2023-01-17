@@ -1,0 +1,150 @@
+package statistics_repo
+
+import (
+	"context"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/codfrm/cago/database/redis"
+)
+
+type StatisticsType string
+
+const (
+	ViewStatistics     StatisticsType = "view"
+	DownloadStatistics                = "download"
+	UpdateStatistics                  = "update"
+)
+
+// pf   statistics:script:@op:@id:day:uv:@date 30天过期
+
+// hash statistics:script:@op:@id:day:pv @date @num 永不过期
+// hash statistics:script:@op:@id:total:pv 永不过期
+
+// set statistics:script:@op:@id:realtime:@time @num 一小时过期
+
+// StatisticsRepo 统计平台数据库操作,与脚本统计不同,此处的纬度更丰富,且大多记录在redis中
+type StatisticsRepo interface {
+	// Save 数据落库
+	//Save(ctx context.Context) error
+
+	// Realtime 获取某操作的实时记录
+	Realtime(ctx context.Context, scriptId int64, op StatisticsType) ([]int64, error)
+	// DaysUvNum 获取某一段时间某一个操作的uv或者member数量
+	// op: download, update, view
+	DaysUvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error)
+	// DaysPvNum 获取某一段时间某一个操作的pv数量
+	// op: download, update, view
+	DaysPvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error)
+	// TotalPv 获取某操作的总pv数量
+	TotalPv(ctx context.Context, scriptId int64, op StatisticsType) (int64, error)
+	// IncrDownload 增加下载量,使用ip判断是否重复
+	IncrDownload(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error)
+	IncrUpdate(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error)
+	IncrPageView(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error)
+}
+
+var defaultStatistics StatisticsRepo
+
+func Statistics() StatisticsRepo {
+	return defaultStatistics
+}
+
+func RegisterStatistics(i StatisticsRepo) {
+	defaultStatistics = i
+}
+
+type scriptStatisticsRepo struct {
+}
+
+func NewStatistics() StatisticsRepo {
+	return &scriptStatisticsRepo{}
+}
+
+func (s *scriptStatisticsRepo) Realtime(ctx context.Context, scriptId int64, op StatisticsType) ([]int64, error) {
+	var ret []int64
+	t := time.Now().Unix() / 60
+	for i := int64(0); i < 15; i++ {
+		num, _ := redis.Ctx(ctx).Get(fmt.Sprintf("statistics:script:%s:%d:realtime:%d", op, scriptId, t-i)).Int64()
+		ret = append(ret, num)
+	}
+	return ret, nil
+}
+
+func (s *scriptStatisticsRepo) DaysUvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error) {
+	if days == 1 {
+		ret, err := redis.Ctx(ctx).PFCount(fmt.Sprintf(
+			"statistics:script:%s:%d:day:%s:%s", op, scriptId, "uv", t.Format("2006/01/02"))).Result()
+		if err != nil {
+			return 0, err
+		}
+		return ret, nil
+	}
+	key := fmt.Sprintf("statistics:script:cache:uv:%d:%s:%s", scriptId, op, t.Format("2006/01/02"))
+	if redis.Ctx(ctx).Exists(key).Val() != 1 {
+		var dayKey []string
+		t := t
+		for i := 1; i <= days; i++ {
+			dayKey = append(dayKey,
+				fmt.Sprintf("statistics:script:%s:%d:day:%s:%s", op, scriptId, "uv",
+					t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")),
+			)
+		}
+		redis.Ctx(ctx).PFMerge(key, dayKey...)
+	}
+	ret, err := redis.Ctx(ctx).PFCount(key).Result()
+	if err != nil {
+		return 0, err
+	}
+	redis.Ctx(ctx).Expire(key, time.Hour*24*15)
+	return ret, nil
+}
+
+func (s *scriptStatisticsRepo) TotalPv(ctx context.Context, scriptId int64, op StatisticsType) (int64, error) {
+	key := "statistics:script:" + string(op) + ":" + fmt.Sprintf("%d", scriptId) + ":total:pv"
+	return redis.Ctx(ctx).Get(key).Int64()
+}
+
+func (s *scriptStatisticsRepo) DaysPvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error) {
+	var num int64
+	key := fmt.Sprintf("statistics:script:%s:%d:day:pv", op, scriptId)
+	for i := 0; i < days; i++ {
+		val, err := redis.Ctx(ctx).HGet(key, t.Add(-time.Hour*24*time.Duration(i)).Format("2006/01/02")).Int64()
+		if err != nil {
+			continue
+		}
+		num += val
+	}
+	return num, nil
+}
+
+func (s *scriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error) {
+	return s.save(ctx, scriptId, ip, statisticsToken, DownloadStatistics)
+}
+
+func (s *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error) {
+	return s.save(ctx, scriptId, ip, statisticsToken, UpdateStatistics)
+}
+
+func (s *scriptStatisticsRepo) IncrPageView(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error) {
+	return s.save(ctx, scriptId, ip, statisticsToken, ViewStatistics)
+}
+
+func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, statisticsToken string, op StatisticsType) (bool, error) {
+	key := "statistics:script:" + string(op) + ":" + fmt.Sprintf("%d", scriptId)
+	date := time.Now().Format("2006/01/02")
+	// 储存统计token计算uv
+	redis.Ctx(ctx).PFAdd(key+fmt.Sprintf(":day:uv:%s", date), statisticsToken)
+	redis.Ctx(ctx).Expire(key+fmt.Sprintf(":day:uv:%s", date), time.Hour*24*60)
+	// 日pv
+	redis.Ctx(ctx).HIncrBy(key+":day:pv", date, 1)
+	// 总pv
+	redis.Ctx(ctx).Incr(key + ":total:pv")
+	// 实时统计
+	t := strconv.FormatInt(time.Now().Unix()/60, 10)
+	redis.Ctx(ctx).Incr(key + ":realtime:" + t)
+	redis.Ctx(ctx).Expire(key+":realtime:"+t, time.Hour)
+	// 判断ip是否操作过了
+	return redis.Ctx(ctx).SetNX(key+":ip:exist:day:"+date+":"+ip, "1", time.Hour*24).Result()
+}

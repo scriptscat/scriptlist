@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/limit"
@@ -13,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 	"github.com/scriptscat/scriptlist/internal/service/user_svc"
@@ -129,7 +131,8 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		IP:              ctx.ClientIP(),
 		UA:              ua,
 		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics_svc.DownloadStatistics,
+		Download:        statistics_repo.DownloadStatistics,
+		Time:            time.Now(),
 	}
 	user := user_svc.Auth().Get(ctx)
 	if user != nil {
@@ -167,7 +170,8 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		IP:              ctx.ClientIP(),
 		UA:              ua,
 		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics_svc.UpdateStatistics,
+		Download:        statistics_repo.UpdateStatistics,
+		Time:            time.Now(),
 	}
 	user := user_svc.Auth().Get(ctx)
 	if user != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 )
 
 type SearchOptions struct {
@@ -75,14 +76,15 @@ func (u *scriptRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
+
 	if options.Keyword != "" {
 		// 暂时不支持排序等
-		return u.SearchByEs(ctx, options.Keyword, page)
+		return u.SearchByEs(ctx, options, page)
 	}
 	// 无关键字从mysql数据库中获取
 	list := make([]*entity.Script, 0)
 	scriptTbName := (&entity.Script{}).TableName()
-	find := db.Ctx(ctx).Model(&entity.Script{})
+	find := db.Ctx(ctx).Model(&entity.Script{}).Where("status=?", consts.ACTIVE)
 	if !options.Self {
 		find.Where("public=? and unwell=?", entity.PublicScript, entity.Well)
 	}
@@ -126,9 +128,6 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 		find = find.Order("createtime desc")
 	}
 
-	if options.Status > 0 {
-		find = find.Where("status=?", options.Status)
-	}
 	if options.UserID != 0 {
 		find = find.Where("user_id=?", options.UserID)
 	}
@@ -145,16 +144,24 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 }
 
 // SearchByEs 通过elasticsearch搜索
-func (u *scriptRepo) SearchByEs(ctx context.Context, keyword string, page httputils.PageRequest) ([]*entity.Script, int64, error) {
+func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
 	script := &entity.ScriptSearch{}
 	search := elasticsearch.Ctx(ctx).Search
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
-				"name": keyword,
+				"name":   options.Keyword,
+				"status": options.Status,
+				"public": entity.PublicScript,
+				"unwell": entity.Well,
 			},
 		},
-		"size": page.Limit,
+		"sort": map[string]interface{}{
+			"today_download": map[string]interface{}{
+				"order": "desc",
+			},
+		},
+		"size": page.GetLimit(),
 	}
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
@@ -175,13 +182,33 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, keyword string, page httput
 	if resp.IsError() {
 		return nil, 0, fmt.Errorf("elasticsearch error: [%s] %s", resp.Status(), respByte)
 	}
-	m := &elasticsearch.SearchResponse[*entity.Script]{}
+	m := &elasticsearch.SearchResponse[*entity.ScriptSearch]{}
 	if err := json.Unmarshal(respByte, &m); err != nil {
 		return nil, 0, err
 	}
 	ret := make([]*entity.Script, 0)
 	for _, v := range m.Hits.Hits {
-		ret = append(ret, v.Source)
+		source := v.Source
+		ret = append(ret, &entity.Script{
+			ID:     source.ID,
+			PostID: 0,
+			//PostID:        source.PostID,
+			UserID:        source.UserID,
+			Name:          source.Name,
+			Description:   source.Description,
+			Content:       source.Content,
+			Type:          0,
+			Public:        source.Public,
+			Unwell:        source.Unwell,
+			SyncUrl:       "",
+			ContentUrl:    "",
+			DefinitionUrl: "",
+			SyncMode:      0,
+			Archive:       source.Archive,
+			Status:        source.Status,
+			Createtime:    source.Createtime,
+			Updatetime:    source.Updatetime,
+		})
 	}
 	return ret, m.Hits.Total.Value, nil
 }

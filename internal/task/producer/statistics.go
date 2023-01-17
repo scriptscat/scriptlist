@@ -3,14 +3,18 @@ package producer
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/codfrm/cago/pkg/broker"
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
+	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 )
 
 type ScriptStatisticsMsg struct {
-	ScriptID, ScriptCodeID, UserID    int64
-	IP, UA, StatisticsToken, Download string
+	ScriptID, ScriptCodeID, UserID int64
+	IP, UA, StatisticsToken        string
+	Download                       statistics_repo.StatisticsType
+	Time                           time.Time
 }
 
 func PublishScriptStatistics(ctx context.Context, msg *ScriptStatisticsMsg) error {

@@ -1,4 +1,4 @@
-package consumer
+package subscribe
 
 import (
 	"testing"
@@ -25,7 +25,7 @@ func Test_script_parseMatchDomain(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &script{}
+			s := &Script{}
 			if got := s.parseMatchDomain(tt.args.meta); got != tt.want {
 				t.Errorf("parseMetaDomain() = %v, want %v", got, tt.want)
 			}

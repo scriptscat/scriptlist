@@ -16,7 +16,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
-	"github.com/scriptscat/scriptlist/internal/repository/script_statistics_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
@@ -106,15 +106,27 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 	if user != nil {
 		data.UserInfo = user.UserInfo()
 	}
-	statistics, err := script_statistics_repo.ScriptStatistics().FindByScriptID(ctx, item.ID)
+	// 评分统计信息
+	statistics, err := script_repo.ScriptStatistics().FindByScriptID(ctx, item.ID)
 	if err != nil {
 		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	if statistics != nil {
-		data.TotalInstall = statistics.Download
 		data.Score = statistics.Score
 		data.ScoreNum = statistics.ScoreCount
 	}
+	// 从平台统计拿数据,排序从脚本统计里拿数据
+	num, err := statistics_repo.Statistics().TotalPv(ctx, item.ID, statistics_repo.DownloadStatistics)
+	if err != nil {
+		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+	}
+	data.TotalInstall = num
+	num, err = statistics_repo.Statistics().DaysPvNum(ctx, item.ID, statistics_repo.DownloadStatistics, 1, time.Now())
+	if err != nil {
+		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+	}
+	data.TodayInstall = num
+	// 脚本代码信息
 	var scriptCode *entity.Code
 	if version == "" {
 		scriptCode, err = script_repo.ScriptCode().FindLatest(ctx, item.ID, withcode)
@@ -128,18 +140,19 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 		return nil, i18n.NewError(ctx, code.ScriptNotFound)
 	}
 	data.Script = s.scriptCode(ctx, scriptCode)
+	// 脚本分类信息
 	list, err := script_repo.ScriptCategory().List(ctx, item.ID)
 	if err != nil {
 		logger.Ctx(ctx).Error("获取脚本分类失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
-	data.Category = make([]*api.ScriptCategoryList, 0)
+	data.Category = make([]*api.CategoryList, 0)
 	for _, v := range list {
 		category, err := script_repo.ScriptCategoryList().Find(ctx, v.CategoryID)
 		if err != nil {
 			logger.Ctx(ctx).Error("获取分类信息失败", zap.Error(err), zap.Int64("category_id", v.CategoryID))
 		}
 		if category != nil {
-			data.Category = append(data.Category, &api.ScriptCategoryList{
+			data.Category = append(data.Category, &api.CategoryList{
 				ID:   category.ID,
 				Name: category.Name,
 			})
@@ -148,12 +161,12 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 	return data, nil
 }
 
-func (s *scriptSvc) scriptCode(ctx context.Context, code *entity.Code) *api.ScriptCode {
+func (s *scriptSvc) scriptCode(ctx context.Context, code *entity.Code) *api.Code {
 	metaJson := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
 		logger.Ctx(ctx).Error("json解析失败", zap.Error(err), zap.String("meta", code.MetaJson))
 	}
-	ret := &api.ScriptCode{
+	ret := &api.Code{
 		ID:         code.ID,
 		MetaJson:   metaJson,
 		ScriptID:   code.ScriptID,
@@ -366,18 +379,21 @@ func (s *scriptSvc) MigrateEs() {
 	defer cancel()
 	start := 0
 	for {
-		func(ctx context.Context) {
+		if ok := func(ctx context.Context) bool {
 			ctx, span := trace.Default().Tracer("MigrateEs").Start(context.Background(), "MigrateEs")
-			defer span.End()
+			defer func() {
+				span.End()
+				start += 20
+			}()
 			ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(trace.LoggerLabel(ctx)...))
 			list, err := script_repo.Migrate().List(ctx, start, 20)
 			if err != nil {
 				logger.Ctx(ctx).Error("获取迁移数据失败", zap.Error(err))
-				return
+				return false
 			}
 			if len(list) == 0 {
 				logger.Ctx(ctx).Info("迁移完成")
-				return
+				return true
 			}
 			for _, item := range list {
 				search, err := script_repo.Migrate().Convert(ctx, item)
@@ -385,12 +401,15 @@ func (s *scriptSvc) MigrateEs() {
 					logger.Ctx(ctx).Error("转换数据失败", zap.Error(err))
 					continue
 				}
-				if err := script_repo.Migrate().SaveToEs(ctx, search); err != nil {
+				if err := script_repo.Migrate().Save(ctx, search); err != nil {
 					logger.Ctx(ctx).Error("保存数据失败", zap.Error(err))
 					continue
 				}
 			}
-		}(ctx)
+			return false
+		}(ctx); ok {
+			break
+		}
 	}
 }
 
@@ -441,9 +460,9 @@ func (s *scriptSvc) VersionList(ctx context.Context, req *api.VersionListRequest
 		return nil, err
 	}
 	ret := &api.VersionListResponse{
-		PageResponse: httputils.PageResponse[*api.ScriptCode]{
+		PageResponse: httputils.PageResponse[*api.Code]{
 			Total: total,
-			List:  make([]*api.ScriptCode, len(list)),
+			List:  make([]*api.Code, len(list)),
 		},
 	}
 	for n, v := range list {
@@ -469,17 +488,19 @@ func (s *scriptSvc) VersionCode(ctx context.Context, req *api.VersionCodeRequest
 
 // State 获取脚本状态,脚本关注等
 func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.StateResponse, error) {
-	var err error
 	user := user_svc.Auth().Get(ctx)
-	var watch entity.ScriptWatchLevel
+	var level entity.ScriptWatchLevel
 	if user != nil {
-		watch, err = script_repo.ScriptWatch().IsWatch(ctx, req.ID, user.UID)
+		watch, err := script_repo.ScriptWatch().FindByUser(ctx, req.ID, user.UID)
 		if err != nil {
 			return nil, err
 		}
+		if watch != nil {
+			level = watch.Level
+		}
 	}
 	return &api.StateResponse{
-		Watch: watch,
+		Watch: level,
 	}, nil
 }
 

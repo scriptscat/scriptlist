@@ -8,6 +8,7 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc/sender"
 )
 
 type NoticeSvc interface {
@@ -23,7 +24,7 @@ type noticeSvc struct {
 
 var defaultNotice = &noticeSvc{
 	senderMap: map[SenderType]Sender{
-		MailSender: &mail{},
+		MailSender: sender.NewMail(),
 	},
 }
 
@@ -50,19 +51,35 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			return err
 		}
 	}
-	senderOptions := &sendOptions{
-		from:  from,
-		title: opts.title,
+	senderOptions := &SendOptions{
+		From:  from,
+		Title: opts.title,
 	}
-	tplContent := make(map[SenderType]string)
+	tplContent := make(map[SenderType]Template)
 	for senderType, tpl := range tpl {
-		content, err := n.parseTpl(tpl, map[string]interface{}{
+		content, err := n.parseTpl(tpl.Template, map[string]interface{}{
 			"Value": opts.params,
 		})
 		if err != nil {
 			return err
 		}
-		tplContent[senderType] = content
+		if senderOptions.Title == "" {
+			title, err := n.parseTpl(tpl.Title, map[string]interface{}{
+				"Value": opts.params,
+			})
+			if err != nil {
+				return err
+			}
+			tplContent[senderType] = Template{
+				Title:    title,
+				Template: content,
+			}
+		} else {
+			tplContent[senderType] = Template{
+				Title:    senderOptions.Title,
+				Template: content,
+			}
+		}
 	}
 	for _, toUser := range toUsers {
 		to, err := user_repo.User().Find(ctx, toUser)
@@ -73,11 +90,14 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			return errors.New("user not found")
 		}
 		for senderType, content := range tplContent {
-			sender, ok := n.senderMap[senderType]
+			s, ok := n.senderMap[senderType]
 			if !ok {
 				return errors.New("sender not found")
 			}
-			if err := sender.Send(ctx, to, content, senderOptions); err != nil {
+			if err := s.Send(ctx, to, content.Template, &SendOptions{
+				From:  from,
+				Title: senderOptions.Title,
+			}); err != nil {
 				return err
 			}
 		}

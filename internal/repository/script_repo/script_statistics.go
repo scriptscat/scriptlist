@@ -1,10 +1,11 @@
-package script_statistics_repo
+package script_repo
 
 import (
 	"context"
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
+	"gorm.io/gorm"
 )
 
 type ScriptStatisticsRepo interface {
@@ -14,6 +15,11 @@ type ScriptStatisticsRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	FindByScriptID(ctx context.Context, scriptId int64) (*entity.ScriptStatistics, error)
+	// IncrDownload 增加下载量,不会去重
+	IncrDownload(ctx context.Context, scriptId int64) error
+	IncrUpdate(ctx context.Context, scriptId int64) error
+	// IncrScore 分数统计,当用户分数变更时可以使用之前的分数和之后的分数进行计算,num为0
+	IncrScore(ctx context.Context, scriptId int64, score int, num int) error
 }
 
 var defaultScriptStatistics ScriptStatisticsRepo
@@ -65,4 +71,41 @@ func (u *scriptStatisticsRepo) FindByScriptID(ctx context.Context, scriptId int6
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (u *scriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64) error {
+	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
+		Update("download", gorm.Expr("download+1")).RowsAffected == 0 {
+		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
+			ScriptID: scriptId,
+			Download: 1,
+		}).Error
+	}
+	return nil
+}
+
+func (u *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64) error {
+	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
+		Update("update", gorm.Expr("update+1")).RowsAffected == 0 {
+		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
+			ScriptID: scriptId,
+			Update:   1,
+		}).Error
+	}
+	return nil
+}
+
+func (u *scriptStatisticsRepo) IncrScore(ctx context.Context, scriptId int64, score int, num int) error {
+	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
+		Updates(map[string]interface{}{
+			"score":       gorm.Expr("score+?", score),
+			"score_count": gorm.Expr("score_count+?", num),
+		}).RowsAffected == 0 {
+		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
+			ScriptID:   scriptId,
+			Score:      int64(score),
+			ScoreCount: int64(num),
+		}).Error
+	}
+	return nil
 }

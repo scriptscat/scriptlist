@@ -2,18 +2,21 @@ package script_repo
 
 import (
 	"context"
-	"strconv"
+	"time"
 
-	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
 type ScriptWatchRepo interface {
-	List(ctx context.Context, script int64) ([]*script_entity.Watch, error)
-	Num(ctx context.Context, script int64) (int, error)
+	Find(ctx context.Context, id int64) (*script_entity.ScriptWatch, error)
+	Create(ctx context.Context, scriptWatch *script_entity.ScriptWatch) error
+	Update(ctx context.Context, scriptWatch *script_entity.ScriptWatch) error
+	Delete(ctx context.Context, id int64) error
+
+	ListAll(ctx context.Context, script int64) ([]*script_entity.ScriptWatch, error)
+	FindByUser(ctx context.Context, script, user int64) (*script_entity.ScriptWatch, error)
 	Watch(ctx context.Context, script, user int64, level script_entity.ScriptWatchLevel) error
-	Unwatch(ctx context.Context, script, user int64) error
-	IsWatch(ctx context.Context, script, user int64) (script_entity.ScriptWatchLevel, error)
 }
 
 var defaultScriptWatch ScriptWatchRepo
@@ -33,47 +36,65 @@ func NewScriptWatchRepo() ScriptWatchRepo {
 	return &scriptWatchRepo{}
 }
 
-func (w *scriptWatchRepo) key(issue int64) string {
-	return "script:watch:" + strconv.FormatInt(issue, 10)
-}
-
-func (w *scriptWatchRepo) List(ctx context.Context, script int64) ([]*script_entity.Watch, error) {
-	list, err := redis.Ctx(ctx).HGetAll(w.key(script)).Result()
-	if err != nil {
+func (s *scriptWatchRepo) Find(ctx context.Context, id int64) (*script_entity.ScriptWatch, error) {
+	ret := &script_entity.ScriptWatch{ID: id}
+	if err := db.Ctx(ctx).First(ret).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
 		return nil, err
-	}
-	ret := make([]*script_entity.Watch, 0)
-	for k, v := range list {
-		uid, _ := strconv.ParseInt(k, 10, 64)
-		level, _ := strconv.Atoi(v)
-		ret = append(ret, &script_entity.Watch{UserID: uid, Level: script_entity.ScriptWatchLevel(level)})
 	}
 	return ret, nil
 }
 
-func (w *scriptWatchRepo) Num(ctx context.Context, script int64) (int, error) {
-	list, err := redis.Ctx(ctx).HGetAll(w.key(script)).Result()
-	if err != nil {
-		return 0, err
+func (s *scriptWatchRepo) Create(ctx context.Context, scriptWatch *script_entity.ScriptWatch) error {
+	return db.Ctx(ctx).Create(scriptWatch).Error
+}
+
+func (s *scriptWatchRepo) Update(ctx context.Context, scriptWatch *script_entity.ScriptWatch) error {
+	return db.Ctx(ctx).Updates(scriptWatch).Error
+}
+
+func (s *scriptWatchRepo) Delete(ctx context.Context, id int64) error {
+	return db.Ctx(ctx).Delete(&script_entity.ScriptWatch{ID: id}).Error
+}
+
+func (s *scriptWatchRepo) ListAll(ctx context.Context, scriptId int64) ([]*script_entity.ScriptWatch, error) {
+	var list []*script_entity.ScriptWatch
+	if err := db.Ctx(ctx).Where("script_id=? and level>0", scriptId).Find(&list).Error; err != nil {
+		return nil, err
 	}
-	return len(list), nil
+	return list, nil
 }
 
-func (w *scriptWatchRepo) Watch(ctx context.Context, script, user int64, level script_entity.ScriptWatchLevel) error {
-	return redis.Ctx(ctx).HSet(w.key(script), user, int(level)).Err()
-}
-
-func (w *scriptWatchRepo) Unwatch(ctx context.Context, script, user int64) error {
-	return redis.Ctx(ctx).HDel(w.key(script), strconv.FormatInt(user, 10)).Err()
-}
-
-func (w *scriptWatchRepo) IsWatch(ctx context.Context, script, user int64) (script_entity.ScriptWatchLevel, error) {
-	ret, err := redis.Ctx(ctx).HGet(w.key(script), strconv.FormatInt(user, 10)).Int()
+func (s *scriptWatchRepo) Watch(ctx context.Context, script, user int64, level script_entity.ScriptWatchLevel) error {
+	watch, err := s.FindByUser(ctx, script, user)
 	if err != nil {
-		if redis.Nil(err) {
-			return 0, nil
+		return err
+	}
+	if watch == nil {
+		// 新建
+		watch = &script_entity.ScriptWatch{
+			UserID:     user,
+			ScriptID:   script,
+			Level:      level,
+			Createtime: time.Now().Unix(),
 		}
-		return 0, err
+	} else {
+		// 更新
+		watch.Level = level
+		watch.Updatetime = time.Now().Unix()
 	}
-	return script_entity.ScriptWatchLevel(ret), nil
+	return db.Ctx(ctx).Save(watch).Error
+}
+
+func (s *scriptWatchRepo) FindByUser(ctx context.Context, script, user int64) (*script_entity.ScriptWatch, error) {
+	ret := &script_entity.ScriptWatch{}
+	if err := db.Ctx(ctx).Where("script_id=? and user_id=?", script, user).First(ret).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
 }

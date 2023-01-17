@@ -1,10 +1,12 @@
-package script_statistics_repo
+package script_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
+	"gorm.io/gorm"
 )
 
 type ScriptDateStatisticsRepo interface {
@@ -13,7 +15,9 @@ type ScriptDateStatisticsRepo interface {
 	Update(ctx context.Context, scriptDateStatistics *entity.ScriptDateStatistics) error
 	Delete(ctx context.Context, id int64) error
 
-	FindByScriptID(ctx context.Context, scriptId int64, date string) (*entity.ScriptDateStatistics, error)
+	FindByScriptID(ctx context.Context, scriptId int64, t time.Time) (*entity.ScriptDateStatistics, error)
+	IncrDownload(ctx context.Context, scriptId int64, t time.Time) error
+	IncrUpdate(ctx context.Context, scriptId int64, t time.Time) error
 }
 
 var defaultScriptDateStatistics ScriptDateStatisticsRepo
@@ -56,9 +60,9 @@ func (u *scriptDateStatisticsRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&entity.ScriptDateStatistics{ID: id}).Error
 }
 
-func (u *scriptDateStatisticsRepo) FindByScriptID(ctx context.Context, scriptId int64, date string) (*entity.ScriptDateStatistics, error) {
+func (u *scriptDateStatisticsRepo) FindByScriptID(ctx context.Context, scriptId int64, t time.Time) (*entity.ScriptDateStatistics, error) {
 	ret := &entity.ScriptDateStatistics{}
-	if err := db.Ctx(ctx).Where("script_id=? and date=?", scriptId, date).
+	if err := db.Ctx(ctx).Where("script_id=? and date=?", scriptId, t.Format("2006-01-02")).
 		First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
@@ -66,4 +70,34 @@ func (u *scriptDateStatisticsRepo) FindByScriptID(ctx context.Context, scriptId 
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (u *scriptDateStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64, t time.Time) error {
+	date := t.Format("2006-01-02")
+	if db.Ctx(ctx).Model(&entity.ScriptDateStatistics{}).Where("script_id=? and date=?", scriptId, date).
+		Update("download", gorm.Expr("download+1")).RowsAffected == 0 {
+		if err := db.Ctx(ctx).Save(&entity.ScriptDateStatistics{
+			ScriptID: scriptId,
+			Date:     date,
+			Download: 1,
+		}).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *scriptDateStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64, t time.Time) error {
+	date := t.Format("2006-01-02")
+	if db.Ctx(ctx).Model(&entity.ScriptDateStatistics{}).Where("script_id=? and date=?", scriptId, date).
+		Update("update", gorm.Expr("update+1")).RowsAffected == 0 {
+		if err := db.Ctx(ctx).Save(&entity.ScriptDateStatistics{
+			ScriptID: scriptId,
+			Date:     date,
+			Update:   1,
+		}).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }

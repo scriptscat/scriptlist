@@ -55,6 +55,8 @@ type ScriptSearch struct {
 	Domain        []string      `json:"domain"`
 	Public        Public        `json:"public"`
 	Unwell        UnwellContent `json:"unwell"`
+	Archive       ScriptArchive `json:"archive"`
+	Status        int64         `json:"status"`
 	Createtime    int64         `json:"createtime"`
 	Updatetime    int64         `json:"updatetime"`
 }

@@ -13,29 +13,29 @@ import (
 )
 
 type Script struct {
-	Script               *ScriptCode `json:"script"`
-	ID                   int64       `json:"id"`
+	Script               *Code `json:"script"`
+	ID                   int64 `json:"id"`
 	user_entity.UserInfo `json:",inline"`
-	PostID               int64                 `json:"post_id"`
-	Name                 string                `json:"name"`
-	Description          string                `json:"description"`
-	Category             []*ScriptCategoryList `json:"category"`
-	Content              string                `json:"content,omitempty"`
-	Status               int64                 `json:"status"`
-	Score                int64                 `json:"score"`
-	ScoreNum             int64                 `json:"score_num"`
-	Type                 int                   `json:"type"`
-	Public               int                   `json:"public"`
-	Unwell               int                   `json:"unwell"`
-	Archive              int                   `json:"archive"`
-	TodayInstall         int64                 `json:"today_install"`
-	TotalInstall         int64                 `json:"total_install"`
-	Createtime           int64                 `json:"createtime"`
-	Updatetime           int64                 `json:"updatetime"`
+	PostID               int64           `json:"post_id"`
+	Name                 string          `json:"name"`
+	Description          string          `json:"description"`
+	Category             []*CategoryList `json:"category"`
+	Content              string          `json:"content,omitempty"`
+	Status               int64           `json:"status"`
+	Score                int64           `json:"score"`
+	ScoreNum             int64           `json:"score_num"`
+	Type                 int             `json:"type"`
+	Public               int             `json:"public"`
+	Unwell               int             `json:"unwell"`
+	Archive              int             `json:"archive"`
+	TodayInstall         int64           `json:"today_install"`
+	TotalInstall         int64           `json:"total_install"`
+	Createtime           int64           `json:"createtime"`
+	Updatetime           int64           `json:"updatetime"`
 }
 
-// ScriptCategoryList 拥有的分类列表
-type ScriptCategoryList struct {
+// CategoryList 拥有的分类列表
+type CategoryList struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 	// 本分类下脚本数量
@@ -45,7 +45,7 @@ type ScriptCategoryList struct {
 	Updatetime int64 `json:"updatetime"`
 }
 
-type ScriptCode struct {
+type Code struct {
 	ID                   int64 `json:"id" form:"id"`
 	user_entity.UserInfo `json:",inline"`
 	Meta                 string      `json:"meta,omitempty"`
@@ -158,7 +158,7 @@ type VersionListRequest struct {
 }
 
 type VersionListResponse struct {
-	httputils.PageResponse[*ScriptCode] `json:",inline"`
+	httputils.PageResponse[*Code] `json:",inline"`
 }
 
 // VersionCodeRequest 获取指定版本代码
