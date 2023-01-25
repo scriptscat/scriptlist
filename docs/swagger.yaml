@@ -10,6 +10,13 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  auth.OAuthCallbackResponse:
+    properties:
+      redirect_uri:
+        type: string
+      uid:
+        type: integer
+    type: object
   httputils.PageRequest:
     properties:
       limit,default=20:
@@ -470,9 +477,41 @@ definitions:
         type: integer
       is_admin:
         $ref: '#/definitions/model.AdminLevel'
-      uid:
+      user_id:
         type: integer
       username:
+        type: string
+    type: object
+  user.FollowRequest:
+    properties:
+      uid:
+        type: integer
+      unfollow:
+        type: boolean
+    type: object
+  user.FollowResponse:
+    type: object
+  user.GetConfigResponse:
+    properties:
+      notify:
+        $ref: '#/definitions/user_entity.Notify'
+        description: 邮件通知配置
+    type: object
+  user.GetFollowResponse:
+    properties:
+      followers:
+        description: 粉丝
+        type: integer
+      following:
+        description: 关注
+        type: integer
+      is_follow:
+        description: 是否关注
+        type: boolean
+    type: object
+  user.GetWebhookResponse:
+    properties:
+      token:
         type: string
     type: object
   user.InfoResponse:
@@ -483,19 +522,19 @@ definitions:
         type: integer
       is_admin:
         $ref: '#/definitions/model.AdminLevel'
-      uid:
+      user_id:
         type: integer
       username:
         type: string
     type: object
-  user.OAuthCallbackResponse:
-    properties:
-      redirect_uri:
-        type: string
-      uid:
-        type: integer
+  user.RefreshWebhookRequest:
     type: object
-  user.ScriptsResponse:
+  user.RefreshWebhookResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  user.ScriptResponse:
     properties:
       list:
         items:
@@ -504,6 +543,34 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  user.UpdateConfigRequest:
+    properties:
+      notify:
+        $ref: '#/definitions/user_entity.Notify'
+    type: object
+  user.UpdateConfigResponse:
+    type: object
+  user_entity.Notify:
+    properties:
+      at:
+        description: 艾特
+        type: boolean
+      create_script:
+        description: 创建脚本
+        type: boolean
+      score:
+        description: 脚本评分
+        type: boolean
+      script_issue:
+        description: 脚本反馈
+        type: boolean
+      script_issue_comment:
+        description: 脚本反馈评论
+        type: boolean
+      script_update:
+        description: 脚本更新
+        type: boolean
     type: object
   user_entity.UserInfo:
     properties:
@@ -540,7 +607,7 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/user.OAuthCallbackResponse'
+                $ref: '#/definitions/auth.OAuthCallbackResponse'
               msg:
                 type: string
         "400":
@@ -549,7 +616,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 第三方登录
       tags:
-      - user
+      - auth
   /scripts:
     get:
       consumes:
@@ -996,46 +1063,6 @@ paths:
       summary: 全量迁移数据到es
       tags:
       - script
-  /user/{uid}/script:
-    get:
-      consumes:
-      - application/json
-      description: 用户脚本列表
-      parameters:
-      - in: path
-        name: uid
-        required: true
-        type: integer
-      - in: query
-        name: keyword
-        type: string
-      - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
-        in: query
-        name: script_type,default=0
-        type: integer
-      - in: query
-        name: sort,default=today_download
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/user.ScriptsResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 用户脚本列表
-      tags:
-      - user
   /users:
     get:
       consumes:
@@ -1059,6 +1086,69 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取当前登录的用户信息
+      tags:
+      - user
+  /users/{uid}/follow:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户关注信息
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.GetFollowResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取用户关注信息
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: 关注用户
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.FollowRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.FollowResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 关注用户
       tags:
       - user
   /users/{uid}/info:
@@ -1089,6 +1179,154 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取指定用户信息
+      tags:
+      - user
+  /users/{uid}/script:
+    get:
+      consumes:
+      - application/json
+      description: 用户脚本列表
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      - in: query
+        name: keyword
+        type: string
+      - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
+        in: query
+        name: script_type,default=0
+        type: integer
+      - in: query
+        name: sort,default=today_download
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.ScriptResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 用户脚本列表
+      tags:
+      - user
+  /users/config:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户配置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.GetConfigResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取用户配置
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: 更新用户配置
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.UpdateConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.UpdateConfigResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新用户配置
+      tags:
+      - user
+  /users/webhook:
+    get:
+      consumes:
+      - application/json
+      description: 获取webhook配置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.GetWebhookResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取webhook配置
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: 刷新webhook配置
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.RefreshWebhookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.RefreshWebhookResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 刷新webhook配置
       tags:
       - user
 swagger: "2.0"

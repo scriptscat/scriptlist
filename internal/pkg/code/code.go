@@ -5,6 +5,9 @@ const (
 	UserIsBanned = iota + 100000
 	UserNotFound
 	UserNotPermission
+	UserNotFollow
+	UserNotFollowSelf
+	UserExistFollow
 )
 
 // script

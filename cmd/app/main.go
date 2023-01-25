@@ -46,6 +46,8 @@ func main() {
 	statistics_repo.RegisterStatistics(statistics_repo.NewStatistics())
 
 	user_repo.RegisterUser(user_repo.NewUserRepo())
+	user_repo.RegisterFollow(user_repo.NewFollowRepo())
+	user_repo.RegisterUserConfig(user_repo.NewUserConfig())
 
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).

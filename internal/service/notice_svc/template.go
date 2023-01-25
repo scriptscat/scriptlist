@@ -7,8 +7,10 @@ import (
 
 // 模板id
 
+type TemplateID int
+
 const (
-	ScriptUpdateTemplate = iota + 1
+	ScriptUpdateTemplate TemplateID = iota + 1
 )
 
 type Template struct {
@@ -16,7 +18,7 @@ type Template struct {
 	Template string
 }
 
-var templateMap = map[int]map[sender.Type]Template{
+var templateMap = map[TemplateID]map[sender.Type]Template{
 	// 脚本更新模板
 	ScriptUpdateTemplate: {
 		sender.MailSender: {

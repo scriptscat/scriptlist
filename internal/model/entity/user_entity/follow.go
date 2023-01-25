@@ -1,4 +1,4 @@
-package entity
+package user_entity
 
 type HomeFollow struct {
 	// 关注用户

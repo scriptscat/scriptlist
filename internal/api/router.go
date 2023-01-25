@@ -4,6 +4,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
+	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
 )
@@ -14,7 +15,7 @@ import (
 // @BasePath /api/v2
 func Router(root *mux.Router) error {
 	r := root.Group("/api/v2")
-	auth := user_ctr.NewAuth()
+	auth := auth_ctr.NewAuth()
 	// 用户-auth
 	{
 		// 调试环境开启简化登录
@@ -28,6 +29,11 @@ func Router(root *mux.Router) error {
 		controller := user_ctr.NewUser()
 		r.Group("/", auth.Middleware(true)).Bind(
 			controller.CurrentUser, // 获取当前用户信息
+			controller.Follow,
+			controller.GetWebhook,
+			controller.RefreshWebhook,
+			controller.GetConfig,
+			controller.UpdateConfig,
 		)
 		r.GET("/user/avatar/:uid", controller.Avatar())
 		r.Group("/").Bind(
@@ -35,6 +41,7 @@ func Router(root *mux.Router) error {
 		)
 		r.Group("/", auth.Middleware(false)).Bind(
 			controller.Script,
+			controller.GetFollow,
 		)
 	}
 	// 脚本

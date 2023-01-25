@@ -16,7 +16,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "auth"
                 ],
                 "summary": "第三方登录",
                 "parameters": [
@@ -40,7 +40,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/user.OAuthCallbackResponse"
+                                    "$ref": "#/definitions/auth.OAuthCallbackResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -760,69 +760,6 @@
                 }
             }
         },
-        "/user/{uid}/script": {
-            "get": {
-                "description": "用户脚本列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "用户脚本列表",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "keyword",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
-                        "name": "script_type,default=0",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "sort,default=today_download",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/user.ScriptsResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
         "/users": {
             "get": {
                 "description": "获取当前登录的用户信息",
@@ -846,6 +783,275 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/user.CurrentUserResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/config": {
+            "get": {
+                "description": "获取用户配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "获取用户配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.GetConfigResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新用户配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "更新用户配置",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.UpdateConfigResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/webhook": {
+            "get": {
+                "description": "获取webhook配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "获取webhook配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.GetWebhookResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "刷新webhook配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "刷新webhook配置",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.RefreshWebhookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.RefreshWebhookResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{uid}/follow": {
+            "get": {
+                "description": "获取用户关注信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "获取用户关注信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.GetFollowResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "关注用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "关注用户",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.FollowRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.FollowResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -908,6 +1114,69 @@
                     }
                 }
             }
+        },
+        "/users/{uid}/script": {
+            "get": {
+                "description": "用户脚本列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "用户脚本列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
+                        "name": "script_type,default=0",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort,default=today_download",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.ScriptResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -922,6 +1191,17 @@
                 "msg": {
                     "description": "错误信息",
                     "type": "string"
+                }
+            }
+        },
+        "auth.OAuthCallbackResponse": {
+            "type": "object",
+            "properties": {
+                "redirect_uri": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "integer"
                 }
             }
         },
@@ -1576,10 +1856,58 @@
                 "is_admin": {
                     "$ref": "#/definitions/model.AdminLevel"
                 },
-                "uid": {
+                "user_id": {
                     "type": "integer"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.FollowRequest": {
+            "type": "object",
+            "properties": {
+                "uid": {
+                    "type": "integer"
+                },
+                "unfollow": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "user.FollowResponse": {
+            "type": "object"
+        },
+        "user.GetConfigResponse": {
+            "type": "object",
+            "properties": {
+                "notify": {
+                    "description": "邮件通知配置",
+                    "$ref": "#/definitions/user_entity.Notify"
+                }
+            }
+        },
+        "user.GetFollowResponse": {
+            "type": "object",
+            "properties": {
+                "followers": {
+                    "description": "粉丝",
+                    "type": "integer"
+                },
+                "following": {
+                    "description": "关注",
+                    "type": "integer"
+                },
+                "is_follow": {
+                    "description": "是否关注",
+                    "type": "boolean"
+                }
+            }
+        },
+        "user.GetWebhookResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }
@@ -1596,7 +1924,7 @@
                 "is_admin": {
                     "$ref": "#/definitions/model.AdminLevel"
                 },
-                "uid": {
+                "user_id": {
                     "type": "integer"
                 },
                 "username": {
@@ -1604,18 +1932,18 @@
                 }
             }
         },
-        "user.OAuthCallbackResponse": {
+        "user.RefreshWebhookRequest": {
+            "type": "object"
+        },
+        "user.RefreshWebhookResponse": {
             "type": "object",
             "properties": {
-                "redirect_uri": {
+                "token": {
                     "type": "string"
-                },
-                "uid": {
-                    "type": "integer"
                 }
             }
         },
-        "user.ScriptsResponse": {
+        "user.ScriptResponse": {
             "type": "object",
             "properties": {
                 "list": {
@@ -1627,6 +1955,46 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "user.UpdateConfigRequest": {
+            "type": "object",
+            "properties": {
+                "notify": {
+                    "$ref": "#/definitions/user_entity.Notify"
+                }
+            }
+        },
+        "user.UpdateConfigResponse": {
+            "type": "object"
+        },
+        "user_entity.Notify": {
+            "type": "object",
+            "properties": {
+                "at": {
+                    "description": "艾特",
+                    "type": "boolean"
+                },
+                "create_script": {
+                    "description": "创建脚本",
+                    "type": "boolean"
+                },
+                "score": {
+                    "description": "脚本评分",
+                    "type": "boolean"
+                },
+                "script_issue": {
+                    "description": "脚本反馈",
+                    "type": "boolean"
+                },
+                "script_issue_comment": {
+                    "description": "脚本反馈评论",
+                    "type": "boolean"
+                },
+                "script_update": {
+                    "description": "脚本更新",
+                    "type": "boolean"
                 }
             }
         },

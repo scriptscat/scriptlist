@@ -11,8 +11,10 @@ import (
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -64,6 +66,40 @@ func T1670770912() *gormigrate.Migration {
 			// 删除状态修改为2
 			if err := db.Model(&script_entity.Script{}).Where("status = 0").
 				Update("status", consts.DELETE).Error; err != nil {
+				return err
+			}
+			// 迁移webhook
+			if err := db.AutoMigrate(&user_entity.UserConfig{}); err != nil {
+				return err
+			}
+			if err := ScanKeys(ctx, "user:token:user:*", func(ctx context.Context, key string) error {
+				suid := key[strings.LastIndex(key, ":")+1:]
+				token, err := redis.Ctx(ctx).Get(key).Result()
+				if err != nil {
+					return err
+				}
+				uid, err := strconv.ParseInt(suid, 10, 64)
+				if err != nil {
+					return err
+				}
+				cfg, err := user_repo.UserConfig().FindByUserID(ctx, uid)
+				if err != nil {
+					return err
+				}
+				if cfg == nil {
+					cfg = &user_entity.UserConfig{
+						Uid:        uid,
+						Token:      token,
+						Notify:     &user_entity.Notify{},
+						Createtime: time.Now().Unix(),
+					}
+					return user_repo.UserConfig().Create(ctx, cfg)
+				} else {
+					cfg.Token = token
+					cfg.Updatetime = time.Now().Unix()
+					return user_repo.UserConfig().Update(ctx, cfg)
+				}
+			}); err != nil {
 				return err
 			}
 			return nil

@@ -10,6 +10,9 @@ var zhCN = map[int]string{
 	UserNotFound:      "用户不存在",
 	UserIsBanned:      "用户已被禁用",
 	UserNotPermission: "用户不允许操作",
+	UserNotFollow:     "用户未关注",
+	UserNotFollowSelf: "不能关注自己",
+	UserExistFollow:   "已关注",
 
 	ScriptNameIsEmpty:    "脚本名不能为空",
 	ScriptDescIsEmpty:    "脚本描述不能为空",

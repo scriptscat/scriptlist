@@ -1,4 +1,4 @@
-package user_ctr
+package auth_ctr
 
 import (
 	"net/http"

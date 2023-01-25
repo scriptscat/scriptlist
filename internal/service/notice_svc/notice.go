@@ -6,16 +6,18 @@ import (
 	"errors"
 	"html/template"
 
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/sender"
+	"go.uber.org/zap"
 )
 
 type NoticeSvc interface {
 	// Send 根据模板id发送通知给指定用户
-	Send(ctx context.Context, toUser int64, template int, options ...Option) error
+	Send(ctx context.Context, toUser int64, template TemplateID, options ...Option) error
 	// MultipleSend 根据模板id发送通知给多个用户
-	MultipleSend(ctx context.Context, toUser []int64, template int, options ...Option) error
+	MultipleSend(ctx context.Context, toUser []int64, template TemplateID, options ...Option) error
 }
 
 type noticeSvc struct {
@@ -33,11 +35,11 @@ func Notice() NoticeSvc {
 }
 
 // Send 根据模板id发送通知给指定用户
-func (n *noticeSvc) Send(ctx context.Context, toUser int64, template int, options ...Option) error {
+func (n *noticeSvc) Send(ctx context.Context, toUser int64, template TemplateID, options ...Option) error {
 	return n.MultipleSend(ctx, []int64{toUser}, template, options...)
 }
 
-func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template int, options ...Option) error {
+func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template TemplateID, options ...Option) error {
 	opts := newOptions(options...)
 	tpl, ok := templateMap[template]
 	if !ok {
@@ -84,15 +86,39 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 	for _, toUser := range toUsers {
 		to, err := user_repo.User().Find(ctx, toUser)
 		if err != nil {
-			return err
+			logger.Ctx(ctx).Error("find error", zap.Error(err), zap.Int64("user_id", toUser))
+			continue
 		}
 		if to == nil {
-			return errors.New("user not found")
+			logger.Ctx(ctx).Error("user not found", zap.Int64("user_id", toUser))
+			continue
+		}
+		userConfig, err := user_repo.UserConfig().FindByUserID(ctx, toUser)
+		if err != nil {
+			logger.Ctx(ctx).Error("find user config error", zap.Error(err), zap.Int64("user_id", toUser))
+			userConfig = &user_entity.UserConfig{
+				Uid:    toUser,
+				Notify: &user_entity.Notify{},
+			}
+			userConfig.Notify.DefaultValue()
+		}
+		if userConfig == nil {
+			userConfig = &user_entity.UserConfig{
+				Uid:    toUser,
+				Notify: &user_entity.Notify{},
+			}
+			userConfig.Notify.DefaultValue()
 		}
 		for senderType, content := range tplContent {
 			s, ok := n.senderMap[senderType]
 			if !ok {
 				return errors.New("sender not found")
+			}
+			if ok, err := n.IsNotify(ctx, userConfig, senderType, template); err != nil {
+				logger.Ctx(ctx).Error("IsNotify error", zap.Error(err), zap.Int64("user_id", toUser))
+				continue
+			} else if !ok {
+				continue
 			}
 			if err := s.Send(ctx, to, content.Template, &sender.SendOptions{
 				From:  from,
@@ -113,4 +139,16 @@ func (n *noticeSvc) parseTpl(tpl string, data interface{}) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+// IsNotify 判断用户是否允许通知
+func (n *noticeSvc) IsNotify(ctx context.Context, userConfig *user_entity.UserConfig, senderType sender.Type, tpl TemplateID) (bool, error) {
+	if senderType != sender.MailSender {
+		return true, nil
+	}
+	switch tpl {
+	case ScriptUpdateTemplate:
+		return *userConfig.Notify.ScriptUpdate, nil
+	}
+	return true, nil
 }
