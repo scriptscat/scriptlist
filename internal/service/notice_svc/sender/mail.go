@@ -7,7 +7,6 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
-	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )
@@ -22,11 +21,11 @@ type mailConfig struct {
 type mail struct {
 }
 
-func NewMail() notice_svc.Sender {
+func NewMail() Sender {
 	return &mail{}
 }
 
-func (m *mail) Send(ctx context.Context, user *user_entity.User, content string, options *notice_svc.SendOptions) error {
+func (m *mail) Send(ctx context.Context, user *user_entity.User, content string, options *SendOptions) error {
 	config := &mailConfig{}
 	if err := configs.Default().Scan("mail", config); err != nil {
 		return err

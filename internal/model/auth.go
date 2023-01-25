@@ -10,8 +10,8 @@ const (
 	Moderator                            // 版主
 )
 
-func (a AdminLevel) IsAdmin() bool {
-	return a >= Admin
+func (a AdminLevel) IsAdmin(level AdminLevel) bool {
+	return a != 0 && a <= level
 }
 
 type AuthInfo struct {

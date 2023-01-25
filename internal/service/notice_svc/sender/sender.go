@@ -1,4 +1,4 @@
-package notice_svc
+package sender
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 )
 
-type SenderType int
+type Type int
 
 const (
-	MailSender SenderType = iota + 1
+	MailSender Type = iota + 1
 )
 
 type Sender interface {

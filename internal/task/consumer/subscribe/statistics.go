@@ -2,8 +2,6 @@ package subscribe
 
 import (
 	"context"
-	"strconv"
-	"time"
 
 	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
@@ -20,10 +18,6 @@ func (e *Statistics) Subscribe(ctx context.Context, bk broker.Broker) error {
 		producer.ScriptStatisticTopic, e.scriptStatistics,
 	)
 	return err
-}
-
-func (e *Statistics) uniqueKey(scriptId int64, tm time.Time) string {
-	return "statistics:script:" + strconv.FormatInt(scriptId, 10) + ":" + tm.Format("2006-01-02")
 }
 
 func (e *Statistics) scriptStatistics(ctx context.Context, event broker.Event) error {

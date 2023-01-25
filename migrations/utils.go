@@ -28,5 +28,4 @@ func ScanKeys(ctx context.Context, match string, callback func(ctx context.Conte
 			return nil
 		}
 	}
-	return nil
 }

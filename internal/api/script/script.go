@@ -186,8 +186,55 @@ type StateResponse struct {
 type WatchRequest struct {
 	mux.Meta `path:"/scripts/:id/watch" method:"POST"`
 	ID       int64                          `uri:"id" binding:"required"`
-	Watch    script_entity.ScriptWatchLevel `json:"watch" binding:"required,oneof=0 1 2 3"`
+	Watch    script_entity.ScriptWatchLevel `json:"watch" binding:"oneof=0 1 2 3"`
 }
 
 type WatchResponse struct {
+}
+
+// GetSettingRequest 获取脚本设置
+type GetSettingRequest struct {
+	mux.Meta `path:"/scripts/:id/setting" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type GetSettingResponse struct {
+	SyncUrl       string                 `json:"sync_url"`
+	ContentUrl    string                 `json:"content_url"`
+	DefinitionUrl string                 `json:"definition_url"`
+	SyncMode      script_entity.SyncMode `json:"sync_mode"`
+}
+
+// UpdateSettingRequest 更新脚本设置
+type UpdateSettingRequest struct {
+	mux.Meta      `path:"/scripts/:id/setting" method:"PUT"`
+	ID            int64                  `uri:"id" binding:"required"`
+	Name          string                 `json:"name" binding:"max=128" label:"库的名字"`
+	Description   string                 `json:"description" binding:"max=102400" label:"库的描述"`
+	SyncUrl       string                 `json:"sync_url" binding:"omitempty,url,max=1024" label:"代码同步url"`
+	ContentUrl    string                 `json:"content_url" binding:"omitempty,url,max=1024" label:"详细描述同步url"`
+	DefinitionUrl string                 `json:"definition_url" binding:"omitempty,url,max=1024" label:"定义文件同步url"`
+	SyncMode      script_entity.SyncMode `json:"sync_mode" binding:"number" label:"同步模式"`
+}
+
+type UpdateSettingResponse struct {
+}
+
+// ArchiveRequest 归档脚本
+type ArchiveRequest struct {
+	mux.Meta `path:"/scripts/:id/archive" method:"PUT"`
+	ID       int64 `uri:"id" binding:"required"`
+	Archive  bool  `json:"archive" binding:"omitempty,required"`
+}
+
+type ArchiveResponse struct {
+}
+
+// DeleteRequest 删除脚本
+type DeleteRequest struct {
+	mux.Meta `path:"/scripts/:id" method:"DELETE"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type DeleteResponse struct {
 }

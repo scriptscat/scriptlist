@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 )
 
@@ -21,7 +22,7 @@ func NewUser() *User {
 // CurrentUser 获取当前登录的用户信息
 func (u *User) CurrentUser(gctx *gin.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
 	ctx := gctx.Request.Context()
-	resp, err := user_svc.User().UserInfo(ctx, user_svc.Auth().Get(ctx).UID)
+	resp, err := user_svc.User().UserInfo(ctx, auth_svc.Auth().Get(ctx).UID)
 	if err != nil {
 		return nil, err
 	}
@@ -34,19 +35,19 @@ func (u *User) CurrentUser(gctx *gin.Context, req *api.CurrentUserRequest) (*api
 		return nil, err
 	}
 	// 获取token信息, 判断是否需要刷新
-	m, err := user_svc.Auth().GetLoginToken(ctx, user_svc.Auth().Get(ctx).UID, loginId, token)
+	m, err := auth_svc.Auth().GetLoginToken(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
 	if err != nil {
 		return nil, err
 	}
-	if m.Updatetime+user_svc.TokenAutoRegen < time.Now().Unix() {
+	if m.Updatetime+auth_svc.TokenAutoRegen < time.Now().Unix() {
 		// 刷新token
-		m, err = user_svc.Auth().Refresh(ctx, user_svc.Auth().Get(ctx).UID, loginId, token)
+		m, err = auth_svc.Auth().Refresh(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
 		if err != nil {
 			return nil, err
 		}
 		// 设置cookie
-		gctx.SetCookie("login_id", m.ID, user_svc.TokenAuthMaxAge, "/", "", false, true)
-		gctx.SetCookie("token", m.Token, user_svc.TokenAuthMaxAge, "/", "", false, true)
+		gctx.SetCookie("login_id", m.ID, auth_svc.TokenAuthMaxAge, "/", "", false, true)
+		gctx.SetCookie("token", m.Token, auth_svc.TokenAuthMaxAge, "/", "", false, true)
 	}
 	return &api.CurrentUserResponse{InfoResponse: resp}, nil
 }
@@ -74,4 +75,9 @@ func (u *User) Avatar() gin.HandlerFunc {
 		}
 		_, _ = ctx.Writer.Write(b)
 	}
+}
+
+// Script 用户脚本列表
+func (u *User) Script(ctx context.Context, req *api.ScriptRequest) (*api.ScriptResponse, error) {
+	return user_svc.User().Script(ctx, req)
 }

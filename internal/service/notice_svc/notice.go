@@ -19,12 +19,12 @@ type NoticeSvc interface {
 }
 
 type noticeSvc struct {
-	senderMap map[SenderType]Sender
+	senderMap map[sender.Type]sender.Sender
 }
 
 var defaultNotice = &noticeSvc{
-	senderMap: map[SenderType]Sender{
-		MailSender: sender.NewMail(),
+	senderMap: map[sender.Type]sender.Sender{
+		sender.MailSender: sender.NewMail(),
 	},
 }
 
@@ -51,11 +51,11 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			return err
 		}
 	}
-	senderOptions := &SendOptions{
+	senderOptions := &sender.SendOptions{
 		From:  from,
 		Title: opts.title,
 	}
-	tplContent := make(map[SenderType]Template)
+	tplContent := make(map[sender.Type]Template)
 	for senderType, tpl := range tpl {
 		content, err := n.parseTpl(tpl.Template, map[string]interface{}{
 			"Value": opts.params,
@@ -94,7 +94,7 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			if !ok {
 				return errors.New("sender not found")
 			}
-			if err := s.Send(ctx, to, content.Template, &SendOptions{
+			if err := s.Send(ctx, to, content.Template, &sender.SendOptions{
 				From:  from,
 				Title: senderOptions.Title,
 			}); err != nil {

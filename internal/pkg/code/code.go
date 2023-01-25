@@ -18,4 +18,6 @@ const (
 	ScriptVersionExist
 	ScriptCreateFailed
 	ScriptUpdateFailed
+	ScriptNotAllowUrl
+	ScriptIsArchive
 )

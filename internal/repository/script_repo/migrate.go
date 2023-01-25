@@ -14,6 +14,7 @@ import (
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/pkg/logger"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"go.uber.org/zap"
 )
 
@@ -27,6 +28,8 @@ type ScriptMigrateRepo interface {
 	Convert(ctx context.Context, e *entity.Script) (*entity.ScriptSearch, error)
 	// Update 更新数据
 	Update(ctx context.Context, s *entity.ScriptSearch) error
+	// Delete 删除数据,但是是软删除
+	Delete(ctx context.Context, id int64) error
 }
 
 var defaultSearch ScriptMigrateRepo
@@ -166,4 +169,24 @@ func (m *migrateRepo) Convert(ctx context.Context, e *entity.Script) (*entity.Sc
 		ret.Domain = append(ret.Domain, v.Domain)
 	}
 	return ret, nil
+}
+
+func (m *migrateRepo) Delete(ctx context.Context, id int64) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("id", id))
+	buf := bytes.NewBuffer([]byte(fmt.Sprintf("{\"doc\":{\"status\":%d}}", consts.DELETE)))
+	resp, err := elasticsearch.Ctx(ctx).Update(
+		(&entity.ScriptSearch{}).CollectionName(), strconv.FormatInt(id, 10), buf,
+	)
+	if err != nil {
+		logger.Error("delete error", zap.Error(err))
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		logger.Error("delete error", zap.ByteString("body", b), zap.Int("status", resp.StatusCode))
+		return fmt.Errorf("delete error: %d body: %s", resp.StatusCode, b)
+	}
+	logger.Info("delete success")
+	return nil
 }

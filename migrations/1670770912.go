@@ -11,6 +11,7 @@ import (
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -55,7 +56,16 @@ func T1670770912() *gormigrate.Migration {
 			}); err != nil {
 				return err
 			}
-
+			// 激活状态修改为2
+			if err := db.Model(&script_entity.Script{}).Where("archive = 0 or archive is null").
+				Update("archive", script_entity.IsActive).Error; err != nil {
+				return err
+			}
+			// 删除状态修改为2
+			if err := db.Model(&script_entity.Script{}).Where("status = 0").
+				Update("status", consts.DELETE).Error; err != nil {
+				return err
+			}
 			return nil
 		},
 		Rollback: func(db *gorm.DB) error {

@@ -10,7 +10,7 @@ type Statistics struct {
 }
 
 func (s *Statistics) Crontab(ctx context.Context, c *cron.Cron) error {
-	_, err := c.AddFunc("* 3 * * *", s.saveScriptStatistics(ctx))
+	_, err := c.AddFunc("0 3 * * *", s.saveScriptStatistics(ctx))
 	if err != nil {
 		return err
 	}

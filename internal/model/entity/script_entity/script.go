@@ -8,9 +8,10 @@ import (
 	"strings"
 
 	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/pkg/consts"
-	"github.com/scriptscat/scriptlist/internal/service/user_svc"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 )
 
 type Type int
@@ -45,8 +46,8 @@ const (
 type ScriptArchive int
 
 const (
-	IsActive ScriptArchive = iota
-	IsArchive
+	IsArchive ScriptArchive = iota + 1
+	IsActive
 )
 
 type Script struct {
@@ -63,7 +64,7 @@ type Script struct {
 	ContentUrl    string        `gorm:"column:content_url;type:text;index:content_url"`
 	DefinitionUrl string        `gorm:"column:definition_url;type:text;index:definition_url"`
 	SyncMode      SyncMode      `gorm:"column:sync_mode;type:tinyint(2)"`
-	Archive       ScriptArchive `gorm:"column:archive;type:tinyint(2)"`
+	Archive       ScriptArchive `gorm:"column:archive;type:tinyint(2);default:2;not null"`
 	Status        int64         `gorm:"column:status;type:bigint(20)"`
 	Createtime    int64         `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime    int64         `gorm:"column:updatetime;type:bigint(20)"`
@@ -75,6 +76,9 @@ func (s *Script) TableName() string {
 
 // CheckOperate 检查是否可以操作
 func (s *Script) CheckOperate(ctx context.Context) error {
+	if s == nil {
+		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptNotFound)
+	}
 	if s.Status != consts.ACTIVE {
 		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptNotActive)
 	}
@@ -82,11 +86,26 @@ func (s *Script) CheckOperate(ctx context.Context) error {
 }
 
 // CheckPermission 检查操作权限
-func (s *Script) CheckPermission(ctx context.Context) error {
-	if s.UserID != user_svc.Auth().Get(ctx).UID {
+func (s *Script) CheckPermission(ctx context.Context, allowAdminLevel ...model.AdminLevel) error {
+	if err := s.CheckOperate(ctx); err != nil {
+		return err
+	}
+	user := auth_svc.Auth().Get(ctx)
+	if s.UserID != user.UID {
+		if len(allowAdminLevel) > 0 && user.AdminLevel.IsAdmin(allowAdminLevel[0]) {
+			return nil
+		}
 		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserNotPermission)
 	}
-	return s.CheckOperate(ctx)
+	return nil
+}
+
+// IsArchive 是否归档
+func (s *Script) IsArchive(ctx context.Context) error {
+	if s.Archive == IsArchive {
+		return i18n.NewError(ctx, code.ScriptIsArchive)
+	}
+	return nil
 }
 
 type Code struct {

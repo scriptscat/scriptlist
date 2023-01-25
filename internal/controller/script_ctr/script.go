@@ -3,21 +3,24 @@ package script_ctr
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/limit"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
-	"github.com/scriptscat/scriptlist/internal/service/user_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
@@ -41,7 +44,7 @@ func (s *Script) List(ctx context.Context, req *api.ListRequest) (*api.ListRespo
 
 // Create 创建脚本/库
 func (s *Script) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
-	cancel, err := s.limit.Take(ctx, strconv.FormatInt(user_svc.Auth().Get(ctx).UID, 10))
+	cancel, err := s.limit.Take(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +60,7 @@ func (s *Script) Create(ctx context.Context, req *api.CreateRequest) (*api.Creat
 
 // UpdateCode 更新脚本/库代码
 func (s *Script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*api.UpdateCodeResponse, error) {
-	cancel, err := s.limit.Take(ctx, strconv.FormatInt(user_svc.Auth().Get(ctx).UID, 10))
+	cancel, err := s.limit.Take(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +76,7 @@ func (s *Script) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) (*a
 
 // MigrateEs 全量迁移数据到es
 func (s *Script) MigrateEs(ctx context.Context, req *api.MigrateEsRequest) (*api.MigrateEsResponse, error) {
-	if user_svc.Auth().Get(ctx).AdminLevel != model.Admin {
+	if auth_svc.Auth().Get(ctx).AdminLevel != model.Admin {
 		return nil, httputils.NewError(http.StatusForbidden, -1, "无权限")
 	}
 	go script_svc.Script().MigrateEs()
@@ -134,7 +137,7 @@ func (s *Script) downloadScript(ctx *gin.Context) {
 		Download:        statistics_repo.DownloadStatistics,
 		Time:            time.Now(),
 	}
-	user := user_svc.Auth().Get(ctx)
+	user := auth_svc.Auth().Get(ctx)
 	if user != nil {
 		record.UserID = user.UID
 	}
@@ -173,7 +176,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		Download:        statistics_repo.UpdateStatistics,
 		Time:            time.Now(),
 	}
-	user := user_svc.Auth().Get(ctx)
+	user := auth_svc.Auth().Get(ctx)
 	if user != nil {
 		record.UserID = user.UID
 	}
@@ -213,4 +216,52 @@ func (s *Script) State(ctx context.Context, req *api.StateRequest) (*api.StateRe
 // Watch 关注脚本
 func (s *Script) Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error) {
 	return script_svc.Script().Watch(ctx, req)
+}
+
+// GetSetting 获取脚本设置
+func (s *Script) GetSetting(ctx context.Context, req *api.GetSettingRequest) (*api.GetSettingResponse, error) {
+	return script_svc.Script().GetSetting(ctx, req)
+}
+
+var whiteList = []string{
+	"github.com",
+	"github.io",
+	"raw.githubusercontent.com",
+	"gitlab.com",
+	"greasyfork.org",
+	"scriptcat.org",
+	"zhaojiaoben.cn",
+	"gitee.com",
+	"jsdelivr.net",
+}
+
+// UpdateSetting 更新脚本设置
+func (s *Script) UpdateSetting(ctx context.Context, req *api.UpdateSettingRequest) (*api.UpdateSettingResponse, error) {
+	// 允许域名白名单
+	if req.SyncUrl != "" {
+		u, err := url.Parse(req.SyncUrl)
+		if err != nil {
+			return nil, err
+		}
+		var flag bool
+		for _, v := range whiteList {
+			if strings.Contains(u.Host, v) {
+				flag = true
+			}
+		}
+		if !flag {
+			return nil, i18n.NewError(ctx, code.ScriptNotAllowUrl)
+		}
+	}
+	return script_svc.Script().UpdateSetting(ctx, req)
+}
+
+// Archive 归档脚本
+func (s *Script) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error) {
+	return script_svc.Script().Archive(ctx, req)
+}
+
+// Delete 删除脚本
+func (s *Script) Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error) {
+	return script_svc.Script().Delete(ctx, req)
 }

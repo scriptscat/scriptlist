@@ -62,3 +62,21 @@ func ParseScriptCodeUpdateMsg(msg *broker2.Message) (*ScriptCodeUpdateMsg, error
 	}
 	return ret, nil
 }
+
+func PublishScriptDelete(ctx context.Context, script *entity.Script) error {
+	body, err := json.Marshal(script)
+	if err != nil {
+		return err
+	}
+	return broker.Default().Publish(ctx, ScriptDeleteTopic, &broker2.Message{
+		Body: body,
+	})
+}
+
+func ParseScriptDeleteMsg(msg *broker2.Message) (*entity.Script, error) {
+	ret := &entity.Script{}
+	if err := json.Unmarshal(msg.Body, ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}

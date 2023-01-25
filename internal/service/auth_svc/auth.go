@@ -1,4 +1,4 @@
-package user_svc
+package auth_svc
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
-	api "github.com/scriptscat/scriptlist/internal/api/user"
+	api "github.com/scriptscat/scriptlist/internal/api/auth"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/pkg/oauth"

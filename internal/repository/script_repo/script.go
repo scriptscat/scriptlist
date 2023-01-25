@@ -22,7 +22,6 @@ type SearchOptions struct {
 	UserID   int64
 	Self     bool
 	Category []int64
-	Status   int64
 	Domain   string
 }
 
@@ -33,6 +32,8 @@ type ScriptRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error)
+	// FindSyncScript 查找需要自动同步的脚本
+	FindSyncScript(ctx context.Context, page httputils.PageRequest) ([]*entity.Script, error)
 }
 
 var defaultScript ScriptRepo
@@ -76,7 +77,6 @@ func (u *scriptRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
-
 	if options.Keyword != "" {
 		// 暂时不支持排序等
 		return u.SearchByEs(ctx, options, page)
@@ -149,11 +149,30 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 	search := elasticsearch.Ctx(ctx).Search
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"match": map[string]interface{}{
-				"name":   options.Keyword,
-				"status": options.Status,
-				"public": entity.PublicScript,
-				"unwell": entity.Well,
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"multi_match": map[string]interface{}{
+							"query":  options.Keyword,
+							"fields": []string{"name", "description", "content"},
+						},
+					},
+					{
+						"match": map[string]interface{}{
+							"status": consts.ACTIVE,
+						},
+					},
+					{
+						"match": map[string]interface{}{
+							"public": entity.PublicScript,
+						},
+					},
+					{
+						"match": map[string]interface{}{
+							"unwell": entity.Well,
+						},
+					},
+				},
 			},
 		},
 		"sort": map[string]interface{}{
@@ -211,4 +230,12 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 		})
 	}
 	return ret, m.Hits.Total.Value, nil
+}
+
+func (u *scriptRepo) FindSyncScript(ctx context.Context, page httputils.PageRequest) ([]*entity.Script, error) {
+	var list []*entity.Script
+	if err := db.Ctx(ctx).Where("sync_mode=? and status=? and sync_url<>''", entity.SyncModeAuto, consts.ACTIVE).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
 }

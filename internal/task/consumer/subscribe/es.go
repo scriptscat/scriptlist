@@ -19,20 +19,25 @@ type EsSync struct {
 }
 
 func (e *EsSync) Subscribe(ctx context.Context, bk broker.Broker) error {
-	_, err := bk.Subscribe(ctx,
+	if _, err := bk.Subscribe(ctx,
 		producer.ScriptCreateTopic, e.scriptCreateHandler,
 		broker.Group("es"),
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
-	_, err = bk.Subscribe(ctx, producer.ScriptCodeUpdateTopic, e.scriptCodeUpdateHandler, broker.Group("es"))
-	if err != nil {
+	if _, err := bk.Subscribe(ctx,
+		producer.ScriptCodeUpdateTopic, e.scriptCodeUpdateHandler, broker.Group("es")); err != nil {
 		return err
 	}
-	bk.Subscribe(ctx, producer.ScriptStatisticTopic, e.scriptStatisticHandler, broker.Group("es"))
-	// TODO: 监听统计消息,每隔一段时间更新数据到es
-	return err
+	if _, err := bk.Subscribe(ctx,
+		producer.ScriptStatisticTopic, e.scriptStatisticHandler, broker.Group("es")); err != nil {
+		return err
+	}
+	if _, err := bk.Subscribe(ctx,
+		producer.ScriptDeleteTopic, e.scriptDeleteHandler, broker.Group("es")); err != nil {
+		return err
+	}
+	return nil
 }
 
 // 消费脚本创建消息推送到elasticsearch
@@ -112,4 +117,19 @@ func (e *EsSync) scriptStatisticHandler(ctx context.Context, event broker.Event)
 		return err
 	}
 	return script_repo.Migrate().Update(ctx, esScript)
+}
+
+// 消费脚本删除消息,删除es记录
+func (e *EsSync) scriptDeleteHandler(ctx context.Context, event broker.Event) error {
+	msg, err := producer.ParseScriptDeleteMsg(event.Message())
+	if err != nil {
+		return err
+	}
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.ID))
+	if err := script_repo.Migrate().Delete(ctx, msg.ID); err != nil {
+		logger.Error("删除es数据失败", zap.Error(err))
+		return err
+	}
+	logger.Info("删除es数据成功")
+	return nil
 }

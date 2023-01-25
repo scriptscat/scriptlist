@@ -20,4 +20,6 @@ var zhCN = map[int]string{
 	ScriptVersionExist:   "版本已存在,更新脚本内容必须升级版本号",
 	ScriptCreateFailed:   "脚本创建失败",
 	ScriptUpdateFailed:   "脚本更新失败",
+	ScriptNotAllowUrl:    "不允许的url域名,如果你需要添加,可以前往论坛反馈申请",
+	ScriptIsArchive:      "脚本已归档,无法进行此操作",
 }

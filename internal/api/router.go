@@ -33,6 +33,9 @@ func Router(root *mux.Router) error {
 		r.Group("/").Bind(
 			controller.Info, // 获取用户信息
 		)
+		r.Group("/", auth.Middleware(false)).Bind(
+			controller.Script,
+		)
 	}
 	// 脚本
 	{
@@ -43,6 +46,10 @@ func Router(root *mux.Router) error {
 			controller.UpdateCode,
 			controller.MigrateEs,
 			controller.Watch,
+			controller.GetSetting,
+			controller.UpdateSetting,
+			controller.Archive,
+			controller.Delete,
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), controller.Download())

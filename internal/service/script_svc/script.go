@@ -3,6 +3,7 @@ package script_svc
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,14 +12,14 @@ import (
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
-	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
-	"github.com/scriptscat/scriptlist/internal/service/user_svc"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
@@ -33,7 +34,7 @@ type ScriptSvc interface {
 	// MigrateEs 全量迁移数据到es
 	MigrateEs()
 	// GetCode 获取脚本代码,version为latest时获取最新版本
-	GetCode(ctx context.Context, id int64, version string) (*entity.Code, error)
+	GetCode(ctx context.Context, id int64, version string) (*script_entity.Code, error)
 	// Info 获取脚本信息
 	Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error)
 	// Code 获取脚本代码
@@ -46,6 +47,18 @@ type ScriptSvc interface {
 	State(ctx context.Context, req *api.StateRequest) (*api.StateResponse, error)
 	// Watch 关注脚本
 	Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error)
+	// GetSetting 获取脚本设置
+	GetSetting(ctx context.Context, req *api.GetSettingRequest) (*api.GetSettingResponse, error)
+	// UpdateSetting 更新脚本设置
+	UpdateSetting(ctx context.Context, req *api.UpdateSettingRequest) (*api.UpdateSettingResponse, error)
+	// SyncOnce 同步一次
+	SyncOnce(ctx context.Context, script *script_entity.Script) error
+	// Archive 归档脚本
+	Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error)
+	// Delete 删除脚本
+	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
+	// ToScript 转换为script response结构
+	ToScript(ctx context.Context, item *script_entity.Script, withcode bool, version string) (*api.Script, error)
 }
 
 type scriptSvc struct {
@@ -70,7 +83,7 @@ func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListRe
 	}
 	list := make([]*api.Script, 0)
 	for _, item := range resp {
-		data, err := s.script(ctx, item, false, "")
+		data, err := s.ToScript(ctx, item, false, "")
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +97,7 @@ func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListRe
 	}, nil
 }
 
-func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bool, version string) (*api.Script, error) {
+func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, withcode bool, version string) (*api.Script, error) {
 	data := &api.Script{
 		ID:          item.ID,
 		UserInfo:    user_entity.UserInfo{},
@@ -127,7 +140,7 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 	}
 	data.TodayInstall = num
 	// 脚本代码信息
-	var scriptCode *entity.Code
+	var scriptCode *script_entity.Code
 	if version == "" {
 		scriptCode, err = script_repo.ScriptCode().FindLatest(ctx, item.ID, withcode)
 	} else {
@@ -161,7 +174,7 @@ func (s *scriptSvc) script(ctx context.Context, item *entity.Script, withcode bo
 	return data, nil
 }
 
-func (s *scriptSvc) scriptCode(ctx context.Context, code *entity.Code) *api.Code {
+func (s *scriptSvc) scriptCode(ctx context.Context, code *script_entity.Code) *api.Code {
 	metaJson := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
 		logger.Ctx(ctx).Error("json解析失败", zap.Error(err), zap.String("meta", code.MetaJson))
@@ -181,26 +194,27 @@ func (s *scriptSvc) scriptCode(ctx context.Context, code *entity.Code) *api.Code
 
 // Create 创建脚本
 func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
-	script := &entity.Script{
-		UserID:     user_svc.Auth().Get(ctx).UID,
+	script := &script_entity.Script{
+		UserID:     auth_svc.Auth().Get(ctx).UID,
 		Content:    req.Content,
 		Type:       req.Type,
 		Public:     req.Public,
 		Unwell:     req.Unwell,
 		Status:     consts.ACTIVE,
+		Archive:    script_entity.IsActive,
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}
 	// 保存脚本代码
-	scriptCode := &entity.Code{
-		UserID:     user_svc.Auth().Get(ctx).UID,
+	scriptCode := &script_entity.Code{
+		UserID:     auth_svc.Auth().Get(ctx).UID,
 		Changelog:  req.Changelog,
 		Status:     consts.ACTIVE,
 		Createtime: time.Now().Unix(),
 		Updatetime: 0,
 	}
-	var definition *entity.LibDefinition
-	if req.Type == entity.LibraryType {
+	var definition *script_entity.LibDefinition
+	if req.Type == script_entity.LibraryType {
 		// 脚本引用库
 		script.Name = req.Name
 		script.Description = req.Description
@@ -208,8 +222,8 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 		scriptCode.Version = req.Version
 		// 脚本定义
 		if req.Definition != "" {
-			definition = &entity.LibDefinition{
-				UserID:     user_svc.Auth().Get(ctx).UID,
+			definition = &script_entity.LibDefinition{
+				UserID:     auth_svc.Auth().Get(ctx).UID,
 				Definition: req.Definition,
 				Createtime: time.Now().Unix(),
 			}
@@ -267,20 +281,20 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 	if err != nil {
 		return nil, err
 	}
-	if script == nil {
-		return nil, i18n.NewError(ctx, code.ScriptNotFound)
-	}
 	if err := script.CheckPermission(ctx); err != nil {
 		return nil, err
 	}
-	scriptCode := &entity.Code{
-		UserID:    user_svc.Auth().Get(ctx).UID,
+	if err := script.IsArchive(ctx); err != nil {
+		return nil, err
+	}
+	scriptCode := &script_entity.Code{
+		UserID:    auth_svc.Auth().Get(ctx).UID,
 		ScriptID:  script.ID,
 		Changelog: req.Changelog,
 		Status:    consts.ACTIVE,
 	}
-	var definition *entity.LibDefinition
-	if script.Type == entity.LibraryType {
+	var definition *script_entity.LibDefinition
+	if script.Type == script_entity.LibraryType {
 		oldVersion, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, req.Version, true)
 		if err != nil {
 			return nil, err
@@ -293,8 +307,8 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 		scriptCode.Version = req.Version
 		// 脚本定义
 		if req.Definition != "" {
-			definition = &entity.LibDefinition{
-				UserID:     user_svc.Auth().Get(ctx).UID,
+			definition = &script_entity.LibDefinition{
+				UserID:     auth_svc.Auth().Get(ctx).UID,
 				Definition: req.Definition,
 				Createtime: time.Now().Unix(),
 			}
@@ -414,7 +428,7 @@ func (s *scriptSvc) MigrateEs() {
 }
 
 // GetCode 获取脚本代码,version为latest时获取最新版本
-func (s *scriptSvc) GetCode(ctx context.Context, id int64, version string) (*entity.Code, error) {
+func (s *scriptSvc) GetCode(ctx context.Context, id int64, version string) (*script_entity.Code, error) {
 	if version == "latest" {
 		return script_repo.ScriptCode().FindLatest(ctx, id, true)
 	}
@@ -427,7 +441,10 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 	if err != nil {
 		return nil, err
 	}
-	script, err := s.script(ctx, m, false, "")
+	if err := m.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	script, err := s.ToScript(ctx, m, false, "")
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +460,10 @@ func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeRe
 	if err != nil {
 		return nil, err
 	}
-	script, err := s.script(ctx, m, true, "")
+	if err := m.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	script, err := s.ToScript(ctx, m, true, "")
 	if err != nil {
 		return nil, err
 	}
@@ -477,7 +497,10 @@ func (s *scriptSvc) VersionCode(ctx context.Context, req *api.VersionCodeRequest
 	if err != nil {
 		return nil, err
 	}
-	script, err := s.script(ctx, m, true, req.Version)
+	if err := m.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	script, err := s.ToScript(ctx, m, true, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -488,8 +511,15 @@ func (s *scriptSvc) VersionCode(ctx context.Context, req *api.VersionCodeRequest
 
 // State 获取脚本状态,脚本关注等
 func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.StateResponse, error) {
-	user := user_svc.Auth().Get(ctx)
-	var level entity.ScriptWatchLevel
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	user := auth_svc.Auth().Get(ctx)
+	var level script_entity.ScriptWatchLevel
 	if user != nil {
 		watch, err := script_repo.ScriptWatch().FindByUser(ctx, req.ID, user.UID)
 		if err != nil {
@@ -513,8 +543,163 @@ func (s *scriptSvc) Watch(ctx context.Context, req *api.WatchRequest) (*api.Watc
 	if err := m.CheckOperate(ctx); err != nil {
 		return nil, err
 	}
-	if err := script_repo.ScriptWatch().Watch(ctx, req.ID, user_svc.Auth().Get(ctx).UID, req.Watch); err != nil {
+	if err := script_repo.ScriptWatch().Watch(ctx, req.ID, auth_svc.Auth().Get(ctx).UID, req.Watch); err != nil {
 		return nil, err
 	}
 	return nil, nil
+}
+
+// GetSetting 获取脚本设置
+func (s *scriptSvc) GetSetting(ctx context.Context, req *api.GetSettingRequest) (*api.GetSettingResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckPermission(ctx); err != nil {
+		return nil, err
+	}
+	return &api.GetSettingResponse{
+		SyncUrl:       m.SyncUrl,
+		ContentUrl:    m.ContentUrl,
+		DefinitionUrl: m.DefinitionUrl,
+		SyncMode:      m.SyncMode,
+	}, nil
+}
+
+// UpdateSetting 更新脚本设置
+func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingRequest) (*api.UpdateSettingResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckPermission(ctx); err != nil {
+		return nil, err
+	}
+	if err := m.IsArchive(ctx); err != nil {
+		return nil, err
+	}
+	m.SyncUrl = req.SyncUrl
+	m.ContentUrl = req.ContentUrl
+	m.SyncMode = req.SyncMode
+	switch m.Type {
+	case script_entity.UserscriptType, script_entity.SubscribeType:
+	case script_entity.LibraryType:
+		m.Name = req.Name
+		m.Description = req.Description
+		m.DefinitionUrl = req.DefinitionUrl
+	default:
+		return nil, i18n.NewError(ctx, code.ScriptUpdateFailed)
+	}
+	if err := script_repo.Script().Update(ctx, m); err != nil {
+		return nil, err
+	}
+	return &api.UpdateSettingResponse{}, nil
+}
+
+func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) error {
+	if err := script.IsArchive(ctx); err != nil {
+		return err
+	}
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID))
+	// 读取代码
+	codeContent, err := requestSyncUrl(ctx, script.SyncUrl)
+	if err != nil {
+		logger.Error("读取代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
+		return err
+	}
+	// 查找最新的code
+	code, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, false)
+	if err != nil {
+		logger.Error("获取代码失败", zap.Error(err))
+		return err
+	}
+	if code == nil {
+		logger.Error("代码不存在")
+		return err
+	}
+	oldVersion := code.Version
+	if _, err := code.UpdateCode(ctx, codeContent); err != nil {
+		logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
+		return err
+	}
+	if oldVersion == code.Version {
+		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
+		return err
+	}
+	req := &api.UpdateCodeRequest{
+		ID:         script.ID,
+		Version:    "",
+		Content:    "",
+		Code:       codeContent,
+		Definition: "",
+		Changelog:  "该版本为系统自动同步更新",
+		Public:     script.Public,
+		Unwell:     script.Unwell,
+	}
+	// 读取content
+	if script.ContentUrl != "" {
+		content, err := requestSyncUrl(ctx, script.ContentUrl)
+		if err != nil {
+			logger.Error("读取content失败", zap.String("content_url", script.ContentUrl), zap.Error(err))
+			req.Content = script.Content
+		} else {
+			req.Content = content
+		}
+	}
+	if script.Type == script_entity.LibraryType {
+		// 版本号,最后一位加一
+		end := strings.LastIndex(code.Version, ".")
+		if end == -1 {
+			code.Version = code.Version + ".1"
+		} else {
+			ver, _ := strconv.Atoi(code.Version[end+1:])
+			code.Version = code.Version[:end] + "." + strconv.Itoa(ver+1)
+		}
+	} else {
+		req.Version = code.Version
+	}
+	if _, err := s.UpdateCode(ctx, req); err != nil {
+		logger.Error("更新代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+// Archive 归档脚本
+func (s *scriptSvc) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckPermission(ctx); err != nil {
+		return nil, err
+	}
+	if req.Archive {
+		m.Archive = script_entity.IsArchive
+	} else {
+		m.Archive = script_entity.IsActive
+	}
+	if err := script_repo.Script().Update(ctx, m); err != nil {
+		return nil, err
+	}
+	return &api.ArchiveResponse{}, nil
+}
+
+// Delete 删除脚本
+func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error) {
+	m, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckPermission(ctx); err != nil {
+		return nil, err
+	}
+	m.Status = consts.DELETE
+	if err := script_repo.Script().Update(ctx, m); err != nil {
+		return nil, err
+	}
+	if err := producer.PublishScriptDelete(ctx, m); err != nil {
+		logger.Ctx(ctx).Error("发布删除脚本消息失败", zap.Error(err))
+	}
+	return &api.DeleteResponse{}, nil
 }

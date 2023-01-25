@@ -15,7 +15,7 @@ type Cron interface {
 // Crontab 定时任务
 func Crontab(ctx context.Context, config *configs.Config) error {
 	c := cron.New()
-	crontab := []Cron{&handler.Statistics{}}
+	crontab := []Cron{&handler.Statistics{}, &handler.Script{}}
 	for _, v := range crontab {
 		if err := v.Crontab(ctx, c); err != nil {
 			return err

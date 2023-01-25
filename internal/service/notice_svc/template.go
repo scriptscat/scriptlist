@@ -1,6 +1,9 @@
 package notice_svc
 
-import "github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
+import (
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc/sender"
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
+)
 
 // 模板id
 
@@ -13,10 +16,10 @@ type Template struct {
 	Template string
 }
 
-var templateMap = map[int]map[SenderType]Template{
+var templateMap = map[int]map[sender.Type]Template{
 	// 脚本更新模板
 	ScriptUpdateTemplate: {
-		MailSender: {
+		sender.MailSender: {
 			Title:    template.ScriptUpdateTitle,
 			Template: template.ScriptUpdateTemplate,
 		},
