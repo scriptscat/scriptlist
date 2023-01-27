@@ -5,6 +5,7 @@ import (
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
 )
@@ -35,7 +36,7 @@ func Router(root *mux.Router) error {
 			controller.GetConfig,
 			controller.UpdateConfig,
 		)
-		r.GET("/user/avatar/:uid", controller.Avatar())
+		r.GET("/users/:uid/avatar", controller.Avatar())
 		r.Group("/").Bind(
 			controller.Info, // 获取用户信息
 		)
@@ -72,6 +73,40 @@ func Router(root *mux.Router) error {
 		r.Group("/", auth.Middleware(false)).Bind(
 			controller.State,
 		)
+	}
+	{
+		issueComment := issue_ctr.NewComment()
+		// 脚本反馈
+		{
+			controller := issue_ctr.NewIssue()
+			// 需要登录的路由组
+			r.Group("/", auth.Middleware(true), issueComment.Middleware()).Bind(
+				controller.CreateIssue,
+				controller.Open,
+				controller.Close,
+				controller.Watch,
+				controller.GetWatch,
+				controller.Delete,
+				controller.UpdateLabels,
+			)
+			// 不需要登录
+			r.Group("/", issueComment.Middleware()).Bind(
+				controller.List,
+				controller.GetIssue,
+			)
+		}
+		// 脚本反馈评论
+		{
+			// 需要登录的路由组
+			r.Group("/", auth.Middleware(true), issueComment.Middleware()).Bind(
+				issueComment.CreateComment,
+				issueComment.DeleteComment,
+			)
+			// 不需要登录
+			r.Group("/", issueComment.Middleware()).Bind(
+				issueComment.ListComment,
+			)
+		}
 	}
 	return nil
 }

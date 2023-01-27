@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
@@ -15,7 +16,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
-	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -116,9 +116,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	if err != nil {
 		logger.Ctx(ctx).Error("获取用户信息失败", zap.Error(err), zap.Int64("user_id", item.UserID))
 	}
-	if user != nil {
-		data.UserInfo = user.UserInfo()
-	}
+	data.UserInfo = user.UserInfo()
 	// 评分统计信息
 	statistics, err := script_repo.ScriptStatistics().FindByScriptID(ctx, item.ID)
 	if err != nil {
@@ -448,9 +446,9 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 	if err != nil {
 		return nil, err
 	}
-	script.Content = m.Content
 	return &api.InfoResponse{
-		Script: script,
+		Script:  script,
+		Content: m.Content,
 	}, nil
 }
 
@@ -467,7 +465,6 @@ func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeRe
 	if err != nil {
 		return nil, err
 	}
-	script.Content = m.Content
 	return &api.CodeResponse{
 		Script: script,
 	}, nil

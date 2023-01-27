@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
-	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"go.uber.org/zap"

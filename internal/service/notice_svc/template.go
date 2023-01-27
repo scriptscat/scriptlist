@@ -11,6 +11,8 @@ type TemplateID int
 
 const (
 	ScriptUpdateTemplate TemplateID = iota + 1
+	IssueCreateTemplate
+	CommentCreateTemplate
 )
 
 type Template struct {

@@ -17,10 +17,20 @@ const (
 	ScriptVersionIsEmpty
 	ScriptParseFailed
 	ScriptNotFound
-	ScriptNotActive
+	ScriptIsDelete
 	ScriptVersionExist
 	ScriptCreateFailed
 	ScriptUpdateFailed
 	ScriptNotAllowUrl
 	ScriptIsArchive
+)
+
+// issue
+const (
+	IssueLabelNotExist = iota + 102000
+	IssueNotFound
+	IssueIsDelete
+	IssueNoPermission
+	IssueCommentNotFound
+	IssueLabelNotChange
 )

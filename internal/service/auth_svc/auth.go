@@ -39,6 +39,10 @@ type AuthSvc interface {
 	Refresh(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
 	// GetLoginToken 获取登录token信息
 	GetLoginToken(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
+	// SetCtx 设置用户信息到上下文
+	SetCtx(ctx context.Context, uid int64) (context.Context, error)
+	// SetCtxUid 设置用户uid信息到上下文
+	SetCtxUid(ctx context.Context, uid int64) context.Context
 }
 
 type authSvc struct {
@@ -104,33 +108,52 @@ func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
 			httputils.HandleResp(ctx, httputils.NewError(http.StatusUnauthorized, -1, "token expired"))
 			return
 		}
-		// 获取用户信息
-		user, err := user_repo.User().Find(ctx, m.UID)
+		c, err := a.SetCtx(ctx.Request.Context(), m.UID)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
-			return
 		}
-		if err := user.IsBanned(ctx); err != nil {
-			httputils.HandleResp(ctx, err)
-			return
-		}
-		// 设置用户信息,链路追踪和日志也添加上用户信息
-		authInfo := &model.AuthInfo{
-			UID:           m.UID,
-			Username:      user.Username,
-			Email:         user.Email,
-			EmailVerified: !(user.Emailstatus == 0),
-			AdminLevel:    model.AdminLevel(user.Adminid),
-		}
-		trace.SpanFromContext(ctx.Request.Context()).SetAttributes(
-			attribute.Int64("uid", m.UID),
-		)
-
-		ctx.Request = ctx.Request.WithContext(context.WithValue(
-			logger.ContextWithLogger(ctx.Request.Context(), logger.Ctx(ctx.Request.Context()).
-				With(zap.Int64("uid", m.UID))),
-			model.AuthInfo{}, authInfo))
+		ctx.Request = ctx.Request.WithContext(c)
 	}
+}
+
+// SetCtx 设置用户信息到上下文
+func (a *authSvc) SetCtx(ctx context.Context, uid int64) (context.Context, error) {
+	// 获取用户信息
+	user, err := user_repo.User().Find(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+	if err := user.IsBanned(ctx); err != nil {
+		return nil, err
+	}
+	// 设置用户信息,链路追踪和日志也添加上用户信息
+	authInfo := &model.AuthInfo{
+		UID:           user.UID,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailVerified: !(user.Emailstatus == 0),
+		AdminLevel:    model.AdminLevel(user.Adminid),
+	}
+
+	trace.SpanFromContext(ctx).SetAttributes(
+		attribute.Int64("user_id", user.UID),
+	)
+
+	return context.WithValue(
+		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
+			With(zap.Int64("user_id", user.UID))),
+		model.AuthInfo{}, authInfo), nil
+}
+
+// SetCtxUid 设置用户uid到上下文
+func (a *authSvc) SetCtxUid(ctx context.Context, uid int64) context.Context {
+	trace.SpanFromContext(ctx).SetAttributes(
+		attribute.Int64("user_id", uid),
+	)
+	return context.WithValue(
+		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
+			With(zap.Int64("user_id", uid))),
+		model.AuthInfo{}, &model.AuthInfo{UID: uid})
 }
 
 // Get 获取用户鉴权信息

@@ -28,12 +28,295 @@ definitions:
     properties:
       list:
         items:
-          $ref: '#/definitions/script.Script'
+          $ref: '#/definitions/issue.Comment'
           type: object
         type: array
       total:
         type: integer
     type: object
+  issue.CloseRequest:
+    properties:
+      id:
+        type: integer
+      issueId:
+        type: integer
+    type: object
+  issue.CloseResponse:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      issue_id:
+        type: integer
+      status:
+        type: integer
+      type:
+        $ref: '#/definitions/issue_entity.CommentType'
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  issue.Comment:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      issue_id:
+        type: integer
+      status:
+        type: integer
+      type:
+        $ref: '#/definitions/issue_entity.CommentType'
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  issue.CreateCommentRequest:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      issueId:
+        type: integer
+    type: object
+  issue.CreateCommentResponse:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      issue_id:
+        type: integer
+      status:
+        type: integer
+      type:
+        $ref: '#/definitions/issue_entity.CommentType'
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  issue.CreateIssueRequest:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      labels:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  issue.CreateIssueResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  issue.DeleteCommentRequest:
+    properties:
+      commentId:
+        type: integer
+      id:
+        type: integer
+      issueId:
+        type: integer
+    type: object
+  issue.DeleteCommentResponse:
+    type: object
+  issue.DeleteRequest:
+    properties:
+      id:
+        type: integer
+      issueId:
+        type: integer
+    type: object
+  issue.DeleteResponse:
+    type: object
+  issue.GetIssueResponse:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      labels:
+        items:
+          type: string
+        type: array
+      script_id:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  issue.GetWatchResponse:
+    properties:
+      watch:
+        type: boolean
+    type: object
+  issue.Issue:
+    properties:
+      avatar:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      labels:
+        items:
+          type: string
+        type: array
+      script_id:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  issue.ListCommentResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  issue.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  issue.OpenRequest:
+    properties:
+      id:
+        type: integer
+      issueId:
+        type: integer
+    type: object
+  issue.OpenResponse:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      issue_id:
+        type: integer
+      status:
+        type: integer
+      type:
+        $ref: '#/definitions/issue_entity.CommentType'
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  issue.UpdateLabelsRequest:
+    properties:
+      id:
+        type: integer
+      issueId:
+        type: integer
+      labels:
+        items:
+          type: string
+        type: array
+    type: object
+  issue.UpdateLabelsResponse:
+    type: object
+  issue.WatchRequest:
+    properties:
+      id:
+        type: integer
+      issueId:
+        type: integer
+      watch:
+        type: boolean
+    type: object
+  issue.WatchResponse:
+    type: object
+  issue_entity.CommentType:
+    description: |-
+      CommentType enum type:
+      - CommentTypeComment: 1
+      - CommentTypeChangeTitle: 2
+      - CommentTypeChangeLabel: 3
+      - CommentTypeOpen: 4
+      - CommentTypeClose: 5
+      - CommentTypeDelete: 6
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    type: integer
   model.AdminLevel:
     description: |-
       AdminLevel enum type:
@@ -84,6 +367,8 @@ definitions:
         type: string
       id:
         type: integer
+      is_admin:
+        type: integer
       meta,omitempty:
         type: string
       meta_json:
@@ -109,13 +394,13 @@ definitions:
         items:
           $ref: '#/definitions/script.CategoryList'
         type: array
-      content,omitempty:
-        type: string
       createtime:
         type: integer
       description:
         type: string
       id:
+        type: integer
+      is_admin:
         type: integer
       name:
         type: string
@@ -205,13 +490,15 @@ definitions:
         items:
           $ref: '#/definitions/script.CategoryList'
         type: array
-      content,omitempty:
+      content:
         type: string
       createtime:
         type: integer
       description:
         type: string
       id:
+        type: integer
+      is_admin:
         type: integer
       name:
         type: string
@@ -246,7 +533,7 @@ definitions:
     properties:
       list:
         items:
-          $ref: '#/definitions/script.Script'
+          $ref: '#/definitions/issue.Comment'
           type: object
         type: array
       total:
@@ -266,13 +553,13 @@ definitions:
         items:
           $ref: '#/definitions/script.CategoryList'
         type: array
-      content,omitempty:
-        type: string
       createtime:
         type: integer
       description:
         type: string
       id:
+        type: integer
+      is_admin:
         type: integer
       name:
         type: string
@@ -362,13 +649,13 @@ definitions:
         items:
           $ref: '#/definitions/script.CategoryList'
         type: array
-      content,omitempty:
-        type: string
       createtime:
         type: integer
       description:
         type: string
       id:
+        type: integer
+      is_admin:
         type: integer
       name:
         type: string
@@ -403,7 +690,7 @@ definitions:
     properties:
       list:
         items:
-          $ref: '#/definitions/script.Script'
+          $ref: '#/definitions/issue.Comment'
           type: object
         type: array
       total:
@@ -538,7 +825,7 @@ definitions:
     properties:
       list:
         items:
-          $ref: '#/definitions/script.Script'
+          $ref: '#/definitions/issue.Comment'
           type: object
         type: array
       total:
@@ -576,6 +863,8 @@ definitions:
     properties:
       avatar:
         type: string
+      is_admin:
+        type: integer
       user_id:
         type: integer
       username:
@@ -842,6 +1131,438 @@ paths:
       summary: 更新脚本/库代码
       tags:
       - script
+  /scripts/{id}/issues:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本反馈列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.ListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本反馈列表
+      tags:
+      - issue
+    post:
+      consumes:
+      - application/json
+      description: 创建脚本反馈
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.CreateIssueRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.CreateIssueResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建脚本反馈
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除issue
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.DeleteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除issue
+      tags:
+      - issue
+    get:
+      consumes:
+      - application/json
+      description: 获取issue信息
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.GetIssueResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取issue信息
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}/close:
+    put:
+      consumes:
+      - application/json
+      description: 关闭issue
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.CloseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.CloseResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 关闭issue
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}/comment:
+    get:
+      consumes:
+      - application/json
+      description: 获取反馈评论列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.ListCommentResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取反馈评论列表
+      tags:
+      - issue
+    post:
+      consumes:
+      - application/json
+      description: 创建反馈评论
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.CreateCommentResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建反馈评论
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}/comment/{commentId}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除反馈评论
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: path
+        name: commentId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.DeleteCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.DeleteCommentResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除反馈评论
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}/labels:
+    put:
+      consumes:
+      - application/json
+      description: 更新issue标签
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.UpdateLabelsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.UpdateLabelsResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新issue标签
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}/open:
+    put:
+      consumes:
+      - application/json
+      description: 打开issue
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.OpenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.OpenResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 打开issue
+      tags:
+      - issue
+  /scripts/{id}/issues/{issueId}/watch:
+    get:
+      consumes:
+      - application/json
+      description: 获取issue关注状态
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.GetWatchResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取issue关注状态
+      tags:
+      - issue
+    put:
+      consumes:
+      - application/json
+      description: 关注issue
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: issueId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/issue.WatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/issue.WatchResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 关注issue
+      tags:
+      - issue
   /scripts/{id}/setting:
     get:
       consumes:
@@ -1181,7 +1902,7 @@ paths:
       summary: 获取指定用户信息
       tags:
       - user
-  /users/{uid}/script:
+  /users/{uid}/scripts:
     get:
       consumes:
       - application/json

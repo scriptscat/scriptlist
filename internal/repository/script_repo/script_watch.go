@@ -14,7 +14,8 @@ type ScriptWatchRepo interface {
 	Update(ctx context.Context, scriptWatch *script_entity.ScriptWatch) error
 	Delete(ctx context.Context, id int64) error
 
-	ListAll(ctx context.Context, script int64) ([]*script_entity.ScriptWatch, error)
+	// FindAll 查询出所有符合条件的记录
+	FindAll(ctx context.Context, script int64, level script_entity.ScriptWatchLevel) ([]*script_entity.ScriptWatch, error)
 	FindByUser(ctx context.Context, script, user int64) (*script_entity.ScriptWatch, error)
 	Watch(ctx context.Context, script, user int64, level script_entity.ScriptWatchLevel) error
 }
@@ -59,9 +60,9 @@ func (s *scriptWatchRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&script_entity.ScriptWatch{ID: id}).Error
 }
 
-func (s *scriptWatchRepo) ListAll(ctx context.Context, scriptId int64) ([]*script_entity.ScriptWatch, error) {
+func (s *scriptWatchRepo) FindAll(ctx context.Context, scriptId int64, level script_entity.ScriptWatchLevel) ([]*script_entity.ScriptWatch, error) {
 	var list []*script_entity.ScriptWatch
-	if err := db.Ctx(ctx).Where("script_id=? and level>0", scriptId).Find(&list).Error; err != nil {
+	if err := db.Ctx(ctx).Where("script_id=? and level>=?", scriptId, level).Find(&list).Error; err != nil {
 		return nil, err
 	}
 	return list, nil

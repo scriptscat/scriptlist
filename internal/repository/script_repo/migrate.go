@@ -12,9 +12,9 @@ import (
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/elasticsearch"
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/logger"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"go.uber.org/zap"
 )
 

@@ -15,6 +15,7 @@ import (
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
+	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -44,6 +45,10 @@ func main() {
 	script_repo.RegisterScriptStatistics(script_repo.NewScriptStatistics())
 
 	statistics_repo.RegisterStatistics(statistics_repo.NewStatistics())
+
+	issue_repo.RegisterScriptIssue(issue_repo.NewScriptIssue())
+	issue_repo.RegisterScriptIssueComment(issue_repo.NewScriptIssueComment())
+	issue_repo.RegisterScriptIssueWatch(issue_repo.NewScriptIssueWatch())
 
 	user_repo.RegisterUser(user_repo.NewUserRepo())
 	user_repo.RegisterFollow(user_repo.NewFollowRepo())

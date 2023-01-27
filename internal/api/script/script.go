@@ -20,7 +20,6 @@ type Script struct {
 	Name                 string          `json:"name"`
 	Description          string          `json:"description"`
 	Category             []*CategoryList `json:"category"`
-	Content              string          `json:"content,omitempty"`
 	Status               int64           `json:"status"`
 	Score                int64           `json:"score"`
 	ScoreNum             int64           `json:"score_num"`
@@ -138,6 +137,7 @@ type InfoRequest struct {
 
 type InfoResponse struct {
 	*Script `json:",inline"`
+	Content string `json:"content"`
 }
 
 // CodeRequest 获取脚本代码信息

@@ -1,0 +1,120 @@
+package issue
+
+import (
+	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
+)
+
+type Issue struct {
+	user_entity.UserInfo `json:",inline"`
+	ID                   int64    `json:"id"`
+	ScriptID             int64    `json:"script_id"`
+	Title                string   `json:"title"`
+	Labels               []string `json:"labels"`
+	Status               int32    `json:"status"`
+	Createtime           int64    `json:"createtime"`
+	Updatetime           int64    `json:"updatetime"`
+}
+
+// ListRequest 获取脚本反馈列表
+type ListRequest struct {
+	mux.Meta              `path:"/scripts/:id/issues" method:"GET"`
+	httputils.PageRequest `form:",inline"`
+	ScriptID              int64 `uri:"id" binding:"required"`
+}
+
+type ListResponse struct {
+	httputils.PageResponse[*Issue] `json:",inline"`
+}
+
+// CreateIssueRequest 创建脚本反馈
+type CreateIssueRequest struct {
+	mux.Meta `path:"/scripts/:id/issues" method:"POST"`
+	ScriptID int64    `uri:"id" binding:"required"`
+	Title    string   `json:"title" binding:"required,max=128" label:"标题"`
+	Content  string   `json:"content" binding:"max=10485760" label:"反馈内容"`
+	Labels   []string `json:"labels" binding:"max=128" label:"标签"`
+}
+
+type CreateIssueResponse struct {
+	ID int64 `json:"id"`
+}
+
+// GetIssueRequest 获取issue信息
+type GetIssueRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId" method:"GET"`
+	ScriptID int64 `uri:"id" binding:"required"`
+	IssueID  int64 `uri:"issueId" binding:"required"`
+}
+
+type GetIssueResponse struct {
+	*Issue  `json:",inline"`
+	Content string `json:"content"`
+}
+
+// GetWatchRequest 获取issue关注状态
+type GetWatchRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId/watch" method:"GET"`
+	ScriptID int64 `uri:"id" binding:"required"`
+	IssueID  int64 `uri:"issueId" binding:"required"`
+}
+
+type GetWatchResponse struct {
+	Watch bool `json:"watch"`
+}
+
+// WatchRequest 关注issue
+type WatchRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId/watch" method:"PUT"`
+	ScriptID int64 `uri:"id" binding:"required"`
+	IssueID  int64 `uri:"issueId" binding:"required"`
+	Watch    bool  `form:"watch" binding:"omitempty" label:"关注状态"`
+}
+
+type WatchResponse struct {
+}
+
+// CloseRequest 关闭issue
+type CloseRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId/close" method:"PUT"`
+	ScriptID int64 `uri:"id" binding:"required"`
+	IssueID  int64 `uri:"issueId" binding:"required"`
+}
+
+type CloseResponse struct {
+	*Comment `json:",inline"`
+}
+
+// OpenRequest 打开issue
+type OpenRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId/open" method:"PUT"`
+	ScriptID int64 `uri:"id" binding:"required"`
+	IssueID  int64 `uri:"issueId" binding:"required"`
+}
+
+type OpenResponse struct {
+	*Comment `json:",inline"`
+}
+
+// DeleteRequest 删除issue
+type DeleteRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId" method:"DELETE"`
+	ScriptID int64 `uri:"id" binding:"required"`
+	IssueID  int64 `uri:"issueId" binding:"required"`
+}
+
+type DeleteResponse struct {
+}
+
+// UpdateLabelsRequest 更新issue标签
+type UpdateLabelsRequest struct {
+	mux.Meta `path:"/scripts/:id/issues/:issueId/labels" method:"PUT"`
+	ScriptID int64    `uri:"id" binding:"required"`
+	IssueID  int64    `uri:"issueId" binding:"required"`
+	Labels   []string `form:"labels" binding:"max=128" label:"标签"`
+}
+
+type UpdateLabelsResponse struct {
+	*Comment `json:",inline"`
+}

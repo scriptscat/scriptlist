@@ -33,7 +33,7 @@ type InfoResponse struct {
 
 // ScriptRequest 用户脚本列表
 type ScriptRequest struct {
-	mux.Meta              `path:"/users/:uid/script" method:"GET"`
+	mux.Meta              `path:"/users/:uid/scripts" method:"GET"`
 	httputils.PageRequest `form:",inline"`
 	UID                   int64  `uri:"uid" binding:"required"`
 	Keyword               string `form:"keyword"`

@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
-	"github.com/scriptscat/scriptlist/internal/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 )
 
@@ -80,7 +80,7 @@ func (s *Script) CheckOperate(ctx context.Context) error {
 		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptNotFound)
 	}
 	if s.Status != consts.ACTIVE {
-		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptNotActive)
+		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptIsDelete)
 	}
 	return nil
 }
@@ -102,6 +102,9 @@ func (s *Script) CheckPermission(ctx context.Context, allowAdminLevel ...model.A
 
 // IsArchive 是否归档
 func (s *Script) IsArchive(ctx context.Context) error {
+	if err := s.CheckOperate(ctx); err != nil {
+		return err
+	}
 	if s.Archive == IsArchive {
 		return i18n.NewError(ctx, code.ScriptIsArchive)
 	}

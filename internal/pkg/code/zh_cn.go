@@ -19,10 +19,17 @@ var zhCN = map[int]string{
 	ScriptVersionIsEmpty: "脚本版本不能为空",
 	ScriptParseFailed:    "脚本解析失败",
 	ScriptNotFound:       "脚本不存在",
-	ScriptNotActive:      "脚本被删除",
+	ScriptIsDelete:       "脚本被删除",
 	ScriptVersionExist:   "版本已存在,更新脚本内容必须升级版本号",
 	ScriptCreateFailed:   "脚本创建失败",
 	ScriptUpdateFailed:   "脚本更新失败",
 	ScriptNotAllowUrl:    "不允许的url域名,如果你需要添加,可以前往论坛反馈申请",
 	ScriptIsArchive:      "脚本已归档,无法进行此操作",
+
+	IssueLabelNotExist:   "标签不存在",
+	IssueNotFound:        "反馈不存在",
+	IssueIsDelete:        "反馈被删除",
+	IssueNoPermission:    "无权限操作",
+	IssueCommentNotFound: "评论不存在",
+	IssueLabelNotChange:  "标签未改变",
 }

@@ -54,10 +54,13 @@ func (u *User) IsBanned(ctx context.Context) error {
 }
 
 func (u *User) Avatar() string {
-	return "/api/v2/user/avatar/" + strconv.FormatInt(u.UID, 10)
+	return "/api/v2/users/" + strconv.FormatInt(u.UID, 10) + "/avatar"
 }
 
 func (u *User) UserInfo() UserInfo {
+	if u == nil {
+		return UserInfo{}
+	}
 	return UserInfo{
 		UserID:   u.UID,
 		Username: u.Username,
@@ -69,4 +72,5 @@ type UserInfo struct {
 	UserID   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Avatar   string `json:"avatar"`
+	IsAdmin  int    `json:"is_admin"`
 }
