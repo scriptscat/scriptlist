@@ -2,15 +2,18 @@ package issue_svc
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/codfrm/cago/pkg/consts"
+	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/issue"
 	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -115,6 +118,11 @@ func (c *commentSvc) CreateComment(ctx context.Context, req *api.CreateCommentRe
 // Middleware 中间件,检查是否可以访问
 func (c *commentSvc) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// 非GET请求,需要验证邮箱
+		if ctx.Request.Method != http.MethodGet && !auth_svc.Auth().Get(ctx).EmailVerified {
+			httputils.HandleResp(ctx, i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserEmailNotVerified))
+			return
+		}
 		id, _ := strconv.ParseInt(ctx.Param("id"), 10, 64)
 		issueId, _ := strconv.ParseInt(ctx.Param("issueId"), 10, 64)
 		var script *script_entity.Script

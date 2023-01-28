@@ -8,6 +8,7 @@ const (
 	UserNotFollow
 	UserNotFollowSelf
 	UserExistFollow
+	UserEmailNotVerified
 )
 
 // script
@@ -33,4 +34,11 @@ const (
 	IssueNoPermission
 	IssueCommentNotFound
 	IssueLabelNotChange
+)
+
+// resource
+const (
+	ResourceImageTooLarge = iota + 103000
+	ResourceNotImage
+	ResourceNotFound
 )

@@ -288,6 +288,29 @@ definitions:
         type: array
     type: object
   issue.UpdateLabelsResponse:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: integer
+      is_admin:
+        type: integer
+      issue_id:
+        type: integer
+      status:
+        type: integer
+      type:
+        $ref: '#/definitions/issue_entity.CommentType'
+      updatetime:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
     type: object
   issue.WatchRequest:
     properties:
@@ -328,6 +351,13 @@ definitions:
     - 2
     - 3
     type: integer
+  resource.UploadImageRequest:
+    properties:
+      comment:
+        type: string
+      image:
+        type: string
+    type: object
   script.ArchiveRequest:
     properties:
       archive:
@@ -394,6 +424,8 @@ definitions:
         items:
           $ref: '#/definitions/script.CategoryList'
         type: array
+      content:
+        type: string
       createtime:
         type: integer
       description:
@@ -906,6 +938,36 @@ paths:
       summary: 第三方登录
       tags:
       - auth
+  /resource/image:
+    post:
+      consumes:
+      - application/json
+      description: 上传图片
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/resource.UploadImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/resource.UploadImageResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 上传图片
+      tags:
+      - resource
   /scripts:
     get:
       consumes:

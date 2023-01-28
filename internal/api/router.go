@@ -6,6 +6,7 @@ import (
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/resource_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
 )
@@ -46,32 +47,32 @@ func Router(root *mux.Router) error {
 		)
 	}
 	// 脚本
+	scriptCtr := script_ctr.NewScript()
 	{
-		controller := script_ctr.NewScript()
 		// 需要用户登录的路由组
 		r.Group("/", auth.Middleware(true)).Bind(
-			controller.Create,
-			controller.UpdateCode,
-			controller.MigrateEs,
-			controller.Watch,
-			controller.GetSetting,
-			controller.UpdateSetting,
-			controller.Archive,
-			controller.Delete,
+			scriptCtr.Create,
+			scriptCtr.UpdateCode,
+			scriptCtr.MigrateEs,
+			scriptCtr.Watch,
+			scriptCtr.GetSetting,
+			scriptCtr.UpdateSetting,
+			scriptCtr.Archive,
+			scriptCtr.Delete,
 		)
 		// 处理下载
-		root.GET("/scripts/code/:id/*name", auth.Middleware(false), controller.Download())
+		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download())
 		// 无需用户登录的路由组
 		r.Group("/").Bind(
-			controller.List,
-			controller.Info,
-			controller.Code,
-			controller.VersionList,
-			controller.VersionCode,
+			scriptCtr.List,
+			scriptCtr.Info,
+			scriptCtr.Code,
+			scriptCtr.VersionList,
+			scriptCtr.VersionCode,
 		)
 		// 半登录
 		r.Group("/", auth.Middleware(false)).Bind(
-			controller.State,
+			scriptCtr.State,
 		)
 	}
 	{
@@ -107,6 +108,16 @@ func Router(root *mux.Router) error {
 				issueComment.ListComment,
 			)
 		}
+	}
+	// 资源
+	{
+		controller := resource_ctr.NewResource()
+		// 需要登录的路由组
+		r.Group("/", auth.Middleware(true)).Bind(
+			controller.UploadImage,
+		)
+		// 不需要登录
+		r.GET("/resource/image/:id", controller.ViewImage())
 	}
 	return nil
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/resource_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -53,6 +54,8 @@ func main() {
 	user_repo.RegisterUser(user_repo.NewUserRepo())
 	user_repo.RegisterFollow(user_repo.NewFollowRepo())
 	user_repo.RegisterUserConfig(user_repo.NewUserConfig())
+
+	resource_repo.RegisterResource(resource_repo.NewResource())
 
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).

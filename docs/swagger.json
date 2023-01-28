@@ -57,6 +57,54 @@
                 }
             }
         },
+        "/resource/image": {
+            "post": {
+                "description": "上传图片",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "resource"
+                ],
+                "summary": "上传图片",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/resource.UploadImageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/resource.UploadImageResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts": {
             "get": {
                 "description": "获取脚本列表",
@@ -2297,7 +2345,42 @@
             }
         },
         "issue.UpdateLabelsResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_admin": {
+                    "type": "integer"
+                },
+                "issue_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/issue_entity.CommentType"
+                },
+                "updatetime": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
         },
         "issue.WatchRequest": {
             "type": "object",
@@ -2336,6 +2419,17 @@
                 2,
                 3
             ]
+        },
+        "resource.UploadImageRequest": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                }
+            }
         },
         "script.ArchiveRequest": {
             "type": "object",
@@ -2436,6 +2530,9 @@
                     "items": {
                         "$ref": "#/definitions/script.CategoryList"
                     }
+                },
+                "content": {
+                    "type": "string"
                 },
                 "createtime": {
                     "type": "integer"
