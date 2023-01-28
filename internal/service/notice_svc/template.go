@@ -13,6 +13,7 @@ const (
 	ScriptUpdateTemplate TemplateID = iota + 1
 	IssueCreateTemplate
 	CommentCreateTemplate
+	ScriptScoreTemplate
 )
 
 type Template struct {
@@ -40,6 +41,12 @@ var templateMap = map[TemplateID]map[sender.Type]Template{
 		sender.MailSender: {
 			Title:    template.IssueCommentTitle,
 			Template: template.IssueCommentTemplate,
+		},
+	},
+	ScriptScoreTemplate: {
+		sender.MailSender: {
+			Title:    template.ScriptScoreTitle,
+			Template: template.ScriptScoreTemplate,
 		},
 	},
 }

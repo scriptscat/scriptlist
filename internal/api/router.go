@@ -110,6 +110,18 @@ func Router(root *mux.Router) error {
 			)
 		}
 	}
+	//脚本评分
+	{
+		controller := script_ctr.NewScore()
+		//需要用户登录才能评分的路由组
+		r.Group("/", auth.Middleware(true)).Bind(
+			controller.PutScore,
+		)
+		//无需用户登录的路由组
+		r.Group("/").Bind(
+			controller.ScoreList,
+		)
+	}
 	// 统计
 	{
 		controller := statistics_ctr.NewStatistics()

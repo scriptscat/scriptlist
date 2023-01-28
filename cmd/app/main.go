@@ -44,6 +44,8 @@ func main() {
 
 	script_repo.RegisterScriptDateStatistics(script_repo.NewScriptDateStatistics())
 	script_repo.RegisterScriptStatistics(script_repo.NewScriptStatistics())
+	//注册评分
+	script_repo.RegisterScriptScore(script_repo.NewScriptScore())
 
 	statistics_repo.RegisterStatistics(statistics_repo.NewStatistics())
 

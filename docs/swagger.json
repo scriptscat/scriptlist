@@ -1280,6 +1280,106 @@
                 }
             }
         },
+        "/scripts/{id}/score": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.ScoreListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.PutScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.PutScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/{id}/setting": {
             "get": {
                 "description": "获取脚本设置",
@@ -1564,6 +1664,113 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.WatchResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/score/self": {
+            "get": {
+                "description": "用于获取自己对脚本的评价",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "用于获取自己对脚本的评价",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.SelfScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{scriptId}/score/{scoreId}": {
+            "delete": {
+                "description": "DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "scriptId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "scoreId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DelScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DelScoreResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -2028,10 +2235,12 @@
         "httputils.PageRequest": {
             "type": "object",
             "properties": {
-                "limit,default=20": {
+                "page": {
+                    "description": "Deprecated 请使用方法GetPage",
                     "type": "integer"
                 },
-                "page,default=1": {
+                "size": {
+                    "description": "Deprecated 请使用方法GetSize",
                     "type": "integer"
                 }
             }
@@ -2753,6 +2962,20 @@
                 }
             }
         },
+        "script.DelScoreRequest": {
+            "type": "object",
+            "properties": {
+                "scoreId": {
+                    "type": "integer"
+                },
+                "scriptId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.DelScoreResponse": {
+            "type": "object"
+        },
         "script.DeleteRequest": {
             "type": "object",
             "properties": {
@@ -2876,6 +3099,38 @@
         "script.MigrateEsResponse": {
             "type": "object"
         },
+        "script.PutScoreRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.PutScoreResponse": {
+            "type": "object"
+        },
+        "script.ScoreListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "script.Script": {
             "type": "object",
             "properties": {
@@ -2946,6 +3201,9 @@
                     "type": "string"
                 }
             }
+        },
+        "script.SelfScoreResponse": {
+            "type": "object"
         },
         "script.StateResponse": {
             "type": "object",
