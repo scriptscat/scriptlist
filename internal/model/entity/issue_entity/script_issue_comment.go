@@ -54,7 +54,7 @@ func (c *ScriptIssueComment) CheckPermission(ctx context.Context, script *script
 	}
 	uid := auth_svc.Auth().Get(ctx).UID
 	// 检查uid是否是反馈者或者脚本作者
-	if c.UserID != uid && script.UserID != uid && auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
+	if c.UserID != uid && script.UserID != uid && !auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
 		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserNotPermission)
 	}
 	return nil

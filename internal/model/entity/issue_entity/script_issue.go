@@ -47,7 +47,7 @@ func (s *ScriptIssue) GetLabels() []string {
 
 // CheckOperate 检查是否可以操作
 func (s *ScriptIssue) CheckOperate(ctx context.Context, script *script_entity.Script) error {
-	if err := script.IsArchive(ctx); err != nil {
+	if err := script.CheckOperate(ctx); err != nil {
 		return err
 	}
 	if s == nil {
@@ -71,7 +71,7 @@ func (s *ScriptIssue) CheckPermission(ctx context.Context, script *script_entity
 	}
 	uid := auth_svc.Auth().Get(ctx).UID
 	// 检查uid是否是反馈者或者脚本作者
-	if s.UserID != uid && script.UserID != uid && auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
+	if s.UserID != uid && script.UserID != uid && !auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
 		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserNotPermission)
 	}
 	return nil

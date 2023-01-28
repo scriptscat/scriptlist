@@ -13,6 +13,7 @@ import (
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
+	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
@@ -689,7 +690,7 @@ func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.De
 	if err != nil {
 		return nil, err
 	}
-	if err := m.CheckPermission(ctx); err != nil {
+	if err := m.CheckPermission(ctx, model.SuperModerator); err != nil {
 		return nil, err
 	}
 	m.Status = consts.DELETE
