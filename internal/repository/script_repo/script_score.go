@@ -39,7 +39,7 @@ type scriptScoreRepo struct {
 
 func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*entity.ScriptScore, int64, error) {
 	list := make([]*entity.ScriptScore, 0)
-	find := db.Ctx(ctx).Model(&entity.ScriptScore{}).Where("script_id=? and state=1", scriptId).Order("createtime desc")
+	find := db.Ctx(ctx).Model(&entity.ScriptScore{}).Where("script_id=? and state=?", scriptId, consts.ACTIVE).Order("createtime desc")
 	var num int64
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
@@ -63,7 +63,7 @@ func (u *scriptScoreRepo) FindByUser(ctx context.Context, uid, scriptId int64) (
 
 func (u *scriptScoreRepo) Find(ctx context.Context, id int64) (*entity.ScriptScore, error) {
 	ret := &entity.ScriptScore{ID: id}
-	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).First(ret).Error; err != nil {
+	if err := db.Ctx(ctx).Where("state=?", consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -81,16 +81,16 @@ func (u *scriptScoreRepo) Update(ctx context.Context, scriptScore *entity.Script
 }
 
 func (u *scriptScoreRepo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Model(&entity.ScriptScore{ID: id}).Update("status", consts.DELETE).Error
+	return db.Ctx(ctx).Model(&entity.ScriptScore{ID: id}).Update("state", consts.DELETE).Error
 }
 
 func (u *scriptScoreRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.ScriptScore, int64, error) {
 	var list []*entity.ScriptScore
 	var count int64
-	if err := db.Ctx(ctx).Model(&entity.ScriptScore{}).Where("status=?", consts.ACTIVE).Count(&count).Error; err != nil {
+	if err := db.Ctx(ctx).Model(&entity.ScriptScore{}).Where("state=?", consts.ACTIVE).Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := db.Ctx(ctx).Where("state=?", consts.ACTIVE).Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil
