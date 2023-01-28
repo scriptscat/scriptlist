@@ -2,7 +2,11 @@ package script_svc
 
 import (
 	"context"
+	"time"
+
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
@@ -11,7 +15,9 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
-	"time"
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
+	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
+	"go.uber.org/zap"
 )
 
 type ScoreSvc interface {
@@ -50,31 +56,30 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 	uid := auth_svc.Auth().Get(ctx).UID
 	scriptId := req.ID
 
-	if auth_svc.Auth().Get(ctx).EmailVerified == false {
+	if !auth_svc.Auth().Get(ctx).EmailVerified {
 		return nil, i18n.NewError(ctx, code.UserEmailNotVerified)
 	}
 
 	//判断脚本的状态，可用后下一步
-	find, err2 := script_repo.Script().Find(ctx, scriptId)
+	script, err2 := script_repo.Script().Find(ctx, scriptId)
 	if err2 != nil {
 		return nil, err2
 	}
-	if err := find.CheckOperate(ctx); err != nil {
+	if err := script.CheckOperate(ctx); err != nil {
 		return nil, err
 	}
 
-	//获取用户的评分
-	score := req.Score
 	//判断用户有没有评价过,查询score表，查看是否有记录
-
-	_, err := script_repo.ScriptScore().FindByUser(ctx, uid, scriptId)
-
+	score, err := script_repo.ScriptScore().FindByUser(ctx, uid, scriptId)
 	if err != nil {
+		return nil, err
+	}
+	if score == nil {
 		//不存在记录，创建一条记录
 		err := script_repo.ScriptScore().Create(ctx, &entity.ScriptScore{
 			UserID:     uid,
 			ScriptID:   scriptId,
-			Score:      score,
+			Score:      req.Score,
 			Message:    req.Message,
 			Createtime: time.Now().Unix(),
 			Updatetime: time.Now().Unix(),
@@ -83,15 +88,34 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 			return nil, err
 		}
 		//给脚本作者发一个信息
-		//等待一之处理
-		//notice_svc.Notice().Send(ctx, uid)
+		if err := notice_svc.Notice().Send(ctx, script.UserID, notice_svc.ScriptScoreTemplate,
+			notice_svc.WithFrom(uid), notice_svc.WithParams(&template.ScriptScore{
+				Name:     script.Name,
+				Username: auth_svc.Auth().Get(ctx).Username,
+				Score:    int(req.Score / 10),
+			})); err != nil {
+			// 发送失败不影响主要流程, 只记录错误
+			logger.Ctx(ctx).Error("评分通知作者失败", zap.Int64("script", scriptId), zap.Int64("user", uid), zap.Error(err))
+		}
+		// 进入统计
+		if err := script_repo.ScriptStatistics().IncrScore(ctx, scriptId, req.Score, 1); err != nil {
+			logger.Ctx(ctx).Error("评分统计失败", zap.Int64("script", scriptId), zap.Int64("user", uid), zap.Error(err))
+		}
+		return &api.PutScoreResponse{}, nil
+	}
+	// 存在记录,但是状态不是激活状态,可能已经被管理员删除了,禁止再次评论
+	if score.State != consts.ACTIVE {
+		return nil, i18n.NewError(ctx, code.ScriptScoreDeleted)
 	}
 
 	//更新用户的评价信息
-	err = script_repo.ScriptScore().Update(ctx, &entity.ScriptScore{Message: req.Message,
-		Score: score})
+	err = script_repo.ScriptScore().Update(ctx, score)
 	if err != nil {
 		return nil, err
+	}
+	// 更新统计信息,只是更新分数,不更改评分人数
+	if err := script_repo.ScriptStatistics().IncrScore(ctx, scriptId, req.Score-score.Score, 0); err != nil {
+		logger.Ctx(ctx).Error("评分统计失败", zap.Int64("script", scriptId), zap.Int64("user", uid), zap.Error(err))
 	}
 	return nil, nil
 }
@@ -103,22 +127,12 @@ func (s *scoreSvc) ScoreList(ctx context.Context, req *api.ScoreListRequest) (*a
 	if err != nil {
 		return nil, err
 	}
-	//循环判断用户是否被封禁，过滤这些内容
-	//resp := [...]*api.ScrScore{}
-	resp := make([]*api.ScrScore, len(list))
+	resp := make([]*api.Score, len(list))
 	for i, v := range list {
-		user, _ := user_repo.User().Find(ctx, v.UserID)
-
-		info := user.UserInfo()
-		//resp[i] = vo.ToScriptScore(info, v)
-		resp[i] = &api.ScrScore{
-			UserInfo: info,
-			Score:    v,
-		}
+		resp[i], _ = s.ToScore(ctx, v)
 	}
-
 	return &api.ScoreListResponse{
-		PageResponse: httputils.PageResponse[*api.ScrScore]{
+		PageResponse: httputils.PageResponse[*api.Score]{
 			List:  resp,
 			Total: total,
 		},
@@ -134,10 +148,30 @@ func (s *scoreSvc) SelfScore(ctx context.Context, req *api.SelfScoreRequest) (*a
 	if err != nil {
 		return nil, err
 	}
+	resp, err := s.ToScore(ctx, ret)
+	if err != nil {
+		return nil, err
+	}
 	return &api.SelfScoreResponse{
-		SelfScore: ret,
+		Score: resp,
 	}, nil
+}
 
+func (s *scoreSvc) ToScore(ctx context.Context, score *entity.ScriptScore) (*api.Score, error) {
+	user, err := user_repo.User().Find(ctx, score.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return &api.Score{
+		UserInfo:   user.UserInfo(),
+		ID:         score.ID,
+		ScriptID:   score.ScriptID,
+		Score:      score.Score,
+		Message:    score.Message,
+		Createtime: score.Createtime,
+		Updatetime: score.Updatetime,
+		State:      score.State,
+	}, nil
 }
 
 // DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价

@@ -24,6 +24,7 @@ const (
 	ScriptUpdateFailed
 	ScriptNotAllowUrl
 	ScriptIsArchive
+	ScriptScoreDeleted
 )
 
 // issue

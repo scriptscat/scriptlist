@@ -3,32 +3,26 @@ package script
 import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/codfrm/cago/server/mux"
-	"github.com/scriptscat/scriptlist/internal/model/entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 )
 
 type Score struct {
-	ID         int64   `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	UserID     int64   `gorm:"column:user_id;type:bigint(20);index:user_id,unique;index:user_script,unique;index:user"`
-	ScriptID   int64   `gorm:"column:script_id;type:bigint(20);index:user_id,unique;index:user_script,unique;index:script_id;index:script"`
-	Score      float64 `gorm:"column:score;type:double"`
-	Message    string  `gorm:"column:message;type:longtext"`
-	Createtime int64   `gorm:"column:createtime;type:bigint(20)"`
-	Updatetime int64   `gorm:"column:updatetime;type:bigint(20)"`
-	State      int64   `gorm:"column:state;type:int(10);default:1"`
-}
-
-type ScrScore struct {
 	user_entity.UserInfo
-	Score *entity.ScriptScore
+	ID         int64  `json:"id"`
+	ScriptID   int64  `json:"script_id"`
+	Score      int64  `json:"score"`
+	Message    string `json:"message"`
+	Createtime int64  `json:"createtime"`
+	Updatetime int64  `json:"updatetime"`
+	State      int64  `json:"state"`
 }
 
 // PutScoreRequest 脚本评分
 type PutScoreRequest struct {
 	mux.Meta `path:"/scripts/:id/score" method:"PUT"`
-	ID       int64   `uri:"id" binding:"required"`
-	Message  string  `json:"message" binding:"required"`
-	Score    float64 `json:"score" binding:"required,number,min=0,max=50"`
+	ID       int64  `uri:"id" binding:"required"`
+	Message  string `json:"message" binding:"required"`
+	Score    int64  `json:"score" binding:"required,number,min=0,max=50"`
 }
 
 type PutScoreResponse struct {
@@ -42,7 +36,7 @@ type ScoreListRequest struct {
 }
 
 type ScoreListResponse struct {
-	httputils.PageResponse[*ScrScore] `json:",inline"`
+	httputils.PageResponse[*Score] `json:",inline"`
 }
 
 // SelfScoreRequest 用于获取自己对脚本的评价
@@ -51,7 +45,7 @@ type SelfScoreRequest struct {
 	ScriptId int64 `uri:"scriptId" binding:"required"`
 }
 type SelfScoreResponse struct {
-	SelfScore *entity.ScriptScore `json:",inline"`
+	*Score `json:",inline"`
 }
 
 // DelScoreRequest 用于删除脚本的评价，注意，只有管理员才有权限删除评价

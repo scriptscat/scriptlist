@@ -19,7 +19,7 @@ type ScriptStatisticsRepo interface {
 	IncrDownload(ctx context.Context, scriptId int64) error
 	IncrUpdate(ctx context.Context, scriptId int64) error
 	// IncrScore 分数统计,当用户分数变更时可以使用之前的分数和之后的分数进行计算,num为0
-	IncrScore(ctx context.Context, scriptId int64, score int, num int) error
+	IncrScore(ctx context.Context, scriptId, score int64, num int) error
 }
 
 var defaultScriptStatistics ScriptStatisticsRepo
@@ -95,7 +95,7 @@ func (u *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64) e
 	return nil
 }
 
-func (u *scriptStatisticsRepo) IncrScore(ctx context.Context, scriptId int64, score int, num int) error {
+func (u *scriptStatisticsRepo) IncrScore(ctx context.Context, scriptId, score int64, num int) error {
 	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
 		Updates(map[string]interface{}{
 			"score":       gorm.Expr("score+?", score),
