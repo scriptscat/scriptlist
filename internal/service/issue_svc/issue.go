@@ -29,7 +29,7 @@ type IssueSvc interface {
 	// GetWatch 获取issue关注状态
 	GetWatch(ctx context.Context, req *api.GetWatchRequest) (*api.GetWatchResponse, error)
 	// Watch 关注issue
-	Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error)
+	Watch(ctx context.Context, userId int64, req *api.WatchRequest) (*api.WatchResponse, error)
 	// Close 关闭issue
 	Close(ctx context.Context, req *api.CloseRequest) (*api.CloseResponse, error)
 	// Open 打开issue
@@ -100,7 +100,7 @@ func (i *issueSvc) CreateIssue(ctx context.Context, req *api.CreateIssueRequest)
 		return nil, err
 	}
 	// 发布消息
-	return &api.CreateIssueResponse{ID: issue.ID}, producer.PublishIssueCreate(ctx, issue)
+	return &api.CreateIssueResponse{ID: issue.ID}, producer.PublishIssueCreate(ctx, Comment().CtxScript(ctx), issue)
 }
 
 // GetIssue 获取issue信息
@@ -130,8 +130,8 @@ func (i *issueSvc) GetWatch(ctx context.Context, req *api.GetWatchRequest) (*api
 }
 
 // Watch 关注issue
-func (i *issueSvc) Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error) {
-	m, err := issue_repo.Watch().FindByUser(ctx, req.IssueID, auth_svc.Auth().Get(ctx).UID)
+func (i *issueSvc) Watch(ctx context.Context, userId int64, req *api.WatchRequest) (*api.WatchResponse, error) {
+	m, err := issue_repo.Watch().FindByUser(ctx, req.IssueID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (i *issueSvc) Watch(ctx context.Context, req *api.WatchRequest) (*api.Watch
 	}
 	if m == nil {
 		m = &issue_entity.ScriptIssueWatch{
-			UserID:     auth_svc.Auth().Get(ctx).UID,
+			UserID:     userId,
 			IssueID:    req.IssueID,
 			Status:     watch,
 			Createtime: time.Now().Unix(),
@@ -186,7 +186,7 @@ func (i *issueSvc) Close(ctx context.Context, req *api.CloseRequest) (*api.Close
 	resp, _ := Comment().ToComment(ctx, comment)
 	return &api.CloseResponse{
 		Comment: resp,
-	}, producer.PublishCommentCreate(ctx, issue, comment)
+	}, producer.PublishCommentCreate(ctx, Comment().CtxScript(ctx), issue, comment)
 }
 
 // Open 打开issue
@@ -216,7 +216,7 @@ func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenRes
 	resp, _ := Comment().ToComment(ctx, comment)
 	return &api.OpenResponse{
 		Comment: resp,
-	}, producer.PublishCommentCreate(ctx, issue, comment)
+	}, producer.PublishCommentCreate(ctx, Comment().CtxScript(ctx), issue, comment)
 }
 
 // Delete 删除issue

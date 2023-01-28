@@ -5,8 +5,6 @@ type options struct {
 	from int64
 	// 发送参数
 	params interface{}
-	// 标题
-	title string
 }
 
 type Option func(*options)
@@ -28,11 +26,5 @@ func WithFrom(from int64) Option {
 func WithParams(params interface{}) Option {
 	return func(o *options) {
 		o.params = params
-	}
-}
-
-func WithTitle(title string) Option {
-	return func(o *options) {
-		o.title = title
 	}
 }

@@ -34,3 +34,14 @@ func ParseScriptStatisticsMsg(msg *broker2.Message) (*ScriptStatisticsMsg, error
 	}
 	return ret, nil
 }
+
+func SubscribeScriptStatistics(ctx context.Context, fn func(ctx context.Context, msg *ScriptStatisticsMsg) error, opts ...broker2.SubscribeOption) error {
+	_, err := broker.Default().Subscribe(ctx, ScriptStatisticTopic, func(ctx context.Context, ev broker2.Event) error {
+		m, err := ParseScriptStatisticsMsg(ev.Message())
+		if err != nil {
+			return err
+		}
+		return fn(ctx, m)
+	}, opts...)
+	return err
+}

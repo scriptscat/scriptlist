@@ -3,7 +3,6 @@ package subscribe
 import (
 	"context"
 
-	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
@@ -13,18 +12,15 @@ import (
 type Statistics struct {
 }
 
-func (e *Statistics) Subscribe(ctx context.Context, bk broker.Broker) error {
-	_, err := bk.Subscribe(ctx,
-		producer.ScriptStatisticTopic, e.scriptStatistics,
-	)
-	return err
+func (e *Statistics) Subscribe(ctx context.Context) error {
+	if err := producer.SubscribeScriptStatistics(ctx, e.scriptStatistics); err != nil {
+		return err
+
+	}
+	return nil
 }
 
-func (e *Statistics) scriptStatistics(ctx context.Context, event broker.Event) error {
-	msg, err := producer.ParseScriptStatisticsMsg(event.Message())
-	if err != nil {
-		return err
-	}
+func (e *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptStatisticsMsg) error {
 	switch msg.Download {
 	case statistics_repo.DownloadStatistics:
 		if ok, err := statistics_repo.Statistics().IncrDownload(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
@@ -18,44 +19,30 @@ import (
 type EsSync struct {
 }
 
-func (e *EsSync) Subscribe(ctx context.Context, bk broker.Broker) error {
-	if _, err := bk.Subscribe(ctx,
-		producer.ScriptCreateTopic, e.scriptCreateHandler,
-		broker.Group("es"),
-	); err != nil {
+func (e *EsSync) Subscribe(ctx context.Context) error {
+	if err := producer.SubscribeScriptCreate(ctx, e.scriptCreate, broker.Group("es")); err != nil {
 		return err
 	}
-	if _, err := bk.Subscribe(ctx,
-		producer.ScriptCodeUpdateTopic, e.scriptCodeUpdateHandler, broker.Group("es")); err != nil {
+	if err := producer.SubscribeScriptCodeUpdate(ctx, e.scriptCodeUpdate, broker.Group("es")); err != nil {
 		return err
 	}
-	if _, err := bk.Subscribe(ctx,
-		producer.ScriptStatisticTopic, e.scriptStatisticHandler, broker.Group("es")); err != nil {
+	if err := producer.SubscribeScriptStatistics(ctx, e.scriptStatistic, broker.Group("es")); err != nil {
 		return err
 	}
-	if _, err := bk.Subscribe(ctx,
-		producer.ScriptDeleteTopic, e.scriptDeleteHandler, broker.Group("es")); err != nil {
+	if err := producer.SubscribeScriptDelete(ctx, e.scriptDelete, broker.Group("es")); err != nil {
 		return err
 	}
 	return nil
 }
 
 // 消费脚本创建消息推送到elasticsearch
-func (e *EsSync) scriptCreateHandler(ctx context.Context, event broker.Event) error {
-	return e.syncScript(ctx, event, false)
+func (e *EsSync) scriptCreate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
+	return e.syncScript(ctx, script, code, false)
 }
 
-func (e *EsSync) syncScript(ctx context.Context, event broker.Event, update bool) error {
-	msg, err := producer.ParseScriptCreateMsg(event.Message())
-	if err != nil {
-		logger.Ctx(ctx).Error("ParseScriptCreateMsg", zap.Error(err), zap.Binary("body", event.Message().Body))
-		return err
-	}
-	if msg.Script == nil {
-		return errors.New("script is nil")
-	}
-	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.Script.ID), zap.Bool("update", update))
-	search, err := script_repo.Migrate().Convert(ctx, msg.Script)
+func (e *EsSync) syncScript(ctx context.Context, script *script_entity.Script, code *script_entity.Code, update bool) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID), zap.Bool("update", update))
+	search, err := script_repo.Migrate().Convert(ctx, script)
 	if err != nil {
 		logger.Error("迁移es获取数据失败", zap.Error(err))
 		return err
@@ -69,19 +56,15 @@ func (e *EsSync) syncScript(ctx context.Context, event broker.Event, update bool
 }
 
 // 消费脚本代码更新消息,更新es记录
-func (e *EsSync) scriptCodeUpdateHandler(ctx context.Context, event broker.Event) error {
-	return e.syncScript(ctx, event, false)
+func (e *EsSync) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
+	return e.syncScript(ctx, script, code, false)
 }
 
 func (e *EsSync) statisticSyncKey(scriptId int64) string {
 	return fmt.Sprintf("script:es:sync:statistic:%d", scriptId)
 }
 
-func (e *EsSync) scriptStatisticHandler(ctx context.Context, event broker.Event) error {
-	msg, err := producer.ParseScriptStatisticsMsg(event.Message())
-	if err != nil {
-		return err
-	}
+func (e *EsSync) scriptStatistic(ctx context.Context, msg *producer.ScriptStatisticsMsg) error {
 	num, err := redis.Ctx(ctx).HIncrBy(e.statisticSyncKey(msg.ScriptID), "num", 1).Result()
 	if err != nil {
 		return err
@@ -120,11 +103,7 @@ func (e *EsSync) scriptStatisticHandler(ctx context.Context, event broker.Event)
 }
 
 // 消费脚本删除消息,删除es记录
-func (e *EsSync) scriptDeleteHandler(ctx context.Context, event broker.Event) error {
-	msg, err := producer.ParseScriptDeleteMsg(event.Message())
-	if err != nil {
-		return err
-	}
+func (e *EsSync) scriptDelete(ctx context.Context, msg *script_entity.Script) error {
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.ID))
 	if err := script_repo.Migrate().Delete(ctx, msg.ID); err != nil {
 		logger.Error("删除es数据失败", zap.Error(err))

@@ -28,4 +28,18 @@ var templateMap = map[TemplateID]map[sender.Type]Template{
 			Template: template.ScriptUpdateTemplate,
 		},
 	},
+	// 问题创建模板
+	IssueCreateTemplate: {
+		sender.MailSender: {
+			Title:    template.IssueCreateTitle,
+			Template: template.IssueCreateTemplate,
+		},
+	},
+	// 评论创建模板
+	CommentCreateTemplate: {
+		sender.MailSender: {
+			Title:    template.IssueCommentTitle,
+			Template: template.IssueCommentTemplate,
+		},
+	},
 }

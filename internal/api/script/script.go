@@ -148,6 +148,7 @@ type CodeRequest struct {
 
 type CodeResponse struct {
 	*Script `json:",inline"`
+	Content string `json:"content"`
 }
 
 // VersionListRequest 获取版本列表

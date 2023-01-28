@@ -7,6 +7,7 @@ import (
 	"html/template"
 
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/scriptscat/scriptlist/configs"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/sender"
@@ -53,34 +54,27 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			return err
 		}
 	}
-	senderOptions := &sender.SendOptions{
-		From:  from,
-		Title: opts.title,
-	}
+	url := configs.Url()
 	tplContent := make(map[sender.Type]Template)
 	for senderType, tpl := range tpl {
 		content, err := n.parseTpl(tpl.Template, map[string]interface{}{
+			"Config": map[string]interface{}{
+				"Url": url,
+			},
 			"Value": opts.params,
 		})
 		if err != nil {
 			return err
 		}
-		if senderOptions.Title == "" {
-			title, err := n.parseTpl(tpl.Title, map[string]interface{}{
-				"Value": opts.params,
-			})
-			if err != nil {
-				return err
-			}
-			tplContent[senderType] = Template{
-				Title:    title,
-				Template: content,
-			}
-		} else {
-			tplContent[senderType] = Template{
-				Title:    senderOptions.Title,
-				Template: content,
-			}
+		title, err := n.parseTpl(tpl.Title, map[string]interface{}{
+			"Value": opts.params,
+		})
+		if err != nil {
+			return err
+		}
+		tplContent[senderType] = Template{
+			Title:    title,
+			Template: content,
 		}
 	}
 	for _, toUser := range toUsers {
@@ -122,7 +116,7 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			}
 			if err := s.Send(ctx, to, content.Template, &sender.SendOptions{
 				From:  from,
-				Title: senderOptions.Title,
+				Title: content.Title,
 			}); err != nil {
 				return err
 			}
@@ -149,6 +143,10 @@ func (n *noticeSvc) IsNotify(ctx context.Context, userConfig *user_entity.UserCo
 	switch tpl {
 	case ScriptUpdateTemplate:
 		return *userConfig.Notify.ScriptUpdate, nil
+	case CommentCreateTemplate:
+		return *userConfig.Notify.ScriptIssueComment, nil
+	case IssueCreateTemplate:
+		return *userConfig.Notify.ScriptIssue, nil
 	}
 	return true, nil
 }

@@ -109,7 +109,7 @@ func (c *commentSvc) CreateComment(ctx context.Context, req *api.CreateCommentRe
 	}
 	resp := &api.CreateCommentResponse{}
 	resp.Comment, _ = c.ToComment(ctx, comment)
-	return resp, producer.PublishCommentCreate(ctx, c.CtxIssue(ctx), comment)
+	return resp, producer.PublishCommentCreate(ctx, c.CtxScript(ctx), c.CtxIssue(ctx), comment)
 }
 
 // Middleware 中间件,检查是否可以访问

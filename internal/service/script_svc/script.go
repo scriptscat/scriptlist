@@ -466,7 +466,8 @@ func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeRe
 		return nil, err
 	}
 	return &api.CodeResponse{
-		Script: script,
+		Script:  script,
+		Content: m.Content,
 	}, nil
 }
 

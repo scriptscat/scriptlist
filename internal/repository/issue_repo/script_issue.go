@@ -65,7 +65,7 @@ func (u *scriptIssueRepo) FindPage(ctx context.Context, scriptId int64, page htt
 		Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Ctx(ctx).Where("script_id=? and status!=?", scriptId, consts.DELETE).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := db.Ctx(ctx).Where("script_id=? and status!=?", scriptId, consts.DELETE).Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil

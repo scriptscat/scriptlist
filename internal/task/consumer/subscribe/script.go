@@ -3,14 +3,12 @@ package subscribe
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"regexp"
 	"time"
 
-	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
-	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
@@ -21,18 +19,18 @@ import (
 
 type Script struct {
 	// 分类id
-	bgCategory   *entity.ScriptCategoryList
-	cronCategory *entity.ScriptCategoryList
+	bgCategory   *script_entity.ScriptCategoryList
+	cronCategory *script_entity.ScriptCategoryList
 }
 
-func (s *Script) Subscribe(ctx context.Context, broker broker.Broker) error {
+func (s *Script) Subscribe(ctx context.Context) error {
 	var err error
 	s.bgCategory, err = script_repo.ScriptCategoryList().FindByName(ctx, "后台脚本")
 	if err != nil {
 		return err
 	}
 	if s.bgCategory == nil {
-		s.bgCategory = &entity.ScriptCategoryList{
+		s.bgCategory = &script_entity.ScriptCategoryList{
 			Name:       "后台脚本",
 			Createtime: time.Now().Unix(),
 		}
@@ -45,7 +43,7 @@ func (s *Script) Subscribe(ctx context.Context, broker broker.Broker) error {
 		return err
 	}
 	if s.cronCategory == nil {
-		s.cronCategory = &entity.ScriptCategoryList{
+		s.cronCategory = &script_entity.ScriptCategoryList{
 			Name:       "定时脚本",
 			Createtime: time.Now().Unix(),
 		}
@@ -53,59 +51,48 @@ func (s *Script) Subscribe(ctx context.Context, broker broker.Broker) error {
 			return err
 		}
 	}
-	_, err = broker.Subscribe(ctx,
-		producer.ScriptCreateTopic, s.scriptCreateHandler,
-	)
-	if err != nil {
+	if err := producer.SubscribeScriptCreate(ctx, s.scriptCreate); err != nil {
 		return err
 	}
-	_, err = broker.Subscribe(ctx, producer.ScriptCodeUpdateTopic, s.scriptCodeUpdate)
-	return err
+	if err := producer.SubscribeScriptCodeUpdate(ctx, s.scriptCodeUpdate); err != nil {
+		return err
+	}
+	return nil
 }
 
 // 消费脚本创建消息,根据meta信息进行分类
-func (s *Script) scriptCreateHandler(ctx context.Context, event broker.Event) error {
-	msg, err := producer.ParseScriptCreateMsg(event.Message())
-	if err != nil {
-		logger.Ctx(ctx).
-			Error("json.Unmarshal", zap.Error(err), zap.String("body", string(event.Message().Body)))
-		return err
-	}
-	if msg.Script == nil {
-		return errors.New("script is nil")
-	}
-	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.Script.ID))
-
+func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID))
 	// 根据meta信息, 将脚本分类到后台脚本, 定时脚本, 用户脚本
 	metaJson := make(map[string][]string)
-	if err := json.Unmarshal([]byte(msg.Code.MetaJson), &metaJson); err != nil {
-		logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", msg.Code.MetaJson))
+	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+		logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", code.MetaJson))
 		return err
 	}
 
 	// 处理domain
-	if err := s.saveDomain(ctx, msg.Script.ID, msg.Code.ID, metaJson); err != nil {
+	if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
 		logger.Error("saveDomain", zap.Error(err))
 		return err
 	}
 
 	if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
 		// 后台脚本
-		if err := script_repo.ScriptCategory().LinkCategory(ctx, msg.Script.ID, s.bgCategory.ID); err != nil {
+		if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.bgCategory.ID); err != nil {
 			logger.Error("LinkCategory", zap.Error(err))
 			return err
 		}
 	}
 	if len(metaJson["crontab"]) > 0 {
 		// 定时脚本
-		if err := script_repo.ScriptCategory().LinkCategory(ctx, msg.Script.ID, s.cronCategory.ID); err != nil {
+		if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.cronCategory.ID); err != nil {
 			logger.Error("LinkCategory", zap.Error(err))
 			return err
 		}
 	}
 
 	// 关注自己脚本
-	if err := script_repo.ScriptWatch().Watch(ctx, msg.Script.ID, msg.Script.UserID, entity.ScriptWatchLevelIssueComment); err != nil {
+	if err := script_repo.ScriptWatch().Watch(ctx, script.ID, script.UserID, script_entity.ScriptWatchLevelIssueComment); err != nil {
 		logger.Error("Watch", zap.Error(err))
 	}
 
@@ -113,28 +100,22 @@ func (s *Script) scriptCreateHandler(ctx context.Context, event broker.Event) er
 }
 
 // 消费脚本代码更新消息,发送邮件通知给关注了的用户
-func (s *Script) scriptCodeUpdate(ctx context.Context, event broker.Event) error {
-	msg, err := producer.ParseScriptCodeUpdateMsg(event.Message())
-	if err != nil {
-		logger.Ctx(ctx).
-			Error("json.Unmarshal", zap.Error(err), zap.String("body", string(event.Message().Body)))
-		return err
-	}
-	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.Script.ID))
+func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID))
 
 	metaJson := make(map[string][]string)
-	if err := json.Unmarshal([]byte(msg.Code.MetaJson), &metaJson); err != nil {
-		logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", msg.Code.MetaJson))
+	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+		logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", code.MetaJson))
 		return err
 	}
 	// 处理domain
-	if err := s.saveDomain(ctx, msg.Script.ID, msg.Code.ID, metaJson); err != nil {
+	if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
 		logger.Error("saveDomain", zap.Error(err))
 		return err
 	}
 	logger.Info("update script code")
 
-	list, err := script_repo.ScriptWatch().FindAll(ctx, msg.Script.ID, entity.ScriptWatchLevelVersion)
+	list, err := script_repo.ScriptWatch().FindAll(ctx, script.ID, script_entity.ScriptWatchLevelVersion)
 	if err != nil {
 		logger.Error("获取关注列表失败", zap.Error(err))
 	} else {
@@ -143,9 +124,9 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, event broker.Event) error
 			uids = append(uids, v.UserID)
 		}
 		err := notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.ScriptUpdateTemplate, notice_svc.WithParams(&template.ScriptUpdate{
-			ID:      msg.Script.ID,
-			Name:    msg.Script.Name,
-			Version: msg.Code.Version,
+			ID:      script.ID,
+			Name:    script.Name,
+			Version: code.Version,
 		}))
 		if err != nil {
 			logger.Error("发送邮件失败", zap.Error(err))
@@ -178,7 +159,7 @@ func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 			continue
 		}
 		if result == nil {
-			e := &entity.ScriptDomain{
+			e := &script_entity.ScriptDomain{
 				Domain:        domain,
 				DomainReverse: utils.StringReverse(domain),
 				ScriptID:      id,

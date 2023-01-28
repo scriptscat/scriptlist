@@ -3,13 +3,12 @@ package subscribe
 import (
 	"context"
 
-	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/logger"
 	issue2 "github.com/scriptscat/scriptlist/internal/api/issue"
+	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
-	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/issue_svc"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
@@ -17,28 +16,19 @@ import (
 	"go.uber.org/zap"
 )
 
-type Issue struct {
-}
+type Issue struct{}
 
-func (s *Issue) Subscribe(ctx context.Context, broker broker.Broker) error {
-	_, err := broker.Subscribe(ctx, producer.IssueCreateTopic, s.issueCreate)
-	if err != nil {
+func (s *Issue) Subscribe(ctx context.Context) error {
+	if err := producer.SubscribeIssueCreate(ctx, s.issueCreate); err != nil {
 		return err
 	}
-	_, err = broker.Subscribe(ctx, producer.CommentCreateTopic, s.commentCreate)
-	if err != nil {
+	if err := producer.SubscribeCommentCreate(ctx, s.commentCreate); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Issue) issueCreate(ctx context.Context, event broker.Event) error {
-	issue, err := producer.ParseIssueCreateMsg(event.Message())
-	if err != nil {
-		logger.Ctx(ctx).
-			Error("json.Unmarshal", zap.Error(err), zap.String("body", string(event.Message().Body)))
-		return err
-	}
+func (s *Issue) issueCreate(ctx context.Context, script *script_entity.Script, issue *issue_entity.ScriptIssue) error {
 	list, err := script_repo.ScriptWatch().FindAll(ctx, issue.ScriptID, script_entity.ScriptWatchLevelIssue)
 	if err != nil {
 		logger.Ctx(ctx).Error("获取关注列表错误", zap.Int64("issue_id", issue.ID), zap.Error(err))
@@ -48,7 +38,7 @@ func (s *Issue) issueCreate(ctx context.Context, event broker.Event) error {
 	for _, v := range list {
 		if v.Level == script_entity.ScriptWatchLevelIssueComment {
 			// 关注issue评论
-			if _, err := issue_svc.Issue().Watch(auth_svc.Auth().SetCtxUid(ctx, v.UserID), &issue2.WatchRequest{
+			if _, err := issue_svc.Issue().Watch(ctx, v.UserID, &issue2.WatchRequest{
 				ScriptID: v.ScriptID,
 				IssueID:  issue.ID,
 				Watch:    true,
@@ -62,23 +52,19 @@ func (s *Issue) issueCreate(ctx context.Context, event broker.Event) error {
 	// 通知关注人
 	return notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.IssueCreateTemplate,
 		notice_svc.WithParams(&template.IssueCreate{
-			Name:    "",
-			Title:   "",
-			Content: "",
-		}))
+			ScriptID: script.ID,
+			IssueID:  issue.ID,
+			Name:     script.Name,
+			Title:    issue.Title,
+			Content:  issue.Content,
+		}), notice_svc.WithFrom(issue.UserID))
 }
 
-func (s *Issue) commentCreate(ctx context.Context, event broker.Event) error {
-	comment, err := producer.ParseCommentCreateMsg(event.Message())
-	if err != nil {
-		logger.Ctx(ctx).
-			Error("json.Unmarshal", zap.Error(err), zap.String("body", string(event.Message().Body)))
-		return err
-	}
+func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script, issue *issue_entity.ScriptIssue, comment *issue_entity.ScriptIssueComment) error {
 	// 通知反馈关注人
-	list, err := issue_repo.Watch().FindAll(ctx, comment.Issue.ID)
+	list, err := issue_repo.Watch().FindAll(ctx, issue.ID)
 	if err != nil {
-		logger.Ctx(ctx).Error("获取反馈关注人错误", zap.Int64("issue", comment.Issue.ID), zap.Error(err))
+		logger.Ctx(ctx).Error("获取反馈关注人错误", zap.Int64("issue", issue.ID), zap.Error(err))
 	} else {
 		uids := make([]int64, 0)
 		for _, v := range list {
@@ -86,8 +72,14 @@ func (s *Issue) commentCreate(ctx context.Context, event broker.Event) error {
 		}
 		return notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.CommentCreateTemplate,
 			notice_svc.WithParams(&template.IssueComment{
-				Name: "",
-			}))
+				ScriptID:  script.ID,
+				IssueID:   issue.ID,
+				CommentID: comment.ID,
+				Name:      script.Name,
+				Title:     issue.Title,
+				Content:   comment.Content,
+				Type:      comment.Type,
+			}), notice_svc.WithFrom(comment.UserID))
 	}
 	return nil
 }

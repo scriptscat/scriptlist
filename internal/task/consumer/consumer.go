@@ -3,19 +3,24 @@ package consumer
 import (
 	"context"
 
-	"github.com/codfrm/cago/pkg/broker/broker"
+	"github.com/codfrm/cago/configs"
 	"github.com/scriptscat/scriptlist/internal/task/consumer/subscribe"
 )
 
 type Subscribe interface {
-	Subscribe(ctx context.Context, broker broker.Broker) error
+	Subscribe(ctx context.Context) error
 }
 
 // Consumer 消费者
-func Consumer(ctx context.Context, broker broker.Broker) error {
-	subscribers := []Subscribe{&subscribe.EsSync{}, &subscribe.Script{}, &subscribe.Statistics{}}
+func Consumer(ctx context.Context, cfg *configs.Config) error {
+	subscribers := []Subscribe{
+		&subscribe.EsSync{},
+		&subscribe.Script{},
+		&subscribe.Statistics{},
+		&subscribe.Issue{},
+	}
 	for _, v := range subscribers {
-		if err := v.Subscribe(ctx, broker); err != nil {
+		if err := v.Subscribe(ctx); err != nil {
 			return err
 		}
 	}

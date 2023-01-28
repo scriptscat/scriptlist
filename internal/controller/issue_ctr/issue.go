@@ -61,7 +61,7 @@ func (i *Issue) GetWatch(ctx context.Context, req *api.GetWatchRequest) (*api.Ge
 // Watch 关注issue
 func (i *Issue) Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchResponse, error) {
 	resp, err := i.limit.FuncTake(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10), func() (interface{}, error) {
-		return issue_svc.Issue().Watch(ctx, req)
+		return issue_svc.Issue().Watch(ctx, auth_svc.Auth().Get(ctx).UID, req)
 	})
 	if err != nil {
 		return nil, err

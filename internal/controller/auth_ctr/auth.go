@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
+	configs "github.com/scriptscat/scriptlist/configs"
 	api "github.com/scriptscat/scriptlist/internal/api/auth"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 )
@@ -53,7 +53,7 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 		c.SetCookie("login_id", token.ID, auth_svc.TokenAuthMaxAge, "/", "", false, true)
 		c.SetCookie("token", token.Token, auth_svc.TokenAuthMaxAge, "/", "", false, true)
 		// 重定向
-		path := configs.Default().String("website.url")
+		path := configs.Url()
 		if strings.HasPrefix(resp.RedirectUri, "/") {
 			path = path + resp.RedirectUri
 		} else {

@@ -37,11 +37,14 @@ func (m *mail) Send(ctx context.Context, user *user_entity.User, content string,
 	if options.From != nil {
 		from = options.From.Username
 	}
+	if options.Title == "" {
+		options.Title = "ScriptCat"
+	}
 
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", msg.FormatAddress(config.User, from))
 	msg.SetHeader("To", user.Email)
-	msg.SetHeader("Subject", "[脚本猫]"+options.Title)
+	msg.SetHeader("Subject", options.Title)
 	msg.SetBody("text/html", content)
 
 	err := d.DialAndSend(msg)
@@ -52,6 +55,10 @@ func (m *mail) Send(ctx context.Context, user *user_entity.User, content string,
 			zap.Error(err))
 		return err
 	}
+	logger.Ctx(ctx).Info("send email success",
+		zap.Int64("to", user.UID), zap.String("toAddress", user.Email),
+		zap.String("from", from), zap.String("title", options.Title),
+	)
 	return nil
 
 }
