@@ -10,6 +10,7 @@ const (
 )
 
 type ScriptScore struct {
+	ScriptID int64
 	Name     string // 脚本名
 	Username string // 评分用户
 	Score    int    // 分数

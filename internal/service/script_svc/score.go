@@ -90,6 +90,7 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 		//给脚本作者发一个信息
 		if err := notice_svc.Notice().Send(ctx, script.UserID, notice_svc.ScriptScoreTemplate,
 			notice_svc.WithFrom(uid), notice_svc.WithParams(&template.ScriptScore{
+				ScriptID: scriptId,
 				Name:     script.Name,
 				Username: auth_svc.Auth().Get(ctx).Username,
 				Score:    int(req.Score / 10),
@@ -109,12 +110,16 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 	}
 
 	//更新用户的评价信息
+	oldScore := score.Score
+	score.Message = req.Message
+	score.Score = req.Score
+	score.Updatetime = time.Now().Unix()
 	err = script_repo.ScriptScore().Update(ctx, score)
 	if err != nil {
 		return nil, err
 	}
 	// 更新统计信息,只是更新分数,不更改评分人数
-	if err := script_repo.ScriptStatistics().IncrScore(ctx, scriptId, req.Score-score.Score, 0); err != nil {
+	if err := script_repo.ScriptStatistics().IncrScore(ctx, scriptId, req.Score-oldScore, 0); err != nil {
 		logger.Ctx(ctx).Error("评分统计失败", zap.Int64("script", scriptId), zap.Int64("user", uid), zap.Error(err))
 	}
 	return nil, nil
@@ -176,8 +181,7 @@ func (s *scoreSvc) ToScore(ctx context.Context, score *entity.ScriptScore) (*api
 
 // DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
 func (s *scoreSvc) DelScore(ctx context.Context, req *api.DelScoreRequest) (*api.DelScoreResponse, error) {
-	admin := auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator)
-	if !admin {
+	if !auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
 		return nil, i18n.NewError(ctx, code.UserNotPermission)
 	}
 	//删除评价

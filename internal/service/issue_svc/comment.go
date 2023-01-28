@@ -119,7 +119,7 @@ func (c *commentSvc) CreateComment(ctx context.Context, req *api.CreateCommentRe
 func (c *commentSvc) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// 非GET请求,需要验证邮箱
-		if ctx.Request.Method != http.MethodGet && !auth_svc.Auth().Get(ctx).EmailVerified {
+		if ctx.Request.Method != http.MethodGet && !auth_svc.Auth().Get(ctx.Request.Context()).EmailVerified {
 			httputils.HandleResp(ctx, i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserEmailNotVerified))
 			return
 		}

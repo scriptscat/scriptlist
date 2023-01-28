@@ -116,6 +116,8 @@ func Router(root *mux.Router) error {
 		//需要用户登录才能评分的路由组
 		r.Group("/", auth.Middleware(true)).Bind(
 			controller.PutScore,
+			controller.SelfScore,
+			controller.DelScore,
 		)
 		//无需用户登录的路由组
 		r.Group("/").Bind(

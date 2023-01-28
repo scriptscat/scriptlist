@@ -31,8 +31,8 @@ type PutScoreResponse struct {
 // ScoreListRequest 获取脚本评分列表
 type ScoreListRequest struct {
 	mux.Meta              `path:"/scripts/:id/score" method:"GET"`
-	ScriptID              int64 `uri:"id" binding:"required"`
 	httputils.PageRequest `json:",inline"`
+	ScriptID              int64 `uri:"id" binding:"required"`
 }
 
 type ScoreListResponse struct {
@@ -41,8 +41,8 @@ type ScoreListResponse struct {
 
 // SelfScoreRequest 用于获取自己对脚本的评价
 type SelfScoreRequest struct {
-	mux.Meta `path:"/scripts/:scriptId/score/self" method:"GET"`
-	ScriptId int64 `uri:"scriptId" binding:"required"`
+	mux.Meta `path:"/scripts/:id/score/self" method:"GET"`
+	ScriptId int64 `uri:"id" binding:"required"`
 }
 type SelfScoreResponse struct {
 	*Score `json:",inline"`
@@ -50,8 +50,8 @@ type SelfScoreResponse struct {
 
 // DelScoreRequest 用于删除脚本的评价，注意，只有管理员才有权限删除评价
 type DelScoreRequest struct {
-	mux.Meta `path:"/scripts/:scriptId/score/:scoreId" method:"DELETE"`
-	ScriptId int64 `uri:"script" binding:"required"`
+	mux.Meta `path:"/scripts/:id/score/:scoreId" method:"DELETE"`
+	ScriptId int64 `uri:"id" binding:"required"`
 	ScoreId  int64 `uri:"scoreId" binding:"required"`
 }
 
