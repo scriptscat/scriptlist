@@ -355,7 +355,22 @@ definitions:
     properties:
       comment:
         type: string
-      image:
+      link_id:
+        type: integer
+    type: object
+  resource.UploadImageResponse:
+    properties:
+      comment:
+        type: string
+      content_type:
+        type: string
+      createtime:
+        type: integer
+      id:
+        type: string
+      link_id:
+        type: integer
+      name:
         type: string
     type: object
   script.ArchiveRequest:
@@ -788,6 +803,55 @@ definitions:
     - 1
     - 2
     type: integer
+  statistics.Chart:
+    properties:
+      x:
+        items:
+          type: string
+        type: array
+      "y":
+        items:
+          type: integer
+        type: array
+    type: object
+  statistics.DUChart:
+    properties:
+      download:
+        $ref: '#/definitions/statistics.Chart'
+      update:
+        $ref: '#/definitions/statistics.Chart'
+    type: object
+  statistics.Overview:
+    properties:
+      today:
+        type: integer
+      week:
+        type: integer
+      yesterday:
+        type: integer
+    type: object
+  statistics.ScriptRealtimeResponse:
+    properties:
+      download:
+        $ref: '#/definitions/statistics.Chart'
+      update:
+        $ref: '#/definitions/statistics.Chart'
+    type: object
+  statistics.ScriptResponse:
+    properties:
+      download_uv:
+        $ref: '#/definitions/statistics.Overview'
+      page_pv:
+        $ref: '#/definitions/statistics.Overview'
+      page_uv:
+        $ref: '#/definitions/statistics.Overview'
+      pv_chart:
+        $ref: '#/definitions/statistics.DUChart'
+      update_uv:
+        $ref: '#/definitions/statistics.Overview'
+      uv_chart:
+        $ref: '#/definitions/statistics.DUChart'
+    type: object
   user.CurrentUserResponse:
     properties:
       avatar:
@@ -968,6 +1032,66 @@ paths:
       summary: 上传图片
       tags:
       - resource
+  /script/{id}/statistics:
+    get:
+      consumes:
+      - application/json
+      description: 脚本统计数据
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.ScriptResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 脚本统计数据
+      tags:
+      - statistics
+  /script/{id}/statistics/realtime:
+    get:
+      consumes:
+      - application/json
+      description: 脚本实时统计数据
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.ScriptRealtimeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 脚本实时统计数据
+      tags:
+      - statistics
   /scripts:
     get:
       consumes:

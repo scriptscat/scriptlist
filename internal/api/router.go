@@ -8,6 +8,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/resource_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/statistics_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
 )
 
@@ -108,6 +109,14 @@ func Router(root *mux.Router) error {
 				issueComment.ListComment,
 			)
 		}
+	}
+	// 统计
+	{
+		controller := statistics_ctr.NewStatistics()
+		r.Group("/", auth.Middleware(true)).Bind(
+			controller.Script,
+			controller.ScriptRealtime,
+		)
 	}
 	// 资源
 	{

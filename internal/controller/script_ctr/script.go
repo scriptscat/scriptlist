@@ -2,6 +2,7 @@ package script_ctr
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -179,8 +180,27 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 }
 
 // Info 获取脚本信息
-func (s *Script) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
-	return script_svc.Script().Info(ctx, req)
+func (s *Script) Info(ctx *gin.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
+	// 记录访问
+	ua := ctx.GetHeader("User-Agent")
+	if ua == "" {
+		return nil, errors.New("ua is empty")
+	}
+	record := &producer.ScriptStatisticsMsg{
+		ScriptID:        req.ID,
+		ScriptCodeID:    0,
+		UserID:          0,
+		IP:              ctx.ClientIP(),
+		UA:              ua,
+		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
+		Download:        statistics_repo.ViewStatistics,
+		Time:            time.Now(),
+	}
+	err := statistics_svc.Statistics().ScriptRecord(ctx, record)
+	if err != nil {
+		logger.Ctx(ctx).Error("脚本访问统计记录失败", zap.Any("record", record), zap.Error(err))
+	}
+	return script_svc.Script().Info(ctx.Request.Context(), req)
 }
 
 // Code 获取脚本代码

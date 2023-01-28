@@ -105,6 +105,100 @@
                 }
             }
         },
+        "/script/{id}/statistics": {
+            "get": {
+                "description": "脚本统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "脚本统计数据",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/statistics.ScriptResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/script/{id}/statistics/realtime": {
+            "get": {
+                "description": "脚本实时统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "脚本实时统计数据",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/statistics.ScriptRealtimeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts": {
             "get": {
                 "description": "获取脚本列表",
@@ -2426,7 +2520,30 @@
                 "comment": {
                     "type": "string"
                 },
-                "image": {
+                "link_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "resource.UploadImageResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "content_type": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "link_id": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -3043,6 +3160,82 @@
                 1,
                 2
             ]
+        },
+        "statistics.Chart": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "y": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "statistics.DUChart": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/statistics.Chart"
+                },
+                "update": {
+                    "$ref": "#/definitions/statistics.Chart"
+                }
+            }
+        },
+        "statistics.Overview": {
+            "type": "object",
+            "properties": {
+                "today": {
+                    "type": "integer"
+                },
+                "week": {
+                    "type": "integer"
+                },
+                "yesterday": {
+                    "type": "integer"
+                }
+            }
+        },
+        "statistics.ScriptRealtimeResponse": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/statistics.Chart"
+                },
+                "update": {
+                    "$ref": "#/definitions/statistics.Chart"
+                }
+            }
+        },
+        "statistics.ScriptResponse": {
+            "type": "object",
+            "properties": {
+                "download_uv": {
+                    "$ref": "#/definitions/statistics.Overview"
+                },
+                "page_pv": {
+                    "$ref": "#/definitions/statistics.Overview"
+                },
+                "page_uv": {
+                    "$ref": "#/definitions/statistics.Overview"
+                },
+                "pv_chart": {
+                    "$ref": "#/definitions/statistics.DUChart"
+                },
+                "update_uv": {
+                    "$ref": "#/definitions/statistics.Overview"
+                },
+                "uv_chart": {
+                    "$ref": "#/definitions/statistics.DUChart"
+                }
+            }
         },
         "user.CurrentUserResponse": {
             "type": "object",
