@@ -74,6 +74,8 @@ github.com/cncf/xds/go v0.0.0-20210922020428-25de7278fc84/go.mod h1:eXthEFrGJvWH
 github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/codfrm/cago v0.0.0-20230128095540-2cb462716851 h1:+wVRwoaGGJIdOitDgIJTSwPaLlvxfWA0PT3C4FEOHGY=
 github.com/codfrm/cago v0.0.0-20230128095540-2cb462716851/go.mod h1:5G+9XnKQHFvl1+vd2AOzQGwIgTSqTSeUjkGaHbK8Fj4=
+github.com/codfrm/cago v0.0.0-20230128142318-27effe48836b h1:gxuk+MT9apz78T0NR1Ws3mdGlB+xb5+dALuV74gyYBQ=
+github.com/codfrm/cago v0.0.0-20230128142318-27effe48836b/go.mod h1:5G+9XnKQHFvl1+vd2AOzQGwIgTSqTSeUjkGaHbK8Fj4=
 github.com/coreos/go-semver v0.3.0 h1:wkHLiw0WNATZnSG7epLsujiMCgPAc9xhjJ4tgnAxmfM=
 github.com/coreos/go-semver v0.3.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/coreos/go-semver v0.3.1 h1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=
