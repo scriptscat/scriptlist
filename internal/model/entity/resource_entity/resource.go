@@ -2,7 +2,7 @@ package resource_entity
 
 type Resource struct {
 	ID          int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	ResourceID  string `gorm:"column:resource_id;type:varchar(255);not null;index:resouce,unique"`
+	ResourceID  string `gorm:"column:resource_id;type:varchar(255);not null;index:resource,unique"`
 	UserID      int64  `gorm:"column:user_id;type:bigint(20);not null"`
 	LinkID      int64  `gorm:"column:link_id;type:bigint(20)"`
 	Comment     string `gorm:"column:comment;type:varchar(255)"`

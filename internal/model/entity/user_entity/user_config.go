@@ -39,18 +39,18 @@ func (n *Notify) Value() (driver.Value, error) {
 }
 
 func (n *Notify) DefaultValue() {
-	setTrue(n.ScriptIssue)
-	setTrue(n.ScriptIssueComment)
-	setTrue(n.ScriptUpdate)
-	setTrue(n.At)
-	setTrue(n.Score)
-	setTrue(n.CreateScript)
+	setTrue(&n.ScriptIssue)
+	setTrue(&n.ScriptIssueComment)
+	setTrue(&n.ScriptUpdate)
+	setTrue(&n.At)
+	setTrue(&n.Score)
+	setTrue(&n.CreateScript)
 }
 
-func setTrue(b *bool) {
+func setTrue(b **bool) {
 	t := true
-	if b == nil {
-		b = &t
+	if *b == nil {
+		*b = &t
 	}
 }
 

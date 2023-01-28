@@ -58,7 +58,7 @@ func (r *resourceSvc) UploadImage(ctx context.Context, image *multipart.FileHead
 		return nil, err
 	}
 	ct := http.DetectContentType(bImage)
-	if strings.Index(ct, "image") == -1 {
+	if !strings.Contains(ct, "image") {
 		return nil, i18n.NewError(ctx, code.ResourceNotImage)
 	}
 	resource := &resource_entity.Resource{
