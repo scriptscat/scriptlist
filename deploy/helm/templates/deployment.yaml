@@ -49,6 +49,8 @@ spec:
             - mountPath: /app/configs/config.yaml
               subPath: config.yaml
               name: config-volume
+            - mountPath: /usr/share/elasticsearch/config/certs
+              name: elastic-certificates
       volumes:
         - name: config-volume
           configMap:
@@ -56,6 +58,10 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
+        - name: elastic-certificates
+          secret:
+            defaultMode: 420
+            secretName: elastic-certificate-pem
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
