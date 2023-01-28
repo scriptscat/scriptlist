@@ -25,6 +25,7 @@ const (
 	ScriptNotAllowUrl
 	ScriptIsArchive
 	ScriptScoreDeleted
+	ScriptScoreNotFound
 )
 
 // issue

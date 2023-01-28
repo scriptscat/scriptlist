@@ -27,6 +27,7 @@ var zhCN = map[int]string{
 	ScriptNotAllowUrl:    "不允许的url域名,如果你需要添加,可以前往论坛反馈申请",
 	ScriptIsArchive:      "脚本已归档,无法进行此操作",
 	ScriptScoreDeleted:   "评分已删除",
+	ScriptScoreNotFound:  "评分不存在",
 
 	IssueLabelNotExist:   "标签不存在",
 	IssueNotFound:        "反馈不存在",

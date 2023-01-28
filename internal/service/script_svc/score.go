@@ -2,6 +2,7 @@ package script_svc
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/codfrm/cago/pkg/consts"
@@ -152,6 +153,9 @@ func (s *scoreSvc) SelfScore(ctx context.Context, req *api.SelfScoreRequest) (*a
 	ret, err := script_repo.ScriptScore().FindByUser(ctx, uid, req.ScriptId)
 	if err != nil {
 		return nil, err
+	}
+	if ret == nil {
+		return nil, i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptScoreNotFound)
 	}
 	resp, err := s.ToScore(ctx, ret)
 	if err != nil {
