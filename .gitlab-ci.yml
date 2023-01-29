@@ -91,5 +91,6 @@ deploy-pre:
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set appConfig.env=pre \
-      --set ingress.hosts[0].host=pre.$DOMAIN \
-      --set ingress.tls[0].hosts[0]=pre.$DOMAIN
+      --set ingress.enabled=false \
+      --set istio.enabled=true \
+      --set istio.hosts[0]=pre.$DOMAIN

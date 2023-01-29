@@ -48,6 +48,22 @@ service:
   type: ClusterIP
   port: 80
 
+storageClassName: "nfs-client"
+
+istio:
+  enabled: false
+  hosts:
+    - scriptcat.org
+  match:
+    - uri:
+        prefix: /api
+    - uri:
+        prefix: /scripts
+    - uri:
+        prefix: /lib
+    - uri:
+        prefix: /swagger
+
 ingress:
   enabled: true
   className: "k3s-backup-nginx"

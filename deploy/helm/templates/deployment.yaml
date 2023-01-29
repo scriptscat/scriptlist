@@ -51,6 +51,8 @@ spec:
               name: config-volume
             - mountPath: /usr/share/elasticsearch/config/certs
               name: elastic-certificates
+            - name: resource
+              mountPath: /app/resource
       volumes:
         - name: config-volume
           configMap:
@@ -62,6 +64,9 @@ spec:
           secret:
             defaultMode: 420
             secretName: elastic-certificate-pem
+        - name: resource
+          persistentVolumeClaim:
+            claimName: {{ include "cago.fullname" . }}-resource-pvc
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

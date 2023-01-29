@@ -62,12 +62,14 @@ func (r *resourceSvc) UploadImage(ctx context.Context, image *multipart.FileHead
 		return nil, i18n.NewError(ctx, code.ResourceNotImage)
 	}
 	resource := &resource_entity.Resource{
-		ResourceID:  utils.RandString(16, utils.Mix),
-		UserID:      auth_svc.Auth().Get(ctx).UID,
-		LinkID:      req.LinkID,
-		Comment:     req.Comment,
-		Name:        image.Filename,
-		Path:        path.Join(base, fmt.Sprintf("%d_%d.%s", time.Now().Unix(), auth_svc.Auth().Get(ctx).UID, path.Ext(image.Filename))),
+		ResourceID: utils.RandString(16, utils.Mix),
+		UserID:     auth_svc.Auth().Get(ctx).UID,
+		LinkID:     req.LinkID,
+		Comment:    req.Comment,
+		Name:       image.Filename,
+		Path: path.Join(base,
+			fmt.Sprintf("%d%s_%d%s", time.Now().Unix(), utils.RandString(3, utils.Number),
+				auth_svc.Auth().Get(ctx).UID, path.Ext(image.Filename))),
 		ContentType: ct,
 		Status:      consts.ACTIVE,
 		Createtime:  time.Now().Unix(),
