@@ -46,5 +46,5 @@ spec:
         {{- toYaml .Values.istio.match | nindent 8 }}
       route:
         - destination:
-            host: {{ .Values.project }}
+            host: {{ .Values.project }}-cago
     {{ end }}

@@ -22,4 +22,4 @@ spec:
               service:
                 name: istio-ingressgateway
                 port:
-                  number: 80
+                  name: http

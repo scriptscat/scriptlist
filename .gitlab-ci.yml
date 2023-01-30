@@ -76,18 +76,19 @@ deploy-prod:
     - |
       helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
-      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
-      --set ingress.enabled=false
-    - cd ../gateway
-    - |
-      helm upgrade --install --namespace $NAMESPACE $APP_NAME-gateway . --kubeconfig $K3S_CONFIG \
-      --set istio.canary.enabled=false
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD
+      # 服务器无资源,暂时移除灰度
+#      --set ingress.enabled=false
+#    - cd ../gateway
+#    - |
+#      helm upgrade --install --namespace $NAMESPACE $APP_NAME-gateway . --kubeconfig $K3S_CONFIG \
+#      --set istio.canary.enabled=false
 
 deploy-canary:
   stage: deploy
   image: alpine/helm:3.9.0
   rules:
-    - if: $CI_COMMIT_BRANCH == "release/canary"
+    - if: $CI_COMMIT_BRANCH == "deprecate/release/canary"
   script:
     - cd deploy/helm
     - |
