@@ -40,7 +40,7 @@ build:
   stage: build
   image: golang:1.18-alpine3.16
   rules:
-    - if: $CI_COMMIT_BRANCH ==  "main" || $CI_COMMIT_BRANCH =~ /^release\/.*$/
+    - if: $CI_COMMIT_BRANCH ==  "main" || $CI_COMMIT_BRANCH =~ /^release\/.*$/ || $CI_COMMIT_BRANCH =~ /^test\/.*$/
   cache:
     key: go-cache
     paths:
@@ -56,7 +56,7 @@ build-docker:
   stage: docker
   image: docker:rc
   rules:
-    - if: $CI_COMMIT_BRANCH ==  "main" || $CI_COMMIT_BRANCH =~ /^release\/.*$/
+    - if: $CI_COMMIT_BRANCH ==  "main" || $CI_COMMIT_BRANCH =~ /^release\/.*$/ || $CI_COMMIT_BRANCH =~ /^test\/.*$/
   variables:
     DOCKER_HOST: tcp://docker-dind:2375
   before_script:
@@ -91,6 +91,21 @@ deploy-pre:
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set appConfig.env=pre \
-      --set ingress.enabled=false \
-      --set istio.enabled=true \
-      --set istio.hosts[0]=pre.$DOMAIN
+      --set ingress.hosts[0].host=pre.$DOMAIN \
+      --set ingress.tls[0].hosts[0]=pre.$DOMAIN
+
+deploy-test:
+  stage: deploy
+  image: alpine/helm:3.9.0
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^test\/.*$/
+  script:
+    - cd deploy/helm
+    - |
+      helm upgrade --install \
+      --namespace $NAMESPACE $APP_NAME-test . -f values.yaml --kubeconfig $K3S_CONFIG \
+      --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
+      --set appConfig.env=test \
+      --set ingress.hosts[0].host=test.$DOMAIN \
+      --set ingress.tls[0].hosts[0]=test.$DOMAIN
