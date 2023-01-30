@@ -48,7 +48,16 @@ Selector labels
 {{- define "cago.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "cago.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+cago.io/environment: {{ .Values.istio.environment }}
 {{- end }}
+
+{{/*
+用于灰度发布的selectorLabels
+*/}}
+{{- define "cago.istioSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "cago.name" . }}
+{{- end }}
+
 
 {{/*
 Create the name of the service account to use

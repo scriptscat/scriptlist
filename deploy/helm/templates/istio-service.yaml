@@ -1,11 +1,11 @@
-{{- if not .Values.istio.enabled -}}
+{{- if .Values.istio.enabled -}}
 # 开启了 istio 时使用 istio-service
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "cago.fullname" . }}
+  name: {{ .Values.nameOverride }}
   labels:
-    {{- include "cago.labels" . | nindent 4 }}
+    {{- include "cago.istioSelectorLabels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -14,6 +14,7 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "cago.selectorLabels" . | nindent 4 }}
-
+    {{- include "cago.istioSelectorLabels" . | nindent 4 }}
+    cago.io/environment: {{ .Values.istio.environment }}
+    
 {{- end }}

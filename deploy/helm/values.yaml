@@ -11,7 +11,7 @@ image:
   tag: ""
 
 appConfig:
-  env: prod
+  env: prod # test | pre | prod
   debug: false
 
 etcdConfig:
@@ -19,7 +19,8 @@ etcdConfig:
   password: root
 
 imagePullSecrets: []
-nameOverride: ""
+# 使用灰度发布时必须填写此项
+nameOverride: "scriptlist"
 fullnameOverride: ""
 
 serviceAccount:
@@ -52,6 +53,7 @@ storageClassName: "nfs-client"
 
 istio:
   enabled: false
+  environment: prod # test | pre | canary | prod
   hosts:
     - scriptcat.org
   match:
@@ -63,6 +65,12 @@ istio:
         prefix: /lib
     - uri:
         prefix: /swagger
+  canary:
+    enabled: false
+    match: # 染色规则
+      - headers:
+          cookie:
+            regex: "^(.*?;)?(token=.+?)(;.*)?$"
 
 ingress:
   enabled: true
@@ -95,7 +103,7 @@ resources:
     cpu: 1000m
     memory: 1024Mi
   requests:
-    cpu: 200m
+    cpu: 100m
     memory: 256Mi
 
 autoscaling:

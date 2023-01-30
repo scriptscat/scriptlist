@@ -76,7 +76,25 @@ deploy-prod:
     - |
       helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
-      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
+      --set ingress.enabled=false \
+      --set istio.enabled=true
+
+deploy-canary:
+  stage: deploy
+  image: alpine/helm:3.9.0
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/canary"
+  script:
+    - cd deploy/helm
+    - |
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME-canary . --kubeconfig $K3S_CONFIG \
+      --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
+      --set ingress.enabled=false \
+      --set istio.enabled=true \
+      --set istio.canary.enabled=true \
+      --set istio.environment=canary
 
 deploy-pre:
   stage: deploy
@@ -92,7 +110,9 @@ deploy-pre:
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set appConfig.env=pre \
       --set ingress.hosts[0].host=pre.$DOMAIN \
-      --set ingress.tls[0].hosts[0]=pre.$DOMAIN
+      --set ingress.tls[0].hosts[0]=pre.$DOMAIN \
+      --set resources.requests.cpu=50 \
+      --set resources.requests.memory=128Mi
 
 deploy-test:
   stage: deploy
@@ -108,4 +128,6 @@ deploy-test:
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set appConfig.env=test \
       --set ingress.hosts[0].host=test.$DOMAIN \
-      --set ingress.tls[0].hosts[0]=test.$DOMAIN
+      --set ingress.tls[0].hosts[0]=test.$DOMAIN \
+      --set resources.requests.cpu=50 \
+      --set resources.requests.memory=128Mi
