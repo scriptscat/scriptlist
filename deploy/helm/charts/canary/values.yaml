@@ -1,0 +1,25 @@
+# 项目名 需要使用
+project: scriptlist
+
+nameOverride: ""
+fullnameOverride: ""
+
+istio:
+  hosts:
+    - scriptcat.org
+  match:
+    - uri:
+        prefix: /api
+    - uri:
+        prefix: /scripts
+    - uri:
+        prefix: /lib
+    - uri:
+        prefix: /swagger
+  canary:
+    enabled: false
+    match: # 染色规则
+      - headers:
+          cookie:
+            regex: "^(.*?;)?(token=.+?)(;.*)?$"
+

@@ -70,15 +70,18 @@ deploy-prod:
   stage: deploy
   image: alpine/helm:3.9.0
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "release/canary"
+    - if: $CI_COMMIT_BRANCH == "main"
   script:
     - cd deploy/helm
     - |
       helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
-      --set ingress.enabled=false \
-      --set istio.enabled=true
+      --set ingress.enabled=false
+    - cd charts/canary
+    - |
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME-canary . --kubeconfig $K3S_CONFIG \
+      --set istio.canary.enabled=false
 
 deploy-canary:
   stage: deploy
@@ -91,10 +94,11 @@ deploy-canary:
       helm upgrade --install --namespace $NAMESPACE $APP_NAME-canary . --kubeconfig $K3S_CONFIG \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
-      --set ingress.enabled=false \
-      --set istio.enabled=true \
-      --set istio.canary.enabled=true \
-      --set istio.environment=canary
+      --set ingress.enabled=false
+    - cd charts/canary
+    - |
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME-canary . --kubeconfig $K3S_CONFIG \
+      --set istio.canary.enabled=true
 
 deploy-pre:
   stage: deploy
