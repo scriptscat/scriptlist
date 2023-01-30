@@ -22,4 +22,6 @@ istio:
       - headers:
           cookie:
             regex: "^(.*?;)?(token=.+?)(;.*)?$"
+        uri:
+          prefix: /api
 

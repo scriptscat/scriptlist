@@ -78,9 +78,9 @@ deploy-prod:
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set ingress.enabled=false
-    - cd charts/canary
+    - cd ../gateway
     - |
-      helm upgrade --install --namespace $NAMESPACE $APP_NAME-canary . --kubeconfig $K3S_CONFIG \
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME-gateway . --kubeconfig $K3S_CONFIG \
       --set istio.canary.enabled=false
 
 deploy-canary:
@@ -95,9 +95,9 @@ deploy-canary:
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set ingress.enabled=false
-    - cd charts/canary
+    - cd ../gateway
     - |
-      helm upgrade --install --namespace $NAMESPACE $APP_NAME-canary . --kubeconfig $K3S_CONFIG \
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME-gateway . --kubeconfig $K3S_CONFIG \
       --set istio.canary.enabled=true
 
 deploy-pre:

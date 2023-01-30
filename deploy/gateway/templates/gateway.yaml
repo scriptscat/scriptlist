@@ -32,14 +32,15 @@ spec:
   http:
     {{- if .Values.istio.canary.enabled }}
     - match:
-        {{- toYaml .Values.istio.match | nindent 8 }}
         {{- toYaml .Values.istio.canary.match | nindent 8 }}
       route:
         - destination:
-            host: {{ .Values.project }}-canary
-    - route:
+            host: {{ .Values.project }}-canary-cago
+    - match:
+        {{- toYaml .Values.istio.match | nindent 8 }}
+      route:
         - destination:
-            host: {{ .Values.project }}
+            host: {{ .Values.project }}-cago
     {{ else }}
     - match:
         {{- toYaml .Values.istio.match | nindent 8 }}
