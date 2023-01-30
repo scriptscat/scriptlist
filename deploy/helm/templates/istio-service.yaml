@@ -1,9 +1,10 @@
-{{- if .Values.istio.enabled -}}
-# 开启了 istio 时使用 istio-service
+{{- if and .Values.istio.enabled .Values.istio.canary.enabled -}}
+{{- if eq .Values.istio.enviroment "canary" -}}
+# 开启了 istio 并且是灰度发布时使用 istio-service
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.nameOverride }}
+  name: {{ include "cago.istioLabel" . }}-istio
   labels:
     {{- include "cago.istioSelectorLabels" . | nindent 4 }}
 spec:
@@ -15,6 +16,6 @@ spec:
       name: http
   selector:
     {{- include "cago.istioSelectorLabels" . | nindent 4 }}
-    cago.io/environment: {{ .Values.istio.environment }}
-    
+
+{{- end }}
 {{- end }}

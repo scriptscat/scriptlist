@@ -49,16 +49,21 @@ Selector labels
 app.kubernetes.io/name: {{ include "cago.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.istio.enabled }}
+cago.io/label: {{ .Values.istio.label }}
 cago.io/environment: {{ .Values.istio.environment }}
 cago.io/istio: enabled
 {{- end }}
+{{- end }}
+
+{{- define "cago.istioLabel" -}}
+{{ .Values.istio.label }}
 {{- end }}
 
 {{/*
 用于灰度发布的selectorLabels
 */}}
 {{- define "cago.istioSelectorLabels" -}}
-app.kubernetes.io/name: {{ include "cago.name" . }}
+cago.io/label: {{ include "cago.istioLabel" . }}
 cago.io/istio: enabled
 {{- end }}
 

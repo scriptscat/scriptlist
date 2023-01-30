@@ -70,7 +70,7 @@ deploy-prod:
   stage: deploy
   image: alpine/helm:3.9.0
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "release/canary"
   script:
     - cd deploy/helm
     - |
@@ -104,14 +104,13 @@ deploy-pre:
   script:
     - cd deploy/helm
     - |
-      helm upgrade --install \
-      --namespace $NAMESPACE $APP_NAME-pre . -f values.yaml --kubeconfig $K3S_CONFIG \
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME-pre . -f values.yaml --kubeconfig $K3S_CONFIG \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set appConfig.env=pre \
       --set ingress.hosts[0].host=pre.$DOMAIN \
       --set ingress.tls[0].hosts[0]=pre.$DOMAIN \
-      --set resources.requests.cpu=50 \
+      --set resources.requests.cpu=50m \
       --set resources.requests.memory=128Mi
 
 deploy-test:
@@ -129,5 +128,5 @@ deploy-test:
       --set appConfig.env=test \
       --set ingress.hosts[0].host=test.$DOMAIN \
       --set ingress.tls[0].hosts[0]=test.$DOMAIN \
-      --set resources.requests.cpu=50 \
+      --set resources.requests.cpu=50m \
       --set resources.requests.memory=128Mi

@@ -19,8 +19,8 @@ etcdConfig:
   password: root
 
 imagePullSecrets: []
-# 使用灰度发布时必须填写此项
-nameOverride: "scriptlist"
+
+nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
@@ -53,6 +53,7 @@ storageClassName: "nfs-client"
 
 istio:
   enabled: false
+  label: "scriptlist" # 项目名称,必填
   environment: prod # test | pre | canary | prod
   hosts:
     - scriptcat.org

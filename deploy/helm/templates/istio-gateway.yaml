@@ -1,9 +1,10 @@
 {{- if .Values.istio.enabled -}}
+{{- if eq .Values.istio.enviroment "canary" -}}
 # 支持灰度发布,使用istio-gateway实现流量控制
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: {{ .Values.nameOverride }}-gateway
+  name: {{ include "cago.istioLabel" . }}-gateway
 spec:
   selector:
     istio: ingressgateway
@@ -22,44 +23,46 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: {{ .Values.nameOverride }}
+  name: {{ include "cago.istioLabel" . }}
 spec:
   hosts:
     {{- range .Values.istio.hosts }}
     - {{ . | quote }}
     {{- end }}
   gateways:
-    - {{ .Values.nameOverride }}-gateway
+    - {{ include "cago.istioLabel" . }}-gateway
   http:
-    {{ if .Values.istio.canary.enabled }}
+    {{- if .Values.istio.canary.enabled }}
     - match:
         {{- toYaml .Values.istio.match | nindent 8 }}
         {{- toYaml .Values.istio.canary.match | nindent 8 }}
       route:
         - destination:
-            host: {{ .Values.nameOverride }}
+            host: {{ include "cago.istioLabel" . }}-istio
             subset: canary
     - route:
         - destination:
-            host: {{ .Values.nameOverride }}
+            host: {{ include "cago.istioLabel" . }}-istio
             subset: prod
     {{ else }}
     - match:
         {{- toYaml .Values.istio.match | nindent 8 }}
       route:
         - destination:
-            host: {{ .Values.nameOverride }}
+            host: {{ include "cago.istioLabel" . }}
             subset: prod
     {{ end }}
 
 ---
 
+{{- if .Values.istio.canary.enabled }}
+# 开启了灰度发布
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: {{ .Values.nameOverride }}
+  name: {{ include "cago.istioLabel" . }}
 spec:
-  host: {{ .Values.nameOverride }}
+  host: {{ include "cago.istioLabel" . }}-istio
   subsets:
     - name: prod
       labels:
@@ -69,4 +72,7 @@ spec:
       labels:
         {{- include "cago.istioSelectorLabels" . | nindent 8 }}
         cago.io/environment: canary
+
+{{- end }}
+{{- end }}
 {{- end }}
