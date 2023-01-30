@@ -48,7 +48,10 @@ Selector labels
 {{- define "cago.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "cago.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.istio.enabled }}
 cago.io/environment: {{ .Values.istio.environment }}
+cago.io/istio: enabled
+{{- end }}
 {{- end }}
 
 {{/*
@@ -56,6 +59,7 @@ cago.io/environment: {{ .Values.istio.environment }}
 */}}
 {{- define "cago.istioSelectorLabels" -}}
 app.kubernetes.io/name: {{ include "cago.name" . }}
+cago.io/istio: enabled
 {{- end }}
 
 
