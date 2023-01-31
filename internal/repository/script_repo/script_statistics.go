@@ -75,7 +75,7 @@ func (u *scriptStatisticsRepo) FindByScriptID(ctx context.Context, scriptId int6
 
 func (u *scriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64) error {
 	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
-		Update("download", gorm.Expr("download+1")).RowsAffected == 0 {
+		Update("download", gorm.Expr("`download`+1")).RowsAffected == 0 {
 		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
 			ScriptID: scriptId,
 			Download: 1,
@@ -86,7 +86,7 @@ func (u *scriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64)
 
 func (u *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64) error {
 	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
-		Update("update", gorm.Expr("update+1")).RowsAffected == 0 {
+		Update("update", gorm.Expr("`update`+1")).RowsAffected == 0 {
 		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
 			ScriptID: scriptId,
 			Update:   1,
@@ -98,8 +98,8 @@ func (u *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64) e
 func (u *scriptStatisticsRepo) IncrScore(ctx context.Context, scriptId, score int64, num int) error {
 	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
 		Updates(map[string]interface{}{
-			"score":       gorm.Expr("score+?", score),
-			"score_count": gorm.Expr("score_count+?", num),
+			"score":       gorm.Expr("`score`+?", score),
+			"score_count": gorm.Expr("`score_count`+?", num),
 		}).RowsAffected == 0 {
 		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
 			ScriptID:   scriptId,
