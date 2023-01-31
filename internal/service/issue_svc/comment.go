@@ -148,7 +148,7 @@ func (c *commentSvc) Middleware() gin.HandlerFunc {
 			}
 		}
 		ctx.Request = ctx.Request.WithContext(context.WithValue(context.WithValue(
-			ctx,
+			ctx.Request.Context(),
 			issue_entity.ScriptIssue{}, issue),
 			script_entity.Script{}, script))
 		ctx.Next()
