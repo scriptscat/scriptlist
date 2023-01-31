@@ -124,11 +124,11 @@ func (c *commentSvc) Middleware() gin.HandlerFunc {
 		id, _ := strconv.ParseInt(ctx.Param("id"), 10, 64)
 		// 非GET请求,需要验证邮箱,判断是否归档
 		if ctx.Request.Method != http.MethodGet {
-			if !auth_svc.Auth().Get(ctx.Request.Context()).EmailVerified {
+			if !auth_svc.Auth().Get(ctx).EmailVerified {
 				httputils.HandleResp(ctx, i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserEmailNotVerified))
 				return
 			}
-			script, err = script_repo.Script().Find(ctx.Request.Context(), id)
+			script, err = script_repo.Script().Find(ctx, id)
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
@@ -141,14 +141,14 @@ func (c *commentSvc) Middleware() gin.HandlerFunc {
 		}
 		issueId, _ := strconv.ParseInt(ctx.Param("issueId"), 10, 64)
 		if issueId != 0 {
-			script, issue, err = c.CheckOperate(ctx.Request.Context(), id, issueId)
+			script, issue, err = c.CheckOperate(ctx, id, issueId)
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
 			}
 		}
 		ctx.Request = ctx.Request.WithContext(context.WithValue(context.WithValue(
-			ctx.Request.Context(),
+			ctx,
 			issue_entity.ScriptIssue{}, issue),
 			script_entity.Script{}, script))
 		ctx.Next()

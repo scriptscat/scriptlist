@@ -200,7 +200,7 @@ func (s *Script) Info(ctx *gin.Context, req *api.InfoRequest) (*api.InfoResponse
 	if err != nil {
 		logger.Ctx(ctx).Error("脚本访问统计记录失败", zap.Any("record", record), zap.Error(err))
 	}
-	return script_svc.Script().Info(ctx.Request.Context(), req)
+	return script_svc.Script().Info(ctx, req)
 }
 
 // Code 获取脚本代码

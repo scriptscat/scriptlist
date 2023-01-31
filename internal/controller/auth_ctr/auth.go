@@ -20,7 +20,7 @@ func NewAuth() *Auth {
 
 func (a *Auth) Debug() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token, err := auth_svc.Auth().Login(ctx.Request.Context(), 1)
+		token, err := auth_svc.Auth().Login(ctx, 1)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
 			return
@@ -39,12 +39,12 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 			httputils.HandleResp(c, err)
 			return
 		}
-		resp, err := auth_svc.Auth().OAuthCallback(c.Request.Context(), req)
+		resp, err := auth_svc.Auth().OAuthCallback(c, req)
 		if err != nil {
 			httputils.HandleResp(c, err)
 			return
 		}
-		token, err := auth_svc.Auth().Login(c.Request.Context(), resp.UID)
+		token, err := auth_svc.Auth().Login(c, resp.UID)
 		if err != nil {
 			httputils.HandleResp(c, err)
 			return

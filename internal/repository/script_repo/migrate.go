@@ -98,7 +98,6 @@ func (m *migrateRepo) Update(ctx context.Context, s *entity.ScriptSearch) error 
 		logger.Error("update error", zap.ByteString("body", b), zap.Int("status", resp.StatusCode))
 		return fmt.Errorf("update error: %d body: %s", resp.StatusCode, b)
 	}
-	logger.Info("update success")
 	return nil
 }
 

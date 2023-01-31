@@ -20,17 +20,16 @@ func NewUser() *User {
 }
 
 // CurrentUser 获取当前登录的用户信息
-func (u *User) CurrentUser(gctx *gin.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
-	ctx := gctx.Request.Context()
+func (u *User) CurrentUser(ctx *gin.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
 	resp, err := user_svc.User().UserInfo(ctx, auth_svc.Auth().Get(ctx).UID)
 	if err != nil {
 		return nil, err
 	}
-	loginId, err := gctx.Cookie("login_id")
+	loginId, err := ctx.Cookie("login_id")
 	if err != nil {
 		return nil, err
 	}
-	token, err := gctx.Cookie("token")
+	token, err := ctx.Cookie("token")
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +45,8 @@ func (u *User) CurrentUser(gctx *gin.Context, req *api.CurrentUserRequest) (*api
 			return nil, err
 		}
 		// 设置cookie
-		gctx.SetCookie("login_id", m.ID, auth_svc.TokenAuthMaxAge, "/", "", false, true)
-		gctx.SetCookie("token", m.Token, auth_svc.TokenAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("login_id", m.ID, auth_svc.TokenAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("token", m.Token, auth_svc.TokenAuthMaxAge, "/", "", false, true)
 	}
 	return &api.CurrentUserResponse{InfoResponse: resp}, nil
 }

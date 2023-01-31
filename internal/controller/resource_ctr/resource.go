@@ -28,7 +28,7 @@ func NewResource() *Resource {
 
 // UploadImage 上传图片
 func (r *Resource) UploadImage(gCtx *gin.Context, req *api.UploadImageRequest) (*api.UploadImageResponse, error) {
-	ctx := gCtx.Request.Context()
+	ctx := gCtx
 	img, err := gCtx.FormFile("image")
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (r *Resource) UploadImage(gCtx *gin.Context, req *api.UploadImageRequest) (
 		return nil, i18n.NewError(ctx, code.ResourceImageTooLarge)
 	}
 	resp, err := r.limit.FuncTake(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10), func() (interface{}, error) {
-		return resource_svc.Resource().UploadImage(gCtx.Request.Context(), img, req)
+		return resource_svc.Resource().UploadImage(gCtx, img, req)
 	})
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (r *Resource) UploadImage(gCtx *gin.Context, req *api.UploadImageRequest) (
 func (r *Resource) ViewImage() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
-		res, b, err := resource_svc.Resource().ViewImage(ctx.Request.Context(), id)
+		res, b, err := resource_svc.Resource().ViewImage(ctx, id)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
 			return
