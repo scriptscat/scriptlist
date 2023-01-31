@@ -8,6 +8,7 @@ import (
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/pkg/utils"
@@ -91,6 +92,16 @@ func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
 		}
 		m := &model.LoginToken{}
 		if err := cache.Ctx(ctx).Get("user:auth:login:" + loginId).Scan(m); err != nil {
+			if err == cache2.ErrNotFound {
+				// 删除cookie
+				ctx.SetCookie("login_id", "", -1, "/", "", false, true)
+				ctx.SetCookie("token", "", -1, "/", "", false, true)
+				if force {
+					httputils.HandleResp(ctx, httputils.NewError(http.StatusUnauthorized, -1, "未登录"))
+					return
+				}
+				return
+			}
 			httputils.HandleResp(ctx, err)
 			return
 		}
