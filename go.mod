@@ -3,7 +3,7 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
-	github.com/codfrm/cago v0.0.0-20230131061241-eaa097673ebb
+	github.com/codfrm/cago v0.0.0-20230131140309-a762a0cec77a
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1

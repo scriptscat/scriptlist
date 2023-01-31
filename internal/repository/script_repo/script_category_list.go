@@ -2,7 +2,10 @@ package script_repo
 
 import (
 	"context"
+	"fmt"
+	"time"
 
+	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/db"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
@@ -33,12 +36,21 @@ func NewScriptCategoryListRepo() ScriptCategoryListRepo {
 	return &scriptCategoryListRepo{}
 }
 
+func (s *scriptCategoryListRepo) key(id int64) string {
+	return fmt.Sprintf("script:category:list:%d", id)
+}
+
 func (s *scriptCategoryListRepo) Find(ctx context.Context, id int64) (*entity.ScriptCategoryList, error) {
 	ret := &entity.ScriptCategoryList{ID: id}
-	if err := db.Ctx(ctx).First(ret).Error; err != nil {
-		if db.RecordNotFound(err) {
-			return nil, nil
+	if err := cache.Ctx(ctx).GetOrSet(s.key(id), func() (interface{}, error) {
+		if err := db.Ctx(ctx).First(ret).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
 		}
+		return ret, nil
+	}, cache.Expiration(time.Hour)).Scan(ret); err != nil {
 		return nil, err
 	}
 	return ret, nil

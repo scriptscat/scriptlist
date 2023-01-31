@@ -2,7 +2,11 @@ package script_repo
 
 import (
 	"context"
+	"strconv"
+	"time"
 
+	"github.com/codfrm/cago/database/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
 	"gorm.io/gorm"
@@ -62,12 +66,21 @@ func (u *scriptStatisticsRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&entity.ScriptStatistics{ID: id}).Error
 }
 
+func (u *scriptStatisticsRepo) key(id int64) string {
+	return "script:statistics:" + strconv.FormatInt(id, 10)
+}
+
 func (u *scriptStatisticsRepo) FindByScriptID(ctx context.Context, scriptId int64) (*entity.ScriptStatistics, error) {
 	ret := &entity.ScriptStatistics{}
-	if err := db.Ctx(ctx).First(ret, "script_id=?", scriptId).Error; err != nil {
-		if db.RecordNotFound(err) {
-			return nil, nil
+	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId), func() (interface{}, error) {
+		if err := db.Ctx(ctx).First(ret, "script_id=?", scriptId).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
 		}
+		return ret, nil
+	}, cache2.Expiration(time.Minute)).Scan(ret); err != nil {
 		return nil, err
 	}
 	return ret, nil

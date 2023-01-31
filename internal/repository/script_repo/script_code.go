@@ -2,7 +2,11 @@ package script_repo
 
 import (
 	"context"
+	"strconv"
+	"time"
 
+	"github.com/codfrm/cago/database/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
@@ -36,6 +40,10 @@ func NewScriptCodeRepo() ScriptCodeRepo {
 	return &scriptCodeRepo{}
 }
 
+func (u *scriptCodeRepo) key(id int64) string {
+	return "script:code:" + strconv.FormatInt(id, 10)
+}
+
 func (u *scriptCodeRepo) Find(ctx context.Context, id int64) (*entity.Code, error) {
 	ret := &entity.Code{ID: id}
 	if err := db.Ctx(ctx).First(ret).Error; err != nil {
@@ -52,7 +60,10 @@ func (u *scriptCodeRepo) Create(ctx context.Context, scriptCode *entity.Code) er
 }
 
 func (u *scriptCodeRepo) Update(ctx context.Context, scriptCode *entity.Code) error {
-	return db.Ctx(ctx).Updates(scriptCode).Error
+	if err := db.Ctx(ctx).Updates(scriptCode).Error; err != nil {
+		return err
+	}
+	return cache2.NewKeyDepend(cache.Default(), u.key(scriptCode.ScriptID)).InvalidKey(ctx)
 }
 
 func (u *scriptCodeRepo) Delete(ctx context.Context, id int64) error {
@@ -61,15 +72,20 @@ func (u *scriptCodeRepo) Delete(ctx context.Context, id int64) error {
 
 func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error) {
 	ret := &entity.Code{}
-	q := db.Ctx(ctx)
-	// 由于code过大,使用此方法不返回code
-	if !withcode {
-		q = q.Select(ret.Fields())
-	}
-	if err := q.First(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
-		if db.RecordNotFound(err) {
-			return nil, nil
+	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId), func() (interface{}, error) {
+		q := db.Ctx(ctx)
+		// 由于code过大,使用此方法不返回code
+		if !withcode {
+			q = q.Select(ret.Fields())
 		}
+		if err := q.First(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return ret, nil
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -77,14 +93,19 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 
 func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error) {
 	ret := &entity.Code{}
-	q := db.Ctx(ctx)
-	if !withcode {
-		q = q.Select(ret.Fields())
-	}
-	if err := q.Order("createtime desc").First(ret, "script_id=?", scriptId).Error; err != nil {
-		if db.RecordNotFound(err) {
-			return nil, nil
+	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId), func() (interface{}, error) {
+		q := db.Ctx(ctx)
+		if !withcode {
+			q = q.Select(ret.Fields())
 		}
+		if err := q.Order("createtime desc").First(ret, "script_id=?", scriptId).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return ret, nil
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
