@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/go-gormigrate/gormigrate/v2"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -14,8 +16,10 @@ func RunMigrations(db *gorm.DB) error {
 	// 添加分布式锁
 	if ok, err := redis.Default().
 		SetNX(context.Background(), "migrations", "lock", time.Minute).Result(); err != nil {
+		logger.Ctx(context.Background()).Error("数据库迁移失败", zap.Error(err))
 		return err
 	} else if !ok {
+		logger.Ctx(context.Background()).Info("数据库迁移已经在执行")
 		return nil
 	}
 	defer redis.Default().Del(context.Background(), "migrations")

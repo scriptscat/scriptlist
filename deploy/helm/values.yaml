@@ -59,7 +59,7 @@ istio:
     - scriptcat.org
   match:
     - uri:
-        prefix: /api
+        prefix: /api/v2
     - uri:
         prefix: /scripts
     - uri:
