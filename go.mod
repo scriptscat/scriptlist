@@ -3,7 +3,7 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
-	github.com/codfrm/cago v0.0.0-20230131140309-a762a0cec77a
+	github.com/codfrm/cago v0.0.0-20230201071428-4aaefe98f7d5
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
@@ -88,7 +88,7 @@ require (
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	golang.org/x/tools v0.2.0 // indirect
-	google.golang.org/genproto v0.0.0-20230127162408-596548ed4efa // indirect
+	google.golang.org/genproto v0.0.0-20230131230820-1c016267d619 // indirect
 	google.golang.org/grpc v1.52.3 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

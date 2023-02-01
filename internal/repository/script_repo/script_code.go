@@ -57,14 +57,17 @@ func (u *scriptCodeRepo) Find(ctx context.Context, id int64) (*entity.Code, erro
 }
 
 func (u *scriptCodeRepo) Create(ctx context.Context, scriptCode *entity.Code) error {
-	return db.Ctx(ctx).Create(scriptCode).Error
+	if err := db.Ctx(ctx).Create(scriptCode).Error; err != nil {
+		return err
+	}
+	return cache2.NewKeyDepend(cache.Default(), u.key(scriptCode.ScriptID)+":dep").InvalidKey(ctx)
 }
 
 func (u *scriptCodeRepo) Update(ctx context.Context, scriptCode *entity.Code) error {
 	if err := db.Ctx(ctx).Updates(scriptCode).Error; err != nil {
 		return err
 	}
-	return cache2.NewKeyDepend(cache.Default(), u.key(scriptCode.ScriptID)).InvalidKey(ctx)
+	return cache2.NewKeyDepend(cache.Default(), u.key(scriptCode.ScriptID)+":dep").InvalidKey(ctx)
 }
 
 func (u *scriptCodeRepo) Delete(ctx context.Context, id int64) error {

@@ -176,7 +176,8 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 func (s *scriptSvc) scriptCode(ctx context.Context, code *script_entity.Code) *api.Code {
 	metaJson := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
-		logger.Ctx(ctx).Error("json解析失败", zap.Error(err), zap.String("meta", code.MetaJson))
+		logger.Ctx(ctx).Error("json解析失败", zap.Error(err),
+			zap.String("meta", code.MetaJson), zap.Int64("script_id", code.ScriptID), zap.Int64("code_id", code.ID))
 	}
 	ret := &api.Code{
 		ID:         code.ID,

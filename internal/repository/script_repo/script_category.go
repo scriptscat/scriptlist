@@ -81,7 +81,7 @@ func (s *scriptCategoryRepo) LinkCategory(ctx context.Context, script, category 
 			}).Error; err != nil {
 				return err
 			}
-			return cache2.NewKeyDepend(cache.Default(), s.key(script)).InvalidKey(ctx)
+			return cache2.NewKeyDepend(cache.Default(), s.key(script)+":dep").InvalidKey(ctx)
 		}
 		return err
 	}

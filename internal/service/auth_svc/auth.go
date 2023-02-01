@@ -92,7 +92,7 @@ func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
 		}
 		m := &model.LoginToken{}
 		if err := cache.Ctx(ctx).Get("user:auth:login:" + loginId).Scan(m); err != nil {
-			if err == cache2.ErrNotFound {
+			if err == cache2.Nil {
 				// 删除cookie
 				ctx.SetCookie("login_id", "", -1, "/", "", false, true)
 				ctx.SetCookie("token", "", -1, "/", "", false, true)
