@@ -78,7 +78,7 @@ func (u *scriptDateStatisticsRepo) FindByScriptID(ctx context.Context, scriptId 
 			return nil, err
 		}
 		return ret, nil
-	}, cache2.Expiration(time.Minute)).Scan(ret); err != nil {
+	}, cache2.Expiration(time.Minute)).Scan(&ret); err != nil {
 		return nil, err
 	}
 	return ret, nil

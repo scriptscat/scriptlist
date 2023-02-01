@@ -86,7 +86,7 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 			return nil, err
 		}
 		return ret, nil
-	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(ret); err != nil {
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(&ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -106,7 +106,7 @@ func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64, withcod
 			return nil, err
 		}
 		return ret, nil
-	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(ret); err != nil {
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(&ret); err != nil {
 		return nil, err
 	}
 	return ret, nil

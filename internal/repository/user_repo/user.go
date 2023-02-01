@@ -55,7 +55,7 @@ func (u *user) Find(ctx context.Context, id int64) (*user_entity.User, error) {
 			return nil, err
 		}
 		return ret, nil
-	}, cache.Expiration(time.Minute)).Scan(ret); err != nil {
+	}, cache.Expiration(time.Minute)).Scan(&ret); err != nil {
 		return nil, err
 	}
 	return ret, nil

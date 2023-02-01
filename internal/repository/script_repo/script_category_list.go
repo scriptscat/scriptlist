@@ -50,7 +50,7 @@ func (s *scriptCategoryListRepo) Find(ctx context.Context, id int64) (*entity.Sc
 			return nil, err
 		}
 		return ret, nil
-	}, cache.Expiration(time.Hour)).Scan(ret); err != nil {
+	}, cache.Expiration(time.Hour)).Scan(&ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
