@@ -114,11 +114,11 @@ func (s *Script) IsArchive(ctx context.Context) error {
 type Code struct {
 	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);index:user_id"`
-	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);index:script_id;index:script_version,unique"`
+	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);index:script_id"`
 	Code       string `gorm:"column:code;type:mediumtext"`
 	Meta       string `gorm:"column:meta;type:text"`
 	MetaJson   string `gorm:"column:meta_json;type:text"`
-	Version    string `gorm:"column:version;type:varchar(255);index:script_version,unique"`
+	Version    string `gorm:"column:version;type:varchar(255)"`
 	Changelog  string `gorm:"column:changelog;type:text"`
 	Status     int64  `gorm:"column:status;type:tinyint(4)"`
 	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
