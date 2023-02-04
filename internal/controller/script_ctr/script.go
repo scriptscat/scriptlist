@@ -77,12 +77,36 @@ func (s *Script) MigrateEs(ctx context.Context, req *api.MigrateEsRequest) (*api
 func (s *Script) Download() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if strings.HasSuffix(ctx.Request.URL.Path, ".user.js") || strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
-			s.downloadScript(ctx)
+			version := ctx.Query("version")
+			if version == "" {
+				version = "latest"
+			}
+			id, err := s.getScriptID(ctx)
+			if err != nil {
+				httputils.HandleResp(ctx, err)
+				return
+			}
+			s.downloadScript(ctx, id, version)
 		} else if strings.HasSuffix(ctx.Request.URL.Path, ".meta.js") {
 			s.getScriptMeta(ctx)
 		} else {
 			ctx.AbortWithStatus(http.StatusNotFound)
 		}
+	}
+}
+
+func (s *Script) DownloadLib() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		version := ctx.Param("version")
+		if version == "" {
+			version = "latest"
+		}
+		id, err := s.getScriptID(ctx)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		s.downloadScript(ctx, id, version)
 	}
 }
 
@@ -97,16 +121,7 @@ func (s *Script) getScriptID(ctx *gin.Context) (int64, error) {
 	return id, nil
 }
 
-func (s *Script) downloadScript(ctx *gin.Context) {
-	id, err := s.getScriptID(ctx)
-	if id == 0 {
-		httputils.HandleResp(ctx, err)
-		return
-	}
-	version := ctx.Query("version")
-	if version == "" {
-		version = "latest"
-	}
+func (s *Script) downloadScript(ctx *gin.Context, id int64, version string) {
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
 		ctx.String(http.StatusNotFound, "脚本未找到")

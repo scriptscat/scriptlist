@@ -36,11 +36,11 @@ func (e *EsSync) Subscribe(ctx context.Context) error {
 }
 
 // 消费脚本创建消息推送到elasticsearch
-func (e *EsSync) scriptCreate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
+func (e *EsSync) scriptCreate(ctx context.Context, script *script_entity.Script, code int64) error {
 	return e.syncScript(ctx, script, code, false)
 }
 
-func (e *EsSync) syncScript(ctx context.Context, script *script_entity.Script, code *script_entity.Code, update bool) error {
+func (e *EsSync) syncScript(ctx context.Context, script *script_entity.Script, code int64, update bool) error {
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID), zap.Bool("update", update))
 	search, err := script_repo.Migrate().Convert(ctx, script)
 	if err != nil {
@@ -56,7 +56,7 @@ func (e *EsSync) syncScript(ctx context.Context, script *script_entity.Script, c
 }
 
 // 消费脚本代码更新消息,更新es记录
-func (e *EsSync) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
+func (e *EsSync) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, code int64) error {
 	return e.syncScript(ctx, script, code, false)
 }
 

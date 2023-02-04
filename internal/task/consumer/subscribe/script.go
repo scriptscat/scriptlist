@@ -3,6 +3,7 @@ package subscribe
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"regexp"
 	"time"
 
@@ -61,8 +62,16 @@ func (s *Script) Subscribe(ctx context.Context) error {
 }
 
 // 消费脚本创建消息,根据meta信息进行分类
-func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
-	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID))
+func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script, codeId int64) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID), zap.Int64("code_id", codeId))
+	code, err := script_repo.ScriptCode().Find(ctx, codeId)
+	if err != nil {
+		return err
+	}
+	if code == nil {
+		logger.Error("code不存在")
+		return errors.New("code不存在")
+	}
 	// 根据meta信息, 将脚本分类到后台脚本, 定时脚本, 用户脚本
 	metaJson := make(map[string][]string)
 	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
@@ -100,8 +109,16 @@ func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script,
 }
 
 // 消费脚本代码更新消息,发送邮件通知给关注了的用户
-func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, code *script_entity.Code) error {
-	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID))
+func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, codeId int64) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID), zap.Int64("code_id", codeId))
+	code, err := script_repo.ScriptCode().Find(ctx, codeId)
+	if err != nil {
+		return err
+	}
+	if code != nil {
+		logger.Error("code不存在")
+		return errors.New("code不存在")
+	}
 
 	metaJson := make(map[string][]string)
 	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
