@@ -594,10 +594,15 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 		return nil, err
 	}
 	err = s.SyncOnce(ctx, m)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return &api.UpdateSettingResponse{
+			Sync: true,
+		}, nil
 	}
-	return &api.UpdateSettingResponse{}, nil
+	return &api.UpdateSettingResponse{
+		Sync:      false,
+		SyncError: err.Error(),
+	}, nil
 }
 
 func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) error {
@@ -619,7 +624,7 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 	}
 	if code == nil {
 		logger.Error("代码不存在")
-		return err
+		return nil
 	}
 	oldVersion := code.Version
 	if _, err := code.UpdateCode(ctx, codeContent); err != nil {

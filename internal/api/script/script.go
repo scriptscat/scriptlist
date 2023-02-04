@@ -219,6 +219,8 @@ type UpdateSettingRequest struct {
 }
 
 type UpdateSettingResponse struct {
+	Sync      bool
+	SyncError string
 }
 
 // ArchiveRequest 归档脚本
