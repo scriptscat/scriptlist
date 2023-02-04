@@ -593,6 +593,10 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 	if err := script_repo.Script().Update(ctx, m); err != nil {
 		return nil, err
 	}
+	err = s.SyncOnce(ctx, m)
+	if err != nil {
+		return nil, err
+	}
 	return &api.UpdateSettingResponse{}, nil
 }
 
