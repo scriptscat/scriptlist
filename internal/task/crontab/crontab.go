@@ -21,5 +21,6 @@ func Crontab(ctx context.Context, config *configs.Config) error {
 			return err
 		}
 	}
+	c.Start()
 	return nil
 }

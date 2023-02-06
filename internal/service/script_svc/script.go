@@ -151,7 +151,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	if scriptCode == nil {
 		return nil, i18n.NewError(ctx, code.ScriptNotFound)
 	}
-	data.Script = s.scriptCode(ctx, scriptCode)
+	data.Script = s.scriptCode(ctx, item, scriptCode)
 	// 脚本分类信息
 	list, err := script_repo.ScriptCategory().List(ctx, item.ID)
 	if err != nil {
@@ -173,21 +173,24 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	return data, nil
 }
 
-func (s *scriptSvc) scriptCode(ctx context.Context, code *script_entity.Code) *api.Code {
-	metaJson := make(map[string]interface{})
-	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
-		logger.Ctx(ctx).Error("json解析失败", zap.Error(err),
-			zap.String("meta", code.MetaJson), zap.Int64("script_id", code.ScriptID), zap.Int64("code_id", code.ID))
-	}
+func (s *scriptSvc) scriptCode(ctx context.Context, script *script_entity.Script, code *script_entity.Code) *api.Code {
 	ret := &api.Code{
 		ID:         code.ID,
-		MetaJson:   metaJson,
 		ScriptID:   code.ScriptID,
 		Version:    code.Version,
 		Changelog:  code.Changelog,
 		Status:     code.Status,
 		Createtime: code.Createtime,
 		Code:       code.Code,
+	}
+	if script.Type == script_entity.UserscriptType {
+		metaJson := make(map[string]interface{})
+		if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+			logger.Ctx(ctx).Error("json解析失败", zap.Error(err),
+				zap.String("meta", code.MetaJson), zap.Int64("script_id", code.ScriptID), zap.Int64("code_id", code.ID))
+		} else {
+			ret.MetaJson = metaJson
+		}
 	}
 	return ret
 }
@@ -475,6 +478,13 @@ func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeRe
 
 // VersionList 获取版本列表
 func (s *scriptSvc) VersionList(ctx context.Context, req *api.VersionListRequest) (*api.VersionListResponse, error) {
+	script, err := script_repo.Script().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := script.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
 	list, total, err := script_repo.ScriptCode().List(ctx, req.ID, req.PageRequest)
 	if err != nil {
 		return nil, err
@@ -486,7 +496,7 @@ func (s *scriptSvc) VersionList(ctx context.Context, req *api.VersionListRequest
 		},
 	}
 	for n, v := range list {
-		ret.List[n] = s.scriptCode(ctx, v)
+		ret.List[n] = s.scriptCode(ctx, script, v)
 	}
 	return ret, nil
 }
