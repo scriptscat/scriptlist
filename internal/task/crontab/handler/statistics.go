@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"context"
-
 	"github.com/codfrm/cago/server/cron"
 )
 
@@ -18,6 +16,6 @@ func (s *Statistics) Crontab(c cron.Crontab) error {
 }
 
 // 每日统计数据落库
-func (s *Statistics) saveScriptStatistics(ctx context.Context) error {
-	return nil
-}
+//func (s *Statistics) saveScriptStatistics(ctx context.Context) error {
+//	return nil
+//}
