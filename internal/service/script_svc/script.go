@@ -643,12 +643,12 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 	}
 	if oldVersion == code.Version {
 		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
-		return err
+		return nil
 	}
 	req := &api.UpdateCodeRequest{
 		ID:         script.ID,
 		Version:    "",
-		Content:    "",
+		Content:    script.Content,
 		Code:       codeContent,
 		Definition: "",
 		Changelog:  "该版本为系统自动同步更新",

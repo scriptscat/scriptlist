@@ -13,6 +13,7 @@ import (
 	"github.com/codfrm/cago/pkg/broker"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/server/cron"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
@@ -71,7 +72,7 @@ func main() {
 			return migrations.RunMigrations(db.Default())
 		})).
 		Registry(cago.FuncComponent(consumer.Consumer)).
-		Registry(cago.FuncComponent(crontab.Crontab)).
+		Registry(cron.Cron(crontab.Crontab)).
 		RegistryCancel(mux.Http(api.Router)).
 		Start()
 	if err != nil {

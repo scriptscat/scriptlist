@@ -115,7 +115,7 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Scr
 	if err != nil {
 		return err
 	}
-	if code != nil {
+	if code == nil {
 		logger.Error("code不存在")
 		return errors.New("code不存在")
 	}
