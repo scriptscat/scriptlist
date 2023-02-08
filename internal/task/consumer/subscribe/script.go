@@ -72,31 +72,33 @@ func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script,
 		logger.Error("code不存在")
 		return errors.New("code不存在")
 	}
-	// 根据meta信息, 将脚本分类到后台脚本, 定时脚本, 用户脚本
-	metaJson := make(map[string][]string)
-	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
-		logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", code.MetaJson))
-		return err
-	}
-
-	// 处理domain
-	if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
-		logger.Error("saveDomain", zap.Error(err))
-		return err
-	}
-
-	if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
-		// 后台脚本
-		if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.bgCategory.ID); err != nil {
-			logger.Error("LinkCategory", zap.Error(err))
+	if script.Type == script_entity.UserscriptType {
+		// 根据meta信息, 将脚本分类到后台脚本, 定时脚本, 用户脚本
+		metaJson := make(map[string][]string)
+		if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+			logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", code.MetaJson))
 			return err
 		}
-	}
-	if len(metaJson["crontab"]) > 0 {
-		// 定时脚本
-		if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.cronCategory.ID); err != nil {
-			logger.Error("LinkCategory", zap.Error(err))
+
+		// 处理domain
+		if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
+			logger.Error("saveDomain", zap.Error(err))
 			return err
+		}
+
+		if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
+			// 后台脚本
+			if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.bgCategory.ID); err != nil {
+				logger.Error("LinkCategory", zap.Error(err))
+				return err
+			}
+		}
+		if len(metaJson["crontab"]) > 0 {
+			// 定时脚本
+			if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.cronCategory.ID); err != nil {
+				logger.Error("LinkCategory", zap.Error(err))
+				return err
+			}
 		}
 	}
 
@@ -119,16 +121,17 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Scr
 		logger.Error("code不存在")
 		return errors.New("code不存在")
 	}
-
-	metaJson := make(map[string][]string)
-	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
-		logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", code.MetaJson))
-		return err
-	}
-	// 处理domain
-	if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
-		logger.Error("saveDomain", zap.Error(err))
-		return err
+	if script.Type == script_entity.UserscriptType {
+		metaJson := make(map[string][]string)
+		if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+			logger.Error("json.Unmarshal", zap.Error(err), zap.String("meta", code.MetaJson))
+			return err
+		}
+		// 处理domain
+		if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
+			logger.Error("saveDomain", zap.Error(err))
+			return err
+		}
 	}
 	logger.Info("update script code")
 
