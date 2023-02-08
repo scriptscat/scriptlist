@@ -7,7 +7,6 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
-	github.com/robfig/cron/v3 v3.0.1
 	github.com/swaggo/swag v1.8.6
 	github.com/weppos/publicsuffix-go v0.20.0
 	go.opentelemetry.io/otel v1.11.2
@@ -62,6 +61,7 @@ require (
 	github.com/nsqio/go-nsq v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.3.1 // indirect
 	github.com/ugorji/go/codec v1.2.9 // indirect
 	github.com/uptrace/uptrace-go v1.11.8 // indirect
