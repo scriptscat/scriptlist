@@ -183,14 +183,14 @@ func (s *scriptSvc) scriptCode(ctx context.Context, script *script_entity.Script
 		Createtime: code.Createtime,
 		Code:       code.Code,
 	}
+	metaJson := make(map[string]interface{})
 	if script.Type == script_entity.UserscriptType {
-		metaJson := make(map[string]interface{})
 		if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
 			logger.Ctx(ctx).Error("json解析失败", zap.Error(err),
 				zap.String("meta", code.MetaJson), zap.Int64("script_id", code.ScriptID), zap.Int64("code_id", code.ID))
 		}
-		ret.MetaJson = metaJson
 	}
+	ret.MetaJson = metaJson
 	return ret
 }
 
