@@ -95,6 +95,12 @@ func (s *Script) Download() gin.HandlerFunc {
 	}
 }
 
+func (s *Script) DownloadPre() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}
+
 func (s *Script) DownloadLib() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		version := ctx.Param("version")

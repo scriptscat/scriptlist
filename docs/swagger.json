@@ -1282,6 +1282,7 @@
         },
         "/scripts/{id}/score": {
             "get": {
+                "description": "获取脚本评分列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -1291,17 +1292,13 @@
                 "tags": [
                     "script"
                 ],
+                "summary": "获取脚本评分列表",
                 "parameters": [
                     {
                         "type": "integer",
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "name": "page",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1330,6 +1327,7 @@
                 }
             },
             "put": {
+                "description": "脚本评分",
                 "consumes": [
                     "application/json"
                 ],
@@ -1339,6 +1337,7 @@
                 "tags": [
                     "script"
                 ],
+                "summary": "脚本评分",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1364,6 +1363,113 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.PutScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/score/self": {
+            "get": {
+                "description": "用于获取自己对脚本的评价",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "用于获取自己对脚本的评价",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.SelfScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/score/{scoreId}": {
+            "delete": {
+                "description": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "scoreId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DelScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DelScoreResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -1664,113 +1770,6 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.WatchResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-        "/scripts/{scriptId}/score/self": {
-            "get": {
-                "description": "用于获取自己对脚本的评价",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "script"
-                ],
-                "summary": "用于获取自己对脚本的评价",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "scriptId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/script.SelfScoreResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-        "/scripts/{scriptId}/score/{scoreId}": {
-            "delete": {
-                "description": "DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "script"
-                ],
-                "summary": "DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "scriptId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "name": "scoreId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/script.DelScoreRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/script.DelScoreResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -2965,10 +2964,10 @@
         "script.DelScoreRequest": {
             "type": "object",
             "properties": {
-                "scoreId": {
+                "id": {
                     "type": "integer"
                 },
-                "scriptId": {
+                "scoreId": {
                     "type": "integer"
                 }
             }
@@ -3116,6 +3115,32 @@
         "script.PutScoreResponse": {
             "type": "object"
         },
+        "script.Score": {
+            "type": "object",
+            "properties": {
+                "createtime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "script_id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                }
+            }
+        },
         "script.ScoreListResponse": {
             "type": "object",
             "properties": {
@@ -3203,7 +3228,30 @@
             }
         },
         "script.SelfScoreResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "createtime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "script_id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "integer"
+                },
+                "updatetime": {
+                    "type": "integer"
+                }
+            }
         },
         "script.StateResponse": {
             "type": "object",
@@ -3274,7 +3322,15 @@
             }
         },
         "script.UpdateSettingResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "Sync": {
+                    "type": "boolean"
+                },
+                "SyncError": {
+                    "type": "string"
+                }
+            }
         },
         "script.VersionCodeResponse": {
             "type": "object",

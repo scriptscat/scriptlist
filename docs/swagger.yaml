@@ -513,9 +513,9 @@ definitions:
     type: object
   script.DelScoreRequest:
     properties:
-      scoreId:
+      id:
         type: integer
-      scriptId:
+      scoreId:
         type: integer
     type: object
   script.DelScoreResponse:
@@ -612,6 +612,23 @@ definitions:
     type: object
   script.PutScoreResponse:
     type: object
+  script.Score:
+    properties:
+      createtime:
+        type: integer
+      id:
+        type: integer
+      message:
+        type: string
+      score:
+        type: integer
+      script_id:
+        type: integer
+      state:
+        type: integer
+      updatetime:
+        type: integer
+    type: object
   script.ScoreListResponse:
     properties:
       list:
@@ -670,6 +687,21 @@ definitions:
         type: string
     type: object
   script.SelfScoreResponse:
+    properties:
+      createtime:
+        type: integer
+      id:
+        type: integer
+      message:
+        type: string
+      score:
+        type: integer
+      script_id:
+        type: integer
+      state:
+        type: integer
+      updatetime:
+        type: integer
     type: object
   script.StateResponse:
     properties:
@@ -719,6 +751,11 @@ definitions:
         type: string
     type: object
   script.UpdateSettingResponse:
+    properties:
+      Sync:
+        type: boolean
+      SyncError:
+        type: string
     type: object
   script.VersionCodeResponse:
     properties:
@@ -1787,13 +1824,11 @@ paths:
     get:
       consumes:
       - application/json
+      description: 获取脚本评分列表
       parameters:
       - in: path
         name: id
         required: true
-        type: integer
-      - in: query
-        name: page
         type: integer
       produces:
       - application/json
@@ -1812,11 +1847,13 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
+      summary: 获取脚本评分列表
       tags:
       - script
     put:
       consumes:
       - application/json
+      description: 脚本评分
       parameters:
       - in: path
         name: id
@@ -1843,6 +1880,75 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
+      summary: 脚本评分
+      tags:
+      - script
+  /scripts/{id}/score/{scoreId}:
+    delete:
+      consumes:
+      - application/json
+      description: 用于删除脚本的评价，注意，只有管理员才有权限删除评价
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: scoreId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DelScoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DelScoreResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 用于删除脚本的评价，注意，只有管理员才有权限删除评价
+      tags:
+      - script
+  /scripts/{id}/score/self:
+    get:
+      consumes:
+      - application/json
+      description: 用于获取自己对脚本的评价
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.SelfScoreResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 用于获取自己对脚本的评价
       tags:
       - script
   /scripts/{id}/setting:
@@ -2034,74 +2140,6 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 关注脚本
-      tags:
-      - script
-  /scripts/{scriptId}/score/{scoreId}:
-    delete:
-      consumes:
-      - application/json
-      description: DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
-      parameters:
-      - in: path
-        name: scriptId
-        required: true
-        type: integer
-      - in: path
-        name: scoreId
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.DelScoreRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.DelScoreResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
-      tags:
-      - script
-  /scripts/{scriptId}/score/self:
-    get:
-      consumes:
-      - application/json
-      description: 用于获取自己对脚本的评价
-      parameters:
-      - in: path
-        name: scriptId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.SelfScoreResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 用于获取自己对脚本的评价
       tags:
       - script
   /scripts/migrate/es:

@@ -12,6 +12,7 @@ import (
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
@@ -21,6 +22,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc/gray_control"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
@@ -60,6 +62,8 @@ type ScriptSvc interface {
 	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
 	// ToScript 转换为script response结构
 	ToScript(ctx context.Context, item *script_entity.Script, withcode bool, version string) (*api.Script, error)
+	// GetCodeByGray 根据灰度逻辑获取脚本代码
+	GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bool) (*script_entity.Code, error)
 }
 
 type scriptSvc struct {
@@ -720,4 +724,56 @@ func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.De
 		logger.Ctx(ctx).Error("发布删除脚本消息失败", zap.Error(err))
 	}
 	return &api.DeleteResponse{}, nil
+}
+
+// GetCodeByGray 根据灰度逻辑获取脚本代码
+func (s *scriptSvc) GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bool) (*script_entity.Code, error) {
+	script, err := script_repo.Script().Find(ctx, scriptId)
+	if err != nil {
+		return nil, err
+	}
+	if err := script.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	for _, v := range script.GrayControls {
+		andControl := gray_control.NewAnd()
+		// 查询出目标版本
+		code, err := s.FindTargetVersion(ctx, script.ID, v.TargetVersion)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range v.Controls {
+			switch v.Type {
+			case script_entity.GrayControlTypeWeight:
+				andControl.Append(gray_control.NewWeight(v.Params.Weight, v.Params.WeightDay))
+			case script_entity.GrayControlTypeCookie:
+				andControl.Append(gray_control.NewCookie(v.Params.CookieRegex))
+			case script_entity.GrayControlTypePreRelease:
+				andControl.Append(gray_control.NewPreRelease(isPreUser))
+			}
+		}
+		ok, err := andControl.Match(ctx, code)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			return code, nil
+		}
+	}
+	// 默认逻辑
+	if isPreUser {
+		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, true)
+	}
+	return script_repo.ScriptCode().FindLatest(ctx, scriptId, true)
+}
+
+func (s *scriptSvc) FindTargetVersion(ctx context.Context, scriptId int64, targetVersion string) (*script_entity.Code, error) {
+	switch targetVersion {
+	case "pre-latest":
+		return script_repo.ScriptCode().FindPreLatest(ctx, scriptId, true)
+	case "all-latest":
+		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, true)
+	default:
+		return s.GetCode(ctx, scriptId, targetVersion)
+	}
 }

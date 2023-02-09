@@ -63,7 +63,9 @@ func Router(root *mux.Router) error {
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download())
+		root.GET("/scripts/pre/:id/*name", auth.Middleware(false), scriptCtr.DownloadPre())
 		root.GET("/lib/:id/:version/*name", auth.Middleware(false), scriptCtr.DownloadLib())
+
 		// 无需用户登录的路由组
 		r.Group("/").Bind(
 			scriptCtr.List,

@@ -21,6 +21,8 @@ type ScriptCodeRepo interface {
 
 	FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error)
 	FindLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error)
+	FindPreLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error)
+	FindAllLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error)
 	List(ctx context.Context, id int64, request httputils.PageRequest) ([]*entity.Code, int64, error)
 }
 
@@ -102,7 +104,52 @@ func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64, withcod
 		if !withcode {
 			q = q.Select(ret.Fields())
 		}
-		if err := q.Order("createtime desc").First(ret, "script_id=?", scriptId).Error; err != nil {
+		if err := q.Order("createtime desc").
+			First(ret, "script_id=? and is_pre_release=?",
+				scriptId, entity.DisablePreReleaseScript).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return ret, nil
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(&ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *scriptCodeRepo) FindPreLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error) {
+	ret := &entity.Code{}
+	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId)+fmt.Sprintf(":pre:%v", withcode), func() (interface{}, error) {
+		q := db.Ctx(ctx)
+		if !withcode {
+			q = q.Select(ret.Fields())
+		}
+		if err := q.Order("createtime desc").
+			First(ret, "script_id=? and is_pre_release=?",
+				scriptId, entity.EnablePreReleaseScript).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return ret, nil
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), u.key(scriptId)+":dep")).Scan(&ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *scriptCodeRepo) FindAllLatest(ctx context.Context, scriptId int64, withcode bool) (*entity.Code, error) {
+	ret := &entity.Code{}
+	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId)+fmt.Sprintf(":all:%v", withcode), func() (interface{}, error) {
+		q := db.Ctx(ctx)
+		if !withcode {
+			q = q.Select(ret.Fields())
+		}
+		if err := q.Order("createtime desc").
+			First(ret, "script_id=?", scriptId).Error; err != nil {
 			if db.RecordNotFound(err) {
 				return nil, nil
 			}
