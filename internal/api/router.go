@@ -51,7 +51,7 @@ func Router(root *mux.Router) error {
 	scriptCtr := script_ctr.NewScript()
 	{
 		// 需要用户登录的路由组
-		r.Group("/", auth.Middleware(true)).Bind(
+		r.Group("/", auth.Middleware(true), scriptCtr.Middleware()).Bind(
 			scriptCtr.Create,
 			scriptCtr.UpdateCode,
 			scriptCtr.MigrateEs,
@@ -59,11 +59,18 @@ func Router(root *mux.Router) error {
 			scriptCtr.GetSetting,
 			scriptCtr.UpdateSetting,
 			scriptCtr.Archive,
+		)
+		// 慢慢迁移至中间件处理
+		r.Group("/", auth.Middleware(true), scriptCtr.Middleware()).Bind(
 			scriptCtr.Delete,
+			scriptCtr.UpdateCodeSetting,
+			scriptCtr.UpdateScriptPublic,
+			scriptCtr.UpdateScriptUnwell,
+			scriptCtr.UpdateScriptGray,
 		)
 		// 处理下载
-		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download())
-		root.GET("/scripts/pre/:id/*name", auth.Middleware(false), scriptCtr.DownloadPre())
+		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))
+		root.GET("/scripts/pre/:id/*name", auth.Middleware(false), scriptCtr.Download(true))
 		root.GET("/lib/:id/:version/*name", auth.Middleware(false), scriptCtr.DownloadLib())
 
 		// 无需用户登录的路由组

@@ -16,21 +16,22 @@ type Script struct {
 	Script               *Code `json:"script"`
 	ID                   int64 `json:"id"`
 	user_entity.UserInfo `json:",inline"`
-	PostID               int64           `json:"post_id"`
-	Name                 string          `json:"name"`
-	Description          string          `json:"description"`
-	Category             []*CategoryList `json:"category"`
-	Status               int64           `json:"status"`
-	Score                int64           `json:"score"`
-	ScoreNum             int64           `json:"score_num"`
-	Type                 int             `json:"type"`
-	Public               int             `json:"public"`
-	Unwell               int             `json:"unwell"`
-	Archive              int             `json:"archive"`
-	TodayInstall         int64           `json:"today_install"`
-	TotalInstall         int64           `json:"total_install"`
-	Createtime           int64           `json:"createtime"`
-	Updatetime           int64           `json:"updatetime"`
+	PostID               int64                          `json:"post_id"`
+	Name                 string                         `json:"name"`
+	Description          string                         `json:"description"`
+	Category             []*CategoryList                `json:"category"`
+	Status               int64                          `json:"status"`
+	Score                int64                          `json:"score"`
+	ScoreNum             int64                          `json:"score_num"`
+	Type                 int                            `json:"type"`
+	Public               int                            `json:"public"`
+	Unwell               int                            `json:"unwell"`
+	Archive              int                            `json:"archive"`
+	EnablePreRelease     script_entity.EnablePreRelease `json:"enable_pre_release"`
+	TodayInstall         int64                          `json:"today_install"`
+	TotalInstall         int64                          `json:"total_install"`
+	Createtime           int64                          `json:"createtime"`
+	Updatetime           int64                          `json:"updatetime"`
 }
 
 // CategoryList 拥有的分类列表
@@ -47,15 +48,16 @@ type CategoryList struct {
 type Code struct {
 	ID                   int64 `json:"id" form:"id"`
 	user_entity.UserInfo `json:",inline"`
-	Meta                 string      `json:"meta,omitempty"`
-	MetaJson             interface{} `json:"meta_json"`
-	ScriptID             int64       `json:"script_id"`
-	Version              string      `json:"version"`
-	Changelog            string      `json:"changelog"`
-	Status               int64       `json:"status"`
-	Createtime           int64       `json:"createtime"`
-	Code                 string      `json:"code,omitempty"`
-	Definition           string      `json:"definition,omitempty"`
+	Meta                 string                         `json:"meta,omitempty"`
+	MetaJson             interface{}                    `json:"meta_json"`
+	ScriptID             int64                          `json:"script_id"`
+	Version              string                         `json:"version"`
+	Changelog            string                         `json:"changelog"`
+	IsPreRelease         script_entity.EnablePreRelease `json:"is_pre_release"`
+	Status               int64                          `json:"status"`
+	Createtime           int64                          `json:"createtime"`
+	Code                 string                         `json:"code,omitempty"`
+	Definition           string                         `json:"definition,omitempty"`
 }
 
 // ListRequest 获取脚本列表
@@ -73,17 +75,19 @@ type ListResponse struct {
 
 // CreateRequest 创建脚本
 type CreateRequest struct {
-	mux.Meta    `path:"/scripts" method:"POST"`
-	Content     string                      `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
-	Code        string                      `form:"code" binding:"required,max=10485760" label:"脚本代码"`
-	Name        string                      `form:"name" binding:"max=128" label:"库的名字"`
-	Description string                      `form:"description" binding:"max=10240" label:"库的描述"`
-	Definition  string                      `form:"definition" binding:"max=10240" label:"库的定义文件"`
-	Version     string                      `form:"version" binding:"max=32" label:"库的版本"`
-	Type        script_entity.Type          `form:"type" binding:"required" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
-	Public      script_entity.Public        `form:"public" binding:"required" label:"公开类型"` // 公开类型：1 公开 2 半公开
-	Unwell      script_entity.UnwellContent `form:"unwell" binding:"required" label:"不适内容"` // 不适内容: 1 不适 2 适用
-	Changelog   string                      `form:"changelog" binding:"max=102400" label:"更新日志"`
+	mux.Meta         `path:"/scripts" method:"POST"`
+	Content          string                         `form:"content" binding:"required,max=102400" label:"脚本详细描述"`
+	Code             string                         `form:"code" binding:"required,max=10485760" label:"脚本代码"`
+	Name             string                         `form:"name" binding:"max=128" label:"库的名字"`
+	Description      string                         `form:"description" binding:"max=10240" label:"库的描述"`
+	Definition       string                         `form:"definition" binding:"max=10240" label:"库的定义文件"`
+	Version          string                         `form:"version" binding:"max=32" label:"库的版本"`
+	Type             script_entity.Type             `form:"type" binding:"required,oneof=1 2" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
+	Public           script_entity.Public           `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
+	Unwell           script_entity.UnwellContent    `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"` // 不适内容: 1 不适 2 适用
+	EnablePreRelease script_entity.EnablePreRelease `form:"enable_pre_release" json:"enable_pre_release" binding:"required,oneof=1 2" label:"是否开启预发布"`
+	Changelog        string                         `form:"changelog" binding:"max=102400" label:"更新日志"`
+	IsPreRelease     script_entity.EnablePreRelease `form:"is_pre_release" json:"is_pre_release" binding:"omitempty,oneof=0 1 2" label:"是否预发布"`
 }
 
 func (s *CreateRequest) Validate(ctx context.Context) error {
@@ -109,13 +113,14 @@ type UpdateCodeRequest struct {
 	ID       int64 `uri:"id" binding:"required"`
 	//Name string `form:"name" binding:"max=128" label:"库的名字"`
 	//Description string `form:"description" binding:"max=102400" label:"库的描述"`
-	Version    string                      `binding:"required,max=128" form:"version" label:"库的版本号"`
-	Content    string                      `binding:"required,max=102400" form:"content" label:"脚本详细描述"`
-	Code       string                      `binding:"required,max=10485760" form:"code" label:"脚本代码"`
-	Definition string                      `binding:"max=102400" form:"definition" label:"库的定义文件"`
-	Changelog  string                      `binding:"max=102400" form:"changelog" label:"更新日志"`
-	Public     script_entity.Public        `form:"public" binding:"required,number" label:"公开类型"` // 公开类型：1 公开 2 半公开
-	Unwell     script_entity.UnwellContent `form:"unwell" binding:"required,number" label:"不适内容"`
+	Version      string                         `binding:"required,max=128" form:"version" label:"库的版本号"`
+	Content      string                         `binding:"required,max=102400" form:"content" label:"脚本详细描述"`
+	Code         string                         `binding:"required,max=10485760" form:"code" label:"脚本代码"`
+	Definition   string                         `binding:"max=102400" form:"definition" label:"库的定义文件"`
+	Changelog    string                         `binding:"max=102400" form:"changelog" label:"更新日志"`
+	IsPreRelease script_entity.EnablePreRelease `form:"is_pre_release" json:"is_pre_release" binding:"omitempty,oneof=0 1 2" label:"是否预发布"`
+	//Public       script_entity.Public           `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
+	//Unwell       script_entity.UnwellContent    `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`
 }
 
 type UpdateCodeResponse struct {
@@ -200,10 +205,12 @@ type GetSettingRequest struct {
 }
 
 type GetSettingResponse struct {
-	SyncUrl       string                 `json:"sync_url"`
-	ContentUrl    string                 `json:"content_url"`
-	DefinitionUrl string                 `json:"definition_url"`
-	SyncMode      script_entity.SyncMode `json:"sync_mode"`
+	SyncUrl          string                         `json:"sync_url"`
+	ContentUrl       string                         `json:"content_url"`
+	DefinitionUrl    string                         `json:"definition_url"`
+	SyncMode         script_entity.SyncMode         `json:"sync_mode"`
+	EnablePreRelease script_entity.EnablePreRelease `json:"enable_pre_release"`
+	GrayControls     []*script_entity.GrayControl   `json:"gray_controls"`
 }
 
 // UpdateSettingRequest 更新脚本设置
@@ -240,4 +247,46 @@ type DeleteRequest struct {
 }
 
 type DeleteResponse struct {
+}
+
+// UpdateCodeSettingRequest 更新脚本设置
+type UpdateCodeSettingRequest struct {
+	mux.Meta     `path:"/scripts/:id/code/:codeId" method:"PUT"`
+	ID           int64                          `uri:"id" binding:"required"`
+	CodeID       int64                          `uri:"codeId" binding:"required"`
+	Changelog    string                         `json:"changelog" binding:"max=102400" label:"更新日志"`
+	IsPreRelease script_entity.EnablePreRelease `json:"is_pre_release" binding:"oneof=1 2" label:"是否预发布"`
+}
+
+type UpdateCodeSettingResponse struct {
+}
+
+// UpdateScriptPublicRequest 更新脚本公开类型
+type UpdateScriptPublicRequest struct {
+	mux.Meta `path:"/scripts/:id/public" method:"PUT"`
+	ID       int64                `uri:"id" binding:"required"`
+	Public   script_entity.Public `json:"public" binding:"required,oneof=1 2" label:"公开类型"`
+}
+
+type UpdateScriptPublicResponse struct {
+}
+
+// UpdateScriptUnwellRequest 更新脚本不适内容
+type UpdateScriptUnwellRequest struct {
+	mux.Meta `path:"/scripts/:id/unwell" method:"PUT"`
+	ID       int64                       `uri:"id" binding:"required"`
+	Unwell   script_entity.UnwellContent `json:"unwell" binding:"required,oneof=1 2" label:"不适内容"`
+}
+
+type UpdateScriptUnwellResponse struct {
+}
+
+// UpdateScriptGrayRequest 更新脚本灰度策略
+type UpdateScriptGrayRequest struct {
+	mux.Meta         `path:"/scripts/:id/gray" method:"PUT"`
+	EnablePreRelease script_entity.EnablePreRelease `json:"enable_pre_release" binding:"oneof=1 2" label:"是否开启预发布"`
+	GrayControls     []*script_entity.GrayControl   `json:"gray_controls" binding:"required" label:"灰度策略"`
+}
+
+type UpdateScriptGrayResponse struct {
 }

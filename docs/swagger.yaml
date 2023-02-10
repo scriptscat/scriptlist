@@ -416,6 +416,8 @@ definitions:
         type: integer
       is_admin:
         type: integer
+      is_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       meta,omitempty:
         type: string
       meta_json:
@@ -447,6 +449,8 @@ definitions:
         type: integer
       description:
         type: string
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       id:
         type: integer
       is_admin:
@@ -492,6 +496,10 @@ definitions:
         type: string
       description:
         type: string
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
+      is_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       name:
         type: string
       public:
@@ -533,6 +541,12 @@ definitions:
         type: string
       definition_url:
         type: string
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
+      gray_control:
+        items:
+          $ref: '#/definitions/script_entity.GrayControl'
+        type: array
       sync_mode:
         $ref: '#/definitions/script_entity.SyncMode'
       sync_url:
@@ -554,6 +568,8 @@ definitions:
         type: integer
       description:
         type: string
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       id:
         type: integer
       is_admin:
@@ -653,6 +669,8 @@ definitions:
         type: integer
       description:
         type: string
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       id:
         type: integer
       is_admin:
@@ -720,11 +738,8 @@ definitions:
         type: string
       id:
         type: integer
-      public:
-        $ref: '#/definitions/script_entity.Public'
-        description: 公开类型：1 公开 2 半公开
-      unwell:
-        $ref: '#/definitions/script_entity.UnwellContent'
+      is_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       version:
         description: |-
           Name string `form:"name" binding:"max=128" label:"库的名字"`
@@ -732,6 +747,46 @@ definitions:
         type: string
     type: object
   script.UpdateCodeResponse:
+    type: object
+  script.UpdateCodeSettingRequest:
+    properties:
+      changelog:
+        type: string
+      codeId:
+        type: integer
+      id:
+        type: integer
+      is_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
+    type: object
+  script.UpdateCodeSettingResponse:
+    type: object
+  script.UpdateScriptGrayRequest:
+    properties:
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
+      gray_control:
+        items:
+          $ref: '#/definitions/script_entity.GrayControl'
+        type: array
+    type: object
+  script.UpdateScriptPublicRequest:
+    properties:
+      id:
+        type: integer
+      public:
+        $ref: '#/definitions/script_entity.Public'
+    type: object
+  script.UpdateScriptPublicResponse:
+    type: object
+  script.UpdateScriptUnwellRequest:
+    properties:
+      id:
+        type: integer
+      unwell:
+        $ref: '#/definitions/script_entity.UnwellContent'
+    type: object
+  script.UpdateScriptUnwellResponse:
     type: object
   script.UpdateSettingRequest:
     properties:
@@ -771,6 +826,8 @@ definitions:
         type: integer
       description:
         type: string
+      enable_pre_release:
+        $ref: '#/definitions/script_entity.EnablePreRelease'
       id:
         type: integer
       is_admin:
@@ -823,6 +880,51 @@ definitions:
     type: object
   script.WatchResponse:
     type: object
+  script_entity.Control:
+    properties:
+      params:
+        $ref: '#/definitions/script_entity.GrayControlParams'
+      type:
+        $ref: '#/definitions/script_entity.GrayControlType'
+    type: object
+  script_entity.EnablePreRelease:
+    description: |-
+      EnablePreRelease enum type:
+      - EnablePreReleaseScript: 1
+      - DisablePreReleaseScript: 2
+    enum:
+    - 1
+    - 2
+    type: integer
+  script_entity.GrayControl:
+    properties:
+      Controls:
+        items:
+          $ref: '#/definitions/script_entity.Control'
+        type: array
+      target_version:
+        type: string
+    type: object
+  script_entity.GrayControlParams:
+    properties:
+      cookie_regex:
+        type: string
+      weight:
+        type: integer
+      weight_day:
+        type: integer
+    type: object
+  script_entity.GrayControlType:
+    description: |-
+      GrayControlType enum type:
+      - GrayControlTypeWeight: weight
+      - GrayControlTypeCookie: cookie
+      - GrayControlTypePreRelease: pre_release
+    enum:
+    - weight
+    - cookie
+    - pre_release
+    type: string
   script_entity.Public:
     description: |-
       Public enum type:
@@ -1228,6 +1330,36 @@ paths:
       summary: 创建脚本
       tags:
       - script
+  /scripts/:id/gray:
+    put:
+      consumes:
+      - application/json
+      description: 更新脚本灰度策略
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateScriptGrayRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateScriptGrayResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新脚本灰度策略
+      tags:
+      - script
   /scripts/{id}:
     delete:
       consumes:
@@ -1386,6 +1518,44 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新脚本/库代码
+      tags:
+      - script
+  /scripts/{id}/code/{codeId}:
+    put:
+      consumes:
+      - application/json
+      description: 更新脚本设置
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: codeId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateCodeSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateCodeSettingResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新脚本设置
       tags:
       - script
   /scripts/{id}/issues:
@@ -1820,6 +1990,40 @@ paths:
       summary: 关注issue
       tags:
       - issue
+  /scripts/{id}/public:
+    put:
+      consumes:
+      - application/json
+      description: 更新脚本公开类型
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateScriptPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateScriptPublicResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新脚本公开类型
+      tags:
+      - script
   /scripts/{id}/score:
     get:
       consumes:
@@ -2042,6 +2246,40 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取脚本状态,脚本关注等
+      tags:
+      - script
+  /scripts/{id}/unwell:
+    put:
+      consumes:
+      - application/json
+      description: 更新脚本不适内容
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateScriptUnwellRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateScriptUnwellResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新脚本不适内容
       tags:
       - script
   /scripts/{id}/versions:

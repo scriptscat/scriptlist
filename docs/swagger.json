@@ -302,6 +302,54 @@
                 }
             }
         },
+        "/scripts/:id/gray": {
+            "put": {
+                "description": "更新脚本灰度策略",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本灰度策略",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateScriptGrayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateScriptGrayResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/migrate/es": {
             "post": {
                 "description": "全量迁移数据到es",
@@ -586,6 +634,66 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.UpdateCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/code/{codeId}": {
+            "put": {
+                "description": "更新脚本设置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本设置",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "codeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateCodeSettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateCodeSettingResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -1280,6 +1388,60 @@
                 }
             }
         },
+        "/scripts/{id}/public": {
+            "put": {
+                "description": "更新脚本公开类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本公开类型",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateScriptPublicRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateScriptPublicResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/{id}/score": {
             "get": {
                 "description": "获取脚本评分列表",
@@ -1616,6 +1778,60 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.StateResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/unwell": {
+            "put": {
+                "description": "更新脚本不适内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本不适内容",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateScriptUnwellRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateScriptUnwellResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -2818,6 +3034,9 @@
                 "is_admin": {
                     "type": "integer"
                 },
+                "is_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
                 "meta,omitempty": {
                     "type": "string"
                 },
@@ -2864,6 +3083,9 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
                 "id": {
                     "type": "integer"
@@ -2933,6 +3155,12 @@
                 "description": {
                     "type": "string"
                 },
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
+                "is_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2995,6 +3223,15 @@
                 "definition_url": {
                     "type": "string"
                 },
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
+                "gray_control": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script_entity.GrayControl"
+                    }
+                },
                 "sync_mode": {
                     "$ref": "#/definitions/script_entity.SyncMode"
                 },
@@ -3026,6 +3263,9 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
                 "id": {
                     "type": "integer"
@@ -3177,6 +3417,9 @@
                 "description": {
                     "type": "string"
                 },
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -3279,12 +3522,8 @@
                 "id": {
                     "type": "integer"
                 },
-                "public": {
-                    "description": "公开类型：1 公开 2 半公开",
-                    "$ref": "#/definitions/script_entity.Public"
-                },
-                "unwell": {
-                    "$ref": "#/definitions/script_entity.UnwellContent"
+                "is_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
                 "version": {
                     "description": "Name string `form:\"name\" binding:\"max=128\" label:\"库的名字\"`\nDescription string `form:\"description\" binding:\"max=102400\" label:\"库的描述\"`",
@@ -3293,6 +3532,68 @@
             }
         },
         "script.UpdateCodeResponse": {
+            "type": "object"
+        },
+        "script.UpdateCodeSettingRequest": {
+            "type": "object",
+            "properties": {
+                "changelog": {
+                    "type": "string"
+                },
+                "codeId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                }
+            }
+        },
+        "script.UpdateCodeSettingResponse": {
+            "type": "object"
+        },
+        "script.UpdateScriptGrayRequest": {
+            "type": "object",
+            "properties": {
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
+                "gray_control": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script_entity.GrayControl"
+                    }
+                }
+            }
+        },
+        "script.UpdateScriptPublicRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "public": {
+                    "$ref": "#/definitions/script_entity.Public"
+                }
+            }
+        },
+        "script.UpdateScriptPublicResponse": {
+            "type": "object"
+        },
+        "script.UpdateScriptUnwellRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "unwell": {
+                    "$ref": "#/definitions/script_entity.UnwellContent"
+                }
+            }
+        },
+        "script.UpdateScriptUnwellResponse": {
             "type": "object"
         },
         "script.UpdateSettingRequest": {
@@ -3352,6 +3653,9 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "enable_pre_release": {
+                    "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
                 "id": {
                     "type": "integer"
@@ -3431,6 +3735,62 @@
         },
         "script.WatchResponse": {
             "type": "object"
+        },
+        "script_entity.Control": {
+            "type": "object",
+            "properties": {
+                "params": {
+                    "$ref": "#/definitions/script_entity.GrayControlParams"
+                },
+                "type": {
+                    "$ref": "#/definitions/script_entity.GrayControlType"
+                }
+            }
+        },
+        "script_entity.EnablePreRelease": {
+            "description": "EnablePreRelease enum type:\n- EnablePreReleaseScript: 1\n- DisablePreReleaseScript: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ]
+        },
+        "script_entity.GrayControl": {
+            "type": "object",
+            "properties": {
+                "Controls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script_entity.Control"
+                    }
+                },
+                "target_version": {
+                    "type": "string"
+                }
+            }
+        },
+        "script_entity.GrayControlParams": {
+            "type": "object",
+            "properties": {
+                "cookie_regex": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
+                },
+                "weight_day": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script_entity.GrayControlType": {
+            "description": "GrayControlType enum type:\n- GrayControlTypeWeight: weight\n- GrayControlTypeCookie: cookie\n- GrayControlTypePreRelease: pre_release",
+            "type": "string",
+            "enum": [
+                "weight",
+                "cookie",
+                "pre_release"
+            ]
         },
         "script_entity.Public": {
             "description": "Public enum type:\n- PublicScript: 1\n- PrivateScript: 2",

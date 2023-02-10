@@ -3,10 +3,12 @@ module github.com/scriptscat/scriptlist
 go 1.18
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/codfrm/cago v0.0.0-20230207024027-a7bbef14bb31
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
+	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/swag v1.8.6
 	github.com/weppos/publicsuffix-go v0.20.0
 	go.opentelemetry.io/otel v1.11.2
@@ -24,6 +26,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.5.0 // indirect
@@ -61,6 +64,7 @@ require (
 	github.com/nsqio/go-nsq v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.3.1 // indirect
 	github.com/ugorji/go/codec v1.2.9 // indirect
