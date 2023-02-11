@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
@@ -74,21 +75,19 @@ func (s *Script) MigrateEs(ctx context.Context, req *api.MigrateEsRequest) (*api
 	return &api.MigrateEsResponse{}, nil
 }
 
-func (s *Script) Download() gin.HandlerFunc {
+func (s *Script) Download(pre bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if strings.HasSuffix(ctx.Request.URL.Path, ".user.js") || strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
 			version := ctx.Query("version")
-			if version == "" {
-				version = "latest"
-			}
 			id, err := s.getScriptID(ctx)
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
 			}
-			s.downloadScript(ctx, id, version)
+			s.downloadScript(ctx, id, version, pre)
 		} else if strings.HasSuffix(ctx.Request.URL.Path, ".meta.js") {
-			s.getScriptMeta(ctx)
+			version := ctx.Query("version")
+			s.getScriptMeta(ctx, version, pre)
 		} else {
 			ctx.AbortWithStatus(http.StatusNotFound)
 		}
@@ -98,15 +97,12 @@ func (s *Script) Download() gin.HandlerFunc {
 func (s *Script) DownloadLib() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		version := ctx.Param("version")
-		if version == "" {
-			version = "latest"
-		}
 		id, err := s.getScriptID(ctx)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
 			return
 		}
-		s.downloadScript(ctx, id, version)
+		s.downloadScript(ctx, id, version, false)
 	}
 }
 
@@ -121,16 +117,26 @@ func (s *Script) getScriptID(ctx *gin.Context) (int64, error) {
 	return id, nil
 }
 
-func (s *Script) downloadScript(ctx *gin.Context, id int64, version string) {
+func (s *Script) downloadScript(ctx *gin.Context, id int64, version string, pre bool) {
 	ua := ctx.GetHeader("User-Agent")
 	if id == 0 || ua == "" {
 		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}
 	// 获取脚本
-	code, err := script_svc.Script().GetCode(ctx, id, version)
+	var code *script_entity.Code
+	var err error
+	if version != "" {
+		code, err = script_svc.Script().GetCode(ctx, id, version)
+	} else {
+		code, err = script_svc.Script().GetCodeByGray(ctx, id, pre)
+	}
 	if err != nil {
 		httputils.HandleResp(ctx, err)
+		return
+	}
+	if code == nil {
+		ctx.String(http.StatusNotFound, "脚本未找到")
 		return
 	}
 	record := &producer.ScriptStatisticsMsg{
@@ -152,10 +158,12 @@ func (s *Script) downloadScript(ctx *gin.Context, id int64, version string) {
 		logger.Ctx(ctx).Error("脚本下载统计记录失败", zap.Any("record", record), zap.Error(err))
 	}
 	ctx.Writer.WriteHeader(http.StatusOK)
+	// 设置文件名
+	//ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", script+".user.js"))
 	_, _ = ctx.Writer.WriteString(code.Code)
 }
 
-func (s *Script) getScriptMeta(ctx *gin.Context) {
+func (s *Script) getScriptMeta(ctx *gin.Context, version string, pre bool) {
 	id, err := s.getScriptID(ctx)
 	if err != nil {
 		httputils.HandleResp(ctx, err)
@@ -167,7 +175,12 @@ func (s *Script) getScriptMeta(ctx *gin.Context) {
 		return
 	}
 	// 获取脚本
-	code, err := script_svc.Script().GetCode(ctx, id, "latest")
+	var code *script_entity.Code
+	if version != "" {
+		code, err = script_svc.Script().GetCode(ctx, id, version)
+	} else {
+		code, err = script_svc.Script().GetCodeByGray(ctx, id, pre)
+	}
 	if err != nil {
 		httputils.HandleResp(ctx, err)
 		return
@@ -289,4 +302,28 @@ func (s *Script) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.Arc
 // Delete 删除脚本
 func (s *Script) Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error) {
 	return script_svc.Script().Delete(ctx, req)
+}
+
+// UpdateCodeSetting 更新脚本设置
+func (s *Script) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error) {
+	return script_svc.Script().UpdateCodeSetting(ctx, req)
+}
+
+func (s *Script) Middleware() gin.HandlerFunc {
+	return script_svc.Script().Middleware()
+}
+
+// UpdateScriptPublic 更新脚本公开类型
+func (s *Script) UpdateScriptPublic(ctx context.Context, req *api.UpdateScriptPublicRequest) (*api.UpdateScriptPublicResponse, error) {
+	return script_svc.Script().UpdateScriptPublic(ctx, req)
+}
+
+// UpdateScriptUnwell 更新脚本不适内容
+func (s *Script) UpdateScriptUnwell(ctx context.Context, req *api.UpdateScriptUnwellRequest) (*api.UpdateScriptUnwellResponse, error) {
+	return script_svc.Script().UpdateScriptUnwell(ctx, req)
+}
+
+// UpdateScriptGray 更新脚本灰度策略
+func (s *Script) UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGrayRequest) (*api.UpdateScriptGrayResponse, error) {
+	return script_svc.Script().UpdateScriptGray(ctx, req)
 }

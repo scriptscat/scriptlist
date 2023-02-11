@@ -26,6 +26,7 @@ const (
 	ScriptIsArchive
 	ScriptScoreDeleted
 	ScriptScoreNotFound
+	ScriptChangePreReleaseNotLatest
 )
 
 // issue

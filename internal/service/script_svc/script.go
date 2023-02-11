@@ -3,15 +3,19 @@ package script_svc
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
@@ -21,9 +25,12 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc/gray_control"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
+
+type ctxScript string
 
 type ScriptSvc interface {
 	// List 获取脚本列表
@@ -60,6 +67,20 @@ type ScriptSvc interface {
 	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
 	// ToScript 转换为script response结构
 	ToScript(ctx context.Context, item *script_entity.Script, withcode bool, version string) (*api.Script, error)
+	// GetCodeByGray 根据灰度逻辑获取脚本代码
+	GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bool) (*script_entity.Code, error)
+	// UpdateCodeSetting 更新脚本设置
+	UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error)
+	// Middleware 脚本中间件
+	Middleware() gin.HandlerFunc
+	// CtxScript 获取脚本
+	CtxScript(ctx context.Context) *script_entity.Script
+	// UpdateScriptPublic 更新脚本公开类型
+	UpdateScriptPublic(ctx context.Context, req *api.UpdateScriptPublicRequest) (*api.UpdateScriptPublicResponse, error)
+	// UpdateScriptUnwell 更新脚本不适内容
+	UpdateScriptUnwell(ctx context.Context, req *api.UpdateScriptUnwellRequest) (*api.UpdateScriptUnwellResponse, error)
+	// UpdateScriptGray 更新脚本灰度策略
+	UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGrayRequest) (*api.UpdateScriptGrayResponse, error)
 }
 
 type scriptSvc struct {
@@ -100,18 +121,19 @@ func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListRe
 
 func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, withcode bool, version string) (*api.Script, error) {
 	data := &api.Script{
-		ID:          item.ID,
-		UserInfo:    user_entity.UserInfo{},
-		PostID:      item.PostID,
-		Name:        item.Name,
-		Description: item.Description,
-		Status:      item.Status,
-		Type:        int(item.Type),
-		Public:      int(item.Public),
-		Unwell:      int(item.Unwell),
-		Archive:     int(item.Archive),
-		Createtime:  item.Createtime,
-		Updatetime:  item.Updatetime,
+		ID:               item.ID,
+		UserInfo:         user_entity.UserInfo{},
+		PostID:           item.PostID,
+		Name:             item.Name,
+		Description:      item.Description,
+		Status:           item.Status,
+		Type:             int(item.Type),
+		Public:           int(item.Public),
+		Unwell:           int(item.Unwell),
+		Archive:          int(item.Archive),
+		EnablePreRelease: item.EnablePreRelease,
+		Createtime:       item.Createtime,
+		Updatetime:       item.Updatetime,
 	}
 	user, err := user_repo.User().Find(ctx, item.UserID)
 	if err != nil {
@@ -141,12 +163,17 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	// 脚本代码信息
 	var scriptCode *script_entity.Code
 	if version == "" {
-		scriptCode, err = script_repo.ScriptCode().FindLatest(ctx, item.ID, withcode)
+		if withcode {
+			scriptCode, err = script_repo.ScriptCode().FindAllLatest(ctx, item.ID, 0, withcode)
+		} else {
+			scriptCode, err = script_repo.ScriptCode().FindLatest(ctx, item.ID, 0, withcode)
+		}
 	} else {
 		scriptCode, err = script_repo.ScriptCode().FindByVersion(ctx, item.ID, version, withcode)
 	}
 	if err != nil {
 		logger.Ctx(ctx).Error("获取脚本代码失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		return nil, err
 	}
 	if scriptCode == nil {
 		return nil, i18n.NewError(ctx, code.ScriptNotFound)
@@ -175,13 +202,14 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 
 func (s *scriptSvc) scriptCode(ctx context.Context, script *script_entity.Script, code *script_entity.Code) *api.Code {
 	ret := &api.Code{
-		ID:         code.ID,
-		ScriptID:   code.ScriptID,
-		Version:    code.Version,
-		Changelog:  code.Changelog,
-		Status:     code.Status,
-		Createtime: code.Createtime,
-		Code:       code.Code,
+		ID:           code.ID,
+		ScriptID:     code.ScriptID,
+		Version:      code.Version,
+		Changelog:    code.Changelog,
+		IsPreRelease: code.IsPreRelease,
+		Status:       code.Status,
+		Createtime:   code.Createtime,
+		Code:         code.Code,
 	}
 	metaJson := make(map[string]interface{})
 	if script.Type == script_entity.UserscriptType {
@@ -197,23 +225,25 @@ func (s *scriptSvc) scriptCode(ctx context.Context, script *script_entity.Script
 // Create 创建脚本
 func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
 	script := &script_entity.Script{
-		UserID:     auth_svc.Auth().Get(ctx).UID,
-		Content:    req.Content,
-		Type:       req.Type,
-		Public:     req.Public,
-		Unwell:     req.Unwell,
-		Status:     consts.ACTIVE,
-		Archive:    script_entity.IsActive,
-		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
+		UserID:           auth_svc.Auth().Get(ctx).UID,
+		Content:          req.Content,
+		Type:             req.Type,
+		Public:           req.Public,
+		Unwell:           req.Unwell,
+		EnablePreRelease: script_entity.DisablePreReleaseScript,
+		Status:           consts.ACTIVE,
+		Archive:          script_entity.IsActive,
+		Createtime:       time.Now().Unix(),
+		Updatetime:       time.Now().Unix(),
 	}
 	// 保存脚本代码
 	scriptCode := &script_entity.Code{
-		UserID:     auth_svc.Auth().Get(ctx).UID,
-		Changelog:  req.Changelog,
-		Status:     consts.ACTIVE,
-		Createtime: time.Now().Unix(),
-		Updatetime: 0,
+		UserID:       auth_svc.Auth().Get(ctx).UID,
+		Changelog:    req.Changelog,
+		IsPreRelease: script_entity.DisablePreReleaseScript,
+		Status:       consts.ACTIVE,
+		Createtime:   time.Now().Unix(),
+		Updatetime:   0,
 	}
 	var definition *script_entity.LibDefinition
 	if req.Type == script_entity.LibraryType {
@@ -290,10 +320,11 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 		return nil, err
 	}
 	scriptCode := &script_entity.Code{
-		UserID:    auth_svc.Auth().Get(ctx).UID,
-		ScriptID:  script.ID,
-		Changelog: req.Changelog,
-		Status:    consts.ACTIVE,
+		UserID:       auth_svc.Auth().Get(ctx).UID,
+		ScriptID:     script.ID,
+		Changelog:    req.Changelog,
+		IsPreRelease: req.IsPreRelease,
+		Status:       consts.ACTIVE,
 	}
 	var definition *script_entity.LibDefinition
 	if script.Type == script_entity.LibraryType {
@@ -335,13 +366,26 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 			script.Updatetime = time.Now().Unix()
 			scriptCode.Createtime = time.Now().Unix()
 		}
+		// 判断是否为预发布版本
+		if script.EnablePreRelease == script_entity.EnablePreReleaseScript && req.IsPreRelease == 0 {
+			ver, err := semver.NewVersion(scriptCode.Version)
+			if err != nil {
+				logger.Ctx(ctx).
+					Error("非标准的语义化版本", zap.Int64("script", req.ID), zap.Error(err), zap.String("ver", req.Version))
+			} else if ver.Prerelease() != "" {
+				scriptCode.IsPreRelease = script_entity.EnablePreReleaseScript
+			}
+		}
 		// 更新名字和描述
 		script.Name = metaJson["name"][0]
 		script.Description = metaJson["description"][0]
 	}
+	if scriptCode.IsPreRelease == 0 {
+		scriptCode.IsPreRelease = script_entity.DisablePreReleaseScript
+	}
 	script.Content = req.Content
-	script.Public = req.Public
-	script.Unwell = req.Unwell
+	//script.Public = req.Public
+	//script.Unwell = req.Unwell
 	// 保存数据库并发送消息
 	if err := script_repo.Script().Update(ctx, script); err != nil {
 		logger.Ctx(ctx).Error("scriptSvc update failed", zap.Error(err))
@@ -431,8 +475,8 @@ func (s *scriptSvc) MigrateEs() {
 
 // GetCode 获取脚本代码,version为latest时获取最新版本
 func (s *scriptSvc) GetCode(ctx context.Context, id int64, version string) (*script_entity.Code, error) {
-	if version == "latest" {
-		return script_repo.ScriptCode().FindLatest(ctx, id, true)
+	if version == "latest" || version == "" {
+		return script_repo.ScriptCode().FindLatest(ctx, id, 0, true)
 	}
 	return script_repo.ScriptCode().FindByVersion(ctx, id, version, true)
 }
@@ -567,12 +611,17 @@ func (s *scriptSvc) GetSetting(ctx context.Context, req *api.GetSettingRequest) 
 	if err := m.CheckPermission(ctx); err != nil {
 		return nil, err
 	}
-	return &api.GetSettingResponse{
-		SyncUrl:       m.SyncUrl,
-		ContentUrl:    m.ContentUrl,
-		DefinitionUrl: m.DefinitionUrl,
-		SyncMode:      m.SyncMode,
-	}, nil
+	resp := &api.GetSettingResponse{
+		SyncUrl:          m.SyncUrl,
+		ContentUrl:       m.ContentUrl,
+		DefinitionUrl:    m.DefinitionUrl,
+		SyncMode:         m.SyncMode,
+		EnablePreRelease: m.EnablePreRelease,
+	}
+	if m.GrayControls != nil {
+		resp.GrayControls = m.GrayControls.Controls
+	}
+	return resp, nil
 }
 
 // UpdateSetting 更新脚本设置
@@ -625,34 +674,27 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 		logger.Error("读取代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 		return err
 	}
-	// 查找最新的code
-	code, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, false)
-	if err != nil {
-		logger.Error("获取代码失败", zap.Error(err))
-		return err
-	}
-	if code == nil {
-		logger.Error("代码不存在")
-		return nil
-	}
-	oldVersion := code.Version
+	code := &script_entity.Code{}
 	if _, err := code.UpdateCode(ctx, codeContent); err != nil {
 		logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 		return err
 	}
-	if oldVersion == code.Version {
+	if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
+		return err
+	} else if old != nil {
 		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
 		return nil
 	}
 	req := &api.UpdateCodeRequest{
-		ID:         script.ID,
-		Version:    "",
-		Content:    script.Content,
-		Code:       codeContent,
-		Definition: "",
-		Changelog:  "该版本为系统自动同步更新",
-		Public:     script.Public,
-		Unwell:     script.Unwell,
+		ID:           script.ID,
+		Version:      "",
+		Content:      script.Content,
+		Code:         codeContent,
+		Definition:   "",
+		Changelog:    "该版本为系统自动同步更新",
+		IsPreRelease: 0,
+		//Public:     script.Public,
+		//Unwell:     script.Unwell,
 	}
 	// 读取content
 	if script.ContentUrl != "" {
@@ -685,19 +727,16 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 
 // Archive 归档脚本
 func (s *scriptSvc) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckPermission(ctx); err != nil {
+	script := s.CtxScript(ctx)
+	if err := script.CheckPermission(ctx); err != nil {
 		return nil, err
 	}
 	if req.Archive {
-		m.Archive = script_entity.IsArchive
+		script.Archive = script_entity.IsArchive
 	} else {
-		m.Archive = script_entity.IsActive
+		script.Archive = script_entity.IsActive
 	}
-	if err := script_repo.Script().Update(ctx, m); err != nil {
+	if err := script_repo.Script().Update(ctx, script); err != nil {
 		return nil, err
 	}
 	return &api.ArchiveResponse{}, nil
@@ -705,19 +744,194 @@ func (s *scriptSvc) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.
 
 // Delete 删除脚本
 func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
+	script := s.CtxScript(ctx)
+	if err := script.CheckPermission(ctx, model.SuperModerator); err != nil {
 		return nil, err
 	}
-	if err := m.CheckPermission(ctx, model.SuperModerator); err != nil {
+	script.Status = consts.DELETE
+	if err := script_repo.Script().Update(ctx, script); err != nil {
 		return nil, err
 	}
-	m.Status = consts.DELETE
-	if err := script_repo.Script().Update(ctx, m); err != nil {
-		return nil, err
-	}
-	if err := producer.PublishScriptDelete(ctx, m); err != nil {
+	if err := producer.PublishScriptDelete(ctx, script); err != nil {
 		logger.Ctx(ctx).Error("发布删除脚本消息失败", zap.Error(err))
 	}
 	return &api.DeleteResponse{}, nil
+}
+
+// GetCodeByGray 根据灰度逻辑获取脚本代码
+func (s *scriptSvc) GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bool) (*script_entity.Code, error) {
+	script, err := script_repo.Script().Find(ctx, scriptId)
+	if err != nil {
+		return nil, err
+	}
+	if err := script.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	if script.EnablePreRelease == script_entity.DisablePreReleaseScript {
+		return s.GetCode(ctx, scriptId, "latest")
+	}
+	for _, v := range script.GrayControls.Controls {
+		andControl := gray_control.NewAnd()
+		// 查询出目标版本
+		code, err := s.FindTargetVersion(ctx, script.ID, v.TargetVersion)
+		if err != nil {
+			return nil, err
+		}
+		if code == nil {
+			continue
+		}
+		for _, v := range v.Controls {
+			switch v.Type {
+			case script_entity.GrayControlTypeWeight:
+				andControl.Append(gray_control.NewWeight(v.Params.Weight, v.Params.WeightDay))
+			case script_entity.GrayControlTypeCookie:
+				andControl.Append(gray_control.NewCookie(v.Params.CookieRegex))
+			case script_entity.GrayControlTypePreRelease:
+				andControl.Append(gray_control.NewPreRelease(isPreUser))
+			}
+		}
+		ok, err := andControl.Match(ctx, code)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			return code, nil
+		}
+	}
+	// 默认逻辑
+	if isPreUser {
+		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, 0, true)
+	}
+	return script_repo.ScriptCode().FindLatest(ctx, scriptId, 0, true)
+}
+
+func (s *scriptSvc) FindTargetVersion(ctx context.Context, scriptId int64, targetVersion string) (*script_entity.Code, error) {
+	target := strings.Split(targetVersion, "^")
+	if len(target) == 1 {
+		target = append(target, "")
+	} else if len(target) != 2 {
+		return nil, errors.New("targetVersion格式错误")
+	}
+	offset, _ := strconv.Atoi(target[1])
+	switch target[0] {
+	case "pre-latest":
+		return script_repo.ScriptCode().FindPreLatest(ctx, scriptId, offset, true)
+	case "all-latest":
+		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, offset, true)
+	case "latest":
+		return script_repo.ScriptCode().FindLatest(ctx, scriptId, offset, true)
+	default:
+		return s.GetCode(ctx, scriptId, targetVersion)
+	}
+}
+
+// UpdateCodeSetting 更新脚本设置
+func (s *scriptSvc) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error) {
+	script := s.CtxScript(ctx)
+	if err := script.IsArchive(ctx); err != nil {
+		return nil, err
+	}
+	scriptCode, err := script_repo.ScriptCode().Find(ctx, req.CodeID)
+	if err != nil {
+		return nil, err
+	}
+	if err := scriptCode.CheckOperate(ctx, script); err != nil {
+		return nil, err
+	}
+	// 判断是否有正式版本
+	oldCode, err := script_repo.ScriptCode().FindLatest(ctx, req.ID, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	if oldCode == nil {
+		return nil, i18n.NewError(ctx, code.ScriptChangePreReleaseNotLatest)
+	}
+	if oldCode.ID == scriptCode.ID {
+		oldCode, err = script_repo.ScriptCode().FindLatest(ctx, req.ID, 1, false)
+		if err != nil {
+			return nil, err
+		}
+		if oldCode == nil {
+			return nil, i18n.NewError(ctx, code.ScriptChangePreReleaseNotLatest)
+		}
+	}
+	scriptCode.Changelog = req.Changelog
+	scriptCode.IsPreRelease = req.IsPreRelease
+	scriptCode.Updatetime = time.Now().Unix()
+	if err := script_repo.ScriptCode().Update(ctx, scriptCode); err != nil {
+		return nil, err
+	}
+	return &api.UpdateCodeSettingResponse{}, nil
+}
+
+func (s *scriptSvc) Middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sid := c.Param("id")
+		if sid == "" {
+			httputils.HandleResp(c, httputils.NewError(http.StatusNotFound, -1, "脚本ID不能为空"))
+			return
+		}
+		id, err := strconv.ParseInt(sid, 10, 64)
+		if err != nil {
+			httputils.HandleResp(c, err)
+			return
+		}
+		script, err := script_repo.Script().Find(c, id)
+		if err != nil {
+			httputils.HandleResp(c, err)
+			return
+		}
+		if c.Request.Method == http.MethodGet {
+			if err := script.CheckOperate(c); err != nil {
+				httputils.HandleResp(c, err)
+				return
+			}
+		} else {
+			if err := script.CheckPermission(c, model.Moderator); err != nil {
+				httputils.HandleResp(c, err)
+				return
+			}
+		}
+		c.Request = c.Request.WithContext(context.WithValue(
+			c.Request.Context(), ctxScript("ctxScript"), script,
+		))
+		c.Next()
+	}
+}
+
+func (s *scriptSvc) CtxScript(ctx context.Context) *script_entity.Script {
+	return ctx.Value(ctxScript("ctxScript")).(*script_entity.Script)
+}
+
+// UpdateScriptPublic 更新脚本公开类型
+func (s *scriptSvc) UpdateScriptPublic(ctx context.Context, req *api.UpdateScriptPublicRequest) (*api.UpdateScriptPublicResponse, error) {
+	script := s.CtxScript(ctx)
+	script.Public = req.Public
+	if err := script_repo.Script().Update(ctx, script); err != nil {
+		return nil, err
+	}
+	return &api.UpdateScriptPublicResponse{}, nil
+}
+
+// UpdateScriptUnwell 更新脚本不适内容
+func (s *scriptSvc) UpdateScriptUnwell(ctx context.Context, req *api.UpdateScriptUnwellRequest) (*api.UpdateScriptUnwellResponse, error) {
+	script := s.CtxScript(ctx)
+	script.Unwell = req.Unwell
+	if err := script_repo.Script().Update(ctx, script); err != nil {
+		return nil, err
+	}
+	return &api.UpdateScriptUnwellResponse{}, nil
+}
+
+// UpdateScriptGray 更新脚本灰度策略
+func (s *scriptSvc) UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGrayRequest) (*api.UpdateScriptGrayResponse, error) {
+	script := s.CtxScript(ctx)
+	script.EnablePreRelease = req.EnablePreRelease
+	script.GrayControls = &script_entity.GrayControls{
+		Controls: req.GrayControls,
+	}
+	if err := script_repo.Script().Update(ctx, script); err != nil {
+		return nil, err
+	}
+	return &api.UpdateScriptGrayResponse{}, nil
 }

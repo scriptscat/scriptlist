@@ -21,6 +21,8 @@ import (
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 )
 
+type ctxScript string
+
 type CommentSvc interface {
 	// ListComment 获取反馈评论列表
 	ListComment(ctx context.Context, req *api.ListCommentRequest) (*api.ListCommentResponse, error)
@@ -150,14 +152,14 @@ func (c *commentSvc) Middleware() gin.HandlerFunc {
 		ctx.Request = ctx.Request.WithContext(context.WithValue(context.WithValue(
 			ctx.Request.Context(),
 			issue_entity.ScriptIssue{}, issue),
-			script_entity.Script{}, script))
+			ctxScript("ctxScript"), script))
 		ctx.Next()
 	}
 }
 
 // CtxScript 获取脚本
 func (c *commentSvc) CtxScript(ctx context.Context) *script_entity.Script {
-	return ctx.Value(script_entity.Script{}).(*script_entity.Script)
+	return ctx.Value(ctxScript("ctxScript")).(*script_entity.Script)
 }
 
 // CtxIssue 获取issue

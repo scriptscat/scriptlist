@@ -22,6 +22,7 @@ func RunMigrations(db *gorm.DB) error {
 		logger.Ctx(context.Background()).Info("数据库迁移已经在执行")
 		return nil
 	}
+	logger.Ctx(context.Background()).Info("开始执行数据库迁移")
 	defer redis.Default().Del(context.Background(), "migrations")
 	return run(db,
 		T1654137068,
@@ -32,6 +33,7 @@ func RunMigrations(db *gorm.DB) error {
 		T1674744651,
 		T1674893758,
 		T1675234780,
+		T20230210,
 	)
 }
 

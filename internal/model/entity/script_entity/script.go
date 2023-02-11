@@ -2,7 +2,10 @@ package script_entity
 
 import (
 	"context"
+	"database/sql/driver"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -50,24 +53,75 @@ const (
 	IsActive
 )
 
+type EnablePreRelease int
+
+const (
+	EnablePreReleaseScript EnablePreRelease = iota + 1
+	DisablePreReleaseScript
+)
+
+type GrayControlParams struct {
+	Weight      int     `json:"weight"`
+	WeightDay   float64 `json:"weight_day"`
+	CookieRegex string  `json:"cookie_regex"`
+}
+
+type GrayControlType string
+
+const (
+	GrayControlTypeWeight     GrayControlType = "weight"
+	GrayControlTypeCookie                     = "cookie"
+	GrayControlTypePreRelease                 = "pre-release"
+)
+
+type Control struct {
+	Type   GrayControlType   `json:"type" binding:"required,oneof=weight pre-release"`
+	Params GrayControlParams `json:"params"`
+}
+
+type GrayControl struct {
+	TargetVersion string     `json:"target_version" binding:"required"`
+	Controls      []*Control `json:"controls" binding:"required"`
+}
+
+type GrayControls struct {
+	Controls []*GrayControl `json:"controls"`
+}
+
+func (g *GrayControls) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
+	}
+	g.Controls = make([]*GrayControl, 0)
+	err := json.Unmarshal(bytes, g)
+	return err
+}
+
+func (g *GrayControls) Value() (driver.Value, error) {
+	return json.Marshal(g)
+}
+
 type Script struct {
-	ID            int64         `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	PostID        int64         `gorm:"column:post_id;type:bigint(20);index:post_id"`
-	UserID        int64         `gorm:"column:user_id;type:bigint(20);index:user_id"`
-	Name          string        `gorm:"column:name;type:varchar(255)"`
-	Description   string        `gorm:"column:description;type:text"`
-	Content       string        `gorm:"column:content;type:mediumtext"`
-	Type          Type          `gorm:"column:type;type:bigint(20);default:1;not null;index:script_type"`
-	Public        Public        `gorm:"column:public;type:bigint(20);default:1;not null"`
-	Unwell        UnwellContent `gorm:"column:unwell;type:bigint(20);default:2;not null"`
-	SyncUrl       string        `gorm:"column:sync_url;type:text;index:sync_url"`
-	ContentUrl    string        `gorm:"column:content_url;type:text;index:content_url"`
-	DefinitionUrl string        `gorm:"column:definition_url;type:text;index:definition_url"`
-	SyncMode      SyncMode      `gorm:"column:sync_mode;type:tinyint(2)"`
-	Archive       ScriptArchive `gorm:"column:archive;type:tinyint(2);default:2;not null"`
-	Status        int64         `gorm:"column:status;type:bigint(20)"`
-	Createtime    int64         `gorm:"column:createtime;type:bigint(20)"`
-	Updatetime    int64         `gorm:"column:updatetime;type:bigint(20)"`
+	ID               int64            `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	PostID           int64            `gorm:"column:post_id;type:bigint(20);index:post_id"`
+	UserID           int64            `gorm:"column:user_id;type:bigint(20);index:user_id"`
+	Name             string           `gorm:"column:name;type:varchar(255)"`
+	Description      string           `gorm:"column:description;type:text"`
+	Content          string           `gorm:"column:content;type:mediumtext"`
+	Type             Type             `gorm:"column:type;type:bigint(20);default:1;not null;index:script_type"`
+	Public           Public           `gorm:"column:public;type:bigint(20);default:1;not null"`
+	Unwell           UnwellContent    `gorm:"column:unwell;type:bigint(20);default:2;not null"`
+	SyncUrl          string           `gorm:"column:sync_url;type:text;index:sync_url,length:255"`
+	ContentUrl       string           `gorm:"column:content_url;type:text;index:content_url,length:255"`
+	DefinitionUrl    string           `gorm:"column:definition_url;type:text;index:definition_url,length:255"`
+	SyncMode         SyncMode         `gorm:"column:sync_mode;type:tinyint(2)"`
+	Archive          ScriptArchive    `gorm:"column:archive;type:tinyint(2);default:2;not null"`
+	EnablePreRelease EnablePreRelease `gorm:"column:enable_pre_release;type:tinyint(2);default:2;not null"`
+	GrayControls     *GrayControls    `gorm:"column:gray_controls;type:json"`
+	Status           int64            `gorm:"column:status;type:bigint(20)"`
+	Createtime       int64            `gorm:"column:createtime;type:bigint(20)"`
+	Updatetime       int64            `gorm:"column:updatetime;type:bigint(20)"`
 }
 
 func (s *Script) TableName() string {
@@ -112,17 +166,18 @@ func (s *Script) IsArchive(ctx context.Context) error {
 }
 
 type Code struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	UserID     int64  `gorm:"column:user_id;type:bigint(20);index:user_id"`
-	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);index:script_id"`
-	Code       string `gorm:"column:code;type:mediumtext"`
-	Meta       string `gorm:"column:meta;type:text"`
-	MetaJson   string `gorm:"column:meta_json;type:text"`
-	Version    string `gorm:"column:version;type:varchar(255)"`
-	Changelog  string `gorm:"column:changelog;type:text"`
-	Status     int64  `gorm:"column:status;type:tinyint(4)"`
-	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
-	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`
+	ID           int64            `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	UserID       int64            `gorm:"column:user_id;type:bigint(20);index:user_id"`
+	ScriptID     int64            `gorm:"column:script_id;type:bigint(20);index:script_id"`
+	Code         string           `gorm:"column:code;type:mediumtext"`
+	Meta         string           `gorm:"column:meta;type:text"`
+	MetaJson     string           `gorm:"column:meta_json;type:text"`
+	Version      string           `gorm:"column:version;type:varchar(255)"`
+	Changelog    string           `gorm:"column:changelog;type:text"`
+	IsPreRelease EnablePreRelease `gorm:"column:is_pre_release;type:tinyint(2);default:2;not null"`
+	Status       int64            `gorm:"column:status;type:tinyint(4)"`
+	Createtime   int64            `gorm:"column:createtime;type:bigint(20)"`
+	Updatetime   int64            `gorm:"column:updatetime;type:bigint(20)"`
 }
 
 func (s *Code) TableName() string {
@@ -158,7 +213,21 @@ func (s *Code) UpdateCode(ctx context.Context, scriptCode string) (map[string][]
 }
 
 func (s *Code) Fields() string {
-	return "id, user_id, script_id, meta, meta_json, version, changelog, status, createtime, updatetime"
+	return "id, user_id, script_id, meta, meta_json, version, changelog, is_pre_release, status, createtime, updatetime"
+}
+
+// CheckOperate 检查是否可以操作
+func (s *Code) CheckOperate(ctx context.Context, script *Script) error {
+	if s == nil {
+		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptNotFound)
+	}
+	if s.Status != consts.ACTIVE {
+		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.ScriptIsDelete)
+	}
+	if s.ScriptID != script.ID {
+		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.UserNotPermission)
+	}
+	return nil
 }
 
 // 解析脚本的元数据
