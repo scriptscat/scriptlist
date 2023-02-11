@@ -240,7 +240,7 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 	scriptCode := &script_entity.Code{
 		UserID:       auth_svc.Auth().Get(ctx).UID,
 		Changelog:    req.Changelog,
-		IsPreRelease: req.IsPreRelease,
+		IsPreRelease: script_entity.DisablePreReleaseScript,
 		Status:       consts.ACTIVE,
 		Createtime:   time.Now().Unix(),
 		Updatetime:   0,
@@ -777,6 +777,9 @@ func (s *scriptSvc) GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bo
 		if err != nil {
 			return nil, err
 		}
+		if code == nil {
+			continue
+		}
 		for _, v := range v.Controls {
 			switch v.Type {
 			case script_entity.GrayControlTypeWeight:
@@ -828,17 +831,34 @@ func (s *scriptSvc) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSe
 	if err := script.IsArchive(ctx); err != nil {
 		return nil, err
 	}
-	code, err := script_repo.ScriptCode().Find(ctx, req.CodeID)
+	scriptCode, err := script_repo.ScriptCode().Find(ctx, req.CodeID)
 	if err != nil {
 		return nil, err
 	}
-	if err := code.CheckOperate(ctx, script); err != nil {
+	if err := scriptCode.CheckOperate(ctx, script); err != nil {
 		return nil, err
 	}
-	code.Changelog = req.Changelog
-	code.IsPreRelease = req.IsPreRelease
-	code.Updatetime = time.Now().Unix()
-	if err := script_repo.ScriptCode().Update(ctx, code); err != nil {
+	// 判断是否有正式版本
+	oldCode, err := script_repo.ScriptCode().FindLatest(ctx, req.ID, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	if oldCode == nil {
+		return nil, i18n.NewError(ctx, code.ScriptChangePreReleaseNotLatest)
+	}
+	if oldCode.ID == scriptCode.ID {
+		oldCode, err = script_repo.ScriptCode().FindLatest(ctx, req.ID, 1, false)
+		if err != nil {
+			return nil, err
+		}
+		if oldCode == nil {
+			return nil, i18n.NewError(ctx, code.ScriptChangePreReleaseNotLatest)
+		}
+	}
+	scriptCode.Changelog = req.Changelog
+	scriptCode.IsPreRelease = req.IsPreRelease
+	scriptCode.Updatetime = time.Now().Unix()
+	if err := script_repo.ScriptCode().Update(ctx, scriptCode); err != nil {
 		return nil, err
 	}
 	return &api.UpdateCodeSettingResponse{}, nil
