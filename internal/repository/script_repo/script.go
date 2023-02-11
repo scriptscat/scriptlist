@@ -6,8 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"time"
 
+	"github.com/codfrm/cago/database/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/pkg/consts"
@@ -51,6 +54,14 @@ type scriptRepo struct {
 
 func NewScriptRepo() ScriptRepo {
 	return &scriptRepo{}
+}
+
+func (u *scriptRepo) key(id int64) string {
+	return "script:" + strconv.FormatInt(id, 10)
+}
+
+func (u *scriptRepo) KeyDepend(id int64) *cache2.KeyDepend {
+	return cache2.NewKeyDepend(cache.Default(), u.key(id)+":dep")
 }
 
 func (u *scriptRepo) Find(ctx context.Context, id int64) (*entity.Script, error) {

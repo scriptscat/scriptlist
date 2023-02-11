@@ -34,6 +34,11 @@ func TestWeight_match(t *testing.T) {
 		{name: "case1020-70", fields: fields{30, 0}, args: args{time.Unix(0, 0), 70, 1030}, want: true},
 		{name: "case1020-99", fields: fields{30, 0}, args: args{time.Unix(0, 0), 99, 1030}, want: true},
 		{name: "case1020-1", fields: fields{30, 0}, args: args{time.Unix(0, 0), 1, 1030}, want: false},
+
+		{name: "case-day-1", fields: fields{100, 10}, args: args{time.Unix(86400, 0), 89, 10}, want: false},
+		{name: "case-day-2", fields: fields{100, 10}, args: args{time.Unix(86400, 0), 90, 10}, want: true},
+		{name: "case-day-3", fields: fields{100, 10}, args: args{time.Unix(86400, 0), 99, 10}, want: true},
+		{name: "case-day-4", fields: fields{100, 10}, args: args{time.Unix(86400, 0), 0, 10}, want: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

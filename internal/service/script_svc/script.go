@@ -3,6 +3,7 @@ package script_svc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -162,12 +163,17 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	// 脚本代码信息
 	var scriptCode *script_entity.Code
 	if version == "" {
-		scriptCode, err = script_repo.ScriptCode().FindAllLatest(ctx, item.ID, withcode)
+		if withcode {
+			scriptCode, err = script_repo.ScriptCode().FindAllLatest(ctx, item.ID, 0, withcode)
+		} else {
+			scriptCode, err = script_repo.ScriptCode().FindLatest(ctx, item.ID, 0, withcode)
+		}
 	} else {
 		scriptCode, err = script_repo.ScriptCode().FindByVersion(ctx, item.ID, version, withcode)
 	}
 	if err != nil {
 		logger.Ctx(ctx).Error("获取脚本代码失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		return nil, err
 	}
 	if scriptCode == nil {
 		return nil, i18n.NewError(ctx, code.ScriptNotFound)
@@ -224,7 +230,7 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 		Type:             req.Type,
 		Public:           req.Public,
 		Unwell:           req.Unwell,
-		EnablePreRelease: req.EnablePreRelease,
+		EnablePreRelease: script_entity.DisablePreReleaseScript,
 		Status:           consts.ACTIVE,
 		Archive:          script_entity.IsActive,
 		Createtime:       time.Now().Unix(),
@@ -261,17 +267,6 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 		}
 		script.Name = metaJson["name"][0]
 		script.Description = metaJson["description"][0]
-		if script.EnablePreRelease == script_entity.EnablePreReleaseScript && scriptCode.IsPreRelease == 0 {
-			// 自动判断pre-release
-			ver, err := semver.NewVersion(scriptCode.Version)
-			if err != nil {
-				logger.Ctx(ctx).Error("不符合语义化版本规范", zap.Error(err), zap.String("version", scriptCode.Version))
-			} else {
-				if ver.Prerelease() != "" {
-					scriptCode.IsPreRelease = script_entity.EnablePreReleaseScript
-				}
-			}
-		}
 	}
 
 	// 保存数据库并发送消息
@@ -367,25 +362,26 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 			}
 			scriptCode.ID = oldVersion.ID
 			scriptCode.Createtime = oldVersion.Createtime
-			// 判断是否为预发布版本
-			if script.EnablePreRelease == script_entity.EnablePreReleaseScript && req.IsPreRelease == 0 {
-				ver, err := semver.NewVersion(req.Version)
-				if err != nil {
-					logger.Ctx(ctx).
-						Error("非标准的语义化版本", zap.Int64("script", req.ID), zap.Error(err), zap.String("ver", req.Version))
-				} else {
-					if ver.Prerelease() != "" {
-						req.IsPreRelease = script_entity.EnablePreReleaseScript
-					}
-				}
-			}
 		} else {
 			script.Updatetime = time.Now().Unix()
 			scriptCode.Createtime = time.Now().Unix()
 		}
+		// 判断是否为预发布版本
+		if script.EnablePreRelease == script_entity.EnablePreReleaseScript && req.IsPreRelease == 0 {
+			ver, err := semver.NewVersion(scriptCode.Version)
+			if err != nil {
+				logger.Ctx(ctx).
+					Error("非标准的语义化版本", zap.Int64("script", req.ID), zap.Error(err), zap.String("ver", req.Version))
+			} else if ver.Prerelease() != "" {
+				scriptCode.IsPreRelease = script_entity.EnablePreReleaseScript
+			}
+		}
 		// 更新名字和描述
 		script.Name = metaJson["name"][0]
 		script.Description = metaJson["description"][0]
+	}
+	if scriptCode.IsPreRelease == 0 {
+		scriptCode.IsPreRelease = script_entity.DisablePreReleaseScript
 	}
 	script.Content = req.Content
 	//script.Public = req.Public
@@ -480,7 +476,7 @@ func (s *scriptSvc) MigrateEs() {
 // GetCode 获取脚本代码,version为latest时获取最新版本
 func (s *scriptSvc) GetCode(ctx context.Context, id int64, version string) (*script_entity.Code, error) {
 	if version == "latest" || version == "" {
-		return script_repo.ScriptCode().FindLatest(ctx, id, true)
+		return script_repo.ScriptCode().FindLatest(ctx, id, 0, true)
 	}
 	return script_repo.ScriptCode().FindByVersion(ctx, id, version, true)
 }
@@ -801,17 +797,26 @@ func (s *scriptSvc) GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bo
 	}
 	// 默认逻辑
 	if isPreUser {
-		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, true)
+		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, 0, true)
 	}
-	return script_repo.ScriptCode().FindLatest(ctx, scriptId, true)
+	return script_repo.ScriptCode().FindLatest(ctx, scriptId, 0, true)
 }
 
 func (s *scriptSvc) FindTargetVersion(ctx context.Context, scriptId int64, targetVersion string) (*script_entity.Code, error) {
-	switch targetVersion {
+	target := strings.Split(targetVersion, "^")
+	if len(target) == 1 {
+		target = append(target, "")
+	} else if len(target) != 2 {
+		return nil, errors.New("targetVersion格式错误")
+	}
+	offset, _ := strconv.Atoi(target[1])
+	switch target[0] {
 	case "pre-latest":
-		return script_repo.ScriptCode().FindPreLatest(ctx, scriptId, true)
+		return script_repo.ScriptCode().FindPreLatest(ctx, scriptId, offset, true)
 	case "all-latest":
-		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, true)
+		return script_repo.ScriptCode().FindAllLatest(ctx, scriptId, offset, true)
+	case "latest":
+		return script_repo.ScriptCode().FindLatest(ctx, scriptId, offset, true)
 	default:
 		return s.GetCode(ctx, scriptId, targetVersion)
 	}

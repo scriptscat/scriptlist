@@ -51,7 +51,7 @@ func Router(root *mux.Router) error {
 	scriptCtr := script_ctr.NewScript()
 	{
 		// 需要用户登录的路由组
-		r.Group("/", auth.Middleware(true), scriptCtr.Middleware()).Bind(
+		r.Group("/", auth.Middleware(true)).Bind(
 			scriptCtr.Create,
 			scriptCtr.UpdateCode,
 			scriptCtr.MigrateEs,

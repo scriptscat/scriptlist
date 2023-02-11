@@ -39,14 +39,15 @@ func (w *Weight) Match(ctx *gin.Context, target *script_entity.Code) (bool, erro
 }
 
 func (w *Weight) match(now time.Time, n int, createtime int64) (bool, error) {
+	weight := w.weight
 	if w.weightDay != 0 {
 		// 不为0时,计算权重百分比
 		wd := (now.Sub(time.Unix(createtime, 0)).Abs().Seconds() / 86400) / w.weightDay
 		if wd < 1 {
-			n = int(float64(n) * wd)
+			weight = int(float64(weight) * wd)
 		}
 	}
 	// 如果不加一个随机数,那么权重低的总会更新
 	x := int(createtime) + n
-	return (x % 100) <= w.weight, nil
+	return (x % 100) <= weight, nil
 }

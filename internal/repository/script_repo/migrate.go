@@ -125,12 +125,18 @@ func (m *migrateRepo) Convert(ctx context.Context, e *entity.Script) (*entity.Sc
 		Createtime:  e.Createtime,
 		Updatetime:  e.Updatetime,
 	}
-	code, err := ScriptCode().FindAllLatest(ctx, e.ID, false)
+	code, err := ScriptCode().FindLatest(ctx, e.ID, 0, false)
 	if err != nil {
 		return nil, err
 	}
 	if code == nil {
-		return nil, errors.New("code not found")
+		code, err = ScriptCode().FindAllLatest(ctx, e.ID, 0, false)
+		if err != nil {
+			return nil, err
+		}
+		if code == nil {
+			return nil, errors.New("code not found")
+		}
 	}
 	ret.Version = code.Version
 	ret.Changelog = code.Changelog
