@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/codfrm/cago/configs"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/user_svc"
+	"github.com/scriptscat/scriptlist/pkg/oauth"
 )
 
 type User struct {
@@ -58,9 +60,13 @@ func (u *User) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRespons
 
 // Avatar 获取用户头像
 func (u *User) Avatar() gin.HandlerFunc {
+	config := &oauth.Config{}
+	if err := configs.Default().Scan("oauth.bbs", &config); err != nil {
+		config.ServerUrl = "https://bbs.tampermonkey.net.cn"
+	}
 	return func(ctx *gin.Context) {
 		uid := ctx.Param("uid")
-		resp, err := http.Get("https://bbs.tampermonkey.net.cn/uc_server/avatar.php?uid=" + uid + "&size=middle")
+		resp, err := http.Get(config.ServerUrl + "/uc_server/avatar.php?uid=" + uid + "&size=middle")
 		if err != nil {
 			_ = ctx.AbortWithError(http.StatusInternalServerError, err)
 			return
