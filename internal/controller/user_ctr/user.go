@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/codfrm/cago/configs"
@@ -64,6 +65,7 @@ func (u *User) Avatar() gin.HandlerFunc {
 	if err := configs.Default().Scan("oauth.bbs", &config); err != nil {
 		config.ServerUrl = "https://bbs.tampermonkey.net.cn"
 	}
+	// https://bbs.tampermonkey.net.cn/uc_server/avatar.php?uid=13895&size=middle
 	return func(ctx *gin.Context) {
 		uid := ctx.Param("uid")
 		resp, err := http.Get(config.ServerUrl + "/uc_server/avatar.php?uid=" + uid + "&size=middle")
@@ -72,11 +74,17 @@ func (u *User) Avatar() gin.HandlerFunc {
 			return
 		}
 		defer resp.Body.Close()
-		ctx.Writer.Header().Set("content-type", "image/jpeg")
 		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			_ = ctx.AbortWithError(http.StatusInternalServerError, err)
 			return
+		}
+		ct := http.DetectContentType(b)
+		if strings.Index(ct, "image") != -1 {
+			ctx.Writer.Header().Set("content-type", ct)
+		} else {
+			// svg图片
+			ctx.Writer.Header().Set("content-type", "image/svg+xml")
 		}
 		_, _ = ctx.Writer.Write(b)
 	}
