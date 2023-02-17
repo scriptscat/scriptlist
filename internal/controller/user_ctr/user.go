@@ -80,12 +80,14 @@ func (u *User) Avatar() gin.HandlerFunc {
 			return
 		}
 		ct := http.DetectContentType(b)
-		if strings.Index(ct, "image") != -1 {
+		if strings.Contains(ct, "image") {
 			ctx.Writer.Header().Set("content-type", ct)
 		} else {
 			// svg图片
 			ctx.Writer.Header().Set("content-type", "image/svg+xml")
 		}
+		// 缓存
+		ctx.Writer.Header().Set("Cache-Control", "max-age=86400")
 		_, _ = ctx.Writer.Write(b)
 	}
 }
