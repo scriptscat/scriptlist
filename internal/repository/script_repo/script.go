@@ -160,37 +160,43 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 	search := elasticsearch.Ctx(ctx).Search
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": []map[string]interface{}{
-					{
-						"multi_match": map[string]interface{}{
-							"query":  options.Keyword,
-							"fields": []string{"name", "description", "content"},
+			"function_score": map[string]interface{}{
+				"query": map[string]interface{}{
+					"bool": map[string]interface{}{
+						"must": []map[string]interface{}{
+							{
+								"multi_match": map[string]interface{}{
+									"query":  options.Keyword,
+									"fields": []string{"name", "description", "content"},
+								},
+							},
+							{
+								"match": map[string]interface{}{
+									"status": consts.ACTIVE,
+								},
+							},
+							{
+								"match": map[string]interface{}{
+									"public": entity.PublicScript,
+								},
+							},
+							{
+								"match": map[string]interface{}{
+									"unwell": entity.Well,
+								},
+							},
 						},
 					},
-					{
-						"match": map[string]interface{}{
-							"status": consts.ACTIVE,
-						},
-					},
-					{
-						"match": map[string]interface{}{
-							"public": entity.PublicScript,
-						},
-					},
-					{
-						"match": map[string]interface{}{
-							"unwell": entity.Well,
-						},
+				},
+				"script_score": map[string]interface{}{
+					"script": map[string]interface{}{
+						// 相似度分数*100+ 下载量
+						"source": "_score * 500 + doc['today_download'].value",
 					},
 				},
 			},
 		},
-		"sort": map[string]interface{}{
-			"today_download": map[string]interface{}{
-				"order": "desc",
-			},
-		},
+		// 分数排序
 		"size": page.GetLimit(),
 	}
 	var buf bytes.Buffer
