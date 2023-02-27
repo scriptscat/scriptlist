@@ -122,6 +122,7 @@ func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
 		c, err := a.SetCtx(ctx.Request.Context(), m.UID)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
+			return
 		}
 		ctx.Request = ctx.Request.WithContext(c)
 	}

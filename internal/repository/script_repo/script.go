@@ -190,13 +190,12 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 				},
 				"script_score": map[string]interface{}{
 					"script": map[string]interface{}{
-						// 相似度分数*100+ 下载量
-						"source": "_score * 500 + doc['today_download'].value",
+						// 相似度分数*100 + 下载量
+						"source": "_score * 200 + doc['today_download'].value",
 					},
 				},
 			},
 		},
-		// 分数排序
 		"size": page.GetLimit(),
 	}
 	var buf bytes.Buffer
