@@ -403,6 +403,10 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 				code.ScriptUpdateFailed,
 			)
 		}
+		if err := producer.PublishScriptCodeUpdate(ctx, script, scriptCode); err != nil {
+			logger.Ctx(ctx).Error("publish scriptSvc code update failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
+			return nil, i18n.NewInternalError(ctx, code.ScriptUpdateFailed)
+		}
 	} else {
 		if err := script_repo.ScriptCode().Update(ctx, scriptCode); err != nil {
 			logger.Ctx(ctx).Error("scriptSvc code update failed", zap.Int64("script_id", script.ID), zap.Error(err))
@@ -426,10 +430,6 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 		}
 	}
 
-	if err := producer.PublishScriptCodeUpdate(ctx, script, scriptCode); err != nil {
-		logger.Ctx(ctx).Error("publish scriptSvc code update failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
-		return nil, i18n.NewInternalError(ctx, code.ScriptUpdateFailed)
-	}
 	return &api.UpdateCodeResponse{}, nil
 }
 
