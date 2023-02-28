@@ -2002,6 +2002,54 @@
                 }
             }
         },
+        "/statistics/collect": {
+            "post": {
+                "description": "统计数据收集",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "统计数据收集",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/statistics.CollectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/statistics.CollectResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "获取当前登录的用户信息",
@@ -3155,12 +3203,6 @@
                 "description": {
                     "type": "string"
                 },
-                "enable_pre_release": {
-                    "$ref": "#/definitions/script_entity.EnablePreRelease"
-                },
-                "is_pre_release": {
-                    "$ref": "#/definitions/script_entity.EnablePreRelease"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -3226,7 +3268,7 @@
                 "enable_pre_release": {
                     "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
-                "gray_control": {
+                "gray_controls": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/script_entity.GrayControl"
@@ -3560,13 +3602,16 @@
                 "enable_pre_release": {
                     "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
-                "gray_control": {
+                "gray_controls": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/script_entity.GrayControl"
                     }
                 }
             }
+        },
+        "script.UpdateScriptGrayResponse": {
+            "type": "object"
         },
         "script.UpdateScriptPublicRequest": {
             "type": "object",
@@ -3758,7 +3803,7 @@
         "script_entity.GrayControl": {
             "type": "object",
             "properties": {
-                "Controls": {
+                "controls": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/script_entity.Control"
@@ -3779,17 +3824,17 @@
                     "type": "integer"
                 },
                 "weight_day": {
-                    "type": "integer"
+                    "type": "number"
                 }
             }
         },
         "script_entity.GrayControlType": {
-            "description": "GrayControlType enum type:\n- GrayControlTypeWeight: weight\n- GrayControlTypeCookie: cookie\n- GrayControlTypePreRelease: pre_release",
+            "description": "GrayControlType enum type:\n- GrayControlTypeWeight: weight\n- GrayControlTypeCookie: cookie\n- GrayControlTypePreRelease: pre-release",
             "type": "string",
             "enum": [
                 "weight",
                 "cookie",
-                "pre_release"
+                "pre-release"
             ]
         },
         "script_entity.Public": {
@@ -3851,6 +3896,56 @@
                     }
                 }
             }
+        },
+        "statistics.CollectRequest": {
+            "type": "object",
+            "properties": {
+                "IP": {
+                    "type": "string"
+                },
+                "UA": {
+                    "type": "string"
+                },
+                "duration": {
+                    "description": "停留时长(秒)",
+                    "type": "integer"
+                },
+                "exit_time": {
+                    "description": "退出时间",
+                    "type": "integer"
+                },
+                "install_page": {
+                    "description": "安装页面",
+                    "type": "string"
+                },
+                "operation_page": {
+                    "description": "操作页面",
+                    "type": "string"
+                },
+                "script_id": {
+                    "description": "脚本id",
+                    "type": "integer"
+                },
+                "session_id": {
+                    "description": "会话id,随机生成",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本",
+                    "type": "string"
+                },
+                "visit_time": {
+                    "description": "访问时间",
+                    "type": "integer"
+                },
+                "visitor_id": {
+                    "description": "访客id",
+                    "type": "string"
+                }
+            }
+        },
+        "statistics.CollectResponse": {
+            "type": "object"
         },
         "statistics.DUChart": {
             "type": "object",

@@ -496,10 +496,6 @@ definitions:
         type: string
       description:
         type: string
-      enable_pre_release:
-        $ref: '#/definitions/script_entity.EnablePreRelease'
-      is_pre_release:
-        $ref: '#/definitions/script_entity.EnablePreRelease'
       name:
         type: string
       public:
@@ -543,7 +539,7 @@ definitions:
         type: string
       enable_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
-      gray_control:
+      gray_controls:
         items:
           $ref: '#/definitions/script_entity.GrayControl'
         type: array
@@ -765,10 +761,12 @@ definitions:
     properties:
       enable_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
-      gray_control:
+      gray_controls:
         items:
           $ref: '#/definitions/script_entity.GrayControl'
         type: array
+    type: object
+  script.UpdateScriptGrayResponse:
     type: object
   script.UpdateScriptPublicRequest:
     properties:
@@ -898,7 +896,7 @@ definitions:
     type: integer
   script_entity.GrayControl:
     properties:
-      Controls:
+      controls:
         items:
           $ref: '#/definitions/script_entity.Control'
         type: array
@@ -912,18 +910,18 @@ definitions:
       weight:
         type: integer
       weight_day:
-        type: integer
+        type: number
     type: object
   script_entity.GrayControlType:
     description: |-
       GrayControlType enum type:
       - GrayControlTypeWeight: weight
       - GrayControlTypeCookie: cookie
-      - GrayControlTypePreRelease: pre_release
+      - GrayControlTypePreRelease: pre-release
     enum:
     - weight
     - cookie
-    - pre_release
+    - pre-release
     type: string
   script_entity.Public:
     description: |-
@@ -986,6 +984,42 @@ definitions:
         items:
           type: integer
         type: array
+    type: object
+  statistics.CollectRequest:
+    properties:
+      IP:
+        type: string
+      UA:
+        type: string
+      duration:
+        description: 停留时长(秒)
+        type: integer
+      exit_time:
+        description: 退出时间
+        type: integer
+      install_page:
+        description: 安装页面
+        type: string
+      operation_page:
+        description: 操作页面
+        type: string
+      script_id:
+        description: 脚本id
+        type: integer
+      session_id:
+        description: 会话id,随机生成
+        type: string
+      version:
+        description: 版本
+        type: string
+      visit_time:
+        description: 访问时间
+        type: integer
+      visitor_id:
+        description: 访客id
+        type: string
+    type: object
+  statistics.CollectResponse:
     type: object
   statistics.DUChart:
     properties:
@@ -2410,6 +2444,36 @@ paths:
       summary: 全量迁移数据到es
       tags:
       - script
+  /statistics/collect:
+    post:
+      consumes:
+      - application/json
+      description: 统计数据收集
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/statistics.CollectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.CollectResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 统计数据收集
+      tags:
+      - statistics
   /users:
     get:
       consumes:

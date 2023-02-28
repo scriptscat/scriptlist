@@ -7,6 +7,7 @@ import (
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"
+	"github.com/codfrm/cago/database/clickhouse"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/database/redis"
@@ -48,7 +49,9 @@ func main() {
 	//注册评分
 	script_repo.RegisterScriptScore(script_repo.NewScriptScore())
 
-	statistics_repo.RegisterStatistics(statistics_repo.NewStatistics())
+	statistics_repo.RegisterScriptStatistics(statistics_repo.NewScriptStatistics())
+	statistics_repo.RegisterStatisticsVisitorRepo(statistics_repo.NewStatisticVistior())
+	statistics_repo.RegisterStatisticsCollect(statistics_repo.NewStatisticsCollect())
 
 	issue_repo.RegisterScriptIssue(issue_repo.NewScriptIssue())
 	issue_repo.RegisterScriptIssueComment(issue_repo.NewScriptIssueComment())
@@ -64,6 +67,7 @@ func main() {
 		Registry(cago.FuncComponent(logger.Logger)).
 		Registry(cago.FuncComponent(trace.Trace)).
 		Registry(cago.FuncComponent(db.Database)).
+		Registry(cago.FuncComponent(clickhouse.Clickhouse)).
 		Registry(cago.FuncComponent(redis.Redis)).
 		Registry(cago.FuncComponent(cache.Cache)).
 		Registry(cago.FuncComponent(elasticsearch.Elasticsearch)).

@@ -8,4 +8,6 @@ const (
 
 	IssueCreateTopic   = "issue.create"   // 创建issue
 	CommentCreateTopic = "comment.create" // 创建评论
+
+	StatisticCollectTopic = "statistic.collect" // 统计数据收集
 )

@@ -141,6 +141,9 @@ func Router(root *mux.Router) error {
 			controller.Script,
 			controller.ScriptRealtime,
 		)
+		r.Group("/").Bind(
+			controller.Collect,
+		)
 	}
 	// 资源
 	{

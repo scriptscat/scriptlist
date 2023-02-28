@@ -146,7 +146,7 @@ func (s *Script) downloadScript(ctx *gin.Context, id int64, version string, pre 
 		IP:              ctx.ClientIP(),
 		UA:              ua,
 		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics_repo.DownloadStatistics,
+		Download:        statistics_repo.DownloadScriptStatistics,
 		Time:            time.Now(),
 	}
 	user := auth_svc.Auth().Get(ctx)
@@ -192,7 +192,7 @@ func (s *Script) getScriptMeta(ctx *gin.Context, version string, pre bool) {
 		IP:              ctx.ClientIP(),
 		UA:              ua,
 		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics_repo.UpdateStatistics,
+		Download:        statistics_repo.UpdateScriptStatistics,
 		Time:            time.Now(),
 	}
 	user := auth_svc.Auth().Get(ctx)
@@ -221,7 +221,7 @@ func (s *Script) Info(ctx *gin.Context, req *api.InfoRequest) (*api.InfoResponse
 		IP:              ctx.ClientIP(),
 		UA:              ua,
 		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
-		Download:        statistics_repo.ViewStatistics,
+		Download:        statistics_repo.ViewScriptStatistics,
 		Time:            time.Now(),
 	}
 	err := statistics_svc.Statistics().ScriptRecord(ctx, record)

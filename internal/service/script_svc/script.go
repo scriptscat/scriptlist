@@ -150,12 +150,12 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 		data.ScoreNum = statistics.ScoreCount
 	}
 	// 从平台统计拿数据,排序从脚本统计里拿数据
-	num, err := statistics_repo.Statistics().TotalPv(ctx, item.ID, statistics_repo.DownloadStatistics)
+	num, err := statistics_repo.ScriptStatistics().TotalPv(ctx, item.ID, statistics_repo.DownloadScriptStatistics)
 	if err != nil {
 		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	data.TotalInstall = num
-	num, err = statistics_repo.Statistics().DaysPvNum(ctx, item.ID, statistics_repo.DownloadStatistics, 1, time.Now())
+	num, err = statistics_repo.ScriptStatistics().DaysPvNum(ctx, item.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now())
 	if err != nil {
 		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}

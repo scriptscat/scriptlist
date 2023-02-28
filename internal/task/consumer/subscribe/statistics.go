@@ -2,8 +2,12 @@ package subscribe
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
+	"net/url"
 
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
@@ -14,18 +18,20 @@ import (
 type Statistics struct {
 }
 
-func (e *Statistics) Subscribe(ctx context.Context) error {
-	if err := producer.SubscribeScriptStatistics(ctx, e.scriptStatistics); err != nil {
+func (s *Statistics) Subscribe(ctx context.Context) error {
+	if err := producer.SubscribeScriptStatistics(ctx, s.scriptStatistics); err != nil {
 		return err
-
+	}
+	if err := producer.SubscribeStatisticsCollect(ctx, s.collect); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (e *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptStatisticsMsg) error {
+func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptStatisticsMsg) error {
 	switch msg.Download {
-	case statistics_repo.DownloadStatistics:
-		if ok, err := statistics_repo.Statistics().IncrDownload(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {
+	case statistics_repo.DownloadScriptStatistics:
+		if ok, err := statistics_repo.ScriptStatistics().IncrDownload(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {
 			logger.Ctx(ctx).Error("统计下载量失败", zap.Error(err))
 			return err
 		} else if ok {
@@ -40,8 +46,8 @@ func (e *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 				return err
 			}
 		}
-	case statistics_repo.UpdateStatistics:
-		if ok, err := statistics_repo.Statistics().IncrUpdate(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {
+	case statistics_repo.UpdateScriptStatistics:
+		if ok, err := statistics_repo.ScriptStatistics().IncrUpdate(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {
 			logger.Ctx(ctx).Error("统计更新量失败", zap.Error(err))
 			return err
 		} else if ok {
@@ -56,12 +62,52 @@ func (e *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 				return err
 			}
 		}
-	case statistics_repo.ViewStatistics:
-		if _, err := statistics_repo.Statistics().IncrPageView(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {
+	case statistics_repo.ViewScriptStatistics:
+		if _, err := statistics_repo.ScriptStatistics().IncrPageView(ctx, msg.ScriptID, msg.IP, msg.StatisticsToken); err != nil {
 			logger.Ctx(ctx).Error("统计浏览量失败", zap.Error(err))
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollectMsg) error {
+	// ip+用户提交的访客id生成后端存储的访客id
+	vistitorId := fmt.Sprintf("%x", sha256.Sum256([]byte(msg.IP+msg.VisitorID)))
+	operatorUrl, err := url.Parse(msg.OperationPage)
+	if err != nil {
+		logger.Ctx(ctx).Error("统计页url解析失败", zap.Error(err), zap.Any("msg", msg))
+		return err
+	}
+	installUrl, err := url.Parse(msg.InstallPage)
+	if err != nil {
+		logger.Ctx(ctx).Error("统计页url解析失败", zap.Error(err), zap.Any("msg", msg))
+		return err
+	}
+	collect := &statistics_entity.StatisticsCollect{
+		SessionID:     msg.SessionID,
+		ScriptID:      msg.ScriptID,
+		VisitorID:     vistitorId,
+		OperationHost: operatorUrl.Host,
+		OperationPage: msg.OperationPage,
+		Duration:      msg.Duration,
+		VisitTime:     msg.VisitTime,
+		ExitTime:      msg.ExitTime,
+	}
+	if err := statistics_repo.StatisticsCollect().Create(ctx, collect); err != nil {
+		logger.Ctx(ctx).Error("统计收集失败", zap.Error(err), zap.Any("msg", msg))
+	}
+	if err := statistics_repo.StatisticsVisitor().Create(ctx, &statistics_entity.StatisticsVisitor{
+		ScriptID:    msg.ScriptID,
+		VisitorID:   vistitorId,
+		UA:          msg.UA,
+		IP:          msg.IP,
+		Version:     msg.Version,
+		InstallPage: msg.InstallPage,
+		InstallHost: installUrl.Host,
+	}); err != nil {
+		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg))
+	}
 	return nil
 }

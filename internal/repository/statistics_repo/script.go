@@ -9,12 +9,12 @@ import (
 	"github.com/codfrm/cago/database/redis"
 )
 
-type StatisticsType string
+type ScriptStatisticsType string
 
 const (
-	ViewStatistics     StatisticsType = "view"
-	DownloadStatistics                = "download"
-	UpdateStatistics                  = "update"
+	ViewScriptStatistics     ScriptStatisticsType = "view"
+	DownloadScriptStatistics                      = "download"
+	UpdateScriptStatistics                        = "update"
 )
 
 // pf   statistics:script:@op:@id:day:uv:@date 30天过期
@@ -24,45 +24,45 @@ const (
 
 // set statistics:script:@op:@id:realtime:@time @num 一小时过期
 
-// StatisticsRepo 统计平台数据库操作,与脚本统计不同,此处的纬度更丰富,且大多记录在redis中
-type StatisticsRepo interface {
+// ScriptStatisticsRepo 统计平台数据库操作,与脚本统计不同,此处的纬度更丰富,且大多记录在redis中
+type ScriptStatisticsRepo interface {
 	// Save 数据落库
 	//Save(ctx context.Context) error
 
 	// Realtime 获取某操作的实时记录
-	Realtime(ctx context.Context, scriptId int64, op StatisticsType) ([]int64, error)
+	Realtime(ctx context.Context, scriptId int64, op ScriptStatisticsType) ([]int64, error)
 	// DaysUvNum 获取某一段时间某一个操作的uv或者member数量
 	// op: download, update, view
-	DaysUvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error)
+	DaysUvNum(ctx context.Context, scriptId int64, op ScriptStatisticsType, days int, t time.Time) (int64, error)
 	// DaysPvNum 获取某一段时间某一个操作的pv数量
 	// op: download, update, view
-	DaysPvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error)
+	DaysPvNum(ctx context.Context, scriptId int64, op ScriptStatisticsType, days int, t time.Time) (int64, error)
 	// TotalPv 获取某操作的总pv数量
-	TotalPv(ctx context.Context, scriptId int64, op StatisticsType) (int64, error)
+	TotalPv(ctx context.Context, scriptId int64, op ScriptStatisticsType) (int64, error)
 	// IncrDownload 增加下载量,使用ip判断是否重复
 	IncrDownload(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error)
 	IncrUpdate(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error)
 	IncrPageView(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error)
 }
 
-var defaultStatistics StatisticsRepo
+var defaultScriptStatistics ScriptStatisticsRepo
 
-func Statistics() StatisticsRepo {
-	return defaultStatistics
+func ScriptStatistics() ScriptStatisticsRepo {
+	return defaultScriptStatistics
 }
 
-func RegisterStatistics(i StatisticsRepo) {
-	defaultStatistics = i
+func RegisterScriptStatistics(i ScriptStatisticsRepo) {
+	defaultScriptStatistics = i
 }
 
 type scriptStatisticsRepo struct {
 }
 
-func NewStatistics() StatisticsRepo {
+func NewScriptStatistics() ScriptStatisticsRepo {
 	return &scriptStatisticsRepo{}
 }
 
-func (s *scriptStatisticsRepo) Realtime(ctx context.Context, scriptId int64, op StatisticsType) ([]int64, error) {
+func (s *scriptStatisticsRepo) Realtime(ctx context.Context, scriptId int64, op ScriptStatisticsType) ([]int64, error) {
 	var ret []int64
 	t := time.Now().Unix() / 60
 	for i := int64(0); i < 15; i++ {
@@ -72,7 +72,7 @@ func (s *scriptStatisticsRepo) Realtime(ctx context.Context, scriptId int64, op 
 	return ret, nil
 }
 
-func (s *scriptStatisticsRepo) DaysUvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error) {
+func (s *scriptStatisticsRepo) DaysUvNum(ctx context.Context, scriptId int64, op ScriptStatisticsType, days int, t time.Time) (int64, error) {
 	if days == 1 {
 		ret, err := redis.Ctx(ctx).PFCount(fmt.Sprintf(
 			"statistics:script:%s:%d:day:%s:%s", op, scriptId, "uv", t.Format("2006/01/02"))).Result()
@@ -101,12 +101,12 @@ func (s *scriptStatisticsRepo) DaysUvNum(ctx context.Context, scriptId int64, op
 	return ret, nil
 }
 
-func (s *scriptStatisticsRepo) TotalPv(ctx context.Context, scriptId int64, op StatisticsType) (int64, error) {
+func (s *scriptStatisticsRepo) TotalPv(ctx context.Context, scriptId int64, op ScriptStatisticsType) (int64, error) {
 	key := "statistics:script:" + string(op) + ":" + fmt.Sprintf("%d", scriptId) + ":total:pv"
 	return redis.Ctx(ctx).Get(key).Int64()
 }
 
-func (s *scriptStatisticsRepo) DaysPvNum(ctx context.Context, scriptId int64, op StatisticsType, days int, t time.Time) (int64, error) {
+func (s *scriptStatisticsRepo) DaysPvNum(ctx context.Context, scriptId int64, op ScriptStatisticsType, days int, t time.Time) (int64, error) {
 	var num int64
 	key := fmt.Sprintf("statistics:script:%s:%d:day:pv", op, scriptId)
 	for i := 0; i < days; i++ {
@@ -120,18 +120,18 @@ func (s *scriptStatisticsRepo) DaysPvNum(ctx context.Context, scriptId int64, op
 }
 
 func (s *scriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error) {
-	return s.save(ctx, scriptId, ip, statisticsToken, DownloadStatistics)
+	return s.save(ctx, scriptId, ip, statisticsToken, DownloadScriptStatistics)
 }
 
 func (s *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error) {
-	return s.save(ctx, scriptId, ip, statisticsToken, UpdateStatistics)
+	return s.save(ctx, scriptId, ip, statisticsToken, UpdateScriptStatistics)
 }
 
 func (s *scriptStatisticsRepo) IncrPageView(ctx context.Context, scriptId int64, ip string, statisticsToken string) (bool, error) {
-	return s.save(ctx, scriptId, ip, statisticsToken, ViewStatistics)
+	return s.save(ctx, scriptId, ip, statisticsToken, ViewScriptStatistics)
 }
 
-func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, statisticsToken string, op StatisticsType) (bool, error) {
+func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, statisticsToken string, op ScriptStatisticsType) (bool, error) {
 	key := "statistics:script:" + string(op) + ":" + fmt.Sprintf("%d", scriptId)
 	date := time.Now().Format("2006/01/02")
 	// 储存统计token计算uv

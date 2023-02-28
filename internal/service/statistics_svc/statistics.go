@@ -26,6 +26,8 @@ type StatisticsSvc interface {
 	Script(ctx context.Context, req *api.ScriptRequest) (*api.ScriptResponse, error)
 	// ScriptRealtime 脚本实时统计数据
 	ScriptRealtime(ctx context.Context, req *api.ScriptRealtimeRequest) (*api.ScriptRealtimeResponse, error)
+	// Collect 统计数据收集
+	Collect(ctx context.Context, req *api.CollectRequest) (*api.CollectResponse, error)
 }
 
 type statisticsSvc struct {
@@ -62,38 +64,38 @@ func (s *statisticsSvc) Script(ctx context.Context, req *api.ScriptRequest) (*ap
 	}
 	return &api.ScriptResponse{
 		PagePv: &api.Overview{
-			Today:     DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewStatistics, 1, time.Now()),
-			Yesterday: DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewStatistics, 7, time.Now()),
+			Today:     DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now()),
+			Yesterday: DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 7, time.Now()),
 		},
 		PageUv: &api.Overview{
-			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewStatistics, 1, time.Now()),
-			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewStatistics, 7, time.Now()),
+			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now()),
+			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 7, time.Now()),
 		},
 		DownloadUv: &api.Overview{
-			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadStatistics, 1, time.Now()),
-			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadStatistics, 7, time.Now()),
+			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now()),
+			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadScriptStatistics, 7, time.Now()),
 		},
 		UpdateUv: &api.Overview{
-			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateStatistics, 1, time.Now()),
-			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateStatistics, 7, time.Now()),
+			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateScriptStatistics, 1, time.Now()),
+			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateScriptStatistics, 7, time.Now()),
 		},
 		UvChart: &api.DUChart{
-			Download: s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.DownloadStatistics, "uv"),
-			Update:   s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.UpdateStatistics, "uv"),
+			Download: s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.DownloadScriptStatistics, "uv"),
+			Update:   s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.UpdateScriptStatistics, "uv"),
 		},
 		PvChart: &api.DUChart{
-			Download: s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.DownloadStatistics, "pv"),
-			Update:   s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.UpdateStatistics, "pv"),
+			Download: s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.DownloadScriptStatistics, "pv"),
+			Update:   s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.UpdateScriptStatistics, "pv"),
 		},
 	}, nil
 }
 
-func DaysPvNumIgnoreError(ctx context.Context, scriptId int64, op statistics_repo.StatisticsType, days int, t time.Time) int64 {
-	resp, err := statistics_repo.Statistics().DaysPvNum(ctx, scriptId, op, days, t)
+func DaysPvNumIgnoreError(ctx context.Context, scriptId int64, op statistics_repo.ScriptStatisticsType, days int, t time.Time) int64 {
+	resp, err := statistics_repo.ScriptStatistics().DaysPvNum(ctx, scriptId, op, days, t)
 	if err != nil {
 		logger.Ctx(ctx).Error("DaysPvNumIgnoreError", zap.Error(err),
 			zap.Int64("scriptId", scriptId), zap.Int("days", days), zap.Time("t", t))
@@ -101,8 +103,8 @@ func DaysPvNumIgnoreError(ctx context.Context, scriptId int64, op statistics_rep
 	return resp
 }
 
-func DaysUvNumIgnoreError(ctx context.Context, scriptId int64, op statistics_repo.StatisticsType, days int, t time.Time) int64 {
-	resp, err := statistics_repo.Statistics().DaysUvNum(ctx, scriptId, op, days, t)
+func DaysUvNumIgnoreError(ctx context.Context, scriptId int64, op statistics_repo.ScriptStatisticsType, days int, t time.Time) int64 {
+	resp, err := statistics_repo.ScriptStatistics().DaysUvNum(ctx, scriptId, op, days, t)
 	if err != nil {
 		logger.Ctx(ctx).Error("DaysUvNumIgnoreError", zap.Error(err),
 			zap.Int64("scriptId", scriptId), zap.Int("days", days), zap.Time("t", t))
@@ -111,7 +113,7 @@ func DaysUvNumIgnoreError(ctx context.Context, scriptId int64, op statistics_rep
 }
 
 func (s *statisticsSvc) daysData(ctx context.Context, scriptId, days int64, date time.Time,
-	op statistics_repo.StatisticsType, data string) *api.Chart {
+	op statistics_repo.ScriptStatisticsType, data string) *api.Chart {
 	t := date.Add(-time.Hour * 24 * time.Duration(days))
 	var x []string
 	var y []int64
@@ -121,9 +123,9 @@ func (s *statisticsSvc) daysData(ctx context.Context, scriptId, days int64, date
 		var num int64
 		switch data {
 		case "uv":
-			num, _ = statistics_repo.Statistics().DaysUvNum(ctx, scriptId, op, 1, t)
+			num, _ = statistics_repo.ScriptStatistics().DaysUvNum(ctx, scriptId, op, 1, t)
 		case "pv":
-			num, _ = statistics_repo.Statistics().DaysPvNum(ctx, scriptId, op, 1, t)
+			num, _ = statistics_repo.ScriptStatistics().DaysPvNum(ctx, scriptId, op, 1, t)
 		}
 		x = append(x, day)
 		y = append(y, num)
@@ -145,14 +147,14 @@ func (s *statisticsSvc) ScriptRealtime(ctx context.Context, req *api.ScriptRealt
 		return nil, err
 	}
 	return &api.ScriptRealtimeResponse{
-		Download: s.realtime(ctx, script.ID, statistics_repo.DownloadStatistics),
-		Update:   s.realtime(ctx, script.ID, statistics_repo.UpdateStatistics),
+		Download: s.realtime(ctx, script.ID, statistics_repo.DownloadScriptStatistics),
+		Update:   s.realtime(ctx, script.ID, statistics_repo.UpdateScriptStatistics),
 	}, nil
 }
 
-func (s *statisticsSvc) realtime(ctx context.Context, scriptId int64, op statistics_repo.StatisticsType) *api.Chart {
+func (s *statisticsSvc) realtime(ctx context.Context, scriptId int64, op statistics_repo.ScriptStatisticsType) *api.Chart {
 	var nums []int64
-	nums, _ = statistics_repo.Statistics().Realtime(ctx, scriptId, op)
+	nums, _ = statistics_repo.ScriptStatistics().Realtime(ctx, scriptId, op)
 	l := len(nums)
 	var x = make([]string, l)
 	var y = make([]int64, l)
@@ -164,4 +166,24 @@ func (s *statisticsSvc) realtime(ctx context.Context, scriptId int64, op statist
 		X: x,
 		Y: y,
 	}
+}
+
+// Collect 统计数据收集
+func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*api.CollectResponse, error) {
+	if err := producer.PublishStatisticsCollect(ctx, &producer.StatisticsCollectMsg{
+		SessionID:     req.SessionID,
+		ScriptID:      req.ScriptID,
+		VisitorID:     req.VisitorID,
+		OperationPage: req.OperationPage,
+		InstallPage:   req.InstallPage,
+		Duration:      req.Duration,
+		UA:            req.UA,
+		IP:            req.IP,
+		VisitTime:     req.VisitTime,
+		ExitTime:      req.ExitTime,
+		Version:       req.Version,
+	}); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
