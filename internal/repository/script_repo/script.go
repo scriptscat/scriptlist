@@ -134,9 +134,9 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 		find = find.Joins(fmt.Sprintf("left join %s on %s.script_id=%s.id", tabname, tabname, scriptTbName)).
 			Order(tabname + ".score desc,createtime desc")
 	case "updatetime":
-		find = find.Where("updatetime>0").Order("updatetime desc,createtime desc")
+		find = find.Where(scriptTbName + ".updatetime>0").Order(scriptTbName + ".updatetime desc," + scriptTbName + ".createtime desc")
 	default:
-		find = find.Order("createtime desc")
+		find = find.Order(scriptTbName + ".createtime desc")
 	}
 
 	if options.UserID != 0 {
