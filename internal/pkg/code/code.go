@@ -45,3 +45,8 @@ const (
 	ResourceNotImage
 	ResourceNotFound
 )
+
+// statistics
+const (
+	StatisticsLimitExceeded = iota + 104000
+)

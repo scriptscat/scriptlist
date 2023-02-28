@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
-	github.com/codfrm/cago v0.0.0-20230227073729-831f54f79540
+	github.com/codfrm/cago v0.0.0-20230228164152-d619dc7139c5
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
@@ -16,8 +16,6 @@ require (
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/gorm v1.24.1
 )
-
-replace github.com/codfrm/cago => ../../cago
 
 require (
 	github.com/ClickHouse/ch-go v0.48.0 // indirect
@@ -65,7 +63,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
-	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
@@ -107,7 +105,7 @@ require (
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
-	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923 // indirect
+	google.golang.org/genproto v0.0.0-20230227214838-9b19f0bdc514 // indirect
 	google.golang.org/grpc v1.53.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

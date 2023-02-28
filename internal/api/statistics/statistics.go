@@ -62,3 +62,64 @@ type CollectRequest struct {
 
 type CollectResponse struct {
 }
+
+// RealtimeChartRequest 实时统计数据图表
+type RealtimeChartRequest struct {
+	mux.Meta `path:"/statistics/:id/realtime/chart" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type RealtimeChartResponse struct {
+	Chart *Chart `json:"chart"`
+}
+
+// RealtimeRequest 实时统计数据
+type RealtimeRequest struct {
+	mux.Meta `path:"/statistics/:id/realtime" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type RealtimeResponse struct {
+}
+
+// BasicInfoRequest 基本统计信息
+type BasicInfoRequest struct {
+	mux.Meta `path:"/statistics/:id/basic" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type Limit struct {
+	// 限额
+	Quota int64 `json:"quota"`
+	// 用额
+	Usage int64 `json:"usage"`
+}
+
+// PieChart 饼图
+type PieChart struct {
+	Key   string `json:"key"`
+	Value int64  `json:"value"`
+}
+
+type BasicInfoResponse struct {
+	Limit           *Limit    `json:"limit"`
+	PV              *Overview `json:"pv"`
+	UV              *Overview `json:"uv"`
+	UseTime         *Overview `json:"use_time"`
+	NewUser         *Overview `json:"new_user"`
+	OldUser         *Overview `json:"old_user"`
+	Origin          *PieChart `json:"origin"`
+	Version         *PieChart `json:"version"`
+	OperationDomain *PieChart `json:"operation_domain"`
+	System          *PieChart `json:"system"`
+	Browser         *PieChart `json:"browser"`
+}
+
+// UserOriginRequest 用户来源统计
+type UserOriginRequest struct {
+	mux.Meta `path:"/statistics/:id/user/origin" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type UserOriginResponse struct {
+}

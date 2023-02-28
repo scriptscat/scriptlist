@@ -5,11 +5,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
@@ -28,6 +30,14 @@ type StatisticsSvc interface {
 	ScriptRealtime(ctx context.Context, req *api.ScriptRealtimeRequest) (*api.ScriptRealtimeResponse, error)
 	// Collect 统计数据收集
 	Collect(ctx context.Context, req *api.CollectRequest) (*api.CollectResponse, error)
+	// RealtimeChart 实时统计数据图表
+	RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error)
+	// Realtime 实时统计数据
+	Realtime(ctx context.Context, req *api.RealtimeRequest) (*api.RealtimeResponse, error)
+	// BasicInfo 基本统计信息
+	BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error)
+	// UserOrigin 用户来源统计
+	UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error)
 }
 
 type statisticsSvc struct {
@@ -170,6 +180,14 @@ func (s *statisticsSvc) realtime(ctx context.Context, scriptId int64, op statist
 
 // Collect 统计数据收集
 func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*api.CollectResponse, error) {
+	// 判断本月是否超过限制
+	ok, err := statistics_repo.StatisticsCollect().CheckLimit(ctx, req.ScriptID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
+	}
 	if err := producer.PublishStatisticsCollect(ctx, &producer.StatisticsCollectMsg{
 		SessionID:     req.SessionID,
 		ScriptID:      req.ScriptID,
@@ -185,5 +203,25 @@ func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*
 	}); err != nil {
 		return nil, err
 	}
+	return nil, nil
+}
+
+// RealtimeChart 实时统计数据图表
+func (s *statisticsSvc) RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error) {
+	return nil, nil
+}
+
+// Realtime 实时统计数据
+func (s *statisticsSvc) Realtime(ctx context.Context, req *api.RealtimeRequest) (*api.RealtimeResponse, error) {
+	return nil, nil
+}
+
+// BasicInfo 基本统计信息
+func (s *statisticsSvc) BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error) {
+	return nil, nil
+}
+
+// UserOrigin 用户来源统计
+func (s *statisticsSvc) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
 	return nil, nil
 }

@@ -974,6 +974,31 @@ definitions:
     - 1
     - 2
     type: integer
+  statistics.BasicInfoResponse:
+    properties:
+      browser:
+        $ref: '#/definitions/statistics.PieChart'
+      limit:
+        $ref: '#/definitions/statistics.Limit'
+      new_user:
+        $ref: '#/definitions/statistics.Overview'
+      old_user:
+        $ref: '#/definitions/statistics.Overview'
+      operation_domain:
+        $ref: '#/definitions/statistics.PieChart'
+      origin:
+        $ref: '#/definitions/statistics.PieChart'
+      pv:
+        $ref: '#/definitions/statistics.Overview'
+      system:
+        $ref: '#/definitions/statistics.PieChart'
+      use_time:
+        $ref: '#/definitions/statistics.Overview'
+      uv:
+        $ref: '#/definitions/statistics.Overview'
+      version:
+        $ref: '#/definitions/statistics.PieChart'
+    type: object
   statistics.Chart:
     properties:
       x:
@@ -1028,6 +1053,15 @@ definitions:
       update:
         $ref: '#/definitions/statistics.Chart'
     type: object
+  statistics.Limit:
+    properties:
+      quota:
+        description: 限额
+        type: integer
+      usage:
+        description: 用额
+        type: integer
+    type: object
   statistics.Overview:
     properties:
       today:
@@ -1036,6 +1070,20 @@ definitions:
         type: integer
       yesterday:
         type: integer
+    type: object
+  statistics.PieChart:
+    properties:
+      key:
+        type: string
+      value:
+        type: integer
+    type: object
+  statistics.RealtimeChartResponse:
+    properties:
+      chart:
+        $ref: '#/definitions/statistics.Chart'
+    type: object
+  statistics.RealtimeResponse:
     type: object
   statistics.ScriptRealtimeResponse:
     properties:
@@ -1058,6 +1106,8 @@ definitions:
         $ref: '#/definitions/statistics.Overview'
       uv_chart:
         $ref: '#/definitions/statistics.DUChart'
+    type: object
+  statistics.UserOriginResponse:
     type: object
   user.CurrentUserResponse:
     properties:
@@ -2444,6 +2494,126 @@ paths:
       summary: 全量迁移数据到es
       tags:
       - script
+  /statistics/{id}/basic:
+    get:
+      consumes:
+      - application/json
+      description: 基本统计信息
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.BasicInfoResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 基本统计信息
+      tags:
+      - statistics
+  /statistics/{id}/realtime:
+    get:
+      consumes:
+      - application/json
+      description: 实时统计数据
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.RealtimeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 实时统计数据
+      tags:
+      - statistics
+  /statistics/{id}/realtime/chart:
+    get:
+      consumes:
+      - application/json
+      description: 实时统计数据图表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.RealtimeChartResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 实时统计数据图表
+      tags:
+      - statistics
+  /statistics/{id}/user/origin:
+    get:
+      consumes:
+      - application/json
+      description: 用户来源统计
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.UserOriginResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 用户来源统计
+      tags:
+      - statistics
   /statistics/collect:
     post:
       consumes:

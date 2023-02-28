@@ -35,3 +35,23 @@ func (s *Statistics) Collect(ctx *gin.Context, req *api.CollectRequest) (*api.Co
 	req.IP = ctx.ClientIP()
 	return statistics_svc.Statistics().Collect(ctx.Request.Context(), req)
 }
+
+// RealtimeChart 实时统计数据图表
+func (s *Statistics) RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error) {
+	return statistics_svc.Statistics().RealtimeChart(ctx, req)
+}
+
+// Realtime 实时统计数据
+func (s *Statistics) Realtime(ctx context.Context, req *api.RealtimeRequest) (*api.RealtimeResponse, error) {
+	return statistics_svc.Statistics().Realtime(ctx, req)
+}
+
+// BasicInfo 基本统计信息
+func (s *Statistics) BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error) {
+	return statistics_svc.Statistics().BasicInfo(ctx, req)
+}
+
+// UserOrigin 用户来源统计
+func (s *Statistics) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
+	return statistics_svc.Statistics().UserOrigin(ctx, req)
+}

@@ -40,4 +40,6 @@ var zhCN = map[int]string{
 	ResourceImageTooLarge: "图片过大,不能超过1M",
 	ResourceNotImage:      "不是图片",
 	ResourceNotFound:      "资源不存在",
+
+	StatisticsLimitExceeded: "统计数据超过限制",
 }
