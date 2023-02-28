@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/codfrm/cago v0.0.0-20230227073729-831f54f79540
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1

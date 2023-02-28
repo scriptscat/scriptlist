@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-contrib/cors"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
@@ -142,6 +143,11 @@ func Router(root *mux.Router) error {
 			controller.ScriptRealtime,
 		)
 		r.Group("/").Bind(
+			controller.Collect,
+		)
+		corsFunc := cors.Default()
+		r.OPTIONS("/statistics/collect", corsFunc)
+		r.Group("/", corsFunc).Bind(
 			controller.Collect,
 		)
 	}
