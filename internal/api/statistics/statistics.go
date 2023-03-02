@@ -47,15 +47,16 @@ type ScriptRealtimeResponse struct {
 // CollectRequest 统计数据收集
 type CollectRequest struct {
 	mux.Meta      `path:"/statistics/collect" method:"POST"`
-	SessionID     string `json:"session_id" binding:"required"`     // 会话id,随机生成
-	ScriptID      int64  `json:"script_id" binding:"required"`      // 脚本id
-	VisitorID     string `json:"visitor_id" binding:"required"`     // 访客id
-	OperationPage string `json:"operation_page" binding:"required"` // 操作页面
-	InstallPage   string `json:"install_page" binding:"required"`   // 安装页面
-	Version       string `json:"version" binding:"required"`        // 版本
-	VisitTime     int64  `json:"visit_time" binding:"required"`     // 访问时间
+	SessionID     string `json:"session_id" binding:"required"`     // 当前会话id,随机生成一串字符,可以是uuid
+	ScriptID      int64  `json:"script_id" binding:"required"`      // 脚本id,在初始化脚本时设置(例如new ScriptStatistics(1))
+	VisitorID     string `json:"visitor_id" binding:"required"`     // 访客id,从浏览器指纹或者GM_value中获取
+	OperationPage string `json:"operation_page" binding:"required"` // 操作页面,当前页面的链接
+	InstallPage   string `json:"install_page" binding:"required"`   // 安装页面,从GM_info中提取
+	Version       string `json:"version" binding:"required"`        // 版本,从GM_info中提取
+	VisitTime     int64  `json:"visit_time" binding:"required"`     // 访问时间,脚本执行的时间,unix时间戳(10位)
 	Duration      int32  `json:"duration"`                          // 停留时长(秒)
 	ExitTime      int64  `json:"exit_time"`                         // 退出时间
+	Iframe        bool   `json:"iframe"`                            // 是否在iframe中运行
 	UA            string
 	IP            string
 }
