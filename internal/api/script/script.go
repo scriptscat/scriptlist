@@ -82,7 +82,7 @@ type CreateRequest struct {
 	Description string                      `form:"description" binding:"max=10240" label:"库的描述"`
 	Definition  string                      `form:"definition" binding:"max=10240" label:"库的定义文件"`
 	Version     string                      `form:"version" binding:"max=32" label:"库的版本"`
-	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
+	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"` // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
 	Public      script_entity.Public        `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
 	Unwell      script_entity.UnwellContent `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"` // 不适内容: 1 不适 2 适用
 	Changelog   string                      `form:"changelog" binding:"max=102400" label:"更新日志"`

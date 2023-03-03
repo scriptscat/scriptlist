@@ -346,6 +346,8 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 				Createtime: time.Now().Unix(),
 			}
 		}
+		script.Updatetime = time.Now().Unix()
+		scriptCode.Createtime = time.Now().Unix()
 	} else {
 		metaJson, err := scriptCode.UpdateCode(ctx, req.Code)
 		if err != nil {

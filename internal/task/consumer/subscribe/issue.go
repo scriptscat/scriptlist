@@ -34,6 +34,14 @@ func (s *Issue) issueCreate(ctx context.Context, script *script_entity.Script, i
 		logger.Ctx(ctx).Error("获取关注列表错误", zap.Int64("issue_id", issue.ID), zap.Error(err))
 		return nil
 	}
+	// 评论者关注
+	if _, err := issue_svc.Issue().Watch(ctx, issue.UserID, &issue2.WatchRequest{
+		ScriptID: issue.ScriptID,
+		IssueID:  issue.ID,
+		Watch:    true,
+	}); err != nil {
+		return err
+	}
 	uids := make([]int64, 0)
 	for _, v := range list {
 		if v.Level == script_entity.ScriptWatchLevelIssueComment {
