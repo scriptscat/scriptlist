@@ -142,7 +142,9 @@ func Router(root *mux.Router) error {
 			controller.Script,
 			controller.ScriptRealtime,
 		)
-		r.Group("/", cors.Default()).Bind(
+		rg := r.Group("/", cors.Default())
+		rg.OPTIONS("/statistics/collect")
+		rg.Bind(
 			controller.Collect,
 		)
 	}
