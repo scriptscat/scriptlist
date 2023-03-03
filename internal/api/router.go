@@ -58,7 +58,6 @@ func Router(root *mux.Router) error {
 			scriptCtr.Watch,
 			scriptCtr.GetSetting,
 			scriptCtr.UpdateSetting,
-			scriptCtr.Archive,
 		)
 		// 慢慢迁移至中间件处理
 		r.Group("/", auth.Middleware(true), scriptCtr.Middleware()).Bind(
@@ -67,6 +66,7 @@ func Router(root *mux.Router) error {
 			scriptCtr.UpdateScriptPublic,
 			scriptCtr.UpdateScriptUnwell,
 			scriptCtr.UpdateScriptGray,
+			scriptCtr.Archive,
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))
