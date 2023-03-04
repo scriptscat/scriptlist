@@ -14,11 +14,13 @@ type StatisticsCollect struct {
 
 // StatisticsVisitor 访客统计
 type StatisticsVisitor struct {
-	ScriptID    int64  `gorm:"column:script_id;type:bigint(20);not null;comment:脚本id"`
-	VisitorID   string `gorm:"column:visitor_id;type:varchar(128);not null;comment:访客id"`
-	UA          string `gorm:"column:ua;type:string;not null"`
-	IP          string `gorm:"column:ip;type:varchar(128);not null"`
-	Version     string `gorm:"column:version;type:varchar(128);not null;comment:版本"`
-	InstallPage string `gorm:"column:install_page;type:string;not null;comment:安装页面"`
-	InstallHost string `gorm:"column:install_host;type:string;not null;comment:安装域名"`
+	ScriptID       int64  `gorm:"column:script_id;type:bigint(20);not null;comment:脚本id"`
+	VisitorID      string `gorm:"column:visitor_id;type:varchar(128);not null;comment:访客id"`
+	UA             string `gorm:"column:ua;type:string;not null"`
+	IP             string `gorm:"column:ip;type:varchar(128);not null"`
+	Version        string `gorm:"column:version;type:varchar(128);not null;comment:版本"`
+	InstallPage    string `gorm:"column:install_page;type:string;not null;comment:安装页面"`
+	InstallHost    string `gorm:"column:install_host;type:string;not null;comment:安装域名"`
+	VisitTime      int64  `gorm:"column:visit_time;type:bigint(20);not null;comment:访问时间"`
+	FirstVisitTime int64  `gorm:"column:first_visit_time;type:bigint(20);not null;comment:首次访问时间"`
 }

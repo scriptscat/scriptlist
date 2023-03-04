@@ -74,7 +74,6 @@ func Router(root *mux.Router) error {
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))
 		root.GET("/scripts/pre/:id/*name", auth.Middleware(false), scriptCtr.Download(true))
 		root.GET("/lib/:id/:version/*name", auth.Middleware(false), scriptCtr.DownloadLib())
-
 		// 无需用户登录的路由组
 		r.Group("/").Bind(
 			scriptCtr.List,
@@ -139,9 +138,14 @@ func Router(root *mux.Router) error {
 	// 统计
 	{
 		controller := statistics_ctr.NewStatistics()
-		r.Group("/", auth.Middleware(true)).Bind(
+		r.Group("/", auth.Middleware(true), controller.Middleware()).Bind(
 			controller.Script,
 			controller.ScriptRealtime,
+
+			controller.BasicInfo,
+			controller.UserOrigin,
+			controller.RealtimeChart,
+			controller.Realtime,
 		)
 		rg := r.Group("/", cors.Default())
 		rg.OPTIONS("/statistics/collect")

@@ -55,3 +55,7 @@ func (s *Statistics) BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (
 func (s *Statistics) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
 	return statistics_svc.Statistics().UserOrigin(ctx, req)
 }
+
+func (s *Statistics) Middleware() gin.HandlerFunc {
+	return statistics_svc.Statistics().Middleware()
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model"
@@ -38,6 +39,8 @@ type StatisticsSvc interface {
 	BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error)
 	// UserOrigin 用户来源统计
 	UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error)
+	// Middleware 中间件
+	Middleware() gin.HandlerFunc
 }
 
 type statisticsSvc struct {
@@ -62,44 +65,54 @@ func (s *statisticsSvc) GetStatisticsToken(ctx *gin.Context) string {
 	return stk
 }
 
+func (s *statisticsSvc) Middleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.Set("statistics_token", s.GetStatisticsToken(ctx))
+		ctx.Next()
+		id := ctx.GetInt64("id")
+		script, err := script_repo.Script().Find(ctx, id)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		// 统计允许管理员查看
+		if err := script.CheckPermission(ctx, model.Admin); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+	}
+}
+
 // Script 脚本统计数据
 func (s *statisticsSvc) Script(ctx context.Context, req *api.ScriptRequest) (*api.ScriptResponse, error) {
-	script, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	// 统计允许管理员查看
-	if err := script.CheckPermission(ctx, model.Admin); err != nil {
-		return nil, err
-	}
 	return &api.ScriptResponse{
 		PagePv: &api.Overview{
-			Today:     DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now()),
-			Yesterday: DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysPvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 7, time.Now()),
+			Today:     DaysPvNumIgnoreError(ctx, req.ID, statistics_repo.ViewScriptStatistics, 1, time.Now()),
+			Yesterday: DaysPvNumIgnoreError(ctx, req.ID, statistics_repo.ViewScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysPvNumIgnoreError(ctx, req.ID, statistics_repo.ViewScriptStatistics, 7, time.Now()),
 		},
 		PageUv: &api.Overview{
-			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now()),
-			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.ViewScriptStatistics, 7, time.Now()),
+			Today:     DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.ViewScriptStatistics, 1, time.Now()),
+			Yesterday: DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.ViewScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.ViewScriptStatistics, 7, time.Now()),
 		},
 		DownloadUv: &api.Overview{
-			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now()),
-			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.DownloadScriptStatistics, 7, time.Now()),
+			Today:     DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now()),
+			Yesterday: DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.DownloadScriptStatistics, 7, time.Now()),
 		},
 		UpdateUv: &api.Overview{
-			Today:     DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateScriptStatistics, 1, time.Now()),
-			Yesterday: DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
-			Week:      DaysUvNumIgnoreError(ctx, script.ID, statistics_repo.UpdateScriptStatistics, 7, time.Now()),
+			Today:     DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.UpdateScriptStatistics, 1, time.Now()),
+			Yesterday: DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.UpdateScriptStatistics, 1, time.Now().AddDate(0, 0, -1)),
+			Week:      DaysUvNumIgnoreError(ctx, req.ID, statistics_repo.UpdateScriptStatistics, 7, time.Now()),
 		},
 		UvChart: &api.DUChart{
-			Download: s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.DownloadScriptStatistics, "uv"),
-			Update:   s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.UpdateScriptStatistics, "uv"),
+			Download: s.daysData(ctx, req.ID, 30, time.Now(), statistics_repo.DownloadScriptStatistics, "uv"),
+			Update:   s.daysData(ctx, req.ID, 30, time.Now(), statistics_repo.UpdateScriptStatistics, "uv"),
 		},
 		PvChart: &api.DUChart{
-			Download: s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.DownloadScriptStatistics, "pv"),
-			Update:   s.daysData(ctx, script.ID, 30, time.Now(), statistics_repo.UpdateScriptStatistics, "pv"),
+			Download: s.daysData(ctx, req.ID, 30, time.Now(), statistics_repo.DownloadScriptStatistics, "pv"),
+			Update:   s.daysData(ctx, req.ID, 30, time.Now(), statistics_repo.UpdateScriptStatistics, "pv"),
 		},
 	}, nil
 }
@@ -148,17 +161,9 @@ func (s *statisticsSvc) daysData(ctx context.Context, scriptId, days int64, date
 
 // ScriptRealtime 脚本实时统计数据
 func (s *statisticsSvc) ScriptRealtime(ctx context.Context, req *api.ScriptRealtimeRequest) (*api.ScriptRealtimeResponse, error) {
-	script, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	// 统计允许管理员查看
-	if err := script.CheckPermission(ctx, model.Admin); err != nil {
-		return nil, err
-	}
 	return &api.ScriptRealtimeResponse{
-		Download: s.realtime(ctx, script.ID, statistics_repo.DownloadScriptStatistics),
-		Update:   s.realtime(ctx, script.ID, statistics_repo.UpdateScriptStatistics),
+		Download: s.realtime(ctx, req.ID, statistics_repo.DownloadScriptStatistics),
+		Update:   s.realtime(ctx, req.ID, statistics_repo.UpdateScriptStatistics),
 	}, nil
 }
 
@@ -208,7 +213,32 @@ func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*
 
 // RealtimeChart 实时统计数据图表
 func (s *statisticsSvc) RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error) {
-	return nil, nil
+	now := time.Now()
+	list, err := statistics_repo.StatisticsCollect().RealtimeChart(ctx, req.ID, now)
+	if err != nil {
+		return nil, err
+	}
+	chart := &api.Chart{
+		X: make([]string, 0),
+		Y: make([]int64, 0),
+	}
+	listHash := make(map[int]int64)
+	for _, v := range list {
+		listHash[v.Time] = v.Num
+	}
+	for i := 0; i < 15; i++ {
+		num, ok := listHash[now.Minute()]
+		chart.X = append(chart.X, strconv.Itoa(i+1)+"分钟前")
+		if ok {
+			chart.Y = append(chart.Y, num)
+		} else {
+			chart.Y = append(chart.Y, 0)
+		}
+		now = now.Add(-time.Minute)
+	}
+	return &api.RealtimeChartResponse{
+		Chart: chart,
+	}, nil
 }
 
 // Realtime 实时统计数据
@@ -218,7 +248,89 @@ func (s *statisticsSvc) Realtime(ctx context.Context, req *api.RealtimeRequest) 
 
 // BasicInfo 基本统计信息
 func (s *statisticsSvc) BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error) {
-	return nil, nil
+	var quota int64 = 1000000
+	usage, err := statistics_repo.StatisticsCollect().GetLimit(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if usage > quota {
+		usage = quota
+	}
+	now := time.Now()
+	uv := &api.Overview{
+		Today:     s.IgnoreErrorCollectUv(ctx, req.ID, now.Add(-time.Hour*24), now),
+		Yesterday: s.IgnoreErrorCollectUv(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+		Week:      s.IgnoreErrorCollectUv(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+	}
+	newUser := &api.Overview{
+		Today:     s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*24), now),
+		Yesterday: s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+		Week:      s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+	}
+	return &api.BasicInfoResponse{
+		Limit: &api.Limit{
+			Quota: quota,
+			Usage: usage,
+		},
+		PV: &api.Overview{
+			Today:     s.IgnoreErrorCollectPv(ctx, req.ID, now.Add(-time.Hour*24), now),
+			Yesterday: s.IgnoreErrorCollectPv(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+			Week:      s.IgnoreErrorCollectPv(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+		},
+		UV: uv,
+		UseTime: &api.Overview{
+			Today:     s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*24), now),
+			Yesterday: s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+			Week:      s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+		},
+		NewUser: newUser,
+		OldUser: &api.Overview{
+			Today:     uv.Today - newUser.Today,
+			Yesterday: uv.Yesterday - newUser.Yesterday,
+			Week:      uv.Week - newUser.Week,
+		},
+		Origin:          nil,
+		Version:         nil,
+		OperationDomain: nil,
+		System:          nil,
+		Browser:         nil,
+	}, nil
+}
+
+func (s *statisticsSvc) IgnoreErrorFirstUserNumber(ctx context.Context, id int64, start, end time.Time) int64 {
+	newNum, err := statistics_repo.StatisticsVisitor().FirstUserNumber(ctx, id, start, end)
+	if err != nil {
+		logger.Ctx(ctx).Error("statistics_repo.StatisticsVisitor().FirstUserNumber", zap.Error(err))
+		return 0
+	}
+	return newNum
+}
+
+func (s *statisticsSvc) IgnoreErrorCollectPv(ctx context.Context, id int64, start time.Time, end time.Time) int64 {
+	num, err := statistics_repo.StatisticsCollect().Pv(ctx, id, start, end)
+	if err != nil {
+		logger.Ctx(ctx).Error("statistics_repo.StatisticsCollect().Pv", zap.Error(err))
+		return 0
+	}
+	return num
+}
+
+func (s *statisticsSvc) IgnoreErrorCollectUv(ctx context.Context, id int64, start time.Time, end time.Time) int64 {
+	num, err := statistics_repo.StatisticsCollect().Uv(ctx, id, start, end)
+	if err != nil {
+		logger.Ctx(ctx).Error("statistics_repo.StatisticsCollect().Uv", zap.Error(err))
+		return 0
+	}
+	return num
+}
+
+func (s *statisticsSvc) IgnoreErrorUseTimeAvg(ctx context.Context, id int64, start time.Time, end time.Time) int64 {
+	num, err := statistics_repo.StatisticsCollect().UseTimeAvg(ctx, id, start, end)
+	if err != nil {
+		logger.Ctx(ctx).Error("statistics_repo.StatisticsCollect().UseTime", zap.Error(err))
+		return 0
+	}
+	return num
 }
 
 // UserOrigin 用户来源统计

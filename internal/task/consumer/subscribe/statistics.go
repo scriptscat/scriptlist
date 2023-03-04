@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
@@ -98,14 +99,29 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	if err := statistics_repo.StatisticsCollect().Create(ctx, collect); err != nil {
 		logger.Ctx(ctx).Error("统计收集失败", zap.Error(err), zap.Any("msg", msg))
 	}
+	// 记录第一次访问时间
+	key := fmt.Sprintf("statistics:visitor:%s", vistitorId)
+	firstVisitTime, err := redis.Ctx(ctx).Get(key).Int64()
+	if err != nil {
+		firstVisitTime = msg.VisitTime
+		if !redis.Nil(err) {
+			logger.Ctx(ctx).Error("获取访客第一次访问时间失败", zap.Error(err), zap.Any("msg", msg))
+		} else {
+			if err := redis.Ctx(ctx).Set(key, firstVisitTime, 0).Err(); err != nil {
+				logger.Ctx(ctx).Error("设置访客第一次访问时间失败", zap.Error(err), zap.Any("msg", msg))
+			}
+		}
+	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, &statistics_entity.StatisticsVisitor{
-		ScriptID:    msg.ScriptID,
-		VisitorID:   vistitorId,
-		UA:          msg.UA,
-		IP:          msg.IP,
-		Version:     msg.Version,
-		InstallPage: msg.InstallPage,
-		InstallHost: installUrl.Host,
+		ScriptID:       msg.ScriptID,
+		VisitorID:      vistitorId,
+		UA:             msg.UA,
+		IP:             msg.IP,
+		Version:        msg.Version,
+		InstallPage:    msg.InstallPage,
+		FirstVisitTime: firstVisitTime,
+		VisitTime:      msg.VisitTime,
+		InstallHost:    installUrl.Host,
 	}); err != nil {
 		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg))
 	}
