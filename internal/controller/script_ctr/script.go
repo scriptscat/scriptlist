@@ -336,8 +336,14 @@ func (s *Script) DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*a
 
 // Webhook 处理webhook请求
 func (s *Script) Webhook(ctx *gin.Context) {
+	suid := ctx.Param("uid")
+	uid, err := strconv.ParseInt(suid, 10, 64)
+	if err != nil {
+		httputils.HandleResp(ctx, err)
+		return
+	}
 	req := &api.WebhookRequest{
-		UID:              ctx.GetInt64("uid"),
+		UID:              uid,
 		UA:               ctx.GetHeader("User-Agent"),
 		XHubSignature256: ctx.GetHeader("X-Hub-Signature-256"),
 	}
