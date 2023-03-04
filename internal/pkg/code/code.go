@@ -27,6 +27,7 @@ const (
 	ScriptScoreDeleted
 	ScriptScoreNotFound
 	ScriptChangePreReleaseNotLatest
+	ScriptMustHaveVersion
 )
 
 // issue

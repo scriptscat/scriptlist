@@ -124,6 +124,16 @@ type UpdateCodeRequest struct {
 type UpdateCodeResponse struct {
 }
 
+// DeleteCodeRequest 删除脚本/库代码
+type DeleteCodeRequest struct {
+	mux.Meta `path:"/scripts/:id/code/:codeId" method:"DELETE"`
+	ID       int64 `uri:"id" binding:"required"`
+	CodeID   int64 `uri:"codeId" binding:"required"`
+}
+
+type DeleteCodeResponse struct {
+}
+
 // MigrateEsRequest 全量迁移数据到es
 type MigrateEsRequest struct {
 	mux.Meta `path:"/scripts/migrate/es" method:"POST"`

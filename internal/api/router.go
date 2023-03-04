@@ -67,6 +67,7 @@ func Router(root *mux.Router) error {
 			scriptCtr.UpdateScriptPublic,
 			scriptCtr.UpdateScriptUnwell,
 			scriptCtr.UpdateScriptGray,
+			scriptCtr.DeleteCode,
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))

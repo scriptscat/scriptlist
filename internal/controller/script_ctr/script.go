@@ -327,3 +327,8 @@ func (s *Script) UpdateScriptUnwell(ctx context.Context, req *api.UpdateScriptUn
 func (s *Script) UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGrayRequest) (*api.UpdateScriptGrayResponse, error) {
 	return script_svc.Script().UpdateScriptGray(ctx, req)
 }
+
+// DeleteCode 删除脚本/库代码
+func (s *Script) DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*api.DeleteCodeResponse, error) {
+	return script_svc.Script().DeleteCode(ctx, req)
+}
