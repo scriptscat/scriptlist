@@ -3,6 +3,7 @@ package script_ctr
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -331,4 +332,31 @@ func (s *Script) UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGray
 // DeleteCode 删除脚本/库代码
 func (s *Script) DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*api.DeleteCodeResponse, error) {
 	return script_svc.Script().DeleteCode(ctx, req)
+}
+
+// Webhook 处理webhook请求
+func (s *Script) Webhook(ctx *gin.Context) {
+	suid := ctx.Param("uid")
+	uid, err := strconv.ParseInt(suid, 10, 64)
+	if err != nil {
+		httputils.HandleResp(ctx, err)
+		return
+	}
+	req := &api.WebhookRequest{
+		UID:              uid,
+		UA:               ctx.GetHeader("User-Agent"),
+		XHubSignature256: ctx.GetHeader("X-Hub-Signature-256"),
+	}
+	body, err := io.ReadAll(ctx.Request.Body)
+	if err != nil {
+		httputils.HandleResp(ctx, err)
+		return
+	}
+	defer ctx.Request.Body.Close()
+	resp, err := script_svc.Script().Webhook(ctx, req, body)
+	if err != nil {
+		httputils.HandleResp(ctx, err)
+	} else {
+		httputils.HandleResp(ctx, resp)
+	}
 }

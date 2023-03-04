@@ -37,6 +37,7 @@ type ScriptRepo interface {
 	Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error)
 	// FindSyncScript 查找需要自动同步的脚本
 	FindSyncScript(ctx context.Context, page httputils.PageRequest) ([]*entity.Script, error)
+	FindSyncPrefix(ctx context.Context, uid int64, prefix string) ([]*entity.Script, error)
 }
 
 var defaultScript ScriptRepo
@@ -251,6 +252,17 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 func (u *scriptRepo) FindSyncScript(ctx context.Context, page httputils.PageRequest) ([]*entity.Script, error) {
 	var list []*entity.Script
 	if err := db.Ctx(ctx).Where("sync_mode=? and status=? and sync_url<>''", entity.SyncModeAuto, consts.ACTIVE).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (u *scriptRepo) FindSyncPrefix(ctx context.Context, uid int64, prefix string) ([]*entity.Script, error) {
+	var list []*entity.Script
+	if err := db.Ctx(ctx).Where(
+		"user_id=? and sync_mode=? and status=? and sync_url like ?",
+		uid, entity.SyncModeAuto, consts.ACTIVE, prefix+"%",
+	).Find(&list).Error; err != nil {
 		return nil, err
 	}
 	return list, nil

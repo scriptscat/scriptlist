@@ -28,6 +28,9 @@ const (
 	ScriptScoreNotFound
 	ScriptChangePreReleaseNotLatest
 	ScriptMustHaveVersion
+
+	WebhookSecretError
+	WebhookRepositoryNotFound
 )
 
 // issue
