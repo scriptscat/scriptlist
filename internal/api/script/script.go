@@ -298,3 +298,14 @@ type UpdateScriptGrayRequest struct {
 
 type UpdateScriptGrayResponse struct {
 }
+
+// WebhookRequest 处理webhook请求
+type WebhookRequest struct {
+	mux.Meta         `path:"/webhook/:uid" method:"POST"`
+	UID              int64  `uri:"uid" binding:"required"`
+	UA               string `header:"User-Agent" binding:"required"`
+	XHubSignature256 string `header:"X-Hub-Signature-256" binding:"required"`
+}
+
+type WebhookResponse struct {
+}

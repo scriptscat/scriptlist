@@ -82,6 +82,7 @@ func Router(root *mux.Router) error {
 			scriptCtr.VersionList,
 			scriptCtr.VersionCode,
 		)
+		r.Any("/webhook/:uid", scriptCtr.Webhook)
 		// 半登录
 		r.Group("/", auth.Middleware(false)).Bind(
 			scriptCtr.State,

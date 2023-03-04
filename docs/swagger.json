@@ -2477,6 +2477,60 @@
                     }
                 }
             }
+        },
+        "/webhook/{uid}": {
+            "post": {
+                "description": "处理webhook请求",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "处理webhook请求",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.WebhookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.WebhookResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3803,6 +3857,17 @@
             }
         },
         "script.WatchResponse": {
+            "type": "object"
+        },
+        "script.WebhookRequest": {
+            "type": "object",
+            "properties": {
+                "uid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.WebhookResponse": {
             "type": "object"
         },
         "script_entity.Control": {

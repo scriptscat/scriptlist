@@ -16,6 +16,10 @@ require (
 	gorm.io/gorm v1.24.1
 )
 
+replace (
+	github.com/codfrm/cago => ../../cago
+)
+
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef // indirect

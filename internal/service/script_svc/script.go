@@ -2,8 +2,11 @@ package script_svc
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -83,6 +86,8 @@ type ScriptSvc interface {
 	UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGrayRequest) (*api.UpdateScriptGrayResponse, error)
 	// DeleteCode 删除脚本/库代码
 	DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*api.DeleteCodeResponse, error)
+	// Webhook 处理webhook请求
+	Webhook(ctx context.Context, req *api.WebhookRequest, body []byte) (*api.WebhookResponse, error)
 }
 
 type scriptSvc struct {
@@ -961,4 +966,57 @@ func (s *scriptSvc) DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) 
 		return nil, err
 	}
 	return nil, nil
+}
+
+type githubWebhook struct {
+	Hook struct {
+		Type string `json:"type"`
+	} `json:"hook"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
+}
+
+// Webhook 处理webhook请求
+func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body []byte) (*api.WebhookResponse, error) {
+	config, err := user_repo.UserConfig().FindByUserID(ctx, req.UID)
+	if err != nil {
+		return nil, err
+	}
+	if strings.Index(req.UA, "GitHub") != -1 {
+		logger.Ctx(ctx).Info("收到github webhook请求", zap.Any("req", req))
+		hash := hmac.New(sha256.New, []byte(config.Token))
+		if _, err := hash.Write(body); err != nil {
+			return nil, err
+		}
+		if fmt.Sprintf("sha256=%x", hash.Sum(nil)) != req.XHubSignature256 {
+			return nil, i18n.NewError(ctx, code.WebhookSecretError)
+		}
+		// 处理github
+		data := &githubWebhook{}
+		if err := json.Unmarshal(body, data); err != nil {
+			return nil, err
+		}
+		if data.Repository.FullName == "" {
+			return nil, i18n.NewError(ctx, code.WebhookRepositoryNotFound)
+		}
+		list, err := script_repo.Script().FindSyncPrefix(ctx, req.UID, "https://raw.githubusercontent.com/"+data.Repository.FullName)
+		if err != nil {
+			return nil, err
+		}
+		listtmp, err := script_repo.Script().FindSyncPrefix(ctx, req.UID, "https://github.com/"+data.Repository.FullName)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, listtmp...)
+		for _, v := range list {
+			if err := s.SyncOnce(ctx, v); err != nil {
+				logger.Ctx(ctx).Error("同步脚本失败", zap.Error(err))
+			} else {
+				logger.Ctx(ctx).Info("同步脚本成功", zap.Int64("id", v.ID))
+			}
+		}
+		return &api.WebhookResponse{}, nil
+	}
+	return nil, err
 }

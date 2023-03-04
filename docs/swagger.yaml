@@ -887,6 +887,13 @@ definitions:
     type: object
   script.WatchResponse:
     type: object
+  script.WebhookRequest:
+    properties:
+      uid:
+        type: integer
+    type: object
+  script.WebhookResponse:
+    type: object
   script_entity.Control:
     properties:
       params:
@@ -2720,4 +2727,38 @@ paths:
       summary: 刷新webhook配置
       tags:
       - user
+  /webhook/{uid}:
+    post:
+      consumes:
+      - application/json
+      description: 处理webhook请求
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.WebhookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.WebhookResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 处理webhook请求
+      tags:
+      - script
 swagger: "2.0"
