@@ -979,11 +979,8 @@ type githubWebhook struct {
 
 // Webhook 处理webhook请求
 func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body []byte) (*api.WebhookResponse, error) {
-	user, err := user_repo.User().Find(ctx, req.UID)
+	ctx, err := auth_svc.Auth().SetCtx(ctx, req.UID)
 	if err != nil {
-		return nil, err
-	}
-	if err := user.IsBanned(ctx); err != nil {
 		return nil, err
 	}
 	config, err := user_repo.UserConfig().FindByUserID(ctx, req.UID)

@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/auth"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/pkg/oauth"
 	"go.opentelemetry.io/otel/attribute"
@@ -42,8 +43,6 @@ type AuthSvc interface {
 	GetLoginToken(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
 	// SetCtx 设置用户信息到上下文
 	SetCtx(ctx context.Context, uid int64) (context.Context, error)
-	// SetCtxUid 设置用户uid信息到上下文
-	SetCtxUid(ctx context.Context, uid int64) context.Context
 }
 
 type authSvc struct {
@@ -138,6 +137,11 @@ func (a *authSvc) SetCtx(ctx context.Context, uid int64) (context.Context, error
 	if err := user.IsBanned(ctx); err != nil {
 		return nil, err
 	}
+	return a.SetCtxUser(ctx, user), nil
+}
+
+// SetCtxUser 设置用户信息到上下文
+func (a *authSvc) SetCtxUser(ctx context.Context, user *user_entity.User) context.Context {
 	// 设置用户信息,链路追踪和日志也添加上用户信息
 	authInfo := &model.AuthInfo{
 		UID:           user.UID,
@@ -154,18 +158,7 @@ func (a *authSvc) SetCtx(ctx context.Context, uid int64) (context.Context, error
 	return context.WithValue(
 		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
 			With(zap.Int64("user_id", user.UID))),
-		model.AuthInfo{}, authInfo), nil
-}
-
-// SetCtxUid 设置用户uid到上下文
-func (a *authSvc) SetCtxUid(ctx context.Context, uid int64) context.Context {
-	trace.SpanFromContext(ctx).SetAttributes(
-		attribute.Int64("user_id", uid),
-	)
-	return context.WithValue(
-		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
-			With(zap.Int64("user_id", uid))),
-		model.AuthInfo{}, &model.AuthInfo{UID: uid})
+		model.AuthInfo{}, authInfo)
 }
 
 // Get 获取用户鉴权信息

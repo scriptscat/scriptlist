@@ -9,6 +9,7 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/codfrm/cago/server/cron"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 	"go.uber.org/zap"
 )
@@ -50,6 +51,11 @@ func (s *Script) checkSyncUpdate(ctx context.Context) error {
 			return nil
 		}
 		for _, v := range list {
+			ctx, err := auth_svc.Auth().SetCtx(ctx, v.UserID)
+			if err != nil {
+				logger.Error("检查更新,设置上下文失败", zap.Error(err))
+				continue
+			}
 			if err := script_svc.Script().SyncOnce(ctx, v); err != nil {
 				logger.Error("脚本检查更新失败", zap.Int64("script_id", v.ID),
 					zap.String("sync_url", v.SyncUrl), zap.Error(err))
