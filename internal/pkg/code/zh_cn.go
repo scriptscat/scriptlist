@@ -29,6 +29,7 @@ var zhCN = map[int]string{
 	ScriptScoreDeleted:              "评分已删除",
 	ScriptScoreNotFound:             "评分不存在",
 	ScriptChangePreReleaseNotLatest: "修改预发布版本失败,没有新的正式版本了",
+	ScriptMustHaveVersion:           "脚本必须有有一个版本",
 
 	IssueLabelNotExist:   "标签不存在",
 	IssueNotFound:        "反馈不存在",

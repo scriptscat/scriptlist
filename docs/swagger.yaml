@@ -524,6 +524,15 @@ definitions:
     type: object
   script.DelScoreResponse:
     type: object
+  script.DeleteCodeRequest:
+    properties:
+      codeId:
+        type: integer
+      id:
+        type: integer
+    type: object
+  script.DeleteCodeResponse:
+    type: object
   script.DeleteRequest:
     properties:
       id:
@@ -1605,6 +1614,43 @@ paths:
       tags:
       - script
   /scripts/{id}/code/{codeId}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除脚本/库代码
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: codeId
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除脚本/库代码
+      tags:
+      - script
     put:
       consumes:
       - application/json
