@@ -983,7 +983,7 @@ func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body [
 	if err != nil {
 		return nil, err
 	}
-	if strings.Index(req.UA, "GitHub") != -1 {
+	if strings.Contains(req.UA, "GitHub") {
 		logger.Ctx(ctx).Info("收到github webhook请求", zap.Any("req", req))
 		hash := hmac.New(sha256.New, []byte(config.Token))
 		if _, err := hash.Write(body); err != nil {
