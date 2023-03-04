@@ -260,9 +260,9 @@ func (u *scriptRepo) FindSyncScript(ctx context.Context, page httputils.PageRequ
 func (u *scriptRepo) FindSyncPrefix(ctx context.Context, uid int64, prefix string) ([]*entity.Script, error) {
 	var list []*entity.Script
 	if err := db.Ctx(ctx).Where(
-		"user_id=? and sync_mode=? and sync_url like ?",
-		uid, entity.SyncModeAuto, prefix+"%",
-	).Scan(&list).Error; err != nil {
+		"user_id=? and sync_mode=? and status=? and sync_url like ?",
+		uid, entity.SyncModeAuto, consts.ACTIVE, prefix+"%",
+	).Find(&list).Error; err != nil {
 		return nil, err
 	}
 	return list, nil

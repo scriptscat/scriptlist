@@ -3862,6 +3862,12 @@
         "script.WebhookRequest": {
             "type": "object",
             "properties": {
+                "UA": {
+                    "type": "string"
+                },
+                "XHubSignature256": {
+                    "type": "string"
+                },
                 "uid": {
                     "type": "integer"
                 }

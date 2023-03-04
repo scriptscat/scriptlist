@@ -889,6 +889,10 @@ definitions:
     type: object
   script.WebhookRequest:
     properties:
+      UA:
+        type: string
+      XHubSignature256:
+        type: string
       uid:
         type: integer
     type: object
