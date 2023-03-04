@@ -261,7 +261,7 @@ func (u *scriptRepo) FindSyncPrefix(ctx context.Context, uid int64, prefix strin
 	var list []*entity.Script
 	if err := db.Ctx(ctx).Where(
 		"user_id=? and sync_mode=? and sync_url like ?",
-		uid, prefix+"%",
+		uid, entity.SyncModeAuto, prefix+"%",
 	).Scan(&list).Error; err != nil {
 		return nil, err
 	}
