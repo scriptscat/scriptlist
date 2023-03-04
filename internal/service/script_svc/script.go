@@ -81,6 +81,8 @@ type ScriptSvc interface {
 	UpdateScriptUnwell(ctx context.Context, req *api.UpdateScriptUnwellRequest) (*api.UpdateScriptUnwellResponse, error)
 	// UpdateScriptGray 更新脚本灰度策略
 	UpdateScriptGray(ctx context.Context, req *api.UpdateScriptGrayRequest) (*api.UpdateScriptGrayResponse, error)
+	// DeleteCode 删除脚本/库代码
+	DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*api.DeleteCodeResponse, error)
 }
 
 type scriptSvc struct {
@@ -936,4 +938,27 @@ func (s *scriptSvc) UpdateScriptGray(ctx context.Context, req *api.UpdateScriptG
 		return nil, err
 	}
 	return &api.UpdateScriptGrayResponse{}, nil
+}
+
+// DeleteCode 删除脚本/库代码
+func (s *scriptSvc) DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*api.DeleteCodeResponse, error) {
+	script := s.CtxScript(ctx)
+	_, num, err := script_repo.ScriptCode().List(ctx, script.ID, httputils.PageRequest{})
+	if err != nil {
+		return nil, err
+	}
+	if num <= 1 {
+		return nil, i18n.NewError(ctx, code.ScriptMustHaveVersion)
+	}
+	scriptCode, err := script_repo.ScriptCode().Find(ctx, req.CodeID)
+	if err != nil {
+		return nil, err
+	}
+	if err := scriptCode.CheckOperate(ctx, script); err != nil {
+		return nil, err
+	}
+	if err := script_repo.ScriptCode().Delete(ctx, scriptCode); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
