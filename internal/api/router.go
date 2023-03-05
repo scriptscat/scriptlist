@@ -143,10 +143,11 @@ func Router(root *mux.Router) error {
 			controller.Script,
 			controller.ScriptRealtime,
 
-			controller.BasicInfo,
+			controller.AdvancedInfo,
 			controller.UserOrigin,
 			controller.RealtimeChart,
-			controller.Realtime,
+			controller.VisitList,
+			controller.VisitDomain,
 		)
 		rg := r.Group("/", cors.Default())
 		rg.OPTIONS("/statistics/collect")

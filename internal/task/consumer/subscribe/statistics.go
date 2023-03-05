@@ -8,6 +8,7 @@ import (
 
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/mileusna/useragent"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
@@ -83,8 +84,8 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	}
 	installUrl, err := url.Parse(msg.InstallPage)
 	if err != nil {
+		installUrl = &url.URL{Host: ""}
 		logger.Ctx(ctx).Error("统计页url解析失败", zap.Error(err), zap.Any("msg", msg))
-		return err
 	}
 	collect := &statistics_entity.StatisticsCollect{
 		SessionID:     msg.SessionID,
@@ -112,6 +113,13 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 			}
 		}
 	}
+	ua := useragent.Parse(msg.UA)
+	driverType := statistics_entity.DeviceTypeUnknown
+	if ua.Mobile {
+		driverType = statistics_entity.DeviceTypeMobile
+	} else if ua.Desktop {
+		driverType = statistics_entity.DeviceTypePC
+	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, &statistics_entity.StatisticsVisitor{
 		ScriptID:       msg.ScriptID,
 		VisitorID:      vistitorId,
@@ -122,6 +130,8 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		FirstVisitTime: firstVisitTime,
 		VisitTime:      msg.VisitTime,
 		InstallHost:    installUrl.Host,
+		DeviceType:     int64(driverType),
+		BrowserType:    ua.Name,
 	}); err != nil {
 		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg))
 	}

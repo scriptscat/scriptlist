@@ -46,4 +46,5 @@ var zhCN = map[int]string{
 	ResourceNotFound:      "资源不存在",
 
 	StatisticsLimitExceeded: "统计数据超过限制",
+	StatisticsResultLimit:   "统计结果限制1000条数据",
 }

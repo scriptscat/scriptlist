@@ -1,6 +1,9 @@
 package statistics
 
-import "github.com/codfrm/cago/server/mux"
+import (
+	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/codfrm/cago/server/mux"
+)
 
 // ScriptRequest 脚本统计数据
 type ScriptRequest struct {
@@ -74,18 +77,30 @@ type RealtimeChartResponse struct {
 	Chart *Chart `json:"chart"`
 }
 
-// RealtimeRequest 实时统计数据
-type RealtimeRequest struct {
-	mux.Meta `path:"/statistics/:id/realtime" method:"GET"`
-	ID       int64 `uri:"id" binding:"required"`
+// VisitListRequest 访问列表
+type VisitListRequest struct {
+	mux.Meta              `path:"/statistics/:id/visit" method:"GET"`
+	httputils.PageRequest `form:",inline"`
+	ID                    int64 `uri:"id" binding:"required"`
 }
 
-type RealtimeResponse struct {
+type VisitItem struct {
+	//SessionID     string `json:"session_id"`
+	VisitorID string `json:"visitor_id"`
+	//OperationHost string `json:"operation_host"`
+	OperationPage string `json:"operation_page"`
+	Duration      int32  `json:"duration"`
+	VisitTime     int64  `json:"visit_time"`
+	ExitTime      int64  `json:"exit_time"`
 }
 
-// BasicInfoRequest 基本统计信息
-type BasicInfoRequest struct {
-	mux.Meta `path:"/statistics/:id/basic" method:"GET"`
+type VisitResponse struct {
+	httputils.PageResponse[*VisitItem] `json:",inline"`
+}
+
+// AdvancedInfoRequest 高级统计信息
+type AdvancedInfoRequest struct {
+	mux.Meta `path:"/statistics/:id/advanced" method:"GET"`
 	ID       int64 `uri:"id" binding:"required"`
 }
 
@@ -102,25 +117,36 @@ type PieChart struct {
 	Value int64  `json:"value"`
 }
 
-type BasicInfoResponse struct {
-	Limit           *Limit    `json:"limit"`
-	PV              *Overview `json:"pv"`
-	UV              *Overview `json:"uv"`
-	UseTime         *Overview `json:"use_time"`
-	NewUser         *Overview `json:"new_user"`
-	OldUser         *Overview `json:"old_user"`
-	Origin          *PieChart `json:"origin"`
-	Version         *PieChart `json:"version"`
-	OperationDomain *PieChart `json:"operation_domain"`
-	System          *PieChart `json:"system"`
-	Browser         *PieChart `json:"browser"`
+type AdvancedInfoResponse struct {
+	Limit      *Limit      `json:"limit"`
+	PV         *Overview   `json:"pv"`
+	UV         *Overview   `json:"uv"`
+	IP         *Overview   `json:"ip"`
+	UseTime    *Overview   `json:"use_time"`
+	NewOldUser []*PieChart `json:"new_old_user"`
+	Version    []*PieChart `json:"version"`
+	System     []*PieChart `json:"system"`
+	Browser    []*PieChart `json:"browser"`
 }
 
 // UserOriginRequest 用户来源统计
 type UserOriginRequest struct {
-	mux.Meta `path:"/statistics/:id/user/origin" method:"GET"`
-	ID       int64 `uri:"id" binding:"required"`
+	mux.Meta              `path:"/statistics/:id/user-origin" method:"GET"`
+	httputils.PageRequest `form:",inline"`
+	ID                    int64 `uri:"id" binding:"required"`
 }
 
 type UserOriginResponse struct {
+	httputils.PageResponse[*PieChart] `json:",inline"`
+}
+
+// VisitDomainRequest 访问域名统计
+type VisitDomainRequest struct {
+	mux.Meta              `path:"/statistics/:id/visit-domain" method:"GET"`
+	httputils.PageRequest `form:",inline"`
+	ID                    int64 `uri:"id" binding:"required"`
+}
+
+type VisitDomainResponse struct {
+	httputils.PageResponse[*PieChart] `json:",inline"`
 }

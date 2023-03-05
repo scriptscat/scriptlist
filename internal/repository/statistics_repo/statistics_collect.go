@@ -7,17 +7,23 @@ import (
 
 	"github.com/codfrm/cago/database/clickhouse"
 	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/utils/httputils"
+	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 )
 
 type StatisticsCollectRepo interface {
+	FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*statistics_entity.StatisticsCollect, int64, error)
+
 	Create(ctx context.Context, statistic *statistics_entity.StatisticsCollect) error
 	CheckLimit(ctx context.Context, scriptId int64) (bool, error)
 	GetLimit(ctx context.Context, scriptId int64) (int64, error)
 	RealtimeChart(ctx context.Context, scriptId int64, now time.Time) ([]*Realtime, error)
 	Pv(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (int64, error)
 	Uv(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (int64, error)
-	UseTimeAvg(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (int64, error)
+	UseTimeAvg(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (float64, error)
+	// OperationHostList 操作域列表
+	OperationHostList(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time, page httputils.PageRequest) ([]*api.PieChart, int64, error)
 }
 
 var defaultStatisticsCollect StatisticsCollectRepo
@@ -52,7 +58,14 @@ func (u *statisticsCollectRepo) CheckLimit(ctx context.Context, scriptId int64) 
 
 func (u *statisticsCollectRepo) GetLimit(ctx context.Context, scriptId int64) (int64, error) {
 	key := fmt.Sprintf("statistics:limit:%s:%d", time.Now().Format("2006-01"), scriptId)
-	return redis.Ctx(ctx).Get(key).Int64()
+	num, err := redis.Ctx(ctx).Get(key).Int64()
+	if err != nil {
+		if redis.Nil(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return num, nil
 }
 
 type Realtime struct {
@@ -96,14 +109,46 @@ func (u *statisticsCollectRepo) Uv(ctx context.Context, scriptId int64, startTim
 	return num, nil
 }
 
-func (u *statisticsCollectRepo) UseTimeAvg(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (int64, error) {
-	var t int64
+func (u *statisticsCollectRepo) UseTimeAvg(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (float64, error) {
+	var t float64
 	err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).
 		Select("avg(duration) as t").
-		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix()).
+		Where("script_id=? and visit_time >= ? and visit_time <= ? and duration!=0", scriptId, startTime.Unix(), endTime.Unix()).
 		Scan(&t).Error
 	if err != nil {
 		return 0, err
 	}
 	return t, nil
+}
+
+func (u *statisticsCollectRepo) OperationHostList(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time, page httputils.PageRequest) ([]*api.PieChart, int64, error) {
+	var total int64
+	result := make([]*api.PieChart, 0)
+	query := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).Select(
+		"operation_host as key, count(*) as value",
+	).Group("operation_host").
+		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix())
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := query.Limit(page.GetLimit()).Offset(page.GetOffset()).
+		Order("value desc").Scan(&result).Error; err != nil {
+		return nil, 0, err
+	}
+	return result, total, nil
+}
+
+func (u *statisticsCollectRepo) FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*statistics_entity.StatisticsCollect, int64, error) {
+	var list []*statistics_entity.StatisticsCollect
+	var count int64
+	query := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).
+		Where("script_id=?", scriptId)
+	if err := query.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := query.Order("visit_time desc").
+		Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, count, nil
 }

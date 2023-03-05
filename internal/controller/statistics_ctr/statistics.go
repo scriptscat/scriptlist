@@ -41,21 +41,29 @@ func (s *Statistics) RealtimeChart(ctx context.Context, req *api.RealtimeChartRe
 	return statistics_svc.Statistics().RealtimeChart(ctx, req)
 }
 
-// Realtime 实时统计数据
-func (s *Statistics) Realtime(ctx context.Context, req *api.RealtimeRequest) (*api.RealtimeResponse, error) {
-	return statistics_svc.Statistics().Realtime(ctx, req)
+// VisitList 访问列表
+func (s *Statistics) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error) {
+	req.PageRequest.Size = 10
+	return statistics_svc.Statistics().VisitList(ctx, req)
 }
 
-// BasicInfo 基本统计信息
-func (s *Statistics) BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error) {
-	return statistics_svc.Statistics().BasicInfo(ctx, req)
+// AdvancedInfo 高级统计信息
+func (s *Statistics) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoRequest) (*api.AdvancedInfoResponse, error) {
+	return statistics_svc.Statistics().AdvancedInfo(ctx, req)
 }
 
 // UserOrigin 用户来源统计
 func (s *Statistics) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
+	req.PageRequest.Size = 10
 	return statistics_svc.Statistics().UserOrigin(ctx, req)
 }
 
 func (s *Statistics) Middleware() gin.HandlerFunc {
 	return statistics_svc.Statistics().Middleware()
+}
+
+// VisitDomain 访问域名统计
+func (s *Statistics) VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error) {
+	req.PageRequest.Size = 10
+	return statistics_svc.Statistics().VisitDomain(ctx, req)
 }

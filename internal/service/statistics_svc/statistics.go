@@ -33,14 +33,16 @@ type StatisticsSvc interface {
 	Collect(ctx context.Context, req *api.CollectRequest) (*api.CollectResponse, error)
 	// RealtimeChart 实时统计数据图表
 	RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error)
-	// Realtime 实时统计数据
-	Realtime(ctx context.Context, req *api.RealtimeRequest) (*api.RealtimeResponse, error)
-	// BasicInfo 基本统计信息
-	BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error)
+	// VisitList 访问列表
+	VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error)
+	// AdvancedInfo 高级统计信息
+	AdvancedInfo(ctx context.Context, req *api.AdvancedInfoRequest) (*api.AdvancedInfoResponse, error)
 	// UserOrigin 用户来源统计
 	UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error)
 	// Middleware 中间件
 	Middleware() gin.HandlerFunc
+	// VisitDomain 访问域名统计
+	VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error)
 }
 
 type statisticsSvc struct {
@@ -67,8 +69,6 @@ func (s *statisticsSvc) GetStatisticsToken(ctx *gin.Context) string {
 
 func (s *statisticsSvc) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.Set("statistics_token", s.GetStatisticsToken(ctx))
-		ctx.Next()
 		id := ctx.GetInt64("id")
 		script, err := script_repo.Script().Find(ctx, id)
 		if err != nil {
@@ -219,8 +219,8 @@ func (s *statisticsSvc) RealtimeChart(ctx context.Context, req *api.RealtimeChar
 		return nil, err
 	}
 	chart := &api.Chart{
-		X: make([]string, 0),
-		Y: make([]int64, 0),
+		X: make([]string, 15),
+		Y: make([]int64, 15),
 	}
 	listHash := make(map[int]int64)
 	for _, v := range list {
@@ -228,11 +228,11 @@ func (s *statisticsSvc) RealtimeChart(ctx context.Context, req *api.RealtimeChar
 	}
 	for i := 0; i < 15; i++ {
 		num, ok := listHash[now.Minute()]
-		chart.X = append(chart.X, strconv.Itoa(i+1)+"分钟前")
+		chart.X[14-i] = strconv.Itoa(i+1) + "分钟前"
 		if ok {
-			chart.Y = append(chart.Y, num)
+			chart.Y[14-i] = num
 		} else {
-			chart.Y = append(chart.Y, 0)
+			chart.Y[14-i] = 0
 		}
 		now = now.Add(-time.Minute)
 	}
@@ -241,13 +241,32 @@ func (s *statisticsSvc) RealtimeChart(ctx context.Context, req *api.RealtimeChar
 	}, nil
 }
 
-// Realtime 实时统计数据
-func (s *statisticsSvc) Realtime(ctx context.Context, req *api.RealtimeRequest) (*api.RealtimeResponse, error) {
-	return nil, nil
+// VisitList 实时统计数据
+func (s *statisticsSvc) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error) {
+	list, total, err := statistics_repo.StatisticsCollect().FindPage(ctx, req.ID, req.PageRequest)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*api.VisitItem, len(list))
+	for n, v := range list {
+		result[n] = &api.VisitItem{
+			VisitorID:     v.VisitorID,
+			OperationPage: v.OperationPage,
+			Duration:      v.Duration,
+			VisitTime:     v.VisitTime,
+			ExitTime:      v.ExitTime,
+		}
+	}
+	return &api.VisitResponse{
+		PageResponse: httputils.PageResponse[*api.VisitItem]{
+			List:  result,
+			Total: total,
+		},
+	}, nil
 }
 
-// BasicInfo 基本统计信息
-func (s *statisticsSvc) BasicInfo(ctx context.Context, req *api.BasicInfoRequest) (*api.BasicInfoResponse, error) {
+// AdvancedInfo 高级统计信息
+func (s *statisticsSvc) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoRequest) (*api.AdvancedInfoResponse, error) {
 	var quota int64 = 1000000
 	usage, err := statistics_repo.StatisticsCollect().GetLimit(ctx, req.ID)
 	if err != nil {
@@ -256,18 +275,40 @@ func (s *statisticsSvc) BasicInfo(ctx context.Context, req *api.BasicInfoRequest
 	if usage > quota {
 		usage = quota
 	}
-	now := time.Now()
+	now, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02")+" 23:59:59")
 	uv := &api.Overview{
-		Today:     s.IgnoreErrorCollectUv(ctx, req.ID, now.Add(-time.Hour*24), now),
-		Yesterday: s.IgnoreErrorCollectUv(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
-		Week:      s.IgnoreErrorCollectUv(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+		Today:     s.IgnoreErrorUserNumber(ctx, req.ID, now.Add(-time.Hour*24), now),
+		Yesterday: s.IgnoreErrorUserNumber(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+		Week:      s.IgnoreErrorUserNumber(ctx, req.ID, now.Add(-time.Hour*24*7), now),
 	}
 	newUser := &api.Overview{
-		Today:     s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*24), now),
-		Yesterday: s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
-		Week:      s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+		Today: s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*24), now),
+		//Yesterday: s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+		//Week:      s.IgnoreErrorFirstUserNumber(ctx, req.ID, now.Add(-time.Hour*24*7), now),
 	}
-	return &api.BasicInfoResponse{
+	versionPie, err := statistics_repo.StatisticsVisitor().VersionPie(ctx, req.ID, now.Add(-time.Hour*24), now)
+	if err != nil {
+		return nil, err
+	}
+	systemPie, err := statistics_repo.StatisticsVisitor().DriverPie(ctx, req.ID, now.Add(-time.Hour*24), now)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range systemPie {
+		switch v.Key {
+		case "2":
+			v.Key = "桌面端"
+		case "3":
+			v.Key = "移动端"
+		default:
+			v.Key = "未知"
+		}
+	}
+	browserPie, err := statistics_repo.StatisticsVisitor().BrowserPie(ctx, req.ID, now.Add(-time.Hour*24), now)
+	if err != nil {
+		return nil, err
+	}
+	return &api.AdvancedInfoResponse{
 		Limit: &api.Limit{
 			Quota: quota,
 			Usage: usage,
@@ -278,22 +319,24 @@ func (s *statisticsSvc) BasicInfo(ctx context.Context, req *api.BasicInfoRequest
 			Week:      s.IgnoreErrorCollectPv(ctx, req.ID, now.Add(-time.Hour*24*7), now),
 		},
 		UV: uv,
+		IP: &api.Overview{
+			Today:     s.IgnoreErrorVisitorIpNumber(ctx, req.ID, now.Add(-time.Hour*24), now),
+			Yesterday: s.IgnoreErrorVisitorIpNumber(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
+			Week:      s.IgnoreErrorVisitorIpNumber(ctx, req.ID, now.Add(-time.Hour*24*7), now),
+		},
 		UseTime: &api.Overview{
 			Today:     s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*24), now),
 			Yesterday: s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
 			Week:      s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*24*7), now),
 		},
-		NewUser: newUser,
-		OldUser: &api.Overview{
-			Today:     uv.Today - newUser.Today,
-			Yesterday: uv.Yesterday - newUser.Yesterday,
-			Week:      uv.Week - newUser.Week,
-		},
-		Origin:          nil,
-		Version:         nil,
-		OperationDomain: nil,
-		System:          nil,
-		Browser:         nil,
+		Version: versionPie,
+		NewOldUser: []*api.PieChart{{
+			Key: "新用户", Value: newUser.Today,
+		}, {
+			Key: "老用户", Value: uv.Today - newUser.Today,
+		}},
+		System:  systemPie,
+		Browser: browserPie,
 	}, nil
 }
 
@@ -315,10 +358,19 @@ func (s *statisticsSvc) IgnoreErrorCollectPv(ctx context.Context, id int64, star
 	return num
 }
 
-func (s *statisticsSvc) IgnoreErrorCollectUv(ctx context.Context, id int64, start time.Time, end time.Time) int64 {
-	num, err := statistics_repo.StatisticsCollect().Uv(ctx, id, start, end)
+func (s *statisticsSvc) IgnoreErrorVisitorIpNumber(ctx context.Context, id int64, start time.Time, end time.Time) int64 {
+	num, err := statistics_repo.StatisticsVisitor().IpNumber(ctx, id, start, end)
 	if err != nil {
-		logger.Ctx(ctx).Error("statistics_repo.StatisticsCollect().Uv", zap.Error(err))
+		logger.Ctx(ctx).Error("statistics_repo.StatisticsVisitor().IpNumber", zap.Error(err))
+		return 0
+	}
+	return num
+}
+
+func (s *statisticsSvc) IgnoreErrorUserNumber(ctx context.Context, id int64, start time.Time, end time.Time) int64 {
+	num, err := statistics_repo.StatisticsVisitor().UserNumber(ctx, id, start, end)
+	if err != nil {
+		logger.Ctx(ctx).Error("statistics_repo.StatisticsVisitor().UserNumber", zap.Error(err))
 		return 0
 	}
 	return num
@@ -330,10 +382,42 @@ func (s *statisticsSvc) IgnoreErrorUseTimeAvg(ctx context.Context, id int64, sta
 		logger.Ctx(ctx).Error("statistics_repo.StatisticsCollect().UseTime", zap.Error(err))
 		return 0
 	}
-	return num
+	return int64(num)
 }
 
-// UserOrigin 用户来源统计
+// UserOrigin 用户安装来源统计
 func (s *statisticsSvc) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
-	return nil, nil
+	if req.PageRequest.GetPage()*req.PageRequest.GetSize() > 100 {
+		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
+	}
+	now, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02")+" 23:59:59")
+	list, total, err := statistics_repo.StatisticsVisitor().OriginList(ctx, req.ID, now.Add(-time.Hour*24), now, req.PageRequest)
+	if err != nil {
+		return nil, err
+	}
+	ret := &api.UserOriginResponse{
+		PageResponse: httputils.PageResponse[*api.PieChart]{
+			List:  list,
+			Total: total,
+		},
+	}
+	return ret, nil
+}
+
+// VisitDomain 访问域名统计
+func (s *statisticsSvc) VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error) {
+	if req.PageRequest.GetPage()*req.PageRequest.GetSize() > 100 {
+		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
+	}
+	now, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02")+" 23:59:59")
+	list, total, err := statistics_repo.StatisticsCollect().OperationHostList(ctx, req.ID, now.Add(-time.Hour*24), now, req.PageRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &api.VisitDomainResponse{
+		PageResponse: httputils.PageResponse[*api.PieChart]{
+			List:  list,
+			Total: total,
+		},
+	}, nil
 }

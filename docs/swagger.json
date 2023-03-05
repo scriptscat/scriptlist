@@ -2108,9 +2108,9 @@
                 }
             }
         },
-        "/statistics/{id}/basic": {
+        "/statistics/{id}/advanced": {
             "get": {
-                "description": "基本统计信息",
+                "description": "高级统计信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -2120,7 +2120,7 @@
                 "tags": [
                     "statistics"
                 ],
-                "summary": "基本统计信息",
+                "summary": "高级统计信息",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2138,54 +2138,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/statistics.BasicInfoResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-        "/statistics/{id}/realtime": {
-            "get": {
-                "description": "实时统计数据",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "statistics"
-                ],
-                "summary": "实时统计数据",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/statistics.RealtimeResponse"
+                                    "$ref": "#/definitions/statistics.AdvancedInfoResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -2249,7 +2202,7 @@
                 }
             }
         },
-        "/statistics/{id}/user/origin": {
+        "/statistics/{id}/user-origin": {
             "get": {
                 "description": "用户来源统计",
                 "consumes": [
@@ -2280,6 +2233,100 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/statistics.UserOriginResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/statistics/{id}/visit": {
+            "get": {
+                "description": "访问列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "访问列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/statistics.VisitListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/statistics/{id}/visit-domain": {
+            "get": {
+                "description": "访问域名统计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "summary": "访问域名统计",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/statistics.VisitDomainResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -4211,32 +4258,35 @@
                 2
             ]
         },
-        "statistics.BasicInfoResponse": {
+        "statistics.AdvancedInfoResponse": {
             "type": "object",
             "properties": {
                 "browser": {
-                    "$ref": "#/definitions/statistics.PieChart"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/statistics.PieChart"
+                    }
+                },
+                "ip": {
+                    "$ref": "#/definitions/statistics.Overview"
                 },
                 "limit": {
                     "$ref": "#/definitions/statistics.Limit"
                 },
-                "new_user": {
-                    "$ref": "#/definitions/statistics.Overview"
-                },
-                "old_user": {
-                    "$ref": "#/definitions/statistics.Overview"
-                },
-                "operation_domain": {
-                    "$ref": "#/definitions/statistics.PieChart"
-                },
-                "origin": {
-                    "$ref": "#/definitions/statistics.PieChart"
+                "new_old_user": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/statistics.PieChart"
+                    }
                 },
                 "pv": {
                     "$ref": "#/definitions/statistics.Overview"
                 },
                 "system": {
-                    "$ref": "#/definitions/statistics.PieChart"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/statistics.PieChart"
+                    }
                 },
                 "use_time": {
                     "$ref": "#/definitions/statistics.Overview"
@@ -4245,7 +4295,10 @@
                     "$ref": "#/definitions/statistics.Overview"
                 },
                 "version": {
-                    "$ref": "#/definitions/statistics.PieChart"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/statistics.PieChart"
+                    }
                 }
             }
         },
@@ -4283,32 +4336,36 @@
                     "description": "退出时间",
                     "type": "integer"
                 },
+                "iframe": {
+                    "description": "是否在iframe中运行",
+                    "type": "boolean"
+                },
                 "install_page": {
-                    "description": "安装页面",
+                    "description": "安装页面,从GM_info中提取",
                     "type": "string"
                 },
                 "operation_page": {
-                    "description": "操作页面",
+                    "description": "操作页面,当前页面的链接",
                     "type": "string"
                 },
                 "script_id": {
-                    "description": "脚本id",
+                    "description": "脚本id,在初始化脚本时设置(例如new ScriptStatistics(1))",
                     "type": "integer"
                 },
                 "session_id": {
-                    "description": "会话id,随机生成",
+                    "description": "当前会话id,随机生成一串字符,可以是uuid",
                     "type": "string"
                 },
                 "version": {
-                    "description": "版本",
+                    "description": "版本,从GM_info中提取",
                     "type": "string"
                 },
                 "visit_time": {
-                    "description": "访问时间",
+                    "description": "访问时间,脚本执行的时间,unix时间戳(10位)",
                     "type": "integer"
                 },
                 "visitor_id": {
-                    "description": "访客id",
+                    "description": "访客id,从浏览器指纹或者GM_value中获取",
                     "type": "string"
                 }
             }
@@ -4373,9 +4430,6 @@
                 }
             }
         },
-        "statistics.RealtimeResponse": {
-            "type": "object"
-        },
         "statistics.ScriptRealtimeResponse": {
             "type": "object",
             "properties": {
@@ -4411,7 +4465,71 @@
             }
         },
         "statistics.UserOriginResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "statistics.VisitDomainResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "statistics.VisitItem": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "integer"
+                },
+                "exit_time": {
+                    "type": "integer"
+                },
+                "operation_page": {
+                    "description": "OperationHost string `json:\"operation_host\"`",
+                    "type": "string"
+                },
+                "visit_time": {
+                    "type": "integer"
+                },
+                "visitor_id": {
+                    "description": "SessionID     string `json:\"session_id\"`",
+                    "type": "string"
+                }
+            }
+        },
+        "statistics.VisitResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
         },
         "user.CurrentUserResponse": {
             "type": "object",
