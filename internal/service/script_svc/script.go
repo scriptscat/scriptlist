@@ -688,7 +688,7 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 		logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 		return err
 	}
-	if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
+	if old, err := script_repo.ScriptCode().FindByVersionAll(ctx, script.ID, code.Version); err != nil {
 		return err
 	} else if old != nil {
 		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))

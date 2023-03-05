@@ -21,6 +21,8 @@ type ScriptCodeRepo interface {
 	Delete(ctx context.Context, scriptCode *entity.Code) error
 
 	FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error)
+	// FindByVersionAll 查找所有,包括删除的
+	FindByVersionAll(ctx context.Context, scriptId int64, version string) (*entity.Code, error)
 	FindLatest(ctx context.Context, scriptId int64, offset int, withcode bool) (*entity.Code, error)
 	FindPreLatest(ctx context.Context, scriptId int64, offset int, withcode bool) (*entity.Code, error)
 	FindAllLatest(ctx context.Context, scriptId int64, offset int, withcode bool) (*entity.Code, error)
@@ -94,6 +96,23 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 			q = q.Select(ret.Fields())
 		}
 		if err := q.First(ret, "script_id=? and version=? and status=?", scriptId, version, consts.ACTIVE).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return ret, nil
+	}, cache2.Expiration(time.Hour), cache2.WithDepend(u.KeyDepend(scriptId))).Scan(&ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *scriptCodeRepo) FindByVersionAll(ctx context.Context, scriptId int64, version string) (*entity.Code, error) {
+	ret := &entity.Code{}
+	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId)+fmt.Sprintf(":%s:all", version), func() (interface{}, error) {
+		q := db.Ctx(ctx).Select(ret.Fields())
+		if err := q.First(ret, "script_id=? and version=?", scriptId, version).Error; err != nil {
 			if db.RecordNotFound(err) {
 				return nil, nil
 			}
