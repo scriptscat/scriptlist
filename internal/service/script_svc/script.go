@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
@@ -673,6 +674,15 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 }
 
 func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) error {
+	syncKey := fmt.Sprintf("script:sync:%d", script.ID)
+	if ok, err := redis.Ctx(ctx).SetNX(syncKey, 1, time.Minute*5).Result(); err != nil {
+		return err
+	} else if !ok {
+		logger.Ctx(ctx).Warn("脚本正在同步中", zap.Int64("script_id", script.ID))
+		return nil
+	} else {
+		defer redis.Ctx(ctx).Del(syncKey)
+	}
 	if err := script.IsArchive(ctx); err != nil {
 		return err
 	}
@@ -688,7 +698,7 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 		logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 		return err
 	}
-	if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
+	if old, err := script_repo.ScriptCode().FindByVersionAll(ctx, script.ID, code.Version); err != nil {
 		return err
 	} else if old != nil {
 		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
