@@ -336,6 +336,7 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 	}
 	var definition *script_entity.LibDefinition
 	if script.Type == script_entity.LibraryType {
+		scriptCode.Code = req.Code
 		oldVersion, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, req.Version, true)
 		if err != nil {
 			return nil, err
@@ -349,7 +350,8 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 			scriptCode.Createtime = oldVersion.Createtime
 		} else {
 			// 脚本引用库
-			scriptCode.Code = req.Code
+			script.Updatetime = time.Now().Unix()
+			scriptCode.Createtime = time.Now().Unix()
 			scriptCode.Version = req.Version
 		}
 		// 脚本定义
@@ -360,8 +362,6 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 				Createtime: time.Now().Unix(),
 			}
 		}
-		script.Updatetime = time.Now().Unix()
-		scriptCode.Createtime = time.Now().Unix()
 	} else {
 		metaJson, err := scriptCode.UpdateCode(ctx, req.Code)
 		if err != nil {
