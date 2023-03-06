@@ -341,11 +341,17 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 			return nil, err
 		}
 		if oldVersion != nil {
-			return nil, i18n.NewError(ctx, code.ScriptVersionExist)
+			// 如果脚本内容发生了改变但版本号没有发生改变
+			if strings.ReplaceAll(oldVersion.Code, "\r\n", "\n") != strings.ReplaceAll(scriptCode.Code, "\r\n", "\n") {
+				return nil, i18n.NewError(ctx, code.ScriptVersionExist)
+			}
+			scriptCode.ID = oldVersion.ID
+			scriptCode.Createtime = oldVersion.Createtime
+		} else {
+			// 脚本引用库
+			scriptCode.Code = req.Code
+			scriptCode.Version = req.Version
 		}
-		// 脚本引用库
-		scriptCode.Code = req.Code
-		scriptCode.Version = req.Version
 		// 脚本定义
 		if req.Definition != "" {
 			definition = &script_entity.LibDefinition{
