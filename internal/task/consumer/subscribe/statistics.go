@@ -91,7 +91,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		SessionID:     msg.SessionID,
 		ScriptID:      msg.ScriptID,
 		VisitorID:     vistitorId,
-		OperationHost: operatorUrl.Host,
+		OperationHost: operatorUrl.Scheme + "://" + operatorUrl.Host,
 		OperationPage: msg.OperationPage,
 		Duration:      msg.Duration,
 		VisitTime:     msg.VisitTime,

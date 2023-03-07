@@ -125,7 +125,7 @@ func (u *statisticsCollectRepo) OperationHostList(ctx context.Context, scriptId 
 	var total int64
 	result := make([]*api.PieChart, 0)
 	query := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).Select(
-		"operation_host as key, count(*) as value",
+		"operation_host as key, count(distinct visitor_id) as value",
 	).Group("operation_host").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix())
 	if err := query.Count(&total).Error; err != nil {
