@@ -66,8 +66,8 @@ func (u *scriptRepo) KeyDepend(id int64) *cache2.KeyDepend {
 }
 
 func (u *scriptRepo) Find(ctx context.Context, id int64) (*entity.Script, error) {
-	ret := &entity.Script{ID: id}
-	if err := db.Ctx(ctx).First(ret).Error; err != nil {
+	ret := &entity.Script{}
+	if err := db.Ctx(ctx).Where("id=?", id).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}

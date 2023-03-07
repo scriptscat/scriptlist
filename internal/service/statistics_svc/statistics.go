@@ -69,7 +69,12 @@ func (s *statisticsSvc) GetStatisticsToken(ctx *gin.Context) string {
 
 func (s *statisticsSvc) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.GetInt64("id")
+		sid := ctx.Param("id")
+		id, err := strconv.ParseInt(sid, 10, 64)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
 		script, err := script_repo.Script().Find(ctx, id)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
