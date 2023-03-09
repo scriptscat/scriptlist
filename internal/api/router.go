@@ -77,6 +77,7 @@ func Router(root *mux.Router) error {
 		// 无需用户登录的路由组
 		r.Group("/").Bind(
 			scriptCtr.List,
+			scriptCtr.LastScore,
 			scriptCtr.Info,
 			scriptCtr.Code,
 			scriptCtr.VersionList,

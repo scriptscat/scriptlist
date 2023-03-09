@@ -355,6 +355,45 @@
                 }
             }
         },
+        "/scripts/last_score": {
+            "get": {
+                "description": "最新评分脚本",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "最新评分脚本",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.LastScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/migrate/es": {
             "post": {
                 "description": "全量迁移数据到es",
@@ -3722,6 +3761,21 @@
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "script.LastScoreResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

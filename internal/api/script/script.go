@@ -310,3 +310,13 @@ type WebhookRequest struct {
 
 type WebhookResponse struct {
 }
+
+// LastScoreRequest 最新评分脚本
+type LastScoreRequest struct {
+	mux.Meta              `path:"/scripts/last-score" method:"GET"`
+	httputils.PageRequest `form:",inline"`
+}
+
+type LastScoreResponse struct {
+	httputils.PageResponse[*Script] `json:",inline"`
+}

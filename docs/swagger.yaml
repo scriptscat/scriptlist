@@ -608,6 +608,16 @@ definitions:
       username:
         type: string
     type: object
+  script.LastScoreResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
   script.ListResponse:
     properties:
       list:
@@ -2570,6 +2580,31 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 关注脚本
+      tags:
+      - script
+  /scripts/last_score:
+    get:
+      consumes:
+      - application/json
+      description: 最新评分脚本
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.LastScoreResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 最新评分脚本
       tags:
       - script
   /scripts/migrate/es:

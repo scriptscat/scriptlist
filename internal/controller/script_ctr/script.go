@@ -360,3 +360,8 @@ func (s *Script) Webhook(ctx *gin.Context) {
 		httputils.HandleResp(ctx, resp)
 	}
 }
+
+// LastScore 最新评分脚本
+func (s *Script) LastScore(ctx context.Context, req *api.LastScoreRequest) (*api.LastScoreResponse, error) {
+	return script_svc.Script().LastScore(ctx, req)
+}

@@ -9,14 +9,16 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/gorilla/csrf v1.7.1
+	github.com/mileusna/useragent v1.2.1
 	github.com/swaggo/swag v1.8.10
-	github.com/ua-parser/uap-go v0.0.0-20211112212520-00c877edfe0f
 	github.com/weppos/publicsuffix-go v0.20.0
 	go.opentelemetry.io/otel v1.11.2
 	go.uber.org/zap v1.24.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/gorm v1.24.1
 )
+
+replace github.com/codfrm/cago => ../../cago
 
 require (
 	github.com/ClickHouse/ch-go v0.48.0 // indirect
@@ -68,7 +70,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
-	github.com/mileusna/useragent v1.2.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nsqio/go-nsq v1.1.0 // indirect
@@ -112,7 +113,6 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/clickhouse v0.5.0 // indirect
 	gorm.io/driver/mysql v1.4.3 // indirect
