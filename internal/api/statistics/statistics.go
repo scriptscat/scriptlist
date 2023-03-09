@@ -52,6 +52,7 @@ type CollectRequest struct {
 	mux.Meta      `path:"/statistics/collect" method:"POST"`
 	SessionID     string `form:"session_id" json:"session_id" binding:"required"` // 当前会话id,随机生成一串字符,可以是uuid
 	ScriptID      int64  `form:"script_id" json:"script_id" binding:"required"`   // 脚本id,在初始化脚本时设置(例如new ScriptStatistics(1))
+	StatisticsKey string `form:"statistics_key" json:"statistics_key"`            // 统计key
 	VisitorID     string `form:"visitor_id" json:"visitor_id" binding:"required"` // 访客id,从浏览器指纹或者GM_value中获取
 	OperationPage string `form:"operation_page" json:"operation_page"`            // 操作页面,当前页面的链接
 	InstallPage   string `form:"install_page" json:"install_page"`                // 安装页面,从GM_info中提取
@@ -118,15 +119,17 @@ type PieChart struct {
 }
 
 type AdvancedInfoResponse struct {
-	Limit      *Limit      `json:"limit"`
-	PV         *Overview   `json:"pv"`
-	UV         *Overview   `json:"uv"`
-	IP         *Overview   `json:"ip"`
-	UseTime    *Overview   `json:"use_time"`
-	NewOldUser []*PieChart `json:"new_old_user"`
-	Version    []*PieChart `json:"version"`
-	System     []*PieChart `json:"system"`
-	Browser    []*PieChart `json:"browser"`
+	StatisticsKey string      `json:"statistics_key"`
+	Whitelist     []string    `json:"whitelist"`
+	Limit         *Limit      `json:"limit"`
+	PV            *Overview   `json:"pv"`
+	UV            *Overview   `json:"uv"`
+	IP            *Overview   `json:"ip"`
+	UseTime       *Overview   `json:"use_time"`
+	NewOldUser    []*PieChart `json:"new_old_user"`
+	Version       []*PieChart `json:"version"`
+	System        []*PieChart `json:"system"`
+	Browser       []*PieChart `json:"browser"`
 }
 
 // UserOriginRequest 用户来源统计
@@ -149,4 +152,14 @@ type VisitDomainRequest struct {
 
 type VisitDomainResponse struct {
 	httputils.PageResponse[*PieChart] `json:",inline"`
+}
+
+type UpdateWhitelistRequest struct {
+	mux.Meta  `path:"/statistics/:id/whitelist" method:"PUT"`
+	ID        int64    `uri:"id" binding:"required"`
+	Whitelist []string `json:"whitelist"`
+}
+
+type UpdateWhitelistResponse struct {
+	Whitelist []string `json:"whitelist"`
 }

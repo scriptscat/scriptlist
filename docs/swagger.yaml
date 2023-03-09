@@ -608,6 +608,16 @@ definitions:
       username:
         type: string
     type: object
+  script.LastScoreResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
   script.ListResponse:
     properties:
       list:
@@ -1010,6 +1020,8 @@ definitions:
         type: array
       pv:
         $ref: '#/definitions/statistics.Overview'
+      statistics_key:
+        type: string
       system:
         items:
           $ref: '#/definitions/statistics.PieChart'
@@ -1021,6 +1033,10 @@ definitions:
       version:
         items:
           $ref: '#/definitions/statistics.PieChart'
+        type: array
+      whitelist:
+        items:
+          type: string
         type: array
     type: object
   statistics.Chart:
@@ -1131,6 +1147,22 @@ definitions:
         $ref: '#/definitions/statistics.Overview'
       uv_chart:
         $ref: '#/definitions/statistics.DUChart'
+    type: object
+  statistics.UpdateWhitelistRequest:
+    properties:
+      id:
+        type: integer
+      whitelist:
+        items:
+          type: string
+        type: array
+    type: object
+  statistics.UpdateWhitelistResponse:
+    properties:
+      whitelist:
+        items:
+          type: string
+        type: array
     type: object
   statistics.UserOriginResponse:
     properties:
@@ -1425,6 +1457,9 @@ paths:
       parameters:
       - in: query
         name: keyword
+        type: string
+      - in: query
+        name: domain
         type: string
       - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
@@ -2569,6 +2604,31 @@ paths:
       summary: 关注脚本
       tags:
       - script
+  /scripts/last-score:
+    get:
+      consumes:
+      - application/json
+      description: 最新评分脚本
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.LastScoreResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 最新评分脚本
+      tags:
+      - script
   /scripts/migrate/es:
     post:
       consumes:
@@ -2747,6 +2807,38 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 访问域名统计
+      tags:
+      - statistics
+  /statistics/{id}/whitelist:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/statistics.UpdateWhitelistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.UpdateWhitelistResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
       tags:
       - statistics
   /statistics/collect:

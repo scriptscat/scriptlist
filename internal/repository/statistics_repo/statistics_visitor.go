@@ -78,7 +78,7 @@ func (u *statisticsVisitorRepo) OriginList(ctx context.Context, scriptId int64, 
 		return nil, 0, err
 	}
 	if err := query.Limit(page.GetLimit()).Offset(page.GetOffset()).
-		Order("value").Scan(&result).Error; err != nil {
+		Order("value desc").Scan(&result).Error; err != nil {
 		return nil, 0, err
 	}
 	return result, total, nil

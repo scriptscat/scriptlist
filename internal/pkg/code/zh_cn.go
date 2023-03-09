@@ -45,6 +45,8 @@ var zhCN = map[int]string{
 	ResourceNotImage:      "不是图片",
 	ResourceNotFound:      "资源不存在",
 
-	StatisticsLimitExceeded: "统计数据超过限制",
-	StatisticsResultLimit:   "统计结果限制1000条数据",
+	StatisticsLimitExceeded:     "统计数据超过限制",
+	StatisticsResultLimit:       "统计结果限制1000条数据",
+	StatisticsInfoUninitialized: "统计信息未初始化",
+	StatisticsWhitelistInvalid:  "统计白名单无效,不支持顶级域名: %s",
 }

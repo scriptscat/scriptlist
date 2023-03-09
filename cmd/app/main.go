@@ -52,6 +52,7 @@ func main() {
 	statistics_repo.RegisterScriptStatistics(statistics_repo.NewScriptStatistics())
 	statistics_repo.RegisterStatisticsVisitorRepo(statistics_repo.NewStatisticVistior())
 	statistics_repo.RegisterStatisticsCollect(statistics_repo.NewStatisticsCollect())
+	statistics_repo.RegisterStatisticsInfo(statistics_repo.NewStatisticsInfo())
 
 	issue_repo.RegisterScriptIssue(issue_repo.NewScriptIssue())
 	issue_repo.RegisterScriptIssueComment(issue_repo.NewScriptIssueComment())

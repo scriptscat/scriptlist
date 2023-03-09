@@ -2,10 +2,13 @@ package script_repo
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/utils/httputils"
+	redis2 "github.com/go-redis/redis/v9"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
 )
 
@@ -18,6 +21,8 @@ type ScriptScoreRepo interface {
 	ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*entity.ScriptScore, int64, error)
 	// FindByUser 查询该用户在该脚本下是否有过评分
 	FindByUser(ctx context.Context, uid, scriptId int64) (*entity.ScriptScore, error)
+	// LastScore 最新的评分
+	LastScore(ctx context.Context, page httputils.PageRequest) ([]int64, error)
 }
 
 var defaultScriptScore ScriptScoreRepo
@@ -73,6 +78,12 @@ func (u *scriptScoreRepo) Find(ctx context.Context, id int64) (*entity.ScriptSco
 }
 
 func (u *scriptScoreRepo) Create(ctx context.Context, scriptScore *entity.ScriptScore) error {
+	if err := redis.Ctx(ctx).ZAdd("script:score:last", redis2.Z{
+		Score:  float64(scriptScore.Createtime),
+		Member: scriptScore.ScriptID,
+	}).Err(); err != nil {
+		return err
+	}
 	return db.Ctx(ctx).Create(scriptScore).Error
 }
 
@@ -95,4 +106,22 @@ func (u *scriptScoreRepo) FindPage(ctx context.Context, page httputils.PageReque
 		return nil, 0, err
 	}
 	return list, count, nil
+}
+
+func (u *scriptScoreRepo) LastScore(ctx context.Context, page httputils.PageRequest) ([]int64, error) {
+	result, err := redis.Ctx(ctx).ZRevRangeByScore("script:score:last", &redis2.ZRangeBy{
+		Min:    "-inf",
+		Max:    "+inf",
+		Offset: 0,
+		Count:  10,
+	}).Result()
+	if err != nil {
+		return nil, err
+	}
+	var list []int64
+	for _, v := range result {
+		n, _ := strconv.ParseInt(v, 10, 64)
+		list = append(list, n)
+	}
+	return list, nil
 }

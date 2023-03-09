@@ -3,8 +3,10 @@ package statistics_svc
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
@@ -12,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
@@ -43,6 +46,8 @@ type StatisticsSvc interface {
 	Middleware() gin.HandlerFunc
 	// VisitDomain 访问域名统计
 	VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error)
+	// UpdateWhitelist 更新统计白名单
+	UpdateWhitelist(ctx context.Context, req *api.UpdateWhitelistRequest) (*api.UpdateWhitelistResponse, error)
 }
 
 type statisticsSvc struct {
@@ -201,6 +206,7 @@ func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*
 	if err := producer.PublishStatisticsCollect(ctx, &producer.StatisticsCollectMsg{
 		SessionID:     req.SessionID,
 		ScriptID:      req.ScriptID,
+		StatisticsKey: req.StatisticsKey,
 		VisitorID:     req.VisitorID,
 		OperationPage: req.OperationPage,
 		InstallPage:   req.InstallPage,
@@ -272,6 +278,22 @@ func (s *statisticsSvc) VisitList(ctx context.Context, req *api.VisitListRequest
 
 // AdvancedInfo 高级统计信息
 func (s *statisticsSvc) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoRequest) (*api.AdvancedInfoResponse, error) {
+	info, err := statistics_repo.StatisticsInfo().FindByScriptId(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		info = &statistics_entity.StatisticsInfo{
+			ScriptID:      req.ID,
+			StatisticsKey: utils.RandString(16, utils.Letter),
+			Whitelist:     &statistics_entity.Whitelist{},
+			Status:        consts.ACTIVE,
+			Createtime:    time.Now().Unix(),
+		}
+		if err := statistics_repo.StatisticsInfo().Create(ctx, info); err != nil {
+			return nil, err
+		}
+	}
 	var quota int64 = 1000000
 	usage, err := statistics_repo.StatisticsCollect().GetLimit(ctx, req.ID)
 	if err != nil {
@@ -313,7 +335,13 @@ func (s *statisticsSvc) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoR
 	if err != nil {
 		return nil, err
 	}
+	whitelist := make([]string, 0)
+	if info.Whitelist != nil {
+		whitelist = info.Whitelist.Whitelist
+	}
 	return &api.AdvancedInfoResponse{
+		StatisticsKey: info.StatisticsKey,
+		Whitelist:     whitelist,
 		Limit: &api.Limit{
 			Quota: quota,
 			Usage: usage,
@@ -334,12 +362,12 @@ func (s *statisticsSvc) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoR
 			Yesterday: s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*48), now.Add(-time.Hour*24)),
 			Week:      s.IgnoreErrorUseTimeAvg(ctx, req.ID, now.Add(-time.Hour*24*7), now),
 		},
-		Version: versionPie,
 		NewOldUser: []*api.PieChart{{
 			Key: "新用户", Value: newUser.Today,
 		}, {
 			Key: "老用户", Value: uv.Today - newUser.Today,
 		}},
+		Version: versionPie,
 		System:  systemPie,
 		Browser: browserPie,
 	}, nil
@@ -425,4 +453,27 @@ func (s *statisticsSvc) VisitDomain(ctx context.Context, req *api.VisitDomainReq
 			Total: total,
 		},
 	}, nil
+}
+
+// UpdateWhitelist 更新统计白名单
+func (s *statisticsSvc) UpdateWhitelist(ctx context.Context, req *api.UpdateWhitelistRequest) (*api.UpdateWhitelistResponse, error) {
+	info, err := statistics_repo.StatisticsInfo().FindByScriptId(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, i18n.NewError(ctx, code.StatisticsInfoUninitialized)
+	}
+	// 判断是否是合法的非顶级域名
+	for _, domain := range req.Whitelist {
+		domains := strings.Split(domain, ".")
+		if len(domains) < 2 {
+			return nil, i18n.NewError(ctx, code.StatisticsWhitelistInvalid, domain)
+		}
+	}
+	info.Whitelist = &statistics_entity.Whitelist{Whitelist: req.Whitelist}
+	if err := statistics_repo.StatisticsInfo().Update(ctx, info); err != nil {
+		return nil, err
+	}
+	return &api.UpdateWhitelistResponse{Whitelist: req.Whitelist}, nil
 }

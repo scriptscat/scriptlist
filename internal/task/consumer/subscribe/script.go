@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
@@ -184,6 +185,7 @@ func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 				DomainReverse: utils.StringReverse(domain),
 				ScriptID:      id,
 				ScriptCodeID:  codeID,
+				Status:        consts.ACTIVE,
 				Createtime:    time.Now().Unix(),
 			}
 			if err := script_repo.Domain().Create(ctx, e); err != nil {

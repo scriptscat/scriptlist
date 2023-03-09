@@ -89,6 +89,8 @@ type ScriptSvc interface {
 	DeleteCode(ctx context.Context, req *api.DeleteCodeRequest) (*api.DeleteCodeResponse, error)
 	// Webhook 处理webhook请求
 	Webhook(ctx context.Context, req *api.WebhookRequest, body []byte) (*api.WebhookResponse, error)
+	// LastScore 最新评分脚本
+	LastScore(ctx context.Context, req *api.LastScoreRequest) (*api.LastScoreResponse, error)
 }
 
 type scriptSvc struct {
@@ -104,6 +106,7 @@ func Script() ScriptSvc {
 func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
 	resp, total, err := script_repo.Script().Search(ctx, &script_repo.SearchOptions{
 		Keyword:  req.Keyword,
+		Domain:   req.Domain,
 		Type:     req.ScriptType,
 		Sort:     req.Sort,
 		Category: make([]int64, 0),
@@ -1042,4 +1045,42 @@ func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body [
 		return &api.WebhookResponse{}, nil
 	}
 	return nil, err
+}
+
+// LastScore 最新评分脚本
+func (s *scriptSvc) LastScore(ctx context.Context, req *api.LastScoreRequest) (*api.LastScoreResponse, error) {
+	scriptIds, err := script_repo.ScriptScore().LastScore(ctx, httputils.PageRequest{
+		Page: 1,
+		Size: 20,
+	})
+	if err != nil {
+		return nil, err
+	}
+	list := make([]*api.Script, 0, len(scriptIds))
+	for _, v := range scriptIds {
+		if len(list) >= 10 {
+			break
+		}
+		script, err := script_repo.Script().Find(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		if err := script.CheckOperate(ctx); err != nil {
+			continue
+		}
+		if script.Public != script_entity.PublicScript {
+			continue
+		}
+		s, err := s.ToScript(ctx, script, false, "")
+		if err != nil {
+			continue
+		}
+		list = append(list, s)
+	}
+	return &api.LastScoreResponse{
+		PageResponse: httputils.PageResponse[*api.Script]{
+			List:  list,
+			Total: int64(len(list)),
+		},
+	}, nil
 }

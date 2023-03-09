@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/codfrm/cago/database/cache"
@@ -14,8 +15,11 @@ import (
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/pkg/consts"
+	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SearchOptions struct {
@@ -85,7 +89,7 @@ func (u *scriptRepo) Update(ctx context.Context, script *entity.Script) error {
 }
 
 func (u *scriptRepo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Delete(&entity.Script{ID: id}).Error
+	return db.Ctx(ctx).Model(&entity.Script{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
 func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
@@ -96,7 +100,7 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 	// 无关键字从mysql数据库中获取
 	list := make([]*entity.Script, 0)
 	scriptTbName := (&entity.Script{}).TableName()
-	find := db.Ctx(ctx).Model(&entity.Script{}).Where("status=?", consts.ACTIVE)
+	find := db.Ctx(ctx).Model(&entity.Script{}).Where(scriptTbName+".status=?", consts.ACTIVE)
 	if !options.Self {
 		find.Where("public=? and unwell=?", entity.PublicScript, entity.Well)
 	}
@@ -116,9 +120,22 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 			Where(tabname+".category_id in ?", options.Category)
 	}
 	if options.Domain != "" {
+		// 截取域名支持匹配子域名
+		domains := strings.Split(utils.StringReverse(options.Domain), ".")
 		tabname := db.Default().NamingStrategy.TableName("script_domain")
 		find = find.Joins("left join "+tabname+" on "+tabname+".script_id="+scriptTbName+".id").
-			Where(tabname+".domain=?", options.Domain)
+			Where(tabname+".status=?", consts.ACTIVE).
+			Debug()
+		if len(domains) <= 1 {
+			find = find.Where(tabname+".domain=?", options.Domain)
+		} else {
+			exps := make([]clause.Expression, 0)
+			for i := 1; i < len(domains); i++ {
+				exps = append(exps, gorm.Expr(tabname+".domain_reverse like ?",
+					strings.Join(domains[:i+1], ".")+"%"))
+			}
+			find = find.Where(clause.Or(exps...))
+		}
 	}
 
 	switch options.Sort {
