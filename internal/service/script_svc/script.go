@@ -104,6 +104,7 @@ func Script() ScriptSvc {
 func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
 	resp, total, err := script_repo.Script().Search(ctx, &script_repo.SearchOptions{
 		Keyword:  req.Keyword,
+		Domain:   req.Domain,
 		Type:     req.ScriptType,
 		Sort:     req.Sort,
 		Category: make([]int64, 0),

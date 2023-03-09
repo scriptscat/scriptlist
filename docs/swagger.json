@@ -219,6 +219,11 @@
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "name": "domain",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
                         "name": "script_type,default=0",

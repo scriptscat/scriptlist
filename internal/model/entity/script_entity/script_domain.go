@@ -6,5 +6,6 @@ type ScriptDomain struct {
 	DomainReverse string `gorm:"column:domain_reverse;type:varchar(255);index:domain_reverse"` // 域名反转, 方便查询
 	ScriptID      int64  `gorm:"column:script_id;type:bigint(20);index:domain_script,unique;index:script_id"`
 	ScriptCodeID  int64  `gorm:"column:script_code_id;type:bigint(20)"`
+	Status        int    `gorm:"column:status;type:tinyint(2);default:1"`
 	Createtime    int64  `gorm:"column:createtime;type:bigint(20)"`
 }

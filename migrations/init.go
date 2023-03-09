@@ -35,6 +35,7 @@ func RunMigrations(db *gorm.DB) error {
 		T1675234780,
 		T20230210,
 		T20230228,
+		T20230309,
 	)
 }
 

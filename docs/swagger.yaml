@@ -1426,6 +1426,9 @@ paths:
       - in: query
         name: keyword
         type: string
+      - in: query
+        name: domain
+        type: string
       - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
         name: script_type,default=0
