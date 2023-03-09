@@ -149,6 +149,7 @@ func Router(root *mux.Router) error {
 			controller.RealtimeChart,
 			controller.VisitList,
 			controller.VisitDomain,
+			controller.UpdateWhitelist,
 		)
 		rg := r.Group("/", cors.Default())
 		rg.OPTIONS("/statistics/collect")

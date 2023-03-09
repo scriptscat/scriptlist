@@ -54,4 +54,6 @@ const (
 const (
 	StatisticsLimitExceeded = iota + 104000
 	StatisticsResultLimit
+	StatisticsInfoUninitialized
+	StatisticsWhitelistInvalid
 )

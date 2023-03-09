@@ -3,8 +3,10 @@ package subscribe
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/logger"
@@ -82,6 +84,38 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		logger.Ctx(ctx).Error("统计页url解析失败", zap.Error(err), zap.Any("msg", msg))
 		return err
 	}
+	statisticsInfo, err := statistics_repo.StatisticsInfo().FindByScriptId(ctx, msg.ScriptID)
+	if err != nil {
+		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Any("msg", msg))
+		return err
+	}
+	// 过滤
+	if statisticsInfo == nil {
+		statisticsInfo, err = statistics_repo.StatisticsInfo().FindByStatisticsKey(ctx, msg.StatisticsKey)
+		if err != nil {
+			logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Any("msg", msg))
+			return err
+		}
+		if statisticsInfo == nil {
+			logger.Ctx(ctx).Error("统计信息不存在", zap.Any("msg", msg))
+			return errors.New("统计信息不存在")
+		}
+	}
+	if statisticsInfo.Whitelist == nil {
+		logger.Ctx(ctx).Error("统计信息白名单不存在", zap.Any("msg", msg))
+		return errors.New("统计信息不存在")
+	}
+	flag := false
+	for _, v := range statisticsInfo.Whitelist.Whitelist {
+		if strings.HasSuffix(operatorUrl.Host, v) {
+			flag = true
+			break
+		}
+	}
+	if !flag {
+		return nil
+	}
+
 	installUrl, err := url.Parse(msg.InstallPage)
 	if err != nil {
 		installUrl = &url.URL{Host: ""}

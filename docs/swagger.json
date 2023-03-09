@@ -355,7 +355,7 @@
                 }
             }
         },
-        "/scripts/last_score": {
+        "/scripts/last-score": {
             "get": {
                 "description": "最新评分脚本",
                 "consumes": [
@@ -2387,6 +2387,58 @@
                 }
             }
         },
+        "/statistics/{id}/whitelist": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "statistics"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/statistics.UpdateWhitelistRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/statistics.UpdateWhitelistResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "获取当前登录的用户信息",
@@ -4341,6 +4393,9 @@
                 "pv": {
                     "$ref": "#/definitions/statistics.Overview"
                 },
+                "statistics_key": {
+                    "type": "string"
+                },
                 "system": {
                     "type": "array",
                     "items": {
@@ -4357,6 +4412,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/statistics.PieChart"
+                    }
+                },
+                "whitelist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 }
             }
@@ -4520,6 +4581,31 @@
                 },
                 "uv_chart": {
                     "$ref": "#/definitions/statistics.DUChart"
+                }
+            }
+        },
+        "statistics.UpdateWhitelistRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "whitelist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "statistics.UpdateWhitelistResponse": {
+            "type": "object",
+            "properties": {
+                "whitelist": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

@@ -67,3 +67,8 @@ func (s *Statistics) VisitDomain(ctx context.Context, req *api.VisitDomainReques
 	req.PageRequest.Size = 10
 	return statistics_svc.Statistics().VisitDomain(ctx, req)
 }
+
+// UpdateWhitelist 更新统计白名单
+func (s *Statistics) UpdateWhitelist(ctx context.Context, req *api.UpdateWhitelistRequest) (*api.UpdateWhitelistResponse, error) {
+	return statistics_svc.Statistics().UpdateWhitelist(ctx, req)
+}
