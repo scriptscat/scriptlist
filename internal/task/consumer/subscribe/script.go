@@ -173,13 +173,17 @@ func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 		}
 		domains[domain] = struct{}{}
 	}
+	list, err := script_repo.Domain().List(ctx, id)
+	if err != nil {
+		return err
+	}
+	domainMap := make(map[string]*script_entity.ScriptDomain)
+	for _, v := range list {
+		domainMap[v.Domain] = v
+	}
 	for domain := range domains {
-		result, err := script_repo.Domain().FindByDomain(ctx, id, domain)
-		if err != nil {
-			logger.Ctx(ctx).Error("FindByDomain", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
-			continue
-		}
-		if result == nil {
+		result, ok := domainMap[domain]
+		if !ok {
 			e := &script_entity.ScriptDomain{
 				Domain:        domain,
 				DomainReverse: utils.StringReverse(domain),
@@ -190,6 +194,19 @@ func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 			}
 			if err := script_repo.Domain().Create(ctx, e); err != nil {
 				logger.Ctx(ctx).Error("Create", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
+			}
+		} else if result.Status != consts.ACTIVE {
+			result.Status = consts.ACTIVE
+			if err := script_repo.Domain().Update(ctx, result); err != nil {
+				logger.Ctx(ctx).Error("Update", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", domain))
+			}
+		}
+		delete(domainMap, domain)
+	}
+	for _, v := range domainMap {
+		if v.Status == consts.ACTIVE {
+			if err := script_repo.Domain().Delete(ctx, v.ID); err != nil {
+				logger.Ctx(ctx).Error("Delete", zap.Error(err), zap.Int64("script_id", id), zap.String("domain", v.Domain))
 			}
 		}
 	}

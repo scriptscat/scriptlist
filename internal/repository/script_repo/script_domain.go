@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
@@ -13,7 +14,6 @@ type ScriptDomainRepo interface {
 	Update(ctx context.Context, scriptDomain *script_entity.ScriptDomain) error
 	Delete(ctx context.Context, id int64) error
 
-	FindByDomain(ctx context.Context, id int64, domain string) (*script_entity.ScriptDomain, error)
 	List(ctx context.Context, scriptId int64) ([]*script_entity.ScriptDomain, error)
 }
 
@@ -35,8 +35,8 @@ func NewScriptDomainRepo() ScriptDomainRepo {
 }
 
 func (u *scriptDomainRepo) Find(ctx context.Context, id int64) (*script_entity.ScriptDomain, error) {
-	ret := &script_entity.ScriptDomain{ID: id}
-	if err := db.Ctx(ctx).First(ret).Error; err != nil {
+	ret := &script_entity.ScriptDomain{}
+	if err := db.Ctx(ctx).Where("id=? and status=?", consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -54,18 +54,8 @@ func (u *scriptDomainRepo) Update(ctx context.Context, scriptDomain *script_enti
 }
 
 func (u *scriptDomainRepo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Delete(&script_entity.ScriptDomain{ID: id}).Error
-}
-
-func (u *scriptDomainRepo) FindByDomain(ctx context.Context, id int64, domain string) (*script_entity.ScriptDomain, error) {
-	ret := &script_entity.ScriptDomain{}
-	if err := db.Ctx(ctx).First(ret, "script_id=? and domain=?", id, domain).Error; err != nil {
-		if db.RecordNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return ret, nil
+	return db.Ctx(ctx).Model(&script_entity.ScriptDomain{}).
+		Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
 func (u *scriptDomainRepo) List(ctx context.Context, scriptId int64) ([]*script_entity.ScriptDomain, error) {

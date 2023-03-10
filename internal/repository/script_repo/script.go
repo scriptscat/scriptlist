@@ -126,7 +126,7 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 		find = find.Joins("left join "+tabname+" on "+tabname+".script_id="+scriptTbName+".id").
 			Where(tabname+".status=?", consts.ACTIVE).
 			Debug()
-		if len(domains) <= 1 {
+		if len(domains) <= 2 {
 			find = find.Where(tabname+".domain=?", options.Domain)
 		} else {
 			exps := make([]clause.Expression, 0)
