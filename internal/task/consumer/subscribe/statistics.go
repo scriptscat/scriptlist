@@ -124,7 +124,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	}
 	collect := &statistics_entity.StatisticsCollect{
 		SessionID:     msg.SessionID,
-		ScriptID:      msg.ScriptID,
+		ScriptID:      statisticsInfo.ScriptID,
 		VisitorID:     vistitorId,
 		OperationHost: operatorUrl.Scheme + "://" + operatorUrl.Host,
 		OperationPage: msg.OperationPage,
@@ -156,7 +156,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		driverType = statistics_entity.DeviceTypePC
 	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, &statistics_entity.StatisticsVisitor{
-		ScriptID:       msg.ScriptID,
+		ScriptID:       statisticsInfo.ScriptID,
 		VisitorID:      vistitorId,
 		UA:             msg.UA,
 		IP:             msg.IP,
