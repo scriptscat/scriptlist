@@ -2,6 +2,7 @@ package statistics_svc
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -195,6 +196,9 @@ func (s *statisticsSvc) realtime(ctx context.Context, scriptId int64, op statist
 
 // Collect 统计数据收集
 func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*api.CollectResponse, error) {
+	if req.ScriptID == 0 && req.StatisticsKey == "" {
+		return nil, httputils.NewError(http.StatusBadRequest, 10000, "script_id and statistics_key can not be empty")
+	}
 	// 判断本月是否超过限制
 	ok, err := statistics_repo.StatisticsCollect().CheckLimit(ctx, req.ScriptID)
 	if err != nil {

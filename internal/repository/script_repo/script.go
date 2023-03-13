@@ -124,8 +124,7 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 		domains := strings.Split(utils.StringReverse(options.Domain), ".")
 		tabname := db.Default().NamingStrategy.TableName("script_domain")
 		find = find.Joins("left join "+tabname+" on "+tabname+".script_id="+scriptTbName+".id").
-			Where(tabname+".status=?", consts.ACTIVE).
-			Debug()
+			Where(tabname+".status=?", consts.ACTIVE)
 		if len(domains) <= 2 {
 			find = find.Where(tabname+".domain=?", options.Domain)
 		} else {

@@ -51,7 +51,7 @@ type ScriptRealtimeResponse struct {
 type CollectRequest struct {
 	mux.Meta      `path:"/statistics/collect" method:"POST"`
 	SessionID     string `form:"session_id" json:"session_id" binding:"required"` // 当前会话id,随机生成一串字符,可以是uuid
-	ScriptID      int64  `form:"script_id" json:"script_id" binding:"required"`   // 脚本id,在初始化脚本时设置(例如new ScriptStatistics(1))
+	ScriptID      int64  `form:"script_id" json:"script_id"`                      // 脚本id,在初始化脚本时设置(例如new ScriptStatistics(1))
 	StatisticsKey string `form:"statistics_key" json:"statistics_key"`            // 统计key
 	VisitorID     string `form:"visitor_id" json:"visitor_id" binding:"required"` // 访客id,从浏览器指纹或者GM_value中获取
 	OperationPage string `form:"operation_page" json:"operation_page"`            // 操作页面,当前页面的链接
