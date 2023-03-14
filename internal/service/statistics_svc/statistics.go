@@ -49,6 +49,8 @@ type StatisticsSvc interface {
 	VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error)
 	// UpdateWhitelist 更新统计白名单
 	UpdateWhitelist(ctx context.Context, req *api.UpdateWhitelistRequest) (*api.UpdateWhitelistResponse, error)
+	// CollectWhitelist 获取统计收集白名单
+	CollectWhitelist(ctx context.Context, req *api.CollectWhitelistRequest) (*api.CollectWhitelistResponse, error)
 }
 
 type statisticsSvc struct {
@@ -472,4 +474,21 @@ func (s *statisticsSvc) UpdateWhitelist(ctx context.Context, req *api.UpdateWhit
 		return nil, err
 	}
 	return &api.UpdateWhitelistResponse{Whitelist: req.Whitelist}, nil
+}
+
+// CollectWhitelist 获取统计收集白名单
+func (s *statisticsSvc) CollectWhitelist(ctx context.Context, req *api.CollectWhitelistRequest) (*api.CollectWhitelistResponse, error) {
+	info, err := statistics_repo.StatisticsInfo().FindByStatisticsKey(ctx, req.StatisticsKey)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return &api.CollectWhitelistResponse{Whitelist: []string{}}, nil
+	}
+	if info.Whitelist == nil {
+		return &api.CollectWhitelistResponse{Whitelist: []string{}}, nil
+	}
+	return &api.CollectWhitelistResponse{
+		Whitelist: info.Whitelist.Whitelist,
+	}, nil
 }

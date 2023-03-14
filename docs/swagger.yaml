@@ -1077,6 +1077,9 @@ definitions:
       session_id:
         description: 当前会话id,随机生成一串字符,可以是uuid
         type: string
+      statistics_key:
+        description: 统计key
+        type: string
       version:
         description: 版本,从GM_info中提取
         type: string
@@ -1088,6 +1091,19 @@ definitions:
         type: string
     type: object
   statistics.CollectResponse:
+    type: object
+  statistics.CollectWhitelistRequest:
+    properties:
+      statistics_key:
+        description: 统计key
+        type: string
+    type: object
+  statistics.CollectWhitelistResponse:
+    properties:
+      whitelist:
+        items:
+          type: string
+        type: array
     type: object
   statistics.DUChart:
     properties:
@@ -2869,6 +2885,34 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 统计数据收集
+      tags:
+      - statistics
+  /statistics/collect/whitelist:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/statistics.CollectWhitelistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/statistics.CollectWhitelistResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
       tags:
       - statistics
   /users:

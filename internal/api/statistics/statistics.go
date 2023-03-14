@@ -68,6 +68,15 @@ type CollectRequest struct {
 type CollectResponse struct {
 }
 
+type CollectWhitelistRequest struct {
+	mux.Meta      `path:"/statistics/collect/whitelist" method:"POST"`
+	StatisticsKey string `form:"statistics_key" json:"statistics_key"` // 统计key
+}
+
+type CollectWhitelistResponse struct {
+	Whitelist []string `json:"whitelist"`
+}
+
 // RealtimeChartRequest 实时统计数据图表
 type RealtimeChartRequest struct {
 	mux.Meta `path:"/statistics/:id/realtime/chart" method:"GET"`

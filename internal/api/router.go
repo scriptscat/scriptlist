@@ -155,6 +155,7 @@ func Router(root *mux.Router) error {
 		rg.OPTIONS("/statistics/collect")
 		rg.Bind(
 			controller.Collect,
+			controller.CollectWhitelist,
 		)
 	}
 	// 资源

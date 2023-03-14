@@ -72,3 +72,8 @@ func (s *Statistics) VisitDomain(ctx context.Context, req *api.VisitDomainReques
 func (s *Statistics) UpdateWhitelist(ctx context.Context, req *api.UpdateWhitelistRequest) (*api.UpdateWhitelistResponse, error) {
 	return statistics_svc.Statistics().UpdateWhitelist(ctx, req)
 }
+
+// CollectWhitelist 获取统计收集白名单
+func (s *Statistics) CollectWhitelist(ctx context.Context, req *api.CollectWhitelistRequest) (*api.CollectWhitelistResponse, error) {
+	return statistics_svc.Statistics().CollectWhitelist(ctx, req)
+}
