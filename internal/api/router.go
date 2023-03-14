@@ -153,6 +153,7 @@ func Router(root *mux.Router) error {
 		)
 		rg := r.Group("/", cors.Default())
 		rg.OPTIONS("/statistics/collect")
+		rg.OPTIONS("/statistics/collect/whitelist")
 		rg.Bind(
 			controller.Collect,
 			controller.CollectWhitelist,
