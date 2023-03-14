@@ -53,7 +53,7 @@ func (u *statisticsCollectRepo) CheckLimit(ctx context.Context, scriptId int64) 
 	if err != nil {
 		return false, err
 	}
-	return n < 1000000, nil
+	return n < 3000000, nil
 }
 
 func (u *statisticsCollectRepo) GetLimit(ctx context.Context, scriptId int64) (int64, error) {

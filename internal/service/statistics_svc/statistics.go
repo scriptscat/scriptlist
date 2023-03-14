@@ -199,14 +199,6 @@ func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*
 	if req.ScriptID == 0 && req.StatisticsKey == "" {
 		return nil, httputils.NewError(http.StatusBadRequest, 10000, "script_id and statistics_key can not be empty")
 	}
-	// 判断本月是否超过限制
-	ok, err := statistics_repo.StatisticsCollect().CheckLimit(ctx, req.ScriptID)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
-	}
 	if err := producer.PublishStatisticsCollect(ctx, &producer.StatisticsCollectMsg{
 		SessionID:     req.SessionID,
 		ScriptID:      req.ScriptID,
@@ -298,7 +290,7 @@ func (s *statisticsSvc) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoR
 			return nil, err
 		}
 	}
-	var quota int64 = 1000000
+	var quota int64 = 3000000
 	usage, err := statistics_repo.StatisticsCollect().GetLimit(ctx, req.ID)
 	if err != nil {
 		return nil, err

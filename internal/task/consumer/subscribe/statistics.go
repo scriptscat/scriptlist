@@ -9,9 +9,11 @@ import (
 	"strings"
 
 	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/mileusna/useragent"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
@@ -101,6 +103,14 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	if statisticsInfo == nil {
 		logger.Ctx(ctx).Error("统计信息不存在", zap.Any("msg", msg))
 		return errors.New("统计信息不存在")
+	}
+	// 判断本月是否超过限制
+	ok, err := statistics_repo.StatisticsCollect().CheckLimit(ctx, statisticsInfo.ScriptID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return i18n.NewError(ctx, code.StatisticsLimitExceeded)
 	}
 	if statisticsInfo.Whitelist == nil {
 		logger.Ctx(ctx).Error("统计信息白名单不存在", zap.Any("msg", msg))
