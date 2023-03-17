@@ -93,7 +93,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	if err != nil {
 		return err
 	}
-	if listLen < 1000 {
+	if listLen < 10 {
 		// 检测超时
 		t, err := redis.Ctx(ctx).Get(s.collectKey(msg.ScriptID) + ":time").Int64()
 		if err != nil && !redis.Nil(err) {
@@ -104,7 +104,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		}
 	}
 	// 加锁
-	if ok, err := redis.Ctx(ctx).SetNX(s.collectKey(msg.ScriptID)+":lock", "1", time.Minute).Result(); err != nil {
+	if ok, err := redis.Ctx(ctx).SetNX(s.collectKey(msg.ScriptID)+":lock", "1", time.Minute*5).Result(); err != nil {
 		return err
 	} else if !ok {
 		return nil
@@ -177,14 +177,18 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 			BrowserType:    ua.Name,
 		})
 	}
+	for i := 0; i < 8; i++ {
+		collects = append(collects, collects...)
+		visitors = append(visitors, visitors...)
+	}
 	if err := statistics_repo.StatisticsCollect().Create(ctx, collects); err != nil {
-		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Any(
-			"datas", collects,
+		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Int(
+			"len", len(collects),
 		))
 	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, visitors); err != nil {
-		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Any(
-			"datas", visitors,
+		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Int(
+			"len", len(visitors),
 		))
 	}
 	return nil

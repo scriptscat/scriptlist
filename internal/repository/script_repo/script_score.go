@@ -8,7 +8,7 @@ import (
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/utils/httputils"
-	redis2 "github.com/go-redis/redis/v9"
+	redis2 "github.com/redis/go-redis/v9"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
 )
 

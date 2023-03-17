@@ -10,7 +10,6 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
-	"gorm.io/gorm"
 )
 
 type StatisticsCollectRepo interface {
@@ -45,9 +44,7 @@ func NewStatisticsCollect() StatisticsCollectRepo {
 }
 
 func (u *statisticsCollectRepo) Create(ctx context.Context, statistic []*statistics_entity.StatisticsCollect) error {
-	return clickhouse.Ctx(ctx).
-		Session(&gorm.Session{SkipDefaultTransaction: true}).
-		CreateInBatches(statistic, 1000).Error
+	return clickhouse.Ctx(ctx).CreateInBatches(statistic, len(statistic)+1).Error
 }
 
 func (u *statisticsCollectRepo) CheckLimit(ctx context.Context, scriptId int64) (bool, error) {
