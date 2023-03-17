@@ -11,7 +11,7 @@ import (
 )
 
 type StatisticsVisitorRepo interface {
-	Create(ctx context.Context, statistic *statistics_entity.StatisticsVisitor) error
+	Create(ctx context.Context, statistic []*statistics_entity.StatisticsVisitor) error
 	FirstUserNumber(ctx context.Context, scriptId int64, startTime, endTime time.Time) (int64, error)
 	UserNumber(ctx context.Context, scriptId int64, startTime, endTime time.Time) (int64, error)
 	IpNumber(ctx context.Context, id int64, start time.Time, end time.Time) (int64, error)
@@ -39,8 +39,8 @@ func NewStatisticVistior() StatisticsVisitorRepo {
 	return &statisticsVisitorRepo{}
 }
 
-func (u *statisticsVisitorRepo) Create(ctx context.Context, statistic *statistics_entity.StatisticsVisitor) error {
-	return clickhouse.Ctx(ctx).Create(statistic).Error
+func (u *statisticsVisitorRepo) Create(ctx context.Context, statistic []*statistics_entity.StatisticsVisitor) error {
+	return clickhouse.Ctx(ctx).CreateInBatches(statistic, 1000).Error
 }
 
 func (u *statisticsVisitorRepo) FirstUserNumber(ctx context.Context, scriptId int64, startTime, endTime time.Time) (int64, error) {

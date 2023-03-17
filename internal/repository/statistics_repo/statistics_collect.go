@@ -15,7 +15,7 @@ import (
 type StatisticsCollectRepo interface {
 	FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*statistics_entity.StatisticsCollect, int64, error)
 
-	Create(ctx context.Context, statistic *statistics_entity.StatisticsCollect) error
+	Create(ctx context.Context, statistic []*statistics_entity.StatisticsCollect) error
 	CheckLimit(ctx context.Context, scriptId int64) (bool, error)
 	GetLimit(ctx context.Context, scriptId int64) (int64, error)
 	RealtimeChart(ctx context.Context, scriptId int64, now time.Time) ([]*Realtime, error)
@@ -43,8 +43,8 @@ func NewStatisticsCollect() StatisticsCollectRepo {
 	return &statisticsCollectRepo{}
 }
 
-func (u *statisticsCollectRepo) Create(ctx context.Context, statistic *statistics_entity.StatisticsCollect) error {
-	return clickhouse.Ctx(ctx).Create(statistic).Error
+func (u *statisticsCollectRepo) Create(ctx context.Context, statistic []*statistics_entity.StatisticsCollect) error {
+	return clickhouse.Ctx(ctx).CreateInBatches(statistic, 1000).Error
 }
 
 func (u *statisticsCollectRepo) CheckLimit(ctx context.Context, scriptId int64) (bool, error) {
