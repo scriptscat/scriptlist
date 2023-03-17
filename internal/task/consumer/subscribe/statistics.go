@@ -105,8 +105,8 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 			return nil
 		}
 	}
-	// 加锁,限制10个线程
-	n := strconv.FormatInt(rand.Int63n(10), 10)
+	// 加锁,限制5个线程
+	n := strconv.FormatInt(rand.Int63n(5), 10)
 	if ok, err := redis.Ctx(ctx).SetNX(s.collectKey(msg.ScriptID)+":lock:"+n, "1", time.Minute*5).Result(); err != nil {
 		return err
 	} else if !ok {
