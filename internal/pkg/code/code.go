@@ -56,4 +56,5 @@ const (
 	StatisticsResultLimit
 	StatisticsInfoUninitialized
 	StatisticsWhitelistInvalid
+	StatisticsWhitelistNotFound
 )

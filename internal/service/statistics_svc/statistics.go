@@ -3,6 +3,7 @@ package statistics_svc
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -201,11 +202,57 @@ func (s *statisticsSvc) Collect(ctx context.Context, req *api.CollectRequest) (*
 	if req.ScriptID == 0 && req.StatisticsKey == "" {
 		return nil, httputils.NewError(http.StatusBadRequest, 10000, "script_id and statistics_key can not be empty")
 	}
+	var statisticsInfo *statistics_entity.StatisticsInfo
+	var err error
+	if req.ScriptID != 0 {
+		statisticsInfo, err = statistics_repo.StatisticsInfo().FindByScriptId(ctx, req.ScriptID)
+		if err != nil {
+			logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Any("msg", req))
+			return nil, err
+		}
+	} else if req.StatisticsKey != "" {
+		statisticsInfo, err = statistics_repo.StatisticsInfo().FindByStatisticsKey(ctx, req.StatisticsKey)
+		if err != nil {
+			logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Any("msg", req))
+			return nil, err
+		}
+	}
+	if statisticsInfo == nil {
+		logger.Ctx(ctx).Error("统计信息不存在", zap.Any("msg", req))
+		return nil, err
+	}
+	// 判断本月是否超过限制
+	ok, err := statistics_repo.StatisticsCollect().CheckLimit(ctx, statisticsInfo.ScriptID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
+	}
+	operatorUrl, err := url.Parse(req.OperationPage)
+	if err != nil {
+		logger.Ctx(ctx).Error("统计页url解析失败", zap.Error(err), zap.Any("msg", req))
+		return nil, err
+	}
+	if statisticsInfo.Whitelist == nil {
+		logger.Ctx(ctx).Error("统计信息白名单不存在", zap.Any("msg", req))
+		return nil, i18n.NewError(ctx, code.StatisticsWhitelistNotFound)
+	}
+	flag := false
+	for _, v := range statisticsInfo.Whitelist.Whitelist {
+		if strings.HasSuffix(operatorUrl.Host, v) {
+			flag = true
+			break
+		}
+	}
+	if !flag {
+		return nil, i18n.NewError(ctx, code.StatisticsWhitelistNotFound)
+	}
 	if err := producer.PublishStatisticsCollect(ctx, &producer.StatisticsCollectMsg{
 		SessionID:     req.SessionID,
-		ScriptID:      req.ScriptID,
-		StatisticsKey: req.StatisticsKey,
+		ScriptID:      statisticsInfo.ScriptID,
 		VisitorID:     req.VisitorID,
+		OperationHost: operatorUrl.Scheme + "://" + operatorUrl.Host,
 		OperationPage: req.OperationPage,
 		InstallPage:   req.InstallPage,
 		Duration:      req.Duration,

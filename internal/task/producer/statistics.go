@@ -49,8 +49,8 @@ func SubscribeScriptStatistics(ctx context.Context, fn func(ctx context.Context,
 type StatisticsCollectMsg struct {
 	SessionID     string
 	ScriptID      int64
-	StatisticsKey string
 	VisitorID     string
+	OperationHost string
 	OperationPage string
 	InstallPage   string
 	Duration      int32

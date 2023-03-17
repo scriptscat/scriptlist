@@ -3,17 +3,13 @@ package subscribe
 import (
 	"context"
 	"crypto/sha256"
-	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/mileusna/useragent"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
-	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
@@ -81,52 +77,6 @@ func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollectMsg) error {
 	// ip+用户提交的访客id生成后端存储的访客id
 	vistitorId := fmt.Sprintf("%x", sha256.Sum256([]byte(msg.IP+msg.VisitorID)))
-	operatorUrl, err := url.Parse(msg.OperationPage)
-	if err != nil {
-		logger.Ctx(ctx).Error("统计页url解析失败", zap.Error(err), zap.Any("msg", msg))
-		return err
-	}
-	var statisticsInfo *statistics_entity.StatisticsInfo
-	if msg.ScriptID != 0 {
-		statisticsInfo, err = statistics_repo.StatisticsInfo().FindByScriptId(ctx, msg.ScriptID)
-		if err != nil {
-			logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Any("msg", msg))
-			return err
-		}
-	} else if msg.StatisticsKey != "" {
-		statisticsInfo, err = statistics_repo.StatisticsInfo().FindByStatisticsKey(ctx, msg.StatisticsKey)
-		if err != nil {
-			logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Any("msg", msg))
-			return err
-		}
-	}
-	if statisticsInfo == nil {
-		logger.Ctx(ctx).Error("统计信息不存在", zap.Any("msg", msg))
-		return errors.New("统计信息不存在")
-	}
-	// 判断本月是否超过限制
-	ok, err := statistics_repo.StatisticsCollect().CheckLimit(ctx, statisticsInfo.ScriptID)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return i18n.NewError(ctx, code.StatisticsLimitExceeded)
-	}
-	if statisticsInfo.Whitelist == nil {
-		logger.Ctx(ctx).Error("统计信息白名单不存在", zap.Any("msg", msg))
-		return errors.New("统计信息不存在")
-	}
-	flag := false
-	for _, v := range statisticsInfo.Whitelist.Whitelist {
-		if strings.HasSuffix(operatorUrl.Host, v) {
-			flag = true
-			break
-		}
-	}
-	if !flag {
-		return nil
-	}
-
 	installUrl, err := url.Parse(msg.InstallPage)
 	if err != nil {
 		installUrl = &url.URL{Host: ""}
@@ -134,9 +84,9 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	}
 	collect := &statistics_entity.StatisticsCollect{
 		SessionID:     msg.SessionID,
-		ScriptID:      statisticsInfo.ScriptID,
+		ScriptID:      msg.ScriptID,
 		VisitorID:     vistitorId,
-		OperationHost: operatorUrl.Scheme + "://" + operatorUrl.Host,
+		OperationHost: msg.OperationHost,
 		OperationPage: msg.OperationPage,
 		Duration:      msg.Duration,
 		VisitTime:     msg.VisitTime,
@@ -166,7 +116,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		driverType = statistics_entity.DeviceTypePC
 	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, &statistics_entity.StatisticsVisitor{
-		ScriptID:       statisticsInfo.ScriptID,
+		ScriptID:       msg.ScriptID,
 		VisitorID:      vistitorId,
 		UA:             msg.UA,
 		IP:             msg.IP,

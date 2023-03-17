@@ -49,4 +49,5 @@ var zhCN = map[int]string{
 	StatisticsResultLimit:       "统计结果限制1000条数据",
 	StatisticsInfoUninitialized: "统计信息未初始化",
 	StatisticsWhitelistInvalid:  "统计白名单无效,不支持顶级域名: %s",
+	StatisticsWhitelistNotFound: "不在白名单内",
 }
