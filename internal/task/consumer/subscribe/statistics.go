@@ -177,15 +177,20 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 			BrowserType:    ua.Name,
 		})
 	}
+	logger.Ctx(ctx).Info("收集统计日志", zap.Any("msg", msg), zap.Int("len", len(collects)))
 	if err := statistics_repo.StatisticsCollect().Create(ctx, collects); err != nil {
 		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Int(
 			"len", len(collects),
 		))
+	} else {
+		logger.Ctx(ctx).Info("插入成功", zap.Any("msg", msg), zap.Int("len", len(collects)))
 	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, visitors); err != nil {
 		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Int(
 			"len", len(visitors),
 		))
+	} else {
+		logger.Ctx(ctx).Info("插入成功", zap.Any("msg", msg), zap.Int("len", len(collects)))
 	}
 	return nil
 }
