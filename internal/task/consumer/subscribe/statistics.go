@@ -121,6 +121,9 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	for i := 0; i < 1000; i++ {
 		v, err := redis.Ctx(ctx).LPop(s.collectKey(msg.ScriptID)).Result()
 		if err != nil {
+			if redis.Nil(err) {
+				break
+			}
 			logger.Ctx(ctx).Error("数据获取失败", zap.Error(err), zap.String("key", s.collectKey(msg.ScriptID)))
 			continue
 		}
