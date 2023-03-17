@@ -5,7 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/codfrm/cago/database/redis"
@@ -103,27 +105,28 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 			return nil
 		}
 	}
-	// 加锁
-	if ok, err := redis.Ctx(ctx).SetNX(s.collectKey(msg.ScriptID)+":lock", "1", time.Minute*5).Result(); err != nil {
+	// 加锁,限制10个线程
+	n := strconv.FormatInt(rand.Int63n(10), 10)
+	if ok, err := redis.Ctx(ctx).SetNX(s.collectKey(msg.ScriptID)+":lock:"+n, "1", time.Minute*5).Result(); err != nil {
 		return err
 	} else if !ok {
 		return nil
 	}
-	defer redis.Ctx(ctx).Del(s.collectKey(msg.ScriptID) + ":lock")
+	defer redis.Ctx(ctx).Del(s.collectKey(msg.ScriptID) + ":lock:" + n)
 	if err := redis.Ctx(ctx).Set(s.collectKey(msg.ScriptID)+":time", time.Now().Unix(), 0).Err(); err != nil {
-		return err
-	}
-	result, err := redis.Ctx(ctx).LRange(s.collectKey(msg.ScriptID), 0, 1000).Result()
-	if err != nil {
 		return err
 	}
 	collects := make([]*statistics_entity.StatisticsCollect, 0)
 	visitors := make([]*statistics_entity.StatisticsVisitor, 0)
-	for _, v := range result {
-		redis.Ctx(ctx).LRem(s.collectKey(msg.ScriptID), 0, v)
-		msg := &producer.StatisticsCollectMsg{}
+	for i := 0; i < 1000; i++ {
+		v, err := redis.Ctx(ctx).LPop(s.collectKey(msg.ScriptID)).Result()
+		if err != nil {
+			logger.Ctx(ctx).Error("数据获取失败", zap.Error(err), zap.String("key", s.collectKey(msg.ScriptID)))
+			continue
+		}
 		if err := json.Unmarshal([]byte(v), msg); err != nil {
-			logger.Ctx(ctx).Error("数据解析失败", zap.Error(err), zap.String("value", v))
+			logger.Ctx(ctx).Error("数据解析失败", zap.Error(err), zap.String("key", s.collectKey(msg.ScriptID)),
+				zap.String("value", v))
 			continue
 		}
 		// ip+用户提交的访客id生成后端存储的访客id
