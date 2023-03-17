@@ -93,7 +93,7 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 	if err != nil {
 		return err
 	}
-	if listLen < 10 {
+	if listLen < 1000 {
 		// 检测超时
 		t, err := redis.Ctx(ctx).Get(s.collectKey(msg.ScriptID) + ":time").Int64()
 		if err != nil && !redis.Nil(err) {
@@ -178,10 +178,14 @@ func (s *Statistics) collect(ctx context.Context, msg *producer.StatisticsCollec
 		})
 	}
 	if err := statistics_repo.StatisticsCollect().Create(ctx, collects); err != nil {
-		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg))
+		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Any(
+			"datas", collects,
+		))
 	}
 	if err := statistics_repo.StatisticsVisitor().Create(ctx, visitors); err != nil {
-		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg))
+		logger.Ctx(ctx).Error("统计访客失败", zap.Error(err), zap.Any("msg", msg), zap.Any(
+			"datas", visitors,
+		))
 	}
 	return nil
 }

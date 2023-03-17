@@ -8,6 +8,7 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
+	"gorm.io/gorm"
 )
 
 type StatisticsVisitorRepo interface {
@@ -40,7 +41,9 @@ func NewStatisticVistior() StatisticsVisitorRepo {
 }
 
 func (u *statisticsVisitorRepo) Create(ctx context.Context, statistic []*statistics_entity.StatisticsVisitor) error {
-	return clickhouse.Ctx(ctx).CreateInBatches(statistic, 1000).Error
+	return clickhouse.Ctx(ctx).
+		Session(&gorm.Session{SkipDefaultTransaction: true}).
+		CreateInBatches(statistic, 1000).Error
 }
 
 func (u *statisticsVisitorRepo) FirstUserNumber(ctx context.Context, scriptId int64, startTime, endTime time.Time) (int64, error) {
