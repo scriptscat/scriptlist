@@ -464,6 +464,7 @@ func (s *statisticsSvc) UpdateWhitelist(ctx context.Context, req *api.UpdateWhit
 	}
 	// 判断是否是合法的非顶级域名
 	for _, domain := range req.Whitelist {
+		domain = strings.Trim(domain, ".")
 		domains := strings.Split(domain, ".")
 		if len(domains) < 2 {
 			return nil, i18n.NewError(ctx, code.StatisticsWhitelistInvalid, domain)
