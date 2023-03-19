@@ -170,8 +170,8 @@ type Code struct {
 	UserID       int64            `gorm:"column:user_id;type:bigint(20);index:user_id"`
 	ScriptID     int64            `gorm:"column:script_id;type:bigint(20);index:script_id"`
 	Code         string           `gorm:"column:code;type:mediumtext"`
-	Meta         string           `gorm:"column:meta;type:text"`
-	MetaJson     string           `gorm:"column:meta_json;type:text"`
+	Meta         string           `gorm:"column:meta;type:mediumtext"`
+	MetaJson     string           `gorm:"column:meta_json;type:mediumtext"`
 	Version      string           `gorm:"column:version;type:varchar(255)"`
 	Changelog    string           `gorm:"column:changelog;type:text"`
 	IsPreRelease EnablePreRelease `gorm:"column:is_pre_release;type:tinyint(2);default:2;not null"`
