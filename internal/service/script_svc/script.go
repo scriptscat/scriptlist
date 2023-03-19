@@ -187,6 +187,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 		return nil, err
 	}
 	if scriptCode == nil {
+		logger.Ctx(ctx).Error("脚本代码不存在", zap.Int64("script_id", item.ID))
 		return nil, i18n.NewError(ctx, code.ScriptNotFound)
 	}
 	data.Script = s.scriptCode(ctx, item, scriptCode)
