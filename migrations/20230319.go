@@ -10,7 +10,7 @@ func T20230319() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "20230319",
 		Migrate: func(tx *gorm.DB) error {
-			return tx.AutoMigrate(&script_entity.Script{})
+			return tx.AutoMigrate(&script_entity.Code{})
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil
