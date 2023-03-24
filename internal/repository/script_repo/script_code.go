@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/codfrm/cago/database/cache"
 	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/db"
@@ -97,6 +98,29 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 		}
 		if err := q.First(ret, "script_id=? and version=? and status=?", scriptId, version, consts.ACTIVE).Error; err != nil {
 			if db.RecordNotFound(err) {
+				// 判断是不是版本规则表达式
+				c, err := semver.NewConstraint(version)
+				if err != nil {
+					return nil, err
+				}
+				// 获取所有版本
+				list := make([]string, 0)
+				if err := db.Ctx(ctx).Model(&entity.Code{}).
+					Where("script_id=? and status=?", scriptId, consts.ACTIVE).
+					Order("createtime desc").
+					Pluck("version", &list).Error; err != nil {
+					return nil, err
+				}
+				// 找到最新符合规则的版本
+				for _, v := range list {
+					vv, err := semver.NewVersion(v)
+					if err != nil {
+						return nil, err
+					}
+					if c.Check(vv) {
+						return u.FindByVersion(ctx, scriptId, v, withcode)
+					}
+				}
 				return nil, nil
 			}
 			return nil, err
