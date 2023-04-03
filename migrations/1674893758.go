@@ -8,9 +8,11 @@ import (
 
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/consts"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/resource_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/resource_repo"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -33,7 +35,8 @@ func T1674893758() *gormigrate.Migration {
 				return err
 			}
 			// 迁移resource数据
-			return ScanKeys(ctx, "resource:id:*", func(ctx context.Context, key string) error {
+			return ScanKeys(ctx, "resource:id:*", "string", func(ctx context.Context, key string) error {
+				logger.Ctx(ctx).Info("迁移resource", zap.String("key", key))
 				resourceId := strings.TrimPrefix(key, "resource:id:")
 				if resourceId == "" {
 					return errors.New("解析resourceId失败")

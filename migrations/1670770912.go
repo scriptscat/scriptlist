@@ -28,7 +28,8 @@ func T1670770912() *gormigrate.Migration {
 			if err := db.AutoMigrate(&script_entity.ScriptWatch{}); err != nil {
 				return err
 			}
-			if err := ScanKeys(ctx, "script:watch:*", func(ctx context.Context, key string) error {
+			if err := ScanKeys(ctx, "script:watch:*", "hash", func(ctx context.Context, key string) error {
+				logger.Ctx(ctx).Info("迁移关注", zap.String("key", key))
 				// 取出id
 				scriptId, err := strconv.ParseInt(key[strings.LastIndex(key, ":")+1:], 10, 64)
 				if err != nil {
@@ -44,6 +45,16 @@ func T1670770912() *gormigrate.Migration {
 				for k, v := range list {
 					uid, _ := strconv.ParseInt(k, 10, 64)
 					level, _ := strconv.Atoi(v)
+					// 判断是否重复
+					if ok, err := script_repo.ScriptWatch().FindByUser(ctx, scriptId, uid); err != nil {
+						logger.Ctx(ctx).Error("迁移关注失败",
+							zap.Int64("level", int64(level)),
+							zap.Int64("script_id", scriptId), zap.Int64("user_id", uid), zap.Error(err))
+						continue
+					} else if ok != nil {
+						// 存在
+						continue
+					}
 					if err := script_repo.ScriptWatch().Create(ctx, &script_entity.ScriptWatch{
 						UserID:     uid,
 						ScriptID:   scriptId,
@@ -72,7 +83,8 @@ func T1670770912() *gormigrate.Migration {
 			if err := db.AutoMigrate(&user_entity.UserConfig{}); err != nil {
 				return err
 			}
-			if err := ScanKeys(ctx, "user:token:user:*", func(ctx context.Context, key string) error {
+			if err := ScanKeys(ctx, "user:token:user:*", "string", func(ctx context.Context, key string) error {
+				logger.Ctx(ctx).Info("迁移webhook", zap.String("key", key))
 				suid := key[strings.LastIndex(key, ":")+1:]
 				token, err := redis.Ctx(ctx).Get(key).Result()
 				if err != nil {
@@ -95,9 +107,11 @@ func T1670770912() *gormigrate.Migration {
 					}
 					return user_repo.UserConfig().Create(ctx, cfg)
 				} else {
-					cfg.Token = token
-					cfg.Updatetime = time.Now().Unix()
-					return user_repo.UserConfig().Update(ctx, cfg)
+					//cfg.Token = token
+					//cfg.Updatetime = time.Now().Unix()
+					//return user_repo.UserConfig().Update(ctx, cfg)
+					logger.Ctx(ctx).Info("用户已存在token", zap.Int64("uid", uid), zap.String("old_token", token), zap.String("token", cfg.Token))
+					return nil
 				}
 			}); err != nil {
 				return err

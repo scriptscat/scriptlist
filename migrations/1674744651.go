@@ -26,7 +26,8 @@ func T1674744651() *gormigrate.Migration {
 			if err := db.AutoMigrate(&issue_entity.ScriptIssueWatch{}); err != nil {
 				return err
 			}
-			if err := ScanKeys(ctx, "script:issue:watch:*", func(ctx context.Context, key string) error {
+			if err := ScanKeys(ctx, "script:issue:watch:*", "hash", func(ctx context.Context, key string) error {
+				logger.Ctx(ctx).Info("迁移反馈关注", zap.String("key", key))
 				// 取出id
 				issueId, err := strconv.ParseInt(key[strings.LastIndex(key, ":")+1:], 10, 64)
 				if err != nil {
@@ -43,6 +44,14 @@ func T1674744651() *gormigrate.Migration {
 				for k, v := range list {
 					uid, _ := strconv.ParseInt(k, 10, 64)
 					status, _ := strconv.ParseInt(v, 10, 64)
+					// 判断是否重复
+					if ok, err := issue_repo.Watch().FindByUser(ctx, issueId, uid); err != nil {
+						logger.Ctx(ctx).Error("迁移issue watch失败", zap.Int64("issue_id", issueId),
+							zap.Int64("user_id", uid), zap.String("status", v), zap.Error(err))
+						continue
+					} else if ok != nil {
+						continue
+					}
 					if err := issue_repo.Watch().Create(ctx, &issue_entity.ScriptIssueWatch{
 						UserID:     uid,
 						IssueID:    issueId,
