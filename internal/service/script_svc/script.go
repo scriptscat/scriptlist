@@ -17,7 +17,7 @@ import (
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"

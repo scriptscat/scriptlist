@@ -13,7 +13,8 @@ import (
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/broker"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/metric"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/server/cron"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
@@ -66,7 +67,8 @@ func main() {
 
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
-		Registry(cago.FuncComponent(trace.Trace)).
+		Registry(trace.Trace()).
+		Registry(metric.Metrics()).
 		Registry(cago.FuncComponent(db.Database)).
 		Registry(cago.FuncComponent(clickhouse.Clickhouse)).
 		Registry(cago.FuncComponent(redis.Redis)).

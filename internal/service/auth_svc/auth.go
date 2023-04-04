@@ -10,7 +10,7 @@ import (
 	"github.com/codfrm/cago/database/cache"
 	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
