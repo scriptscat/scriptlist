@@ -4,8 +4,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/re
 
 RUN apk update && apk add tzdata &&  \
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &&  \
-    echo "Asia/Shanghai" > /etc/timezone &&  \
-    apk del tzdata
+    echo "Asia/Shanghai" > /etc/timezone
 
 ARG APP_NAME=cago
 
