@@ -70,8 +70,8 @@ type GrayControlType string
 
 const (
 	GrayControlTypeWeight     GrayControlType = "weight"
-	GrayControlTypeCookie                     = "cookie"
-	GrayControlTypePreRelease                 = "pre-release"
+	GrayControlTypeCookie     GrayControlType = "cookie"
+	GrayControlTypePreRelease GrayControlType = "pre-release"
 )
 
 type Control struct {

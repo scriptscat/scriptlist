@@ -460,7 +460,7 @@ func (s *scriptSvc) MigrateEs() {
 	start := 0
 	for {
 		if ok := func(ctx context.Context) bool {
-			ctx, span := trace.Default().Tracer("MigrateEs").Start(context.Background(), "MigrateEs")
+			ctx, span := trace.Default().Tracer("MigrateEs").Start(ctx, "MigrateEs")
 			defer func() {
 				span.End()
 				start += 20
@@ -690,9 +690,8 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 	} else if !ok {
 		logger.Ctx(ctx).Warn("脚本正在同步中", zap.Int64("script_id", script.ID))
 		return nil
-	} else {
-		defer redis.Ctx(ctx).Del(syncKey)
 	}
+	defer redis.Ctx(ctx).Del(syncKey)
 	if err := script.IsArchive(ctx); err != nil {
 		return err
 	}
@@ -751,6 +750,7 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 		logger.Error("更新代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 		return err
 	}
+	logger.Info("脚本自动更新成功", zap.String("version", code.Version))
 	return nil
 }
 

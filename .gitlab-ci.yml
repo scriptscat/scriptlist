@@ -28,7 +28,7 @@ test-job:
 
 lint-job:
   stage: test
-  image: golangci/golangci-lint:v1.51
+  image: golangci/golangci-lint:v1.52
   cache:
     key: lint-cache
     paths:

@@ -214,6 +214,7 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 			},
 		},
 		"size": page.GetLimit(),
+		"from": page.GetOffset(),
 	}
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {

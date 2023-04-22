@@ -13,8 +13,8 @@ type ScriptStatisticsType string
 
 const (
 	ViewScriptStatistics     ScriptStatisticsType = "view"
-	DownloadScriptStatistics                      = "download"
-	UpdateScriptStatistics                        = "update"
+	DownloadScriptStatistics ScriptStatisticsType = "download"
+	UpdateScriptStatistics   ScriptStatisticsType = "update"
 )
 
 // pf   statistics:script:@op:@id:day:uv:@date 30天过期

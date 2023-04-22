@@ -4,7 +4,7 @@ linters-settings:
   misspell:
     locale: US
 linters:
-  disable-all: true
+  disable-all: false
   enable:
     - typecheck
     - goimports
@@ -12,10 +12,12 @@ linters:
     - govet
     - ineffassign
     - gosimple
-    - deadcode
-    - structcheck
     - unused
     - errcheck
 
 run:
-  timeout: 5m
+  timeout: 10m
+  skip-dirs:
+    - .cache
+    - .lint-cache
+
