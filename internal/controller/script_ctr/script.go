@@ -78,8 +78,6 @@ func (s *Script) MigrateEs(ctx context.Context, req *api.MigrateEsRequest) (*api
 
 func (s *Script) Download(pre bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		logger.Ctx(ctx).Info("调试缓存功能",
-			zap.String("url", ctx.Request.URL.Path), zap.Any("header", ctx.Request.Header))
 		if strings.HasSuffix(ctx.Request.URL.Path, ".user.js") || strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
 			version := ctx.Query("version")
 			id, err := s.getScriptID(ctx)
