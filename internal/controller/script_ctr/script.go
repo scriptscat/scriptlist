@@ -78,6 +78,8 @@ func (s *Script) MigrateEs(ctx context.Context, req *api.MigrateEsRequest) (*api
 
 func (s *Script) Download(pre bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		logger.Ctx(ctx).Info("调试缓存功能",
+			zap.String("url", ctx.Request.URL.Path), zap.Any("header", ctx.Request.Header))
 		if strings.HasSuffix(ctx.Request.URL.Path, ".user.js") || strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
 			version := ctx.Query("version")
 			id, err := s.getScriptID(ctx)
@@ -158,10 +160,26 @@ func (s *Script) downloadScript(ctx *gin.Context, id int64, version string, pre 
 	if err != nil {
 		logger.Ctx(ctx).Error("脚本下载统计记录失败", zap.Any("record", record), zap.Error(err))
 	}
-	ctx.Writer.WriteHeader(http.StatusOK)
-	// 设置文件名
-	//ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", script+".user.js"))
-	_, _ = ctx.Writer.WriteString(code.Code)
+	// 判断是否有If-Modified-Since，如果有且和最后修改时间一致，则返回304
+	ifModifiedSince := ctx.GetHeader("If-Modified-Since")
+	lastModified := time.Unix(code.Createtime, 0).Format("Mon, 02 Jan 2006 15:04:05 GMT")
+	ctx.Header("Last-Modified", lastModified)
+	if ifModifiedSince != "" {
+		if ifModifiedSince == lastModified {
+			ctx.Writer.WriteHeader(http.StatusNotModified)
+			return
+		} else {
+			ctx.Writer.WriteHeader(http.StatusOK)
+			// 设置文件名
+			//ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", script+".user.js"))
+			_, _ = ctx.Writer.WriteString(code.Code)
+		}
+	} else {
+		ctx.Writer.WriteHeader(http.StatusOK)
+		// 设置文件名
+		//ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", script+".user.js"))
+		_, _ = ctx.Writer.WriteString(code.Code)
+	}
 }
 
 func (s *Script) getScriptMeta(ctx *gin.Context, version string, pre bool) {
@@ -204,8 +222,22 @@ func (s *Script) getScriptMeta(ctx *gin.Context, version string, pre bool) {
 	if err != nil {
 		logger.Ctx(ctx).Error("脚本下载统计记录失败", zap.Any("record", record), zap.Error(err))
 	}
-	ctx.Writer.WriteHeader(http.StatusOK)
-	_, _ = ctx.Writer.WriteString(code.Meta)
+	// 判断是否有If-Modified-Since，如果有且和最后修改时间一致，则返回304
+	ifModifiedSince := ctx.GetHeader("If-Modified-Since")
+	lastModified := time.Unix(code.Createtime, 0).Format("Mon, 02 Jan 2006 15:04:05 GMT")
+	ctx.Header("Last-Modified", lastModified)
+	if ifModifiedSince != "" {
+		if ifModifiedSince == lastModified {
+			ctx.Writer.WriteHeader(http.StatusNotModified)
+			return
+		} else {
+			ctx.Writer.WriteHeader(http.StatusOK)
+			_, _ = ctx.Writer.WriteString(code.Meta)
+		}
+	} else {
+		ctx.Writer.WriteHeader(http.StatusOK)
+		_, _ = ctx.Writer.WriteString(code.Meta)
+	}
 }
 
 // Info 获取脚本信息
