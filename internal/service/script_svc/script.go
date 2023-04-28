@@ -428,6 +428,25 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 			return nil, i18n.NewInternalError(ctx, code.ScriptUpdateFailed)
 		}
 	} else {
+		if scriptCode.IsPreRelease == script_entity.EnablePreReleaseScript {
+			// 判断是否有正式版本
+			oldCode, err := script_repo.ScriptCode().FindLatest(ctx, scriptCode.ID, 0, false)
+			if err != nil {
+				return nil, err
+			}
+			if oldCode == nil {
+				return nil, i18n.NewError(ctx, code.ScriptChangePreReleaseNotLatest)
+			}
+			if oldCode.ID == scriptCode.ID {
+				oldCode, err = script_repo.ScriptCode().FindLatest(ctx, scriptCode.ID, 1, false)
+				if err != nil {
+					return nil, err
+				}
+				if oldCode == nil {
+					return nil, i18n.NewError(ctx, code.ScriptChangePreReleaseNotLatest)
+				}
+			}
+		}
 		if err := script_repo.ScriptCode().Update(ctx, scriptCode); err != nil {
 			logger.Ctx(ctx).Error("scriptSvc code update failed", zap.Int64("script_id", script.ID), zap.Error(err))
 			return nil, i18n.NewInternalError(
