@@ -33,3 +33,6 @@ html-cover: coverage.out
 
 generate: check-mockgen swagger
 	go generate ./... -x
+
+cache_proxy:
+	GOOS=linux GOARCH=amd64 go build -o bin/cache_proxy cmd/cache_proxy/main.go

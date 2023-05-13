@@ -7,3 +7,5 @@ config.yaml
 scriptlist
 
 resource
+
+bin/
