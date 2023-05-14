@@ -3,6 +3,8 @@ package statistics_repo
 import (
 	"context"
 	"fmt"
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 	"strconv"
 	"time"
 
@@ -134,9 +136,25 @@ func (s *scriptStatisticsRepo) IncrPageView(ctx context.Context, scriptId int64,
 func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, statisticsToken string, op ScriptStatisticsType) (bool, error) {
 	key := "statistics:script:" + string(op) + ":" + fmt.Sprintf("%d", scriptId)
 	date := time.Now().Format("2006/01/02")
+	ok := true
+	// 有更新的不再统计下载
+	if op == UpdateScriptStatistics {
+		if err := redis.Ctx(ctx).Set("statistics:script:update:"+fmt.Sprintf("%d", scriptId)+":"+ip, "1", time.Hour*24).Err(); err != nil {
+			logger.Ctx(ctx).Error("更新统计保存失败", zap.Error(err))
+		}
+	} else if op == DownloadScriptStatistics {
+		e, err := redis.Ctx(ctx).Exists("statistics:script:update:" + fmt.Sprintf("%d", scriptId) + ":" + ip).Result()
+		if err != nil {
+			logger.Ctx(ctx).Error("更新统计查询失败", zap.Error(err))
+		} else if e == 1 {
+			ok = false
+		}
+	}
 	// 储存统计token计算uv
-	redis.Ctx(ctx).PFAdd(key+fmt.Sprintf(":day:uv:%s", date), statisticsToken)
-	redis.Ctx(ctx).Expire(key+fmt.Sprintf(":day:uv:%s", date), time.Hour*24*60)
+	if ok {
+		redis.Ctx(ctx).PFAdd(key+fmt.Sprintf(":day:uv:%s", date), statisticsToken)
+		redis.Ctx(ctx).Expire(key+fmt.Sprintf(":day:uv:%s", date), time.Hour*24*60)
+	}
 	// 日pv
 	redis.Ctx(ctx).HIncrBy(key+":day:pv", date, 1)
 	// 总pv
@@ -146,5 +164,9 @@ func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, sta
 	redis.Ctx(ctx).Incr(key + ":realtime:" + t)
 	redis.Ctx(ctx).Expire(key+":realtime:"+t, time.Hour)
 	// 判断ip是否操作过了
-	return redis.Ctx(ctx).SetNX(key+":ip:exist:day:"+date+":"+ip, "1", time.Hour*24).Result()
+	result, err := redis.Ctx(ctx).SetNX(key+":ip:exist:day:"+date+":"+ip, "1", time.Hour*24).Result()
+	if err != nil {
+		return false, err
+	}
+	return ok && result, nil
 }
