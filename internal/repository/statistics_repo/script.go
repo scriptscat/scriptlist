@@ -3,12 +3,12 @@ package statistics_repo
 import (
 	"context"
 	"fmt"
-	"github.com/codfrm/cago/pkg/logger"
-	"go.uber.org/zap"
 	"strconv"
 	"time"
 
 	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type ScriptStatisticsType string
