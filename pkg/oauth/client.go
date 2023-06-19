@@ -1,8 +1,11 @@
 package oauth
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"strings"
@@ -60,7 +63,7 @@ func (c *Client) httpPost(url, data string, header http.Header) ([]byte, error) 
 	return body, nil
 }
 
-func (c *Client) RequestAccessToken(code string) (*AccessTokenRespond, error) {
+func (c *Client) RequestAccessToken(ctx context.Context, code string) (*AccessTokenRespond, error) {
 	resp, err := c.httpPost(c.config.ServerUrl+"/plugin.php?id=codfrm_oauth2:server&op=access_token", "client_id="+c.config.ClientID+"&client_secret="+
 		c.config.ClientSecret+"&code="+code, nil)
 	if err != nil {
@@ -71,6 +74,8 @@ func (c *Client) RequestAccessToken(code string) (*AccessTokenRespond, error) {
 		return nil, err
 	}
 	if ret.Code != 0 {
+		logger.Ctx(ctx).Error("OAuth获取code错误", zap.String("code", code),
+			zap.String("data", string(resp)))
 		return nil, ret
 	}
 	return ret, nil

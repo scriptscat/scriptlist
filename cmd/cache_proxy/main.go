@@ -75,7 +75,9 @@ func handleRequest(c *gin.Context) {
 	if xfp := c.Request.Header.Get("X-Forwarded-Proto"); xfp != "" {
 		newReq.Header.Set("X-Forwarded-Proto", xfp)
 	}
-
+	if ua := c.Request.Header.Get("User-Agent"); ua != "" {
+		newReq.Header.Set("User-Agent", ua)
+	}
 	mu.RLock()
 	item, exists := cacheMap[c.Request.RequestURI]
 	mu.RUnlock()
