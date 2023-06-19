@@ -4,11 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"github.com/codfrm/cago/pkg/logger"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type Client struct {

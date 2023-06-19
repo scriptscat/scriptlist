@@ -62,7 +62,7 @@ func (a *authSvc) OAuthCallback(ctx context.Context, req *api.OAuthCallbackReque
 		return nil, err
 	}
 	client := oauth.NewClient(config)
-	resp, err := client.RequestAccessToken(req.Code)
+	resp, err := client.RequestAccessToken(ctx, req.Code)
 	if err != nil {
 		return nil, err
 	}
