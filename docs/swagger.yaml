@@ -353,6 +353,13 @@ definitions:
     - 2
     - 3
     type: integer
+  open.CrxDownloadRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  open.CrxDownloadResponse:
+    type: object
   resource.UploadImageRequest:
     properties:
       comment:
@@ -823,11 +830,6 @@ definitions:
         type: string
     type: object
   script.UpdateSettingResponse:
-    properties:
-      Sync:
-        type: boolean
-      SyncError:
-        type: string
     type: object
   script.VersionCodeResponse:
     properties:
@@ -1052,10 +1054,6 @@ definitions:
     type: object
   statistics.CollectRequest:
     properties:
-      IP:
-        type: string
-      UA:
-        type: string
       duration:
         description: 停留时长(秒)
         type: integer
@@ -1343,6 +1341,7 @@ info:
   title: 脚本站 API 文档
   version: 2.0.0
 paths:
+  /crx/download/{id}: {}
   /login/oauth:
     get:
       consumes:

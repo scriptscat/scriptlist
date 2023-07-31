@@ -118,7 +118,7 @@ func (u *scriptScoreRepo) LastScore(ctx context.Context, page httputils.PageRequ
 	if err != nil {
 		return nil, err
 	}
-	var list []int64
+	list := make([]int64, 0)
 	for _, v := range result {
 		n, _ := strconv.ParseInt(v, 10, 64)
 		list = append(list, n)

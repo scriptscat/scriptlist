@@ -44,7 +44,7 @@ func (r *resourceSvc) UploadImage(ctx context.Context, image *multipart.FileHead
 	if !auth_svc.Auth().Get(ctx).EmailVerified {
 		return nil, i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserEmailNotVerified)
 	}
-	base := path.Join(r.dir, time.Now().Format("2006/0102"))
+	base := path.Join(r.dir, "images", time.Now().Format("2006/0102"))
 	if err := os.MkdirAll(base, 0755); err != nil {
 		return nil, err
 	}

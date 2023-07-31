@@ -6,6 +6,7 @@
     },
     "basePath": "/api/v2",
     "paths": {
+        "/crx/download/{id}": {},
         "/login/oauth": {
             "get": {
                 "description": "第三方登录",
@@ -3475,6 +3476,17 @@
                 3
             ]
         },
+        "open.CrxDownloadRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "open.CrxDownloadResponse": {
+            "type": "object"
+        },
         "resource.UploadImageRequest": {
             "type": "object",
             "properties": {
@@ -4186,15 +4198,7 @@
             }
         },
         "script.UpdateSettingResponse": {
-            "type": "object",
-            "properties": {
-                "Sync": {
-                    "type": "boolean"
-                },
-                "SyncError": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "script.VersionCodeResponse": {
             "type": "object",
@@ -4488,12 +4492,6 @@
         "statistics.CollectRequest": {
             "type": "object",
             "properties": {
-                "IP": {
-                    "type": "string"
-                },
-                "UA": {
-                    "type": "string"
-                },
                 "duration": {
                     "description": "停留时长(秒)",
                     "type": "integer"

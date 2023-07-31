@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -28,10 +27,6 @@ func (s *Script) Crontab(c cron.Crontab) error {
 
 // 检查设置的同步更新
 func (s *Script) checkSyncUpdate(ctx context.Context) error {
-	// 因为pre数据与prod用的是同一个数据库,所以pre环境不执行
-	if configs.Default().Env == configs.PRE {
-		return nil
-	}
 	if ok, err := redis.Ctx(ctx).SetNX("checkSyncUpdate", "1", time.Minute).Result(); err != nil {
 		logger.Ctx(ctx).Error("检查同步失败", zap.Error(err))
 		return err

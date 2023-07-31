@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"io"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/codfrm/cago/pkg/logger"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type cacheItem struct {
@@ -38,7 +39,6 @@ func main() {
 	})
 	if err != nil {
 		panic(err)
-		return
 	}
 	logger.SetLogger(l)
 	r.Any("/scripts/*path", handleRequest)
@@ -98,7 +98,7 @@ func handleRequest(c *gin.Context) {
 			}
 		}
 		c.Writer.WriteHeader(http.StatusOK)
-		c.Writer.Write(item.content)
+		_, _ = c.Writer.Write(item.content)
 		return
 	}
 
@@ -117,7 +117,7 @@ func handleRequest(c *gin.Context) {
 			}
 		}
 		c.Writer.WriteHeader(resp.StatusCode)
-		c.Writer.Write(body)
+		_, _ = c.Writer.Write(body)
 		return
 	}
 
@@ -128,7 +128,7 @@ func handleRequest(c *gin.Context) {
 			}
 		}
 		c.Writer.WriteHeader(resp.StatusCode)
-		c.Writer.Write(body)
+		_, _ = c.Writer.Write(body)
 		return
 	}
 
@@ -161,7 +161,7 @@ func handleRequest(c *gin.Context) {
 			}
 		}
 		c.Writer.WriteHeader(resp.StatusCode)
-		_, err = io.Copy(c.Writer, r)
+		_, err = io.Copy(c.Writer, r) //nolint:gosec
 		if err != nil {
 			logger.Default().Error("io.Copy error", zap.Error(err))
 		}
@@ -179,5 +179,5 @@ func handleRequest(c *gin.Context) {
 		lastModified: lastModified,
 	}
 	mu.Unlock()
-	c.Writer.Write(body)
+	_, _ = c.Writer.Write(body)
 }

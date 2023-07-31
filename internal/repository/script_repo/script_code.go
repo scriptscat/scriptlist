@@ -101,7 +101,7 @@ func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, vers
 				// 判断是不是版本规则表达式
 				c, err := semver.NewConstraint(version)
 				if err != nil {
-					return nil, nil
+					return nil, nil //nolint:nilerr
 				}
 				// 获取所有版本
 				list := make([]string, 0)

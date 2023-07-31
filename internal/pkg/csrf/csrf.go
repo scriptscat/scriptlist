@@ -7,9 +7,9 @@ import (
 	"github.com/gorilla/csrf"
 )
 
-const CsrfSecret = "WdUiz9wR0WsufjgKhh1hrfApfXrXG854"
+const CsrfSecret = "WdUiz9wR0WsufjgKhh1hrfApfXrXG854" //nolint:gosec
 
-const Secret = "NQ3kDBBjRmBpRHSX3"
+const Secret = "NQ3kDBBjRmBpRHSX3" //nolint:gosec
 
 var _csrf = csrf.Protect([]byte(CsrfSecret))
 

@@ -13,7 +13,7 @@ type Cron interface {
 // Crontab 定时任务
 func Crontab(cron cron.Crontab) error {
 	// pre环境不执行定时任务,避免冲突
-	if configs.Default().Env == "pre" {
+	if configs.Default().Env == configs.PRE {
 		return nil
 	}
 	crontab := []Cron{&handler.Statistics{}, &handler.Script{}}

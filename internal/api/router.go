@@ -7,6 +7,7 @@ import (
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/open_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/resource_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/statistics_ctr"
@@ -168,6 +169,12 @@ func Router(root *mux.Router) error {
 		)
 		// 不需要登录
 		r.GET("/resource/image/:id", controller.ViewImage())
+	}
+	// 开放接口
+	{
+		controller := open_ctr.NewOpen()
+		rg := r.Group("/")
+		rg.GET("/open/crx-download/:id", controller.CrxDownload())
 	}
 	return nil
 }
