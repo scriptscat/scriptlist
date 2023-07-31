@@ -23,7 +23,7 @@ type Script struct {
 	Status               int64                          `json:"status"`
 	Score                int64                          `json:"score"`
 	ScoreNum             int64                          `json:"score_num"`
-	Type                 int                            `json:"type"`
+	Type                 script_entity.Type             `json:"type"`
 	Public               int                            `json:"public"`
 	Unwell               int                            `json:"unwell"`
 	Archive              int                            `json:"archive"`

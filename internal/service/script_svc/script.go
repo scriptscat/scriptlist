@@ -138,7 +138,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 		Name:             item.Name,
 		Description:      item.Description,
 		Status:           item.Status,
-		Type:             int(item.Type),
+		Type:             item.Type,
 		Public:           int(item.Public),
 		Unwell:           int(item.Unwell),
 		Archive:          int(item.Archive),

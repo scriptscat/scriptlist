@@ -56,6 +56,7 @@ type ScriptSearch struct {
 	Public        Public        `json:"public"`
 	Unwell        UnwellContent `json:"unwell"`
 	Archive       ScriptArchive `json:"archive"`
+	Type          Type          `json:"type"`
 	Status        int64         `json:"status"`
 	Createtime    int64         `json:"createtime"`
 	Updatetime    int64         `json:"updatetime"`

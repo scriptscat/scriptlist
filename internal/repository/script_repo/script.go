@@ -250,7 +250,7 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 			Name:          source.Name,
 			Description:   source.Description,
 			Content:       source.Content,
-			Type:          0,
+			Type:          source.Type,
 			Public:        source.Public,
 			Unwell:        source.Unwell,
 			SyncUrl:       "",

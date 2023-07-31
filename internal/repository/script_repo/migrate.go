@@ -120,6 +120,7 @@ func (m *migrateRepo) Convert(ctx context.Context, e *entity.Script) (*entity.Sc
 		Category:    nil,
 		Domain:      nil,
 		Public:      e.Public,
+		Type:        e.Type,
 		Unwell:      e.Unwell,
 		Status:      e.Status,
 		Createtime:  e.Createtime,
