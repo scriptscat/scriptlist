@@ -9,7 +9,11 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/codfrm/cago"
+	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/configs/memory"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -27,25 +31,32 @@ var (
 
 // http://127.0.0.1:8080/scripts/code/367/OCS%20%E7%BD%91%E8%AF%BE%E5%8A%A9%E6%89%8B.user.js
 func main() {
-	r := gin.Default()
-	l, err := logger.NewWithConfig(context.Background(), &logger.Config{
-		Level: "info",
-		LogFile: logger.LogFileConfig{
-			Enable:        true,
-			Filename:      "./runtime/logs/proxy.log",
-			ErrorFilename: "./runtime/logs/proxy.err.log",
-		},
-		Loki: logger.LokiConfig{},
-	})
+	cfg, err := configs.NewConfig("cache_proxy", configs.WithSource(
+		memory.NewSource(map[string]interface{}{
+			"http": &mux.Config{Address: []string{":8080"}},
+			"logger": &logger.Config{
+				Level: "info",
+				LogFile: logger.LogFileConfig{
+					Enable:        true,
+					Filename:      "./runtime/logs/proxy.log",
+					ErrorFilename: "./runtime/logs/proxy.err.log",
+				},
+			},
+		}),
+	))
+	if err != nil {
+		log.Fatalf("new config err: %v", err)
+	}
+	if err := cago.New(context.Background(), cfg).
+		Registry(cago.FuncComponent(logger.Logger)).
+		RegistryCancel(mux.HTTP(func(r *mux.Router) error {
+			r.Any("/scripts/*path", handleRequest)
+			return nil
+		})).Start(); err != nil {
+		log.Fatalf("start err: %v", err)
+	}
 	if err != nil {
 		panic(err)
-	}
-	logger.SetLogger(l)
-	r.Any("/scripts/*path", handleRequest)
-	err = r.Run(":8080")
-	if err != nil {
-		log.Fatal(err)
-		return
 	}
 }
 
