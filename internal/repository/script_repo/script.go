@@ -187,16 +187,17 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 				"status": consts.ACTIVE,
 			},
 		},
-		{
+	}
+	if !options.Self {
+		must = append(must, map[string]interface{}{
 			"match": map[string]interface{}{
 				"public": entity.PublicScript,
 			},
-		},
-		{
+		}, map[string]interface{}{
 			"match": map[string]interface{}{
 				"unwell": entity.Well,
 			},
-		},
+		})
 	}
 	if options.UserID != 0 {
 		must = append(must, map[string]interface{}{
