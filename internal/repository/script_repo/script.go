@@ -175,34 +175,42 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
 	script := &entity.ScriptSearch{}
 	search := elasticsearch.Ctx(ctx).Search
+	must := []map[string]interface{}{
+		{
+			"multi_match": map[string]interface{}{
+				"query":  options.Keyword,
+				"fields": []string{"name", "description", "content"},
+			},
+		},
+		{
+			"match": map[string]interface{}{
+				"status": consts.ACTIVE,
+			},
+		},
+		{
+			"match": map[string]interface{}{
+				"public": entity.PublicScript,
+			},
+		},
+		{
+			"match": map[string]interface{}{
+				"unwell": entity.Well,
+			},
+		},
+	}
+	if options.UserID != 0 {
+		must = append(must, map[string]interface{}{
+			"match": map[string]interface{}{
+				"user_id": options.UserID,
+			},
+		})
+	}
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"function_score": map[string]interface{}{
 				"query": map[string]interface{}{
 					"bool": map[string]interface{}{
-						"must": []map[string]interface{}{
-							{
-								"multi_match": map[string]interface{}{
-									"query":  options.Keyword,
-									"fields": []string{"name", "description", "content"},
-								},
-							},
-							{
-								"match": map[string]interface{}{
-									"status": consts.ACTIVE,
-								},
-							},
-							{
-								"match": map[string]interface{}{
-									"public": entity.PublicScript,
-								},
-							},
-							{
-								"match": map[string]interface{}{
-									"unwell": entity.Well,
-								},
-							},
-						},
+						"must": must,
 					},
 				},
 				"script_score": map[string]interface{}{
