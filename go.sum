@@ -86,8 +86,8 @@ github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMn
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58/go.mod h1:EOBUe0h4xcZ5GoxqC5SDxFQ8gwyZPKQoEzownBlhI80=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
-github.com/codfrm/cago v0.0.0-20230823165111-8e97d5f33db6 h1:u45Zz8QaF/smTCTQUBxCFIhufKGriIOKSRFfDN6/kMU=
-github.com/codfrm/cago v0.0.0-20230823165111-8e97d5f33db6/go.mod h1:jVmA+ybW8E5VreuC/KNio9YQAZCVGlPtGuETKG6rVgA=
+github.com/codfrm/cago v0.0.0-20230902020822-da7c16e3f860 h1:wh/2H9GzlvvbKv33MjqwB7cdKvLYepExjdW+OdGYTN8=
+github.com/codfrm/cago v0.0.0-20230902020822-da7c16e3f860/go.mod h1:jVmA+ybW8E5VreuC/KNio9YQAZCVGlPtGuETKG6rVgA=
 github.com/coreos/go-semver v0.3.1 h1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=
 github.com/coreos/go-semver v0.3.1/go.mod h1:irMmmIw/7yzSRPWryHsK7EYSg09caPQL03VsM8rvUec=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=
