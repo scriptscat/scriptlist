@@ -64,7 +64,7 @@ type ScriptSvc interface {
 	// UpdateSetting 更新脚本设置
 	UpdateSetting(ctx context.Context, req *api.UpdateSettingRequest) (*api.UpdateSettingResponse, error)
 	// SyncOnce 同步一次
-	SyncOnce(ctx context.Context, script *script_entity.Script) error
+	SyncOnce(ctx context.Context, script *script_entity.Script, forceSyncMarkdown bool) error
 	// Archive 归档脚本
 	Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error)
 	// Delete 删除脚本
@@ -690,7 +690,7 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 	if err := script_repo.Script().Update(ctx, m); err != nil {
 		return nil, err
 	}
-	err = s.SyncOnce(ctx, m)
+	err = s.SyncOnce(ctx, m, true)
 	if err == nil {
 		return &api.UpdateSettingResponse{
 			Sync: true,
@@ -702,7 +702,7 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 	}, nil
 }
 
-func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) error {
+func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, forceSyncMarkdown bool) error {
 	syncKey := fmt.Sprintf("script:sync:%d", script.ID)
 	if ok, err := redis.Ctx(ctx).SetNX(syncKey, 1, time.Minute*5).Result(); err != nil {
 		return err
@@ -730,6 +730,23 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script) 
 		return err
 	} else if old != nil {
 		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
+		// 强制同步一次markdown
+		if forceSyncMarkdown {
+			if script.ContentUrl != "" {
+				content, err := requestSyncUrl(ctx, script.ContentUrl)
+				if err != nil {
+					logger.Error("读取content失败",
+						zap.String("content_url", script.ContentUrl), zap.Error(err))
+					return nil
+				}
+				script.Content = content
+				if err := script_repo.Script().Update(ctx, script); err != nil {
+					logger.Error("更新content失败",
+						zap.String("content_url", script.ContentUrl), zap.Error(err))
+					return nil
+				}
+			}
+		}
 		return nil
 	}
 	req := &api.UpdateCodeRequest{
@@ -1056,7 +1073,7 @@ func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body [
 		}
 		list = append(list, listtmp...)
 		for _, v := range list {
-			if err := s.SyncOnce(ctx, v); err != nil {
+			if err := s.SyncOnce(ctx, v, false); err != nil {
 				logger.Ctx(ctx).Error("同步脚本失败", zap.Error(err))
 			} else {
 				logger.Ctx(ctx).Info("同步脚本成功", zap.Int64("id", v.ID))
