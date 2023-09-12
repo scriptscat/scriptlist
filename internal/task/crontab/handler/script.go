@@ -56,7 +56,7 @@ func (s *Script) checkSyncUpdate(ctx context.Context) error {
 				logger.Error("检查更新,设置上下文失败", zap.Error(err))
 				continue
 			}
-			if err := script_svc.Script().SyncOnce(ctx, v); err != nil {
+			if err := script_svc.Script().SyncOnce(ctx, v, false); err != nil {
 				logger.Error("脚本检查更新失败", zap.Int64("script_id", v.ID),
 					zap.String("sync_url", v.SyncUrl), zap.Error(err))
 			} else {

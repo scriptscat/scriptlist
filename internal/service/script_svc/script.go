@@ -1105,7 +1105,7 @@ func (s *scriptSvc) LastScore(ctx context.Context, req *api.LastScoreRequest) (*
 		if err := script.CheckOperate(ctx); err != nil {
 			continue
 		}
-		if script.Public != script_entity.PublicScript {
+		if script.Public != script_entity.PublicScript || script.Unwell == script_entity.Unwell {
 			continue
 		}
 		s, err := s.ToScript(ctx, script, false, "")
