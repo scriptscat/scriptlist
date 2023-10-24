@@ -1,4 +1,4 @@
-name: Release
+name: Deploy
 
 on:
   push:
@@ -19,9 +19,9 @@ env:
   REGISTRY: ${{ secrets.DOCKER_REGISTRY && secrets.DOCKER_REGISTRY || 'docker.io' }}
   REPOSITORY: ${{ github.repository }}
   GOPROXY: ${{ secrets.GOPROXY && secrets.GOPROXY || 'https://goproxy.cn,direct' }}
-  RUNNER_TOOL_CACHE: /toolcache
   DOMAIN: scriptcat.org
   ENV: ${{ startsWith(github.ref, 'refs/heads/release/') && 'pre' || startsWith(github.ref, 'refs/heads/test/') && 'test' || github.ref=='refs/heads/main' && 'prod' }}
+  RUNNER_TOOL_CACHE: /toolcache
 
 jobs:
   deploy:
@@ -97,8 +97,8 @@ jobs:
 
     - name: Deploy ${{ env.ENV }}
       env:
-        APP_NAME: ${{ env.APP_NAME }}${{ env.ENV=='prod' && '' || format('-{0}', env.ENV) }}
-        DOMAIN: ${{ env.ENV=='prod' && '' || format('{0}.', env.ENV) }}${{ env.DOMAIN }}
+        APP_NAME: ${{ env.ENV=='prod' && env.APP_NAME || format('{0}-{1}', env.APP_NAME, env.ENV) }}
+        DOMAIN: ${{ env.ENV=='prod' && env.DOMAIN || format('{0}.{1}', env.ENV, env.DOMAIN) }}
         RESOURCE_CPU: ${{ env.ENV=='prod' && '500m' || '50m' }}
         RESOURCE_MEMORY: ${{ env.ENV=='prod' && '512Mi' || '128Mi' }}
       run: |
@@ -112,4 +112,3 @@ jobs:
         --set ingress.tls[0].hosts[0]=$DOMAIN \
         --set resources.requests.cpu=$RESOURCE_CPU \
         --set resources.requests.memory=$RESOURCE_MEMORY
-

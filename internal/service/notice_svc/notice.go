@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"html/template"
-
+	"github.com/codfrm/cago/pkg/gogo"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/pkg/utils"
 	"github.com/scriptscat/scriptlist/configs"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/sender"
 	"go.uber.org/zap"
+	"html/template"
 )
 
 type NoticeSvc interface {
@@ -77,52 +78,55 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			Template: content,
 		}
 	}
-	for _, toUser := range toUsers {
-		to, err := user_repo.User().Find(ctx, toUser)
-		if err != nil {
-			logger.Ctx(ctx).Error("find error", zap.Error(err), zap.Int64("user_id", toUser))
-			continue
-		}
-		if to == nil {
-			logger.Ctx(ctx).Error("user not found", zap.Int64("user_id", toUser))
-			continue
-		}
-		userConfig, err := user_repo.UserConfig().FindByUserID(ctx, toUser)
-		if err != nil {
-			logger.Ctx(ctx).Error("find user config error", zap.Error(err), zap.Int64("user_id", toUser))
-			userConfig = &user_entity.UserConfig{
-				Uid:    toUser,
-				Notify: &user_entity.Notify{},
-			}
-			userConfig.Notify.DefaultValue()
-		}
-		if userConfig == nil {
-			userConfig = &user_entity.UserConfig{
-				Uid:    toUser,
-				Notify: &user_entity.Notify{},
-			}
-			userConfig.Notify.DefaultValue()
-		}
-		for senderType, content := range tplContent {
-			s, ok := n.senderMap[senderType]
-			if !ok {
-				return errors.New("sender not found")
-			}
-			if ok, err := n.IsNotify(ctx, userConfig, senderType, template); err != nil {
-				logger.Ctx(ctx).Error("IsNotify error", zap.Error(err), zap.Int64("user_id", toUser))
-				continue
-			} else if !ok {
+	// 协程去发送邮件
+	return gogo.Go(func(ctx context.Context) error {
+		for _, toUser := range toUsers {
+			to, err := user_repo.User().Find(ctx, toUser)
+			if err != nil {
+				logger.Ctx(ctx).Error("find error", zap.Error(err), zap.Int64("user_id", toUser))
 				continue
 			}
-			if err := s.Send(ctx, to, content.Template, &sender.SendOptions{
-				From:  from,
-				Title: content.Title,
-			}); err != nil {
-				return err
+			if to == nil {
+				logger.Ctx(ctx).Error("user not found", zap.Int64("user_id", toUser))
+				continue
+			}
+			userConfig, err := user_repo.UserConfig().FindByUserID(ctx, toUser)
+			if err != nil {
+				logger.Ctx(ctx).Error("find user config error", zap.Error(err), zap.Int64("user_id", toUser))
+				userConfig = &user_entity.UserConfig{
+					Uid:    toUser,
+					Notify: &user_entity.Notify{},
+				}
+				userConfig.Notify.DefaultValue()
+			}
+			if userConfig == nil {
+				userConfig = &user_entity.UserConfig{
+					Uid:    toUser,
+					Notify: &user_entity.Notify{},
+				}
+				userConfig.Notify.DefaultValue()
+			}
+			for senderType, content := range tplContent {
+				s, ok := n.senderMap[senderType]
+				if !ok {
+					return errors.New("sender not found")
+				}
+				if ok, err := n.IsNotify(ctx, userConfig, senderType, template); err != nil {
+					logger.Ctx(ctx).Error("IsNotify error", zap.Error(err), zap.Int64("user_id", toUser))
+					continue
+				} else if !ok {
+					continue
+				}
+				if err := s.Send(ctx, to, content.Template, &sender.SendOptions{
+					From:  from,
+					Title: content.Title,
+				}); err != nil {
+					return err
+				}
 			}
 		}
-	}
-	return nil
+		return nil
+	}, gogo.WithContext(utils.BaseContext(ctx)))
 }
 
 func (n *noticeSvc) parseTpl(tpl string, data interface{}) (string, error) {

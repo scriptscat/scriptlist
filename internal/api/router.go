@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-contrib/cors"
@@ -18,7 +19,7 @@ import (
 // @title    脚本站 API 文档
 // @version  2.0.0
 // @BasePath /api/v2
-func Router(root *mux.Router) error {
+func Router(ctx context.Context, root *mux.Router) error {
 	r := root.Group("/api/v2")
 	auth := auth_ctr.NewAuth()
 	// 用户-auth
