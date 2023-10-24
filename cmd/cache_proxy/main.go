@@ -49,7 +49,7 @@ func main() {
 	}
 	if err := cago.New(context.Background(), cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
-		RegistryCancel(mux.HTTP(func(r *mux.Router) error {
+		RegistryCancel(mux.HTTP(func(ctx context.Context, r *mux.Router) error {
 			r.Any("/scripts/*path", handleRequest)
 			return nil
 		})).Start(); err != nil {

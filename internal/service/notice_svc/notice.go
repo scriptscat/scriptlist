@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"html/template"
+
 	"github.com/codfrm/cago/pkg/gogo"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
@@ -12,7 +14,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/sender"
 	"go.uber.org/zap"
-	"html/template"
 )
 
 type NoticeSvc interface {
