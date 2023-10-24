@@ -21,7 +21,7 @@ env:
   GOPROXY: ${{ secrets.GOPROXY && secrets.GOPROXY || 'https://goproxy.cn,direct' }}
   RUNNER_TOOL_CACHE: /toolcache
   DOMAIN: scriptcat.org
-  ENV: ${{ startsWith(github.ref, 'refs/heads/release/') && 'release' || startsWith(github.ref, 'refs/heads/test/') && 'test' || github.ref=='refs/heads/main' && 'prod' }}
+  ENV: ${{ startsWith(github.ref, 'refs/heads/release/') && 'pre' || startsWith(github.ref, 'refs/heads/test/') && 'test' || github.ref=='refs/heads/main' && 'prod' }}
 
 jobs:
   deploy:
