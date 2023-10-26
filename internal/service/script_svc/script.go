@@ -142,6 +142,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 		Public:           int(item.Public),
 		Unwell:           int(item.Unwell),
 		Archive:          int(item.Archive),
+		Danger:           int(item.Danger),
 		EnablePreRelease: item.EnablePreRelease,
 		Createtime:       item.Createtime,
 		Updatetime:       item.Updatetime,

@@ -53,6 +53,13 @@ const (
 	IsActive
 )
 
+type ScriptDanger int
+
+const (
+	IsDanger ScriptDanger = iota + 1
+	IsSafe
+)
+
 type EnablePreRelease int
 
 const (
@@ -117,6 +124,7 @@ type Script struct {
 	DefinitionUrl    string           `gorm:"column:definition_url;type:text;index:definition_url,length:255"`
 	SyncMode         SyncMode         `gorm:"column:sync_mode;type:tinyint(2)"`
 	Archive          ScriptArchive    `gorm:"column:archive;type:tinyint(2);default:2;not null"`
+	Danger           ScriptDanger     `gorm:"column:danger;type:bigint(20);default:0;not null"`
 	EnablePreRelease EnablePreRelease `gorm:"column:enable_pre_release;type:tinyint(2);default:2;not null"`
 	GrayControls     *GrayControls    `gorm:"column:gray_controls;type:json"`
 	Status           int64            `gorm:"column:status;type:bigint(20)"`

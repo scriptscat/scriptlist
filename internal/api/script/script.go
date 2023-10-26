@@ -27,6 +27,7 @@ type Script struct {
 	Public               int                            `json:"public"`
 	Unwell               int                            `json:"unwell"`
 	Archive              int                            `json:"archive"`
+	Danger               int                            `json:"danger"`
 	EnablePreRelease     script_entity.EnablePreRelease `json:"enable_pre_release"`
 	TodayInstall         int64                          `json:"today_install"`
 	TotalInstall         int64                          `json:"total_install"`
