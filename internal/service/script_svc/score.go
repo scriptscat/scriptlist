@@ -143,7 +143,6 @@ func (s *scoreSvc) ScoreList(ctx context.Context, req *api.ScoreListRequest) (*a
 			Total: total,
 		},
 	}, nil
-
 }
 
 // SelfScore 用于获取自己对脚本的评价

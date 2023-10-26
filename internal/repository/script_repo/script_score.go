@@ -49,7 +49,7 @@ func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page ht
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := find.Limit(page.Size).Offset((page.Page - 1) * page.Size).Scan(&list).Error; err != nil {
+	if err := find.Limit(page.GetLimit()).Offset(page.GetOffset()).Scan(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, num, nil
