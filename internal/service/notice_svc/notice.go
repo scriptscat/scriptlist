@@ -8,7 +8,7 @@ import (
 
 	"github.com/codfrm/cago/pkg/gogo"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/utils"
+	"github.com/codfrm/cago/pkg/utils/wrap"
 	"github.com/scriptscat/scriptlist/configs"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -127,7 +127,7 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			}
 		}
 		return nil
-	}, gogo.WithContext(utils.BaseContext(ctx)))
+	}, gogo.WithContext(wrap.UnWarContext(ctx)))
 }
 
 func (n *noticeSvc) parseTpl(tpl string, data interface{}) (string, error) {
