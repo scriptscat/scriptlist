@@ -42,7 +42,7 @@ func (s *Statistics) RealtimeChart(ctx context.Context, req *api.RealtimeChartRe
 }
 
 // VisitList 访问列表
-func (s *Statistics) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error) {
+func (s *Statistics) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitListResponse, error) {
 	req.PageRequest.Size = 10
 	return statistics_svc.Statistics().VisitList(ctx, req)
 }

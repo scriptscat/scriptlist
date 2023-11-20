@@ -353,11 +353,6 @@ definitions:
     - 2
     - 3
     type: integer
-  open.CrxDownloadRequest:
-    properties:
-      id:
-        type: integer
-    type: object
   open.CrxDownloadResponse:
     type: object
   resource.UploadImageRequest:
@@ -381,6 +376,44 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  script.Access:
+    properties:
+      access_permission:
+        type: string
+      avatar:
+        type: string
+      createtime:
+        type: integer
+      expiretime:
+        type: integer
+      id:
+        type: integer
+      link_id:
+        description: 关联id
+        type: integer
+      name:
+        type: string
+      type:
+        description: id类型 1=用户id 2=组id
+        type: integer
+    type: object
+  script.AccessListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  script.AddMemberRequest:
+    properties:
+      user_id:
+        type: integer
+    type: object
+  script.AddMemberResponse:
     type: object
   script.ArchiveRequest:
     properties:
@@ -454,6 +487,8 @@ definitions:
         type: string
       createtime:
         type: integer
+      danger:
+        type: integer
       description:
         type: string
       enable_pre_release:
@@ -481,7 +516,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -490,6 +525,29 @@ definitions:
         type: integer
       username:
         type: string
+    type: object
+  script.CreateAccessRequest:
+    properties:
+      access_permission:
+        type: string
+      expiretime:
+        type: integer
+      link_id:
+        type: integer
+      type:
+        description: id类型 1=用户id 2=组id
+        type: integer
+    type: object
+  script.CreateAccessResponse:
+    type: object
+  script.CreateGroupRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  script.CreateGroupResponse:
     type: object
   script.CreateRequest:
     properties:
@@ -531,6 +589,10 @@ definitions:
     type: object
   script.DelScoreResponse:
     type: object
+  script.DeleteAccessRequest:
+    type: object
+  script.DeleteAccessResponse:
+    type: object
   script.DeleteCodeRequest:
     properties:
       codeId:
@@ -539,6 +601,10 @@ definitions:
         type: integer
     type: object
   script.DeleteCodeResponse:
+    type: object
+  script.DeleteGroupRequest:
+    type: object
+  script.DeleteGroupResponse:
     type: object
   script.DeleteRequest:
     properties:
@@ -564,6 +630,54 @@ definitions:
       sync_url:
         type: string
     type: object
+  script.Group:
+    properties:
+      createtime:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      member_count:
+        type: integer
+      name:
+        type: string
+    type: object
+  script.GroupListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  script.GroupMember:
+    properties:
+      avatar:
+        type: string
+      createtime:
+        type: integer
+      expiretime:
+        type: integer
+      id:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  script.GroupMemberListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
   script.InfoResponse:
     properties:
       archive:
@@ -577,6 +691,8 @@ definitions:
       content:
         type: string
       createtime:
+        type: integer
+      danger:
         type: integer
       description:
         type: string
@@ -605,7 +721,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -650,6 +766,13 @@ definitions:
     type: object
   script.PutScoreResponse:
     type: object
+  script.RemoveMemberRequest:
+    properties:
+      uid:
+        type: integer
+    type: object
+  script.RemoveMemberResponse:
+    type: object
   script.Score:
     properties:
       createtime:
@@ -689,6 +812,8 @@ definitions:
         type: array
       createtime:
         type: integer
+      danger:
+        type: integer
       description:
         type: string
       enable_pre_release:
@@ -716,7 +841,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -747,6 +872,20 @@ definitions:
     properties:
       watch:
         $ref: '#/definitions/script_entity.ScriptWatchLevel'
+    type: object
+  script.UpdateAccessRequest:
+    properties:
+      access_permission:
+        type: string
+      expiretime:
+        type: integer
+      link_id:
+        type: integer
+      type:
+        description: id类型 1=用户id 2=组id
+        type: integer
+    type: object
+  script.UpdateAccessResponse:
     type: object
   script.UpdateCodeRequest:
     properties:
@@ -782,6 +921,15 @@ definitions:
         $ref: '#/definitions/script_entity.EnablePreRelease'
     type: object
   script.UpdateCodeSettingResponse:
+    type: object
+  script.UpdateGroupRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  script.UpdateGroupResponse:
     type: object
   script.UpdateScriptGrayRequest:
     properties:
@@ -843,6 +991,8 @@ definitions:
         type: array
       createtime:
         type: integer
+      danger:
+        type: integer
       description:
         type: string
       enable_pre_release:
@@ -870,7 +1020,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -959,10 +1109,12 @@ definitions:
     description: |-
       Public enum type:
       - PublicScript: 1
-      - PrivateScript: 2
+      - UnPublicScript: 2
+      - PrivateScript: 3
     enum:
     - 1
     - 2
+    - 3
     type: integer
   script_entity.ScriptWatchLevel:
     description: |-
@@ -1213,7 +1365,7 @@ definitions:
         description: SessionID     string `json:"session_id"`
         type: string
     type: object
-  statistics.VisitResponse:
+  statistics.VisitListResponse:
     properties:
       list:
         items:
@@ -1341,7 +1493,6 @@ info:
   title: 脚本站 API 文档
   version: 2.0.0
 paths:
-  /crx/download/{id}: {}
   /login/oauth:
     get:
       consumes:
@@ -1374,6 +1525,36 @@ paths:
       summary: 第三方登录
       tags:
       - auth
+  /open/crx-download/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 谷歌crx下载服务
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/open.CrxDownloadResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 谷歌crx下载服务
+      tags:
+      - open
   /resource/image:
     post:
       consumes:
@@ -1532,6 +1713,119 @@ paths:
       summary: 创建脚本
       tags:
       - script
+  /scripts/:id/access:
+    get:
+      consumes:
+      - application/json
+      description: 访问控制列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AccessListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 访问控制列表
+      tags:
+      - script/access
+    post:
+      consumes:
+      - application/json
+      description: 创建访问控制
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建访问控制
+      tags:
+      - script/access
+  /scripts/:id/access/:aid:
+    delete:
+      consumes:
+      - application/json
+      description: 删除访问控制
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除访问控制
+      tags:
+      - script/access
+    put:
+      consumes:
+      - application/json
+      description: 更新访问控制
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新访问控制
+      tags:
+      - script/access
   /scripts/:id/gray:
     put:
       consumes:
@@ -1562,6 +1856,207 @@ paths:
       summary: 更新脚本灰度策略
       tags:
       - script
+  /scripts/:id/group:
+    get:
+      consumes:
+      - application/json
+      description: 群组列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.GroupListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 群组列表
+      tags:
+      - script/group
+    post:
+      consumes:
+      - application/json
+      description: 创建群组
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateGroupResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建群组
+      tags:
+      - script/group
+  /scripts/:id/group/:gid:
+    delete:
+      consumes:
+      - application/json
+      description: 删除群组
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteGroupResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除群组
+      tags:
+      - script/group
+    put:
+      consumes:
+      - application/json
+      description: 更新群组
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateGroupResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新群组
+      tags:
+      - script/group
+  /scripts/:id/group/:gid/member:
+    get:
+      consumes:
+      - application/json
+      description: 群组成员列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.GroupMemberListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 群组成员列表
+      tags:
+      - script/group
+    post:
+      consumes:
+      - application/json
+      description: 添加成员
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.AddMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AddMemberResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 添加成员
+      tags:
+      - script/group
+  /scripts/:id/group/:gid/member/{uid}:
+    delete:
+      consumes:
+      - application/json
+      description: 移除成员
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.RemoveMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.RemoveMemberResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 移除成员
+      tags:
+      - script/group
   /scripts/{id}:
     delete:
       consumes:
@@ -2002,7 +2497,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取反馈评论列表
       tags:
-      - issue
+      - issue/comment
     post:
       consumes:
       - application/json
@@ -2039,7 +2534,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建反馈评论
       tags:
-      - issue
+      - issue/comment
   /scripts/{id}/issues/{issueId}/comment/{commentId}:
     delete:
       consumes:
@@ -2081,7 +2576,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除反馈评论
       tags:
-      - issue
+      - issue/comment
   /scripts/{id}/issues/{issueId}/labels:
     put:
       consumes:
@@ -2292,7 +2787,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取脚本评分列表
       tags:
-      - script
+      - script/score
     put:
       consumes:
       - application/json
@@ -2325,7 +2820,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 脚本评分
       tags:
-      - script
+      - script/score
   /scripts/{id}/score/{scoreId}:
     delete:
       consumes:
@@ -2363,7 +2858,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于删除脚本的评价，注意，只有管理员才有权限删除评价
       tags:
-      - script
+      - script/score
   /scripts/{id}/score/self:
     get:
       consumes:
@@ -2393,7 +2888,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于获取自己对脚本的评价
       tags:
-      - script
+      - script/score
   /scripts/{id}/setting:
     get:
       consumes:

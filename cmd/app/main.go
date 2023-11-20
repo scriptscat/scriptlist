@@ -9,7 +9,6 @@ import (
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"
-	"github.com/codfrm/cago/database/clickhouse"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/database/redis"
@@ -66,10 +65,9 @@ func main() {
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).
-		Registry(cago.FuncComponent(db.Database)).
-		Registry(cago.FuncComponent(clickhouse.Clickhouse)).
+		Registry(db.Database()).
 		Registry(cago.FuncComponent(redis.Redis)).
-		Registry(cago.FuncComponent(cache.Cache)).
+		Registry(cache.Cache()).
 		Registry(cago.FuncComponent(elasticsearch.Elasticsearch)).
 		Registry(cago.FuncComponent(broker.Broker)).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {

@@ -53,6 +53,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 	}
 	// 脚本
 	scriptCtr := script_ctr.NewScript()
+	scriptGroupCtr := script_ctr.NewGroup()
 	{
 		// 需要用户登录的路由组
 		r.Group("/", auth.Middleware(true)).Bind(
@@ -72,6 +73,18 @@ func Router(ctx context.Context, root *mux.Router) error {
 			scriptCtr.UpdateScriptGray,
 			scriptCtr.Archive,
 			scriptCtr.DeleteCode,
+		)
+		// 群组处理
+		r.Group("/", auth.Middleware(true), scriptCtr.Middleware()).Bind(
+			scriptGroupCtr.GroupList,
+			scriptGroupCtr.CreateGroup,
+			scriptGroupCtr.UpdateGroup,
+			scriptGroupCtr.DeleteGroup,
+		)
+		r.Group("/", auth.Middleware(true), scriptCtr.Middleware(), scriptGroupCtr.Middleware()).Bind(
+			scriptGroupCtr.GroupMemberList,
+			scriptGroupCtr.AddMember,
+			scriptGroupCtr.RemoveMember,
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))

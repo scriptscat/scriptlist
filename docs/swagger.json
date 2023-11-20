@@ -6,7 +6,6 @@
     },
     "basePath": "/api/v2",
     "paths": {
-        "/crx/download/{id}": {},
         "/login/oauth": {
             "get": {
                 "description": "第三方登录",
@@ -58,6 +57,53 @@
                 }
             }
         },
+      "/open/crx-download/{id}": {
+        "get": {
+          "description": "谷歌crx下载服务",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "open"
+          ],
+          "summary": "谷歌crx下载服务",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/open.CrxDownloadResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
         "/resource/image": {
             "post": {
                 "description": "上传图片",
@@ -308,6 +354,185 @@
                 }
             }
         },
+      "/scripts/:id/access": {
+        "get": {
+          "description": "访问控制列表",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access"
+          ],
+          "summary": "访问控制列表",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.AccessListResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "post": {
+          "description": "创建访问控制",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access"
+          ],
+          "summary": "创建访问控制",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.CreateAccessRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.CreateAccessResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/:id/access/:aid": {
+        "put": {
+          "description": "更新访问控制",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access"
+          ],
+          "summary": "更新访问控制",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateAccessRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateAccessResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "delete": {
+          "description": "删除访问控制",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access"
+          ],
+          "summary": "删除访问控制",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.DeleteAccessRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.DeleteAccessResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+            }
+        },
         "/scripts/:id/gray": {
             "put": {
                 "description": "更新脚本灰度策略",
@@ -341,6 +566,324 @@
                                 "data": {
                                     "$ref": "#/definitions/script.UpdateScriptGrayResponse"
                                 },
+                              "msg": {
+                                "type": "string"
+                              }
+                            }
+                        }
+                    },
+                  "400": {
+                    "description": "Bad Request",
+                    "schema": {
+                      "$ref": "#/definitions/BadRequest"
+                    }
+                  }
+                }
+            }
+        },
+      "/scripts/:id/group": {
+        "get": {
+          "description": "群组列表",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "群组列表",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.GroupListResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "post": {
+          "description": "创建群组",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "创建群组",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.CreateGroupRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.CreateGroupResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/:id/group/:gid": {
+        "put": {
+          "description": "更新群组",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "更新群组",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateGroupRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateGroupResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "delete": {
+          "description": "删除群组",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "删除群组",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.DeleteGroupRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.DeleteGroupResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/:id/group/:gid/member": {
+        "get": {
+          "description": "群组成员列表",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "群组成员列表",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.GroupMemberListResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "post": {
+          "description": "添加成员",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "添加成员",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.AddMemberRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.AddMemberResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/:id/group/:gid/member/{uid}": {
+        "delete": {
+          "description": "移除成员",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "移除成员",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "uid",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.RemoveMemberRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.RemoveMemberResponse"
+                  },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -1093,7 +1636,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "获取反馈评论列表",
                 "parameters": [
@@ -1144,7 +1687,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "创建反馈评论",
                 "parameters": [
@@ -1204,7 +1747,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "删除反馈评论",
                 "parameters": [
@@ -1555,7 +2098,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "获取脚本评分列表",
                 "parameters": [
@@ -1600,7 +2143,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "脚本评分",
                 "parameters": [
@@ -1654,7 +2197,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "用于获取自己对脚本的评价",
                 "parameters": [
@@ -1701,7 +2244,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
                 "parameters": [
@@ -3476,14 +4019,6 @@
                 3
             ]
         },
-        "open.CrxDownloadRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
         "open.CrxDownloadResponse": {
             "type": "object"
         },
@@ -3521,6 +4056,63 @@
                 }
             }
         },
+      "script.Access": {
+        "type": "object",
+        "properties": {
+          "access_permission": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "createtime": {
+            "type": "integer"
+          },
+          "expiretime": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "link_id": {
+            "description": "关联id",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "description": "id类型 1=用户id 2=组id",
+            "type": "integer"
+          }
+        }
+      },
+      "script.AccessListResponse": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "#/definitions/issue.Comment"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.AddMemberRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.AddMemberResponse": {
+        "type": "object"
+      },
         "script.ArchiveRequest": {
             "type": "object",
             "properties": {
@@ -3630,6 +4222,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+              },
                 "description": {
                     "type": "string"
                 },
@@ -3670,7 +4265,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -3686,6 +4281,41 @@
                 }
             }
         },
+      "script.CreateAccessRequest": {
+        "type": "object",
+        "properties": {
+          "access_permission": {
+            "type": "string"
+          },
+          "expiretime": {
+            "type": "integer"
+          },
+          "link_id": {
+            "type": "integer"
+          },
+          "type": {
+            "description": "id类型 1=用户id 2=组id",
+            "type": "integer"
+          }
+        }
+      },
+      "script.CreateAccessResponse": {
+        "type": "object"
+      },
+      "script.CreateGroupRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "script.CreateGroupResponse": {
+        "type": "object"
+      },
         "script.CreateRequest": {
             "type": "object",
             "properties": {
@@ -3746,6 +4376,12 @@
         "script.DelScoreResponse": {
             "type": "object"
         },
+      "script.DeleteAccessRequest": {
+        "type": "object"
+      },
+      "script.DeleteAccessResponse": {
+        "type": "object"
+      },
         "script.DeleteCodeRequest": {
             "type": "object",
             "properties": {
@@ -3760,6 +4396,12 @@
         "script.DeleteCodeResponse": {
             "type": "object"
         },
+      "script.DeleteGroupRequest": {
+        "type": "object"
+      },
+      "script.DeleteGroupResponse": {
+        "type": "object"
+      },
         "script.DeleteRequest": {
             "type": "object",
             "properties": {
@@ -3797,6 +4439,79 @@
                 }
             }
         },
+      "script.Group": {
+        "type": "object",
+        "properties": {
+          "createtime": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "member_count": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "script.GroupListResponse": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "#/definitions/issue.Comment"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.GroupMember": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string"
+          },
+          "createtime": {
+            "type": "integer"
+          },
+          "expiretime": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "script.GroupMemberListResponse": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "#/definitions/issue.Comment"
+            }
+          },
+          "total": {
+            "type": "integer"
+                }
+            }
+        },
         "script.InfoResponse": {
             "type": "object",
             "properties": {
@@ -3817,6 +4532,9 @@
                 },
                 "createtime": {
                     "type": "integer"
+                },
+              "danger": {
+                "type": "integer"
                 },
                 "description": {
                     "type": "string"
@@ -3858,7 +4576,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -3927,6 +4645,17 @@
         "script.PutScoreResponse": {
             "type": "object"
         },
+      "script.RemoveMemberRequest": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.RemoveMemberResponse": {
+        "type": "object"
+      },
         "script.Score": {
             "type": "object",
             "properties": {
@@ -3986,6 +4715,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -4026,7 +4758,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -4076,6 +4808,27 @@
                 }
             }
         },
+      "script.UpdateAccessRequest": {
+        "type": "object",
+        "properties": {
+          "access_permission": {
+            "type": "string"
+          },
+          "expiretime": {
+            "type": "integer"
+          },
+          "link_id": {
+            "type": "integer"
+          },
+          "type": {
+            "description": "id类型 1=用户id 2=组id",
+            "type": "integer"
+          }
+        }
+      },
+      "script.UpdateAccessResponse": {
+        "type": "object"
+      },
         "script.UpdateCodeRequest": {
             "type": "object",
             "properties": {
@@ -4125,6 +4878,20 @@
         },
         "script.UpdateCodeSettingResponse": {
             "type": "object"
+        },
+      "script.UpdateGroupRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "script.UpdateGroupResponse": {
+        "type": "object"
         },
         "script.UpdateScriptGrayRequest": {
             "type": "object",
@@ -4218,6 +4985,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -4258,7 +5028,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -4377,11 +5147,12 @@
             ]
         },
         "script_entity.Public": {
-            "description": "Public enum type:\n- PublicScript: 1\n- PrivateScript: 2",
+          "description": "Public enum type:\n- PublicScript: 1\n- UnPublicScript: 2\n- PrivateScript: 3",
             "type": "integer",
             "enum": [
                 1,
-                2
+              2,
+              3
             ]
         },
         "script_entity.ScriptWatchLevel": {
@@ -4729,7 +5500,7 @@
                 }
             }
         },
-        "statistics.VisitResponse": {
+      "statistics.VisitListResponse": {
             "type": "object",
             "properties": {
                 "list": {

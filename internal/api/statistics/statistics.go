@@ -104,7 +104,7 @@ type VisitItem struct {
 	ExitTime      int64  `json:"exit_time"`
 }
 
-type VisitResponse struct {
+type VisitListResponse struct {
 	httputils.PageResponse[*VisitItem] `json:",inline"`
 }
 

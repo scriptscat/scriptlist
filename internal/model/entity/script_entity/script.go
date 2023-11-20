@@ -25,11 +25,15 @@ const (
 	LibraryType                    // 库
 )
 
-type Public int
+type (
+	Public  int // 公开, 控制脚本在脚本列表中的展示
+	Private int // 私有, 控制脚本是否可以被其他用户访问
+)
 
 const (
-	PublicScript  Public = iota + 1 // 公开
-	PrivateScript                   // 私有(半公开,只是不展示在列表中)
+	PublicScript   Public = iota + 1 // 公开
+	UnPublicScript                   // 半公开, 只是不展示在列表中
+	PrivateScript                    // 私有, 只有自己可以访问
 )
 
 type UnwellContent int
