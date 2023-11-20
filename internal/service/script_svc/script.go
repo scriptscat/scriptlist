@@ -91,6 +91,10 @@ type ScriptSvc interface {
 	Webhook(ctx context.Context, req *api.WebhookRequest, body []byte) (*api.WebhookResponse, error)
 	// LastScore 最新评分脚本
 	LastScore(ctx context.Context, req *api.LastScoreRequest) (*api.LastScoreResponse, error)
+	// UpdateLibInfo 更新库信息
+	UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoRequest) (*api.UpdateLibInfoResponse, error)
+	// UpdateSyncSetting 更新同步配置
+	UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error)
 }
 
 type scriptSvc struct {
@@ -1120,5 +1124,52 @@ func (s *scriptSvc) LastScore(ctx context.Context, req *api.LastScoreRequest) (*
 			List:  list,
 			Total: int64(len(list)),
 		},
+	}, nil
+}
+
+// UpdateLibInfo 更新库信息
+func (s *scriptSvc) UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoRequest) (*api.UpdateLibInfoResponse, error) {
+	script := s.CtxScript(ctx)
+	if err := script.IsArchive(ctx); err != nil {
+		return nil, err
+	}
+	switch script.Type {
+	case script_entity.UserscriptType, script_entity.SubscribeType:
+	case script_entity.LibraryType:
+		script.Name = req.Name
+		script.Description = req.Description
+	default:
+		return nil, i18n.NewError(ctx, code.ScriptUpdateFailed)
+	}
+	if err := script_repo.Script().Update(ctx, script); err != nil {
+		return nil, err
+	}
+	return &api.UpdateLibInfoResponse{}, nil
+}
+
+// UpdateSyncSetting 更新同步配置
+func (s *scriptSvc) UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error) {
+	script := s.CtxScript(ctx)
+	if err := script.IsArchive(ctx); err != nil {
+		return nil, err
+	}
+	if err := script.IsArchive(ctx); err != nil {
+		return nil, err
+	}
+	script.SyncUrl = req.SyncUrl
+	script.ContentUrl = req.ContentUrl
+	script.SyncMode = req.SyncMode
+	if err := script_repo.Script().Update(ctx, script); err != nil {
+		return nil, err
+	}
+	err := s.SyncOnce(ctx, script, true)
+	if err == nil {
+		return &api.UpdateSyncSettingResponse{
+			Sync: true,
+		}, nil
+	}
+	return &api.UpdateSyncSettingResponse{
+		Sync:      false,
+		SyncError: err.Error(),
 	}, nil
 }

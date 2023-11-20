@@ -72,6 +72,8 @@ func Router(ctx context.Context, root *mux.Router) error {
 			scriptCtr.UpdateScriptGray,
 			scriptCtr.Archive,
 			scriptCtr.DeleteCode,
+			scriptCtr.UpdateSyncSetting,
+			scriptCtr.UpdateLibInfo,
 		)
 		// 处理下载
 		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))

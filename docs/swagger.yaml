@@ -454,6 +454,8 @@ definitions:
         type: string
       createtime:
         type: integer
+      danger:
+        type: integer
       description:
         type: string
       enable_pre_release:
@@ -481,7 +483,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -578,6 +580,8 @@ definitions:
         type: string
       createtime:
         type: integer
+      danger:
+        type: integer
       description:
         type: string
       enable_pre_release:
@@ -605,7 +609,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -689,6 +693,8 @@ definitions:
         type: array
       createtime:
         type: integer
+      danger:
+        type: integer
       description:
         type: string
       enable_pre_release:
@@ -716,7 +722,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -783,6 +789,15 @@ definitions:
     type: object
   script.UpdateCodeSettingResponse:
     type: object
+  script.UpdateLibInfoRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  script.UpdateLibInfoResponse:
+    type: object
   script.UpdateScriptGrayRequest:
     properties:
       enable_pre_release:
@@ -831,6 +846,19 @@ definitions:
     type: object
   script.UpdateSettingResponse:
     type: object
+  script.UpdateSyncSettingRequest:
+    properties:
+      content_url:
+        type: string
+      definition_url:
+        type: string
+      sync_mode:
+        $ref: '#/definitions/script_entity.SyncMode'
+      sync_url:
+        type: string
+    type: object
+  script.UpdateSyncSettingResponse:
+    type: object
   script.VersionCodeResponse:
     properties:
       archive:
@@ -842,6 +870,8 @@ definitions:
           $ref: '#/definitions/script.CategoryList'
         type: array
       createtime:
+        type: integer
+      danger:
         type: integer
       description:
         type: string
@@ -870,7 +900,7 @@ definitions:
       total_install:
         type: integer
       type:
-        type: integer
+        $ref: '#/definitions/script_entity.Type'
       unwell:
         type: integer
       updatetime:
@@ -959,7 +989,7 @@ definitions:
     description: |-
       Public enum type:
       - PublicScript: 1
-      - PrivateScript: 2
+      - UnPublicScript: 2
     enum:
     - 1
     - 2
@@ -1341,7 +1371,6 @@ info:
   title: 脚本站 API 文档
   version: 2.0.0
 paths:
-  /crx/download/{id}: {}
   /login/oauth:
     get:
       consumes:
@@ -1374,6 +1403,7 @@ paths:
       summary: 第三方登录
       tags:
       - auth
+  /open/crx-download/{id}: {}
   /resource/image:
     post:
       consumes:
@@ -1560,6 +1590,66 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新脚本灰度策略
+      tags:
+      - script
+  /scripts/:id/lib-info:
+    put:
+      consumes:
+      - application/json
+      description: 更新库信息
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateLibInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateLibInfoResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新库信息
+      tags:
+      - script
+  /scripts/:id/sync:
+    put:
+      consumes:
+      - application/json
+      description: 更新同步配置
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateSyncSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateSyncSettingResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新同步配置
       tags:
       - script
   /scripts/{id}:
@@ -2002,7 +2092,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取反馈评论列表
       tags:
-      - issue
+      - issue/comment
     post:
       consumes:
       - application/json
@@ -2039,7 +2129,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建反馈评论
       tags:
-      - issue
+      - issue/comment
   /scripts/{id}/issues/{issueId}/comment/{commentId}:
     delete:
       consumes:
@@ -2081,7 +2171,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除反馈评论
       tags:
-      - issue
+      - issue/comment
   /scripts/{id}/issues/{issueId}/labels:
     put:
       consumes:
@@ -2292,7 +2382,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取脚本评分列表
       tags:
-      - script
+      - script/score
     put:
       consumes:
       - application/json
@@ -2325,7 +2415,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 脚本评分
       tags:
-      - script
+      - script/score
   /scripts/{id}/score/{scoreId}:
     delete:
       consumes:
@@ -2363,7 +2453,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于删除脚本的评价，注意，只有管理员才有权限删除评价
       tags:
-      - script
+      - script/score
   /scripts/{id}/score/self:
     get:
       consumes:
@@ -2393,7 +2483,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于获取自己对脚本的评价
       tags:
-      - script
+      - script/score
   /scripts/{id}/setting:
     get:
       consumes:

@@ -16,6 +16,7 @@ env:
   DOMAIN: scriptcat.org
   ENV: ${{ startsWith(github.ref, 'refs/heads/release/') && 'pre' || startsWith(github.ref, 'refs/heads/test/') && 'test' || github.ref=='refs/heads/main' && 'prod' }}
   RUNNER_TOOL_CACHE: /toolcache
+  BASEIMAGE: ${{ secrets.BASEIMAGE && secrets.BASEIMAGE || '' }}
 
 jobs:
   deploy:
@@ -74,6 +75,7 @@ jobs:
         context: .
         build-args: |
           APP_NAME=${{ env.APP_NAME }}
+          BASEIMAGE=${{ env.BASEIMAGE }}/debian:12-slim
 
     - name: Set up kubeconfig
 #      uses: azure/k8s-set-context@v3
