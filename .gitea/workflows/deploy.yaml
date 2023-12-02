@@ -35,6 +35,7 @@ jobs:
       with:
         version: latest
         install-mode: goinstall
+        args: --timeout=30m
 
     - name: Tests
       run: |
