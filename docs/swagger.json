@@ -6,7 +6,6 @@
     },
     "basePath": "/api/v2",
     "paths": {
-        "/crx/download/{id}": {},
         "/login/oauth": {
             "get": {
                 "description": "第三方登录",
@@ -58,6 +57,7 @@
                 }
             }
         },
+      "/open/crx-download/{id}": {},
         "/resource/image": {
             "post": {
                 "description": "上传图片",
@@ -356,6 +356,102 @@
                 }
             }
         },
+      "/scripts/:id/lib-info": {
+        "put": {
+          "description": "更新库信息",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script"
+          ],
+          "summary": "更新库信息",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateLibInfoRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateLibInfoResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/:id/sync": {
+        "put": {
+          "description": "更新同步配置",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script"
+          ],
+          "summary": "更新同步配置",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateSyncSettingRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateSyncSettingResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
         "/scripts/last-score": {
             "get": {
                 "description": "最新评分脚本",
@@ -1093,7 +1189,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "获取反馈评论列表",
                 "parameters": [
@@ -1144,7 +1240,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "创建反馈评论",
                 "parameters": [
@@ -1204,7 +1300,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "删除反馈评论",
                 "parameters": [
@@ -1555,7 +1651,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "获取脚本评分列表",
                 "parameters": [
@@ -1600,7 +1696,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "脚本评分",
                 "parameters": [
@@ -1654,7 +1750,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "用于获取自己对脚本的评价",
                 "parameters": [
@@ -1701,7 +1797,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
                 "parameters": [
@@ -3630,6 +3726,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -3670,7 +3769,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -3818,6 +3917,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+              },
                 "description": {
                     "type": "string"
                 },
@@ -3858,7 +3960,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -3986,6 +4088,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+              },
                 "description": {
                     "type": "string"
                 },
@@ -4026,7 +4131,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -4126,6 +4231,20 @@
         "script.UpdateCodeSettingResponse": {
             "type": "object"
         },
+      "script.UpdateLibInfoRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "script.UpdateLibInfoResponse": {
+        "type": "object"
+      },
         "script.UpdateScriptGrayRequest": {
             "type": "object",
             "properties": {
@@ -4200,6 +4319,26 @@
         "script.UpdateSettingResponse": {
             "type": "object"
         },
+      "script.UpdateSyncSettingRequest": {
+        "type": "object",
+        "properties": {
+          "content_url": {
+            "type": "string"
+          },
+          "definition_url": {
+            "type": "string"
+          },
+          "sync_mode": {
+            "$ref": "#/definitions/script_entity.SyncMode"
+          },
+          "sync_url": {
+            "type": "string"
+          }
+        }
+      },
+      "script.UpdateSyncSettingResponse": {
+        "type": "object"
+      },
         "script.VersionCodeResponse": {
             "type": "object",
             "properties": {
@@ -4218,6 +4357,9 @@
                 "createtime": {
                     "type": "integer"
                 },
+              "danger": {
+                "type": "integer"
+              },
                 "description": {
                     "type": "string"
                 },
@@ -4258,7 +4400,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "integer"
+                  "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -4377,7 +4519,7 @@
             ]
         },
         "script_entity.Public": {
-            "description": "Public enum type:\n- PublicScript: 1\n- PrivateScript: 2",
+          "description": "Public enum type:\n- PublicScript: 1\n- UnPublicScript: 2",
             "type": "integer",
             "enum": [
                 1,
