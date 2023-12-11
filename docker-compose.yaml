@@ -1,0 +1,89 @@
+version: '3'
+
+services:
+
+  nsqlookupd:
+    image: nsqio/nsq
+    command: /nsqlookupd
+    ports:
+      - 4160:4160
+      - 4161:4161
+
+  nsqd:
+    image: nsqio/nsq
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=127.0.0.1
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4150:4150
+      - 4151:4151
+
+  nsqadmin:
+    image: nsqio/nsq
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4171:4171
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:head-alpine
+    restart: on-failure
+    environment:
+      CLICKHOUSE_DB: clickhouse
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'localhost:8123/ping']
+      interval: 1s
+      timeout: 1s
+      retries: 30
+    ports:
+      - "8123:8123"
+      - "9009:9000"
+    volumes:
+      - ./.docker/clickhouse:/var/lib/clickhouse
+
+  redis:
+    image: redis
+    container_name: scriptlist
+    volumes:
+      - ./.docker/redis:/data
+    ports:
+      - 6379:6379
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=scriptlist
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql
+
+#  elasticsearch:
+#      image: elasticsearch:8.5.2
+#      environment:
+#        - bootstrap.memory_lock=true
+#        - discovery.type=single-node
+#        - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+#      ports:
+#        - 9200:9200
+#        - 9300:9300
+#      volumes:
+#        - ./.docker/elasticsearch/data:/usr/share/elasticsearch/data
+#      networks:
+#        - scriptlist
+#
+#  kibana:
+#    image: kibana:8.5.2
+#    volumes:
+#      - ./.docker/kibanadata:/usr/share/kibana/data
+#    ports:
+#      - 5601:5601
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#    networks:
+#      - scriptlist
+
+networks:
+  scriptlist:
