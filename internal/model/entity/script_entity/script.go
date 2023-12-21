@@ -172,7 +172,7 @@ func (s *Script) IsArchive(ctx context.Context) error {
 		return err
 	}
 	if s.Archive == IsArchive {
-		return i18n.NewError(ctx, code.ScriptIsArchive)
+		return i18n.NewForbiddenError(ctx, code.ScriptIsArchive)
 	}
 	return nil
 }

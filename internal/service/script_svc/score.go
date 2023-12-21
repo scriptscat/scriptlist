@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
-	"github.com/scriptscat/scriptlist/internal/model"
-	"github.com/scriptscat/scriptlist/internal/model/entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -77,7 +77,7 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 	}
 	if score == nil {
 		//不存在记录，创建一条记录
-		err := script_repo.ScriptScore().Create(ctx, &entity.ScriptScore{
+		err := script_repo.ScriptScore().Create(ctx, &script_entity.ScriptScore{
 			UserID:     uid,
 			ScriptID:   scriptId,
 			Score:      req.Score,
@@ -165,7 +165,7 @@ func (s *scoreSvc) SelfScore(ctx context.Context, req *api.SelfScoreRequest) (*a
 	}, nil
 }
 
-func (s *scoreSvc) ToScore(ctx context.Context, score *entity.ScriptScore) (*api.Score, error) {
+func (s *scoreSvc) ToScore(ctx context.Context, score *script_entity.ScriptScore) (*api.Score, error) {
 	user, err := user_repo.User().Find(ctx, score.UserID)
 	if err != nil {
 		return nil, err
@@ -184,11 +184,18 @@ func (s *scoreSvc) ToScore(ctx context.Context, score *entity.ScriptScore) (*api
 
 // DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
 func (s *scoreSvc) DelScore(ctx context.Context, req *api.DelScoreRequest) (*api.DelScoreResponse, error) {
-	if !auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
-		return nil, i18n.NewError(ctx, code.UserNotPermission)
+	score, err := script_repo.ScriptScore().Find(ctx, req.ScoreId)
+	if err != nil {
+		return nil, err
+	}
+	if score == nil {
+		return nil, i18n.NewNotFoundError(ctx, code.ScriptScoreNotFound)
+	}
+	if score.ScriptID != req.ScriptId {
+		return nil, i18n.NewNotFoundError(ctx, code.ScriptScoreNotFound)
 	}
 	//删除评价
-	err := script_repo.ScriptScore().Delete(ctx, req.ScoreId)
+	err = script_repo.ScriptScore().Delete(ctx, req.ScoreId)
 	if err != nil {
 		return nil, err
 	}

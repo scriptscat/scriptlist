@@ -14,6 +14,7 @@ var zhCN = map[int]string{
 	UserNotFollowSelf:    "不能关注自己",
 	UserExistFollow:      "已关注",
 	UserEmailNotVerified: "邮箱未验证",
+	UserNotLogin:         "用户未登录",
 
 	ScriptNameIsEmpty:               "脚本名不能为空",
 	ScriptDescIsEmpty:               "脚本描述不能为空",

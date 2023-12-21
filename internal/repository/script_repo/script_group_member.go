@@ -2,6 +2,7 @@ package script_repo
 
 import (
 	"context"
+
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 
 	"github.com/codfrm/cago/database/db"
@@ -9,12 +10,15 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
+//go:generate mockgen -source=./script_group_member.go -destination=./mock/script_group_member.go
 type ScriptGroupMemberRepo interface {
 	Find(ctx context.Context, id int64) (*script_entity.ScriptGroupMember, error)
 	FindPage(ctx context.Context, page httputils.PageRequest) ([]*script_entity.ScriptGroupMember, int64, error)
 	Create(ctx context.Context, scriptGroupMember *script_entity.ScriptGroupMember) error
 	Update(ctx context.Context, scriptGroupMember *script_entity.ScriptGroupMember) error
 	Delete(ctx context.Context, id int64) error
+
+	FindByUserId(ctx context.Context, scriptId, userId int64) ([]*script_entity.ScriptGroupMember, error)
 }
 
 var defaultScriptGroupMember ScriptGroupMemberRepo
@@ -68,4 +72,13 @@ func (u *scriptGroupMemberRepo) FindPage(ctx context.Context, page httputils.Pag
 		return nil, 0, err
 	}
 	return list, count, nil
+}
+
+func (u *scriptGroupMemberRepo) FindByUserId(ctx context.Context, scriptId, userId int64) ([]*script_entity.ScriptGroupMember, error) {
+	var list []*script_entity.ScriptGroupMember
+	if err := db.Ctx(ctx).Model(&script_entity.ScriptGroupMember{}).
+		Where("script_id=? and user_id=? and status=?", scriptId, userId, consts.ACTIVE).Find(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
 }

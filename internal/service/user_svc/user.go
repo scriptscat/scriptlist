@@ -55,7 +55,7 @@ func (u *userSvc) UserInfo(ctx context.Context, uid int64) (*api.InfoResponse, e
 		return nil, i18n.NewError(ctx, code.UserNotFound)
 	}
 	return &api.InfoResponse{
-		UserID:      user.UID,
+		UserID:      user.ID,
 		Username:    user.Username,
 		Avatar:      user.Avatar(),
 		IsAdmin:     model.AdminLevel(user.Adminid),

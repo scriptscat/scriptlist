@@ -2,6 +2,11 @@ package script_ctr
 
 import (
 	"context"
+
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+
 	"github.com/gin-gonic/gin"
 
 	api "github.com/scriptscat/scriptlist/internal/api/script"
@@ -52,4 +57,29 @@ func (g *Group) RemoveMember(ctx context.Context, req *api.RemoveMemberRequest) 
 
 func (g *Group) Middleware() gin.HandlerFunc {
 	return script_svc.Group().Middleware()
+}
+
+func (g *Group) Router(r *mux.Router) {
+	muxutils.BindTree(r, []*muxutils.RouterTree{{
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Access().CheckHandler("group", "read"),
+		},
+		Handler: []interface{}{
+			g.GroupList,
+			g.GroupMemberList,
+		},
+	}, {
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Access().CheckHandler("group", "manage"),
+		},
+		Handler: []interface{}{
+			g.CreateGroup,
+			g.UpdateGroup,
+			g.DeleteGroup,
+			g.AddMember,
+			g.RemoveMember,
+		},
+	}})
 }

@@ -9,6 +9,7 @@ const (
 	UserNotFollowSelf
 	UserExistFollow
 	UserEmailNotVerified
+	UserNotLogin
 )
 
 // script

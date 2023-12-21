@@ -2,6 +2,7 @@ package issue_svc
 
 import (
 	"context"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 	"net/http"
 	"strconv"
 	"time"
@@ -32,14 +33,14 @@ type CommentSvc interface {
 	Middleware() gin.HandlerFunc
 	// CheckOperate 检查脚本和issue状态是否正确
 	CheckOperate(ctx context.Context, scriptId, issueId int64) (*script_entity.Script, *issue_entity.ScriptIssue, error)
-	// CtxScript 获取脚本
-	CtxScript(ctx context.Context) *script_entity.Script
-	// CtxIssue 获取issue
-	CtxIssue(ctx context.Context) *issue_entity.ScriptIssue
 	// ToComment 转换为api.Comment
 	ToComment(ctx context.Context, comment *issue_entity.ScriptIssueComment) (*api.Comment, error)
 	// DeleteComment 删除反馈评论
 	DeleteComment(ctx context.Context, req *api.DeleteCommentRequest) (*api.DeleteCommentResponse, error)
+	// RequireComment 需要存在评论
+	RequireComment() gin.HandlerFunc
+	// CtxComment 获取评论
+	CtxComment(ctx context.Context) *issue_entity.ScriptIssueComment
 }
 
 type commentSvc struct {
@@ -114,7 +115,7 @@ func (c *commentSvc) CreateComment(ctx context.Context, req *api.CreateCommentRe
 	}
 	resp := &api.CreateCommentResponse{}
 	resp.Comment, _ = c.ToComment(ctx, comment)
-	return resp, producer.PublishCommentCreate(ctx, c.CtxScript(ctx), c.CtxIssue(ctx), comment)
+	return resp, producer.PublishCommentCreate(ctx, script_svc.Script().CtxScript(ctx), c.CtxIssue(ctx), comment)
 }
 
 // Middleware 中间件,检查是否可以访问
@@ -157,11 +158,6 @@ func (c *commentSvc) Middleware() gin.HandlerFunc {
 	}
 }
 
-// CtxScript 获取脚本
-func (c *commentSvc) CtxScript(ctx context.Context) *script_entity.Script {
-	return ctx.Value(ctxScript("ctxScript")).(*script_entity.Script)
-}
-
 // CtxIssue 获取issue
 func (c *commentSvc) CtxIssue(ctx context.Context) *issue_entity.ScriptIssue {
 	return ctx.Value(issue_entity.ScriptIssue{}).(*issue_entity.ScriptIssue)
@@ -173,8 +169,18 @@ func (c *commentSvc) DeleteComment(ctx context.Context, req *api.DeleteCommentRe
 	if err != nil {
 		return nil, err
 	}
-	if err := comment.CheckPermission(ctx, c.CtxScript(ctx), c.CtxIssue(ctx)); err != nil {
+	if err := comment.CheckPermission(ctx, script_svc.Script().CtxScript(ctx), c.CtxIssue(ctx)); err != nil {
 		return nil, err
 	}
 	return &api.DeleteCommentResponse{}, issue_repo.Comment().Delete(ctx, req.CommentID)
+}
+
+func (c *commentSvc) RequireComment() gin.HandlerFunc {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *commentSvc) CtxComment(ctx context.Context) *issue_entity.ScriptIssueComment {
+	//TODO implement me
+	panic("implement me")
 }

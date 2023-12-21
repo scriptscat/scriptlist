@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 
-	"github.com/codfrm/cago/pkg/component"
-
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/db"
+	_ "github.com/codfrm/cago/database/db/clickhouse"
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/broker"
+	"github.com/codfrm/cago/pkg/component"
 	"github.com/codfrm/cago/server/cron"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
@@ -45,6 +45,9 @@ func main() {
 
 	script_repo.RegisterScriptDateStatistics(script_repo.NewScriptDateStatistics())
 	script_repo.RegisterScriptStatistics(script_repo.NewScriptStatistics())
+	script_repo.RegisterScriptAccess(script_repo.NewScriptAccess())
+	script_repo.RegisterScriptGroup(script_repo.NewScriptGroup())
+	script_repo.RegisterScriptGroupMember(script_repo.NewScriptGroupMember())
 	//注册评分
 	script_repo.RegisterScriptScore(script_repo.NewScriptScore())
 

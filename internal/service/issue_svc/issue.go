@@ -3,8 +3,12 @@ package issue_svc
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
@@ -17,6 +21,13 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
+)
+
+type contextKey int
+
+const (
+	issueCtxKey contextKey = iota
+	issueCommentCtxKey
 )
 
 type IssueSvc interface {
@@ -38,6 +49,10 @@ type IssueSvc interface {
 	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
 	// UpdateLabels 更新issue标签
 	UpdateLabels(ctx context.Context, req *api.UpdateLabelsRequest) (*api.UpdateLabelsResponse, error)
+	// RequireIssue 需要issue存在
+	RequireIssue() gin.HandlerFunc
+	// CtxIssue 获取issue
+	CtxIssue(ctx context.Context) *issue_entity.ScriptIssue
 }
 
 type issueSvc struct {
@@ -100,12 +115,12 @@ func (i *issueSvc) CreateIssue(ctx context.Context, req *api.CreateIssueRequest)
 		return nil, err
 	}
 	// 发布消息
-	return &api.CreateIssueResponse{ID: issue.ID}, producer.PublishIssueCreate(ctx, Comment().CtxScript(ctx), issue)
+	return &api.CreateIssueResponse{ID: issue.ID}, producer.PublishIssueCreate(ctx, script_svc.Script().CtxScript(ctx), issue)
 }
 
 // GetIssue 获取issue信息
 func (i *issueSvc) GetIssue(ctx context.Context, req *api.GetIssueRequest) (*api.GetIssueResponse, error) {
-	issue := Comment().CtxIssue(ctx)
+	issue := i.CtxIssue(ctx)
 	ret, _ := i.ToIssue(ctx, issue)
 	return &api.GetIssueResponse{
 		Issue:   ret,
@@ -162,8 +177,8 @@ func (i *issueSvc) Watch(ctx context.Context, userId int64, req *api.WatchReques
 // Close 关闭issue
 func (i *issueSvc) Close(ctx context.Context, req *api.CloseRequest) (*api.CloseResponse, error) {
 	// 检查是否有权限操作
-	issue := Comment().CtxIssue(ctx)
-	if err := issue.CheckPermission(ctx, Comment().CtxScript(ctx)); err != nil {
+	issue := i.CtxIssue(ctx)
+	if err := issue.CheckPermission(ctx, script_svc.Script().CtxScript(ctx)); err != nil {
 		return nil, err
 	}
 	issue.Status = consts.AUDIT
@@ -186,16 +201,13 @@ func (i *issueSvc) Close(ctx context.Context, req *api.CloseRequest) (*api.Close
 	resp, _ := Comment().ToComment(ctx, comment)
 	return &api.CloseResponse{
 		Comment: resp,
-	}, producer.PublishCommentCreate(ctx, Comment().CtxScript(ctx), issue, comment)
+	}, producer.PublishCommentCreate(ctx, script_svc.Script().CtxScript(ctx), issue, comment)
 }
 
 // Open 打开issue
 func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenResponse, error) {
 	// 检查是否有权限操作
-	issue := Comment().CtxIssue(ctx)
-	if err := issue.CheckPermission(ctx, Comment().CtxScript(ctx)); err != nil {
-		return nil, err
-	}
+	issue := i.CtxIssue(ctx)
 	issue.Status = consts.ACTIVE
 	issue.Updatetime = time.Now().Unix()
 	comment := &issue_entity.ScriptIssueComment{
@@ -216,16 +228,13 @@ func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenRes
 	resp, _ := Comment().ToComment(ctx, comment)
 	return &api.OpenResponse{
 		Comment: resp,
-	}, producer.PublishCommentCreate(ctx, Comment().CtxScript(ctx), issue, comment)
+	}, producer.PublishCommentCreate(ctx, script_svc.Script().CtxScript(ctx), issue, comment)
 }
 
 // Delete 删除issue
 func (i *issueSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error) {
-	issue := Comment().CtxIssue(ctx)
-	if err := issue.CheckPermission(ctx, Comment().CtxScript(ctx)); err != nil {
-		return nil, err
-	}
-	if err := issue_repo.Issue().Delete(ctx, Comment().CtxScript(ctx).ID, issue.ID); err != nil {
+	issue := i.CtxIssue(ctx)
+	if err := issue_repo.Issue().Delete(ctx, script_svc.Script().CtxScript(ctx).ID, issue.ID); err != nil {
 		return nil, err
 	}
 	return nil, nil
@@ -233,8 +242,8 @@ func (i *issueSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.Del
 
 // UpdateLabels 更新issue标签
 func (i *issueSvc) UpdateLabels(ctx context.Context, req *api.UpdateLabelsRequest) (*api.UpdateLabelsResponse, error) {
-	issue := Comment().CtxIssue(ctx)
-	if err := issue.CheckPermission(ctx, Comment().CtxScript(ctx)); err != nil {
+	issue := i.CtxIssue(ctx)
+	if err := issue.CheckPermission(ctx, script_svc.Script().CtxScript(ctx)); err != nil {
 		return nil, err
 	}
 	// 对比标签变更
@@ -292,4 +301,38 @@ func (i *issueSvc) UpdateLabels(ctx context.Context, req *api.UpdateLabelsReques
 	return &api.UpdateLabelsResponse{
 		Comment: resp,
 	}, nil
+}
+
+func (i *issueSvc) RequireIssue() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		sIssueId := ctx.Param("issueId")
+		if sIssueId == "" {
+			httputils.HandleResp(ctx, httputils.NewError(http.StatusNotFound, -1, "反馈ID不能为空"))
+			return
+		}
+		issueId, err := strconv.ParseInt(sIssueId, 10, 64)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		script := script_svc.Script().CtxScript(ctx)
+		issue, err := issue_repo.Issue().Find(ctx, script.ID, issueId)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		if err := issue.CheckOperate(ctx, script); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+
+		ctx.Request = ctx.Request.WithContext(context.WithValue(
+			ctx.Request.Context(), issueCtxKey, issue,
+		))
+
+	}
+}
+
+func (i *issueSvc) CtxIssue(ctx context.Context) *issue_entity.ScriptIssue {
+	return ctx.Value(issueCtxKey).(*issue_entity.ScriptIssue)
 }

@@ -3,8 +3,9 @@ package statistics_repo
 import (
 	"context"
 	"fmt"
-	"github.com/codfrm/cago/database/db"
 	"time"
+
+	"github.com/codfrm/cago/database/db"
 
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/utils/httputils"

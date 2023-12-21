@@ -15,6 +15,7 @@ import (
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
+//go:generate mockgen -source=./script_code.go -destination=./mock/script_code.go
 type ScriptCodeRepo interface {
 	Find(ctx context.Context, id int64) (*entity.Code, error)
 	Create(ctx context.Context, scriptCode *entity.Code) error

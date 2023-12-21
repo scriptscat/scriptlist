@@ -34,7 +34,12 @@ import (
 	"go.uber.org/zap"
 )
 
-type ctxScript string
+type contextKey int
+
+const (
+	scriptCtxKey contextKey = iota
+	accessCtxKey
+)
 
 type ScriptSvc interface {
 	// List 获取脚本列表
@@ -91,6 +96,26 @@ type ScriptSvc interface {
 	Webhook(ctx context.Context, req *api.WebhookRequest, body []byte) (*api.WebhookResponse, error)
 	// LastScore 最新评分脚本
 	LastScore(ctx context.Context, req *api.LastScoreRequest) (*api.LastScoreResponse, error)
+	// Access 访问控制
+	Access() gin.HandlerFunc
+	// RequireScript 需要脚本存在
+	RequireScript(opts ...RequireScriptOption) gin.HandlerFunc
+	// IsArchive 检查归档
+	IsArchive() gin.HandlerFunc
+}
+
+type RequireScriptOption func(*RequireScriptOptions)
+
+type RequireScriptOptions struct {
+	Resource string
+	Action   string
+}
+
+func WithRequireScriptAccess(res, act string) RequireScriptOption {
+	return func(options *RequireScriptOptions) {
+		options.Resource = res
+		options.Action = act
+	}
 }
 
 type scriptSvc struct {
@@ -542,13 +567,7 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 
 // Code 获取脚本代码
 func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckOperate(ctx); err != nil {
-		return nil, err
-	}
+	m := s.CtxScript(ctx)
 	script, err := s.ToScript(ctx, m, true, "")
 	if err != nil {
 		return nil, err
@@ -561,13 +580,7 @@ func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeRe
 
 // VersionList 获取版本列表
 func (s *scriptSvc) VersionList(ctx context.Context, req *api.VersionListRequest) (*api.VersionListResponse, error) {
-	script, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := script.CheckOperate(ctx); err != nil {
-		return nil, err
-	}
+	script := s.CtxScript(ctx)
 	list, total, err := script_repo.ScriptCode().List(ctx, req.ID, req.PageRequest)
 	if err != nil {
 		return nil, err
@@ -794,9 +807,6 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 // Archive 归档脚本
 func (s *scriptSvc) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error) {
 	script := s.CtxScript(ctx)
-	if err := script.CheckPermission(ctx); err != nil {
-		return nil, err
-	}
 	if req.Archive {
 		script.Archive = script_entity.IsArchive
 	} else {
@@ -930,6 +940,65 @@ func (s *scriptSvc) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSe
 	return &api.UpdateCodeSettingResponse{}, nil
 }
 
+func (s *scriptSvc) RequireScript(opts ...RequireScriptOption) gin.HandlerFunc {
+	options := &RequireScriptOptions{
+		Resource: "script",
+		Action:   "read:info",
+	}
+	for _, o := range opts {
+		o(options)
+	}
+	accessCheckHandler := Access().CheckHandler(options.Resource, options.Action)
+	return func(ctx *gin.Context) {
+		sid := ctx.Param("id")
+		if sid == "" {
+			httputils.HandleResp(ctx, httputils.NewError(http.StatusNotFound, -1, "脚本ID不能为空"))
+			return
+		}
+		id, err := strconv.ParseInt(sid, 10, 64)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		script, err := script_repo.Script().Find(ctx, id)
+		if err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+		if err := script.CheckOperate(ctx); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+
+		ctx.Request = ctx.Request.WithContext(context.WithValue(
+			ctx.Request.Context(), scriptCtxKey, script,
+		))
+
+		// 私有, 进行权限检查
+		if script.Public == script_entity.PrivateScript {
+			if auth_svc.Auth().Get(ctx) == nil {
+				httputils.HandleResp(ctx, i18n.NewUnauthorizedError(ctx, code.UserNotLogin))
+				return
+			}
+			accessCheckHandler(ctx)
+			if ctx.IsAborted() {
+				return
+			}
+		}
+
+	}
+}
+
+func (s *scriptSvc) IsArchive() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		script := s.CtxScript(ctx)
+		if err := script.IsArchive(ctx); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+	}
+}
+
 func (s *scriptSvc) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sid := c.Param("id")
@@ -959,14 +1028,14 @@ func (s *scriptSvc) Middleware() gin.HandlerFunc {
 			}
 		}
 		c.Request = c.Request.WithContext(context.WithValue(
-			c.Request.Context(), ctxScript("ctxScript"), script,
+			c.Request.Context(), scriptCtxKey, script,
 		))
 		c.Next()
 	}
 }
 
 func (s *scriptSvc) CtxScript(ctx context.Context) *script_entity.Script {
-	return ctx.Value(ctxScript("ctxScript")).(*script_entity.Script)
+	return ctx.Value(scriptCtxKey).(*script_entity.Script)
 }
 
 // UpdateScriptPublic 更新脚本公开类型
@@ -1121,4 +1190,10 @@ func (s *scriptSvc) LastScore(ctx context.Context, req *api.LastScoreRequest) (*
 			Total: int64(len(list)),
 		},
 	}, nil
+}
+
+func (s *scriptSvc) Access() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
 }

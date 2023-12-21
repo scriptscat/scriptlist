@@ -6,7 +6,7 @@ endif
 
 check-mockgen:
 ifneq ($(which mockgen),)
-	go install github.com/golang/mock/mockgen
+	go install go.uber.org/mock/mockgen@latest
 endif
 
 check-golangci-lint:
@@ -39,3 +39,6 @@ generate: check-mockgen swagger
 
 cache_proxy:
 	GOOS=linux GOARCH=amd64 go build -o bin/cache_proxy cmd/cache_proxy/main.go
+
+goconvey:
+	goconvey

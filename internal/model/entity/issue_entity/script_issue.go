@@ -47,9 +47,6 @@ func (s *ScriptIssue) GetLabels() []string {
 
 // CheckOperate 检查是否可以操作
 func (s *ScriptIssue) CheckOperate(ctx context.Context, script *script_entity.Script) error {
-	if err := script.CheckOperate(ctx); err != nil {
-		return err
-	}
 	if s == nil {
 		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.IssueNotFound)
 	}

@@ -62,7 +62,3 @@ func (a *Auth) OAuthCallback() gin.HandlerFunc {
 		c.Redirect(http.StatusFound, path)
 	}
 }
-
-func (a *Auth) Middleware(force bool) gin.HandlerFunc {
-	return auth_svc.Auth().Middleware(force)
-}

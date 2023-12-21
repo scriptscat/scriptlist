@@ -2,12 +2,13 @@ package script_svc
 
 import (
 	"context"
+	"net/http"
+	"strconv"
+
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
-	"net/http"
-	"strconv"
 
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 )
@@ -103,9 +104,9 @@ func (g *groupSvc) Middleware() gin.HandlerFunc {
 				return
 			}
 		}
-		c.Request = c.Request.WithContext(context.WithValue(
-			c.Request.Context(), ctxScript("ctxScript"), script,
-		))
+		//c.Request = c.Request.WithContext(context.WithValue(
+		//	c.Request.Context(), , script,
+		//))
 		c.Next()
 	}
 }

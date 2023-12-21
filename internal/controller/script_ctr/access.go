@@ -3,7 +3,11 @@ package script_ctr
 import (
 	"context"
 
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 )
 
@@ -12,6 +16,28 @@ type Access struct {
 
 func NewAccess() *Access {
 	return &Access{}
+}
+
+func (a *Access) Router(r *mux.Router) {
+	muxutils.BindTree(r, []*muxutils.RouterTree{{
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Access().CheckHandler("access", "read"),
+		},
+		Handler: []interface{}{
+			a.AccessList,
+		},
+	}, {
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Access().CheckHandler("access", "manage"),
+		},
+		Handler: []interface{}{
+			a.CreateAccess,
+			a.UpdateAccess,
+			a.DeleteAccess,
+		},
+	}})
 }
 
 // AccessList 访问控制列表

@@ -9,8 +9,9 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 )
 
+//go:generate mockgen -source=user.go -destination=mock/user.go
 type User struct {
-	UID                int64  `gorm:"column:uid" json:"uid" form:"uid"`
+	ID                 int64  `gorm:"column:uid" json:"uid" form:"uid"`
 	Email              string `gorm:"column:email" json:"email" form:"email"`
 	Username           string `gorm:"column:username" json:"username" form:"username"`
 	Password           string `gorm:"column:password" json:"password" form:"password"`
@@ -57,7 +58,7 @@ func (u *User) IsBanned(ctx context.Context) error {
 }
 
 func (u *User) Avatar() string {
-	return "/api/v2/users/" + strconv.FormatInt(u.UID, 10) + "/avatar"
+	return "/api/v2/users/" + strconv.FormatInt(u.ID, 10) + "/avatar"
 }
 
 func (u *User) UserInfo() UserInfo {
@@ -65,7 +66,7 @@ func (u *User) UserInfo() UserInfo {
 		return UserInfo{}
 	}
 	return UserInfo{
-		UserID:   u.UID,
+		UserID:   u.ID,
 		Username: u.Username,
 		Avatar:   u.Avatar(),
 	}

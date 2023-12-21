@@ -10,6 +10,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 )
 
+//go:generate mockgen -source=user.go -destination=mock/user.go
 type UserRepo interface {
 	Find(ctx context.Context, id int64) (*user_entity.User, error)
 }

@@ -2,8 +2,9 @@ package statistics_repo
 
 import (
 	"context"
-	"github.com/codfrm/cago/database/db"
 	"time"
+
+	"github.com/codfrm/cago/database/db"
 
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
