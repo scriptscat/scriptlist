@@ -178,9 +178,6 @@ func (i *issueSvc) Watch(ctx context.Context, userId int64, req *api.WatchReques
 func (i *issueSvc) Close(ctx context.Context, req *api.CloseRequest) (*api.CloseResponse, error) {
 	// 检查是否有权限操作
 	issue := i.CtxIssue(ctx)
-	if err := issue.CheckPermission(ctx, script_svc.Script().CtxScript(ctx)); err != nil {
-		return nil, err
-	}
 	issue.Status = consts.AUDIT
 	issue.Updatetime = time.Now().Unix()
 	comment := &issue_entity.ScriptIssueComment{
@@ -243,9 +240,6 @@ func (i *issueSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.Del
 // UpdateLabels 更新issue标签
 func (i *issueSvc) UpdateLabels(ctx context.Context, req *api.UpdateLabelsRequest) (*api.UpdateLabelsResponse, error) {
 	issue := i.CtxIssue(ctx)
-	if err := issue.CheckPermission(ctx, script_svc.Script().CtxScript(ctx)); err != nil {
-		return nil, err
-	}
 	// 对比标签变更
 	var oldLabel []string
 	if issue.Labels != "" {
@@ -321,7 +315,7 @@ func (i *issueSvc) RequireIssue() gin.HandlerFunc {
 			httputils.HandleResp(ctx, err)
 			return
 		}
-		if err := issue.CheckOperate(ctx, script); err != nil {
+		if err := issue.CheckOperate(ctx); err != nil {
 			httputils.HandleResp(ctx, err)
 			return
 		}

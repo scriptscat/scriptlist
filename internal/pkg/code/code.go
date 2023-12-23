@@ -59,3 +59,16 @@ const (
 	StatisticsWhitelistInvalid
 	StatisticsWhitelistNotFound
 )
+
+// access
+const (
+	AccessAlreadyExist = iota + 10500
+	AccessNotFound
+)
+
+// group
+const (
+	GroupNotFound = iota + 106000
+	GroupMemberNotFound
+	GroupMemberExist
+)

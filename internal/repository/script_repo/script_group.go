@@ -11,8 +11,8 @@ import (
 )
 
 type ScriptGroupRepo interface {
-	Find(ctx context.Context, id int64) (*script_entity.ScriptGroup, error)
-	FindPage(ctx context.Context, page httputils.PageRequest) ([]*script_entity.ScriptGroup, int64, error)
+	Find(ctx context.Context, scriptId, id int64) (*script_entity.ScriptGroup, error)
+	FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptGroup, int64, error)
 	Create(ctx context.Context, scriptGroup *script_entity.ScriptGroup) error
 	Update(ctx context.Context, scriptGroup *script_entity.ScriptGroup) error
 	Delete(ctx context.Context, id int64) error
@@ -35,9 +35,9 @@ func NewScriptGroup() ScriptGroupRepo {
 	return &scriptGroupRepo{}
 }
 
-func (u *scriptGroupRepo) Find(ctx context.Context, id int64) (*script_entity.ScriptGroup, error) {
+func (u *scriptGroupRepo) Find(ctx context.Context, scriptId, id int64) (*script_entity.ScriptGroup, error) {
 	ret := &script_entity.ScriptGroup{}
-	if err := db.Ctx(ctx).Where("id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
+	if err := db.Ctx(ctx).Where("id=? and script_id=? and status=?", id, scriptId, consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -58,10 +58,10 @@ func (u *scriptGroupRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Model(&script_entity.ScriptGroup{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
-func (u *scriptGroupRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*script_entity.ScriptGroup, int64, error) {
+func (u *scriptGroupRepo) FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptGroup, int64, error) {
 	var list []*script_entity.ScriptGroup
 	var count int64
-	find := db.Ctx(ctx).Model(&script_entity.ScriptGroup{}).Where("status=?", consts.ACTIVE)
+	find := db.Ctx(ctx).Model(&script_entity.ScriptGroup{}).Where("script_id=? and status=?", scriptId, consts.ACTIVE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

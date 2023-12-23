@@ -2,6 +2,9 @@ package issue_ctr
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/codfrm/cago/pkg/broker"
 	"github.com/codfrm/cago/pkg/broker/event_bus"
 	"github.com/codfrm/cago/pkg/consts"
@@ -10,8 +13,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	mock_issue_repo "github.com/scriptscat/scriptlist/internal/repository/issue_repo/mock"
-	"testing"
-	"time"
 
 	"github.com/codfrm/cago/server/mux/muxtest"
 	"github.com/scriptscat/scriptlist/internal/api/issue"
@@ -90,7 +91,7 @@ func TestIssue_Router(t *testing.T) {
 					UserID:   1,
 					Status:   consts.ACTIVE,
 				}, nil)
-				mockAccessRepo.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+				mockAccessRepo.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).Return(nil, nil)
 				mockGroupMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
 				err := testMux.Do(ctx, &issue.DeleteRequest{ScriptID: 1, IssueID: 1}, &issue.DeleteResponse{})
 				convey.So(err, convey.ShouldBeError, "用户不允许操作")
@@ -130,22 +131,24 @@ func TestIssue_Router(t *testing.T) {
 		convey.Convey("非自己打开", func() {
 			// 无权限
 			mockAuth.U().Get().Times(2)
+			mockGroupMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
 			convey.Convey("无权限", func() {
-				mockGroupMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
-				mockAccessRepo.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+				mockAccessRepo.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).Return(nil, nil)
 				err := testMux.Do(ctx, &issue.OpenRequest{ScriptID: 1, IssueID: 1}, &issue.OpenResponse{})
 				convey.So(err, convey.ShouldBeError, "用户不允许操作")
 			})
 			convey.Convey("管理员权限", func() {
 				mockAuth.U().Get().Times(2)
-				mockAccessRepo.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(&script_entity.ScriptAccess{
-					ID:         1,
-					ScriptID:   1,
-					LinkID:     1,
-					Type:       1,
-					Role:       "manager",
-					Expiretime: time.Now().Add(time.Hour).Unix(),
-				}, nil)
+				mockAccessRepo.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).
+					Return([]*script_entity.ScriptAccess{{
+						ID:         1,
+						ScriptID:   1,
+						LinkID:     1,
+						Type:       1,
+						Role:       script_entity.AccessRoleManager,
+						Status:     consts.ACTIVE,
+						Expiretime: time.Now().Add(time.Hour).Unix(),
+					}}, nil)
 				mockIssue.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 				mockComment.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 				mockUserRepo.EXPECT().Find(gomock.Any(), int64(1)).Return(&user_entity.User{

@@ -93,7 +93,7 @@ func TestScript_Router(t *testing.T) {
 			})
 			convey.Convey("登录无权限", func() {
 				mockAuth.U().Get().Times(3)
-				mockAccess.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+				mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).Return(nil, nil)
 				mockMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
 				err := testMux.Do(ctx, &script.CodeRequest{ID: 1}, &script.CodeRequest{})
 				convey.So(err, convey.ShouldBeError, "用户不允许操作")
@@ -101,30 +101,34 @@ func TestScript_Router(t *testing.T) {
 			convey.Convey("拥有权限", func() {
 				call := mockAuth.U().Get().Times(3)
 				convey.Convey("权限到期", func() {
-					mockAccess.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).
-						Return(&script_entity.ScriptAccess{
+					mockMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+					mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).
+						Return([]*script_entity.ScriptAccess{{
 							ID:         1,
 							ScriptID:   1,
 							LinkID:     1,
 							Type:       1,
-							Role:       "guest",
+							Role:       script_entity.AccessRoleGuest,
+							Status:     consts.ACTIVE,
 							Expiretime: time.Now().Add(-time.Hour).Unix(),
-						}, nil)
-					convey.Convey("访客可以访问", func() {
+						}}, nil)
+					convey.Convey("到期不可访问", func() {
 						err := testMux.Do(ctx, &script.VersionListRequest{ID: 1}, &script.VersionListRequest{})
 						convey.So(err, convey.ShouldBeError, "用户不允许操作")
 					})
 				})
 				convey.Convey("访客权限", func() {
-					mockAccess.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).
-						Return(&script_entity.ScriptAccess{
+					mockMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+					mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).
+						Return([]*script_entity.ScriptAccess{{
 							ID:         1,
 							ScriptID:   1,
 							LinkID:     1,
 							Type:       1,
-							Role:       "guest",
+							Role:       script_entity.AccessRoleGuest,
+							Status:     consts.ACTIVE,
 							Expiretime: time.Now().Add(time.Hour).Unix(),
-						}, nil)
+						}}, nil)
 					convey.Convey("访客可以访问", func() {
 						mockCodeRepo.EXPECT().List(gomock.Any(), int64(1), gomock.Any()).Return(nil, int64(0), nil)
 						err := testMux.Do(ctx, &script.VersionListRequest{ID: 1}, &script.VersionListRequest{})
@@ -136,15 +140,17 @@ func TestScript_Router(t *testing.T) {
 					})
 				})
 				convey.Convey("脚本管理员", func() {
-					mockAccess.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).
-						Return(&script_entity.ScriptAccess{
+					mockMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+					mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).
+						Return([]*script_entity.ScriptAccess{{
 							ID:         1,
 							ScriptID:   1,
 							LinkID:     1,
 							Type:       1,
-							Role:       "manager",
+							Role:       script_entity.AccessRoleManager,
+							Status:     consts.ACTIVE,
 							Expiretime: time.Now().Add(time.Hour).Unix(),
-						}, nil)
+						}}, nil)
 					convey.Convey("管理员不允许归档与删除", func() {
 						err := testMux.Do(ctx, &script.ArchiveRequest{ID: 1, Archive: true}, &script.ArchiveResponse{})
 						convey.So(err, convey.ShouldBeError, "用户不允许操作")
@@ -165,7 +171,7 @@ func TestScript_Router(t *testing.T) {
 						UID:        1,
 						AdminLevel: model.Moderator,
 					})
-					mockAccess.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
+					mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).Return(nil, nil)
 					mockMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return(nil, nil)
 					convey.Convey("版主不可以删除和归档", func() {
 						err := testMux.Do(ctx, &script.ArchiveRequest{ID: 1, Archive: true}, &script.ArchiveResponse{})

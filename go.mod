@@ -2,11 +2,9 @@ module github.com/scriptscat/scriptlist
 
 go 1.21
 
-replace github.com/codfrm/cago => ../../cago
-
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/codfrm/cago v1.0.2-0.20231030084350-2f1251d4ed2f
+	github.com/codfrm/cago v1.0.2-0.20231223034637-d0c56a331f2c
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-gormigrate/gormigrate/v2 v2.1.1

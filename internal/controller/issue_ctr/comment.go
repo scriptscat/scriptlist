@@ -30,7 +30,10 @@ func NewComment() *Comment {
 
 func (c *Comment) Router(r *mux.Router) {
 	muxutils.BindTree(r, []*muxutils.RouterTree{{
-		Middleware: []gin.HandlerFunc{script_svc.Script().RequireScript()},
+		Middleware: []gin.HandlerFunc{
+			script_svc.Script().RequireScript(),
+			issue_svc.Issue().RequireIssue(),
+		},
 		Handler: []interface{}{
 			c.ListComment,
 		},
@@ -63,10 +66,6 @@ func (c *Comment) CreateComment(ctx context.Context, req *api.CreateCommentReque
 		return nil, err
 	}
 	return resp.(*api.CreateCommentResponse), nil
-}
-
-func (c *Comment) Middleware() gin.HandlerFunc {
-	return issue_svc.Comment().Middleware()
 }
 
 // DeleteComment 删除反馈评论

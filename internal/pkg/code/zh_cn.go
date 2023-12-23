@@ -51,4 +51,11 @@ var zhCN = map[int]string{
 	StatisticsInfoUninitialized: "统计信息未初始化",
 	StatisticsWhitelistInvalid:  "统计白名单无效,不支持顶级域名: %s",
 	StatisticsWhitelistNotFound: "不在白名单内",
+
+	AccessAlreadyExist: "权限已存在",
+	AccessNotFound:     "权限不存在",
+
+	GroupNotFound:       "群组不存在",
+	GroupMemberNotFound: "群组成员不存在",
+	GroupMemberExist:    "群组成员已存在",
 }

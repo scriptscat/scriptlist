@@ -439,7 +439,7 @@
           }
         }
       },
-      "/scripts/:id/access/:aid": {
+      "/scripts/:id/access/{aid}": {
         "put": {
           "description": "更新访问控制",
           "consumes": [
@@ -453,6 +453,12 @@
           ],
           "summary": "更新访问控制",
           "parameters": [
+            {
+              "type": "integer",
+              "name": "aid",
+              "in": "path",
+              "required": true
+            },
             {
               "name": "body",
               "in": "body",
@@ -499,6 +505,12 @@
           ],
           "summary": "删除访问控制",
           "parameters": [
+            {
+              "type": "integer",
+              "name": "aid",
+              "in": "path",
+              "required": true
+            },
             {
               "name": "body",
               "in": "body",
@@ -845,7 +857,59 @@
           }
         }
       },
-      "/scripts/:id/group/:gid/member/{uid}": {
+      "/scripts/:id/group/:gid/member/{mid}": {
+        "put": {
+          "description": "更新成员",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/group"
+          ],
+          "summary": "更新成员",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "mid",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateMemberRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateMemberResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
         "delete": {
           "description": "移除成员",
           "consumes": [
@@ -861,7 +925,7 @@
           "parameters": [
             {
               "type": "integer",
-              "name": "uid",
+              "name": "mid",
               "in": "path",
               "required": true
             },
@@ -4059,9 +4123,6 @@
       "script.Access": {
         "type": "object",
         "properties": {
-          "access_permission": {
-            "type": "string"
-          },
           "avatar": {
             "type": "string"
           },
@@ -4074,11 +4135,17 @@
           "id": {
             "type": "integer"
           },
+          "is_expire": {
+            "type": "boolean"
+          },
           "link_id": {
             "description": "关联id",
             "type": "integer"
           },
           "name": {
+            "type": "string"
+          },
+          "role": {
             "type": "string"
           },
           "type": {
@@ -4105,6 +4172,9 @@
       "script.AddMemberRequest": {
         "type": "object",
         "properties": {
+          "expiretime": {
+            "type": "integer"
+          },
           "user_id": {
             "type": "integer"
           }
@@ -4284,18 +4354,20 @@
       "script.CreateAccessRequest": {
         "type": "object",
         "properties": {
-          "access_permission": {
-            "type": "string"
-          },
-          "expiretime": {
+          "expiretime,default=0": {
+            "description": "0 为永久",
             "type": "integer"
           },
           "link_id": {
             "type": "integer"
           },
+          "role": {
+            "description": "访问权限 guest=访客 manager=管理员",
+            "$ref": "#/definitions/script_entity.AccessRole"
+          },
           "type": {
             "description": "id类型 1=用户id 2=组id",
-            "type": "integer"
+            "$ref": "#/definitions/script_entity.AccessType"
           }
         }
       },
@@ -4377,7 +4449,12 @@
             "type": "object"
         },
       "script.DeleteAccessRequest": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "aid": {
+            "type": "integer"
+          }
+        }
       },
       "script.DeleteAccessResponse": {
         "type": "object"
@@ -4451,6 +4528,12 @@
           "id": {
             "type": "integer"
           },
+          "member": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/script.GroupMember"
+            }
+          },
           "member_count": {
             "type": "integer"
           },
@@ -4488,6 +4571,9 @@
           },
           "id": {
             "type": "integer"
+          },
+          "is_expire": {
+            "type": "boolean"
           },
           "user_id": {
             "type": "integer"
@@ -4648,7 +4734,7 @@
       "script.RemoveMemberRequest": {
         "type": "object",
         "properties": {
-          "uid": {
+          "mid": {
             "type": "integer"
           }
         }
@@ -4811,18 +4897,16 @@
       "script.UpdateAccessRequest": {
         "type": "object",
         "properties": {
-          "access_permission": {
-            "type": "string"
-          },
-          "expiretime": {
+          "aid": {
             "type": "integer"
           },
-          "link_id": {
+          "expiretime,default=0": {
+            "description": "0 为永久",
             "type": "integer"
           },
-          "type": {
-            "description": "id类型 1=用户id 2=组id",
-            "type": "integer"
+          "role": {
+            "description": "访问权限 guest=访客 manager=管理员",
+            "$ref": "#/definitions/script_entity.AccessRole"
           }
         }
       },
@@ -4893,6 +4977,20 @@
       "script.UpdateGroupResponse": {
         "type": "object"
         },
+      "script.UpdateMemberRequest": {
+        "type": "object",
+        "properties": {
+          "expiretime": {
+            "type": "integer"
+          },
+          "mid": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.UpdateMemberResponse": {
+        "type": "object"
+      },
         "script.UpdateScriptGrayRequest": {
             "type": "object",
             "properties": {
@@ -5090,6 +5188,23 @@
         "script.WebhookResponse": {
             "type": "object"
         },
+      "script_entity.AccessRole": {
+        "description": "AccessRole enum type:\n- AccessRoleGuest: guest\n- AccessRoleManager: manager\n- AccessRoleOwner: owner",
+        "type": "string",
+        "enum": [
+          "guest",
+          "manager",
+          "owner"
+        ]
+      },
+      "script_entity.AccessType": {
+        "description": "AccessType enum type:\n- AccessTypeUser: 1\n- AccessTypeGroup: 2",
+        "type": "integer",
+        "enum": [
+          "1",
+          "2"
+        ]
+      },
         "script_entity.Control": {
             "type": "object",
             "properties": {

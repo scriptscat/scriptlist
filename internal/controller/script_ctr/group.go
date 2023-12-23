@@ -55,31 +55,41 @@ func (g *Group) RemoveMember(ctx context.Context, req *api.RemoveMemberRequest) 
 	return script_svc.Group().RemoveMember(ctx, req)
 }
 
-func (g *Group) Middleware() gin.HandlerFunc {
-	return script_svc.Group().Middleware()
-}
-
 func (g *Group) Router(r *mux.Router) {
 	muxutils.BindTree(r, []*muxutils.RouterTree{{
 		Middleware: []gin.HandlerFunc{
 			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
 			script_svc.Access().CheckHandler("group", "read"),
 		},
 		Handler: []interface{}{
 			g.GroupList,
-			g.GroupMemberList,
+			muxutils.Use(script_svc.Group().RequireGroup()).Append(
+				g.GroupMemberList,
+			),
 		},
 	}, {
 		Middleware: []gin.HandlerFunc{
 			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
 			script_svc.Access().CheckHandler("group", "manage"),
 		},
 		Handler: []interface{}{
 			g.CreateGroup,
-			g.UpdateGroup,
-			g.DeleteGroup,
-			g.AddMember,
-			g.RemoveMember,
+			muxutils.Use(script_svc.Group().RequireGroup()).Append(
+				g.UpdateGroup,
+				g.DeleteGroup,
+				g.AddMember,
+				muxutils.Use(script_svc.Group().RequireMember()).Append(
+					g.UpdateMember,
+					g.RemoveMember,
+				),
+			),
 		},
 	}})
+}
+
+// UpdateMember 更新成员
+func (g *Group) UpdateMember(ctx context.Context, req *api.UpdateMemberRequest) (*api.UpdateMemberResponse, error) {
+	return script_svc.Group().UpdateMember(ctx, req)
 }

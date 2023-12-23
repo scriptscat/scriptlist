@@ -46,9 +46,15 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 	// 处理webhook
 	r.Any("/webhook/:uid", s.Webhook)
 	// 处理下载
-	root.GET("/scripts/code/:id/*name", auth_svc.Auth().RequireLogin(false), s.Download(false))
-	root.GET("/scripts/pre/:id/*name", auth_svc.Auth().RequireLogin(false), s.Download(true))
-	root.GET("/lib/:id/:version/*name", auth_svc.Auth().RequireLogin(false), s.DownloadLib())
+	root.GET("/scripts/code/:id/*name",
+		auth_svc.Auth().RequireLogin(false), script_svc.Script().RequireScript(),
+		s.Download(false))
+	root.GET("/scripts/pre/:id/*name",
+		auth_svc.Auth().RequireLogin(false), script_svc.Script().RequireScript(),
+		s.Download(true))
+	root.GET("/lib/:id/:version/*name",
+		auth_svc.Auth().RequireLogin(false),
+		script_svc.Script().RequireScript(), s.DownloadLib())
 	muxutils.BindTree(r, []*muxutils.RouterTree{
 		// 无需鉴权
 		{
@@ -423,10 +429,6 @@ func (s *Script) Delete(ctx context.Context, req *api.DeleteRequest) (*api.Delet
 // UpdateCodeSetting 更新脚本设置
 func (s *Script) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error) {
 	return script_svc.Script().UpdateCodeSetting(ctx, req)
-}
-
-func (s *Script) Middleware() gin.HandlerFunc {
-	return script_svc.Script().Middleware()
 }
 
 // UpdateScriptPublic 更新脚本公开类型

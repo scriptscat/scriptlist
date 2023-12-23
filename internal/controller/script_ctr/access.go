@@ -34,8 +34,10 @@ func (a *Access) Router(r *mux.Router) {
 		},
 		Handler: []interface{}{
 			a.CreateAccess,
-			a.UpdateAccess,
-			a.DeleteAccess,
+			muxutils.Use(script_svc.Access().RequireAccess()).Append(
+				a.UpdateAccess,
+				a.DeleteAccess,
+			),
 		},
 	}})
 }

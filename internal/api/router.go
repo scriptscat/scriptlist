@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 
 	"github.com/codfrm/cago/configs"

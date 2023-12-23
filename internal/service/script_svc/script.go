@@ -39,6 +39,9 @@ type contextKey int
 const (
 	scriptCtxKey contextKey = iota
 	accessCtxKey
+	groupCtxKey
+	memberCtxKey
+	checkAccessCtxKey
 )
 
 type ScriptSvc interface {
@@ -80,8 +83,6 @@ type ScriptSvc interface {
 	GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bool) (*script_entity.Code, error)
 	// UpdateCodeSetting 更新脚本设置
 	UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error)
-	// Middleware 脚本中间件
-	Middleware() gin.HandlerFunc
 	// CtxScript 获取脚本
 	CtxScript(ctx context.Context) *script_entity.Script
 	// UpdateScriptPublic 更新脚本公开类型
@@ -996,41 +997,6 @@ func (s *scriptSvc) IsArchive() gin.HandlerFunc {
 			httputils.HandleResp(ctx, err)
 			return
 		}
-	}
-}
-
-func (s *scriptSvc) Middleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sid := c.Param("id")
-		if sid == "" {
-			httputils.HandleResp(c, httputils.NewError(http.StatusNotFound, -1, "脚本ID不能为空"))
-			return
-		}
-		id, err := strconv.ParseInt(sid, 10, 64)
-		if err != nil {
-			httputils.HandleResp(c, err)
-			return
-		}
-		script, err := script_repo.Script().Find(c, id)
-		if err != nil {
-			httputils.HandleResp(c, err)
-			return
-		}
-		if c.Request.Method == http.MethodGet {
-			if err := script.CheckOperate(c); err != nil {
-				httputils.HandleResp(c, err)
-				return
-			}
-		} else {
-			if err := script.CheckPermission(c, model.Moderator); err != nil {
-				httputils.HandleResp(c, err)
-				return
-			}
-		}
-		c.Request = c.Request.WithContext(context.WithValue(
-			c.Request.Context(), scriptCtxKey, script,
-		))
-		c.Next()
 	}
 }
 

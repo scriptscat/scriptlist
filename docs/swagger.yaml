@@ -379,8 +379,6 @@ definitions:
     type: object
   script.Access:
     properties:
-      access_permission:
-        type: string
       avatar:
         type: string
       createtime:
@@ -389,10 +387,14 @@ definitions:
         type: integer
       id:
         type: integer
+      is_expire:
+        type: boolean
       link_id:
         description: 关联id
         type: integer
       name:
+        type: string
+      role:
         type: string
       type:
         description: id类型 1=用户id 2=组id
@@ -410,6 +412,8 @@ definitions:
     type: object
   script.AddMemberRequest:
     properties:
+      expiretime:
+        type: integer
       user_id:
         type: integer
     type: object
@@ -528,15 +532,17 @@ definitions:
     type: object
   script.CreateAccessRequest:
     properties:
-      access_permission:
-        type: string
-      expiretime:
+      expiretime,default=0:
+        description: 0 为永久
         type: integer
       link_id:
         type: integer
+      role:
+        $ref: '#/definitions/script_entity.AccessRole'
+        description: 访问权限 guest=访客 manager=管理员
       type:
+        $ref: '#/definitions/script_entity.AccessType'
         description: id类型 1=用户id 2=组id
-        type: integer
     type: object
   script.CreateAccessResponse:
     type: object
@@ -590,6 +596,9 @@ definitions:
   script.DelScoreResponse:
     type: object
   script.DeleteAccessRequest:
+    properties:
+      aid:
+        type: integer
     type: object
   script.DeleteAccessResponse:
     type: object
@@ -638,6 +647,10 @@ definitions:
         type: string
       id:
         type: integer
+      member:
+        items:
+          $ref: '#/definitions/script.GroupMember'
+        type: array
       member_count:
         type: integer
       name:
@@ -663,6 +676,8 @@ definitions:
         type: integer
       id:
         type: integer
+      is_expire:
+        type: boolean
       user_id:
         type: integer
       username:
@@ -768,7 +783,7 @@ definitions:
     type: object
   script.RemoveMemberRequest:
     properties:
-      uid:
+      mid:
         type: integer
     type: object
   script.RemoveMemberResponse:
@@ -875,15 +890,14 @@ definitions:
     type: object
   script.UpdateAccessRequest:
     properties:
-      access_permission:
-        type: string
-      expiretime:
+      aid:
         type: integer
-      link_id:
+      expiretime,default=0:
+        description: 0 为永久
         type: integer
-      type:
-        description: id类型 1=用户id 2=组id
-        type: integer
+      role:
+        $ref: '#/definitions/script_entity.AccessRole'
+        description: 访问权限 guest=访客 manager=管理员
     type: object
   script.UpdateAccessResponse:
     type: object
@@ -930,6 +944,15 @@ definitions:
         type: string
     type: object
   script.UpdateGroupResponse:
+    type: object
+  script.UpdateMemberRequest:
+    properties:
+      expiretime:
+        type: integer
+      mid:
+        type: integer
+    type: object
+  script.UpdateMemberResponse:
     type: object
   script.UpdateScriptGrayRequest:
     properties:
@@ -1060,6 +1083,26 @@ definitions:
     type: object
   script.WebhookResponse:
     type: object
+  script_entity.AccessRole:
+    description: |-
+      AccessRole enum type:
+      - AccessRoleGuest: guest
+      - AccessRoleManager: manager
+      - AccessRoleOwner: owner
+    enum:
+    - guest
+    - manager
+    - owner
+    type: string
+  script_entity.AccessType:
+    description: |-
+      AccessType enum type:
+      - AccessTypeUser: 1
+      - AccessTypeGroup: 2
+    enum:
+    - "1"
+    - "2"
+    type: integer
   script_entity.Control:
     properties:
       params:
@@ -1767,12 +1810,16 @@ paths:
       summary: 创建访问控制
       tags:
       - script/access
-  /scripts/:id/access/:aid:
+  /scripts/:id/access/{aid}:
     delete:
       consumes:
       - application/json
       description: 删除访问控制
       parameters:
+      - in: path
+        name: aid
+        required: true
+        type: integer
       - in: body
         name: body
         schema:
@@ -1802,6 +1849,10 @@ paths:
       - application/json
       description: 更新访问控制
       parameters:
+      - in: path
+        name: aid
+        required: true
+        type: integer
       - in: body
         name: body
         schema:
@@ -2023,14 +2074,14 @@ paths:
       summary: 添加成员
       tags:
       - script/group
-  /scripts/:id/group/:gid/member/{uid}:
+  /scripts/:id/group/:gid/member/{mid}:
     delete:
       consumes:
       - application/json
       description: 移除成员
       parameters:
       - in: path
-        name: uid
+        name: mid
         required: true
         type: integer
       - in: body
@@ -2055,6 +2106,39 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 移除成员
+      tags:
+      - script/group
+    put:
+      consumes:
+      - application/json
+      description: 更新成员
+      parameters:
+      - in: path
+        name: mid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateMemberResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新成员
       tags:
       - script/group
   /scripts/{id}:

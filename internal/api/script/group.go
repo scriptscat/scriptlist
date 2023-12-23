@@ -6,11 +6,12 @@ import (
 )
 
 type Group struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	MemberCount int64  `json:"member_count"`
-	Createtime  int64  `json:"createtime"`
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Member      []*GroupMember `json:"member"`
+	MemberCount int64          `json:"member_count"`
+	Createtime  int64          `json:"createtime"`
 }
 
 // GroupListRequest 群组列表
@@ -62,6 +63,7 @@ type GroupMember struct {
 	UserID     int64  `json:"user_id"`
 	Username   string `json:"username"`
 	Avatar     string `json:"avatar"`
+	IsExpire   bool   `json:"is_expire"`
 	Expiretime int64  `json:"expiretime"`
 	Createtime int64  `json:"createtime"`
 }
@@ -72,17 +74,28 @@ type GroupMemberListResponse struct {
 
 // AddMemberRequest 添加成员
 type AddMemberRequest struct {
-	mux.Meta `path:"/scripts/:id/group/:gid/member" method:"POST"`
-	UserID   int64 `json:"user_id" binding:"required"`
+	mux.Meta   `path:"/scripts/:id/group/:gid/member" method:"POST"`
+	UserID     int64 `json:"user_id" binding:"required"`
+	Expiretime int64 `json:"expiretime" binding:"required"`
 }
 
 type AddMemberResponse struct {
 }
 
+// UpdateMemberRequest 更新成员
+type UpdateMemberRequest struct {
+	mux.Meta   `path:"/scripts/:id/group/:gid/member/:mid" method:"PUT"`
+	ID         int64 `uri:"mid" binding:"required"`
+	Expiretime int64 `json:"expiretime" binding:"required"`
+}
+
+type UpdateMemberResponse struct {
+}
+
 // RemoveMemberRequest 移除成员
 type RemoveMemberRequest struct {
-	mux.Meta `path:"/scripts/:id/group/:gid/member/:uid" method:"DELETE"`
-	UserID   int64 `uri:"uid" binding:"required"`
+	mux.Meta `path:"/scripts/:id/group/:gid/member/:mid" method:"DELETE"`
+	ID       int64 `uri:"mid" binding:"required"`
 }
 
 type RemoveMemberResponse struct {
