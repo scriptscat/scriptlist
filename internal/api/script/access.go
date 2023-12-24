@@ -21,6 +21,7 @@ type Access struct {
 // AccessListRequest 访问控制列表
 type AccessListRequest struct {
 	mux.Meta              `path:"/scripts/:id/access" method:"GET"`
+	ScriptID              int64 `uri:"id" binding:"required" label:"id"`
 	httputils.PageRequest `form:",inline"`
 }
 
@@ -31,7 +32,8 @@ type AccessListResponse struct {
 // CreateAccessRequest 创建访问控制
 type CreateAccessRequest struct {
 	mux.Meta   `path:"/scripts/:id/access" method:"POST"`
-	LinkID     int64                    `form:"link_id" binding:"required" label:"关联id"`
+	ScriptID   int64                    `uri:"id" binding:"required" label:"id"`
+	LinkID     int64                    `form:"link_id" json:"link_id"  binding:"required" label:"关联id"`
 	Type       script_entity.AccessType `form:"type" binding:"required,oneof=1 2" label:"id类型"`           // id类型 1=用户id 2=组id
 	Role       script_entity.AccessRole `form:"role" binding:"required,oneof=guest manager" label:"访问权限"` // 访问权限 guest=访客 manager=管理员
 	Expiretime int64                    `form:"expiretime,default=0" label:"过期时间"`                        // 0 为永久
@@ -43,7 +45,8 @@ type CreateAccessResponse struct {
 // UpdateAccessRequest 更新访问控制
 type UpdateAccessRequest struct {
 	mux.Meta   `path:"/scripts/:id/access/:aid" method:"PUT"`
-	ID         int64                    `uri:"aid" binding:"required" label:"id"`
+	ScriptID   int64                    `uri:"id" binding:"required" label:"id"`
+	AccessID   int64                    `uri:"aid" binding:"required" label:"id"`
 	Role       script_entity.AccessRole `form:"role" binding:"required,oneof=guest manager" label:"访问权限"` // 访问权限 guest=访客 manager=管理员
 	Expiretime int64                    `form:"expiretime,default=0" label:"过期时间"`                        // 0 为永久
 }
@@ -54,7 +57,8 @@ type UpdateAccessResponse struct {
 // DeleteAccessRequest 删除访问控制
 type DeleteAccessRequest struct {
 	mux.Meta `path:"/scripts/:id/access/:aid" method:"DELETE"`
-	ID       int64 `uri:"aid" binding:"required" label:"id"`
+	ScriptID int64 `uri:"id" binding:"required" label:"id"`
+	AccessID int64 `uri:"aid" binding:"required" label:"id"`
 }
 
 type DeleteAccessResponse struct {

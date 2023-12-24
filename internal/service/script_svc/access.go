@@ -218,7 +218,8 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 			"read:info":    struct{}{},
 		},
 		"group": {
-			"read": struct{}{},
+			"read":   struct{}{},
+			"manage": struct{}{},
 		},
 		"access": {
 			"read": struct{}{},
@@ -238,8 +239,8 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 			"read:info": struct{}{},
 		},
 		"group": {
-			"read":    struct{}{},
-			"manager": struct{}{},
+			"read":   struct{}{},
+			"manage": struct{}{},
 		},
 		"access": {
 			"read":   struct{}{},
@@ -347,14 +348,16 @@ func (a *accessSvc) Check(ctx context.Context, res, act string) (*CheckAccess, e
 	script := Script().CtxScript(ctx)
 	user := auth_svc.Auth().Get(ctx)
 	var (
-		roles []script_entity.AccessRole
+		roles = make([]script_entity.AccessRole, 0)
 		err   error
 	)
 	if user.AdminLevel.IsAdmin(model.Admin) {
-		roles = []script_entity.AccessRole{"admin"}
-	} else if user.UID == script.UserID {
-		roles = []script_entity.AccessRole{"owner"}
-	} else {
+		roles = append(roles, "admin")
+	}
+	if user.UID == script.UserID {
+		roles = append(roles, "owner")
+	}
+	if len(roles) == 0 {
 		roles, err = a.GetUserAccess(ctx, script.ID, user.UID)
 		if err != nil {
 			return nil, err

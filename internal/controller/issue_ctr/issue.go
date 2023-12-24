@@ -43,7 +43,7 @@ func (i *Issue) Router(r *mux.Router) {
 		Handler: []interface{}{
 			// 无需登录
 			i.List,
-			i.GetIssue,
+			muxutils.Use(issue_svc.Issue().RequireIssue()).Append(i.GetIssue),
 			// 需要登录
 			muxutils.Use(auth_svc.Auth().RequireLogin(true)).Append(i.CreateIssue),
 			// 需要登录且issue存在

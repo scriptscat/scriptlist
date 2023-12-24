@@ -22,21 +22,18 @@ func (a *Access) Router(r *mux.Router) {
 	muxutils.BindTree(r, []*muxutils.RouterTree{{
 		Middleware: []gin.HandlerFunc{
 			auth_svc.Auth().RequireLogin(true),
-			script_svc.Access().CheckHandler("access", "read"),
+			script_svc.Script().RequireScript(),
 		},
 		Handler: []interface{}{
-			a.AccessList,
-		},
-	}, {
-		Middleware: []gin.HandlerFunc{
-			auth_svc.Auth().RequireLogin(true),
-			script_svc.Access().CheckHandler("access", "manage"),
-		},
-		Handler: []interface{}{
-			a.CreateAccess,
-			muxutils.Use(script_svc.Access().RequireAccess()).Append(
-				a.UpdateAccess,
-				a.DeleteAccess,
+			muxutils.Use(script_svc.Access().CheckHandler("access", "read")).Append(
+				a.AccessList,
+			),
+			muxutils.Use(script_svc.Access().CheckHandler("access", "manage")).Append(
+				a.CreateAccess,
+				muxutils.Use(script_svc.Access().RequireAccess()).Append(
+					a.UpdateAccess,
+					a.DeleteAccess,
+				),
 			),
 		},
 	}})

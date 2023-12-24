@@ -65,7 +65,7 @@ func (u *scriptGroupMemberRepo) FindPage(ctx context.Context, scriptId, groupId 
 	var list []*script_entity.ScriptGroupMember
 	var count int64
 	find := db.Ctx(ctx).Model(&script_entity.ScriptGroupMember{}).
-		Where("scriptId=? and groupId=? and status=?", scriptId, groupId, consts.ACTIVE)
+		Where("script_id=? and group_id=? and status=?", scriptId, groupId, consts.ACTIVE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

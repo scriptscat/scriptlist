@@ -414,6 +414,10 @@ definitions:
     properties:
       expiretime:
         type: integer
+      gid:
+        type: integer
+      id:
+        type: integer
       user_id:
         type: integer
     type: object
@@ -535,6 +539,8 @@ definitions:
       expiretime,default=0:
         description: 0 为永久
         type: integer
+      id:
+        type: integer
       link_id:
         type: integer
       role:
@@ -550,6 +556,8 @@ definitions:
     properties:
       description:
         type: string
+      id:
+        type: integer
       name:
         type: string
     type: object
@@ -599,6 +607,8 @@ definitions:
     properties:
       aid:
         type: integer
+      id:
+        type: integer
     type: object
   script.DeleteAccessResponse:
     type: object
@@ -612,6 +622,11 @@ definitions:
   script.DeleteCodeResponse:
     type: object
   script.DeleteGroupRequest:
+    properties:
+      gid:
+        type: integer
+      id:
+        type: integer
     type: object
   script.DeleteGroupResponse:
     type: object
@@ -783,6 +798,10 @@ definitions:
     type: object
   script.RemoveMemberRequest:
     properties:
+      gid:
+        type: integer
+      id:
+        type: integer
       mid:
         type: integer
     type: object
@@ -895,6 +914,8 @@ definitions:
       expiretime,default=0:
         description: 0 为永久
         type: integer
+      id:
+        type: integer
       role:
         $ref: '#/definitions/script_entity.AccessRole'
         description: 访问权限 guest=访客 manager=管理员
@@ -940,6 +961,10 @@ definitions:
     properties:
       description:
         type: string
+      gid:
+        type: integer
+      id:
+        type: integer
       name:
         type: string
     type: object
@@ -948,6 +973,10 @@ definitions:
   script.UpdateMemberRequest:
     properties:
       expiretime:
+        type: integer
+      gid:
+        type: integer
+      id:
         type: integer
       mid:
         type: integer
@@ -1756,127 +1785,6 @@ paths:
       summary: 创建脚本
       tags:
       - script
-  /scripts/:id/access:
-    get:
-      consumes:
-      - application/json
-      description: 访问控制列表
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.AccessListResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 访问控制列表
-      tags:
-      - script/access
-    post:
-      consumes:
-      - application/json
-      description: 创建访问控制
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.CreateAccessRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.CreateAccessResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 创建访问控制
-      tags:
-      - script/access
-  /scripts/:id/access/{aid}:
-    delete:
-      consumes:
-      - application/json
-      description: 删除访问控制
-      parameters:
-      - in: path
-        name: aid
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.DeleteAccessRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.DeleteAccessResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 删除访问控制
-      tags:
-      - script/access
-    put:
-      consumes:
-      - application/json
-      description: 更新访问控制
-      parameters:
-      - in: path
-        name: aid
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.UpdateAccessRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.UpdateAccessResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 更新访问控制
-      tags:
-      - script/access
   /scripts/:id/gray:
     put:
       consumes:
@@ -1907,240 +1815,6 @@ paths:
       summary: 更新脚本灰度策略
       tags:
       - script
-  /scripts/:id/group:
-    get:
-      consumes:
-      - application/json
-      description: 群组列表
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.GroupListResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 群组列表
-      tags:
-      - script/group
-    post:
-      consumes:
-      - application/json
-      description: 创建群组
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.CreateGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.CreateGroupResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 创建群组
-      tags:
-      - script/group
-  /scripts/:id/group/:gid:
-    delete:
-      consumes:
-      - application/json
-      description: 删除群组
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.DeleteGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.DeleteGroupResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 删除群组
-      tags:
-      - script/group
-    put:
-      consumes:
-      - application/json
-      description: 更新群组
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.UpdateGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.UpdateGroupResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 更新群组
-      tags:
-      - script/group
-  /scripts/:id/group/:gid/member:
-    get:
-      consumes:
-      - application/json
-      description: 群组成员列表
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.GroupMemberListResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 群组成员列表
-      tags:
-      - script/group
-    post:
-      consumes:
-      - application/json
-      description: 添加成员
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.AddMemberRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.AddMemberResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 添加成员
-      tags:
-      - script/group
-  /scripts/:id/group/:gid/member/{mid}:
-    delete:
-      consumes:
-      - application/json
-      description: 移除成员
-      parameters:
-      - in: path
-        name: mid
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.RemoveMemberRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.RemoveMemberResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 移除成员
-      tags:
-      - script/group
-    put:
-      consumes:
-      - application/json
-      description: 更新成员
-      parameters:
-      - in: path
-        name: mid
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.UpdateMemberRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.UpdateMemberResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 更新成员
-      tags:
-      - script/group
   /scripts/{id}:
     delete:
       consumes:
@@ -2204,6 +1878,144 @@ paths:
       summary: 获取脚本信息
       tags:
       - script
+  /scripts/{id}/access:
+    get:
+      consumes:
+      - application/json
+      description: 访问控制列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AccessListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 访问控制列表
+      tags:
+      - script/access
+    post:
+      consumes:
+      - application/json
+      description: 创建访问控制
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建访问控制
+      tags:
+      - script/access
+  /scripts/{id}/access/{aid}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除访问控制
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: aid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除访问控制
+      tags:
+      - script/access
+    put:
+      consumes:
+      - application/json
+      description: 更新访问控制
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: aid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新访问控制
+      tags:
+      - script/access
   /scripts/{id}/archive:
     put:
       consumes:
@@ -2376,6 +2188,298 @@ paths:
       summary: 更新脚本设置
       tags:
       - script
+  /scripts/{id}/group:
+    get:
+      consumes:
+      - application/json
+      description: 群组列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.GroupListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 群组列表
+      tags:
+      - script/group
+    post:
+      consumes:
+      - application/json
+      description: 创建群组
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateGroupResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建群组
+      tags:
+      - script/group
+  /scripts/{id}/group/{gid}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除群组
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteGroupResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除群组
+      tags:
+      - script/group
+    put:
+      consumes:
+      - application/json
+      description: 更新群组
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateGroupResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新群组
+      tags:
+      - script/group
+  /scripts/{id}/group/{gid}/member:
+    get:
+      consumes:
+      - application/json
+      description: 群组成员列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.GroupMemberListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 群组成员列表
+      tags:
+      - script/group
+    post:
+      consumes:
+      - application/json
+      description: 添加成员
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.AddMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AddMemberResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 添加成员
+      tags:
+      - script/group
+  /scripts/{id}/group/{gid}/member/{mid}:
+    delete:
+      consumes:
+      - application/json
+      description: 移除成员
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      - in: path
+        name: mid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.RemoveMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.RemoveMemberResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 移除成员
+      tags:
+      - script/group
+    put:
+      consumes:
+      - application/json
+      description: 更新成员
+      parameters:
+      - in: path
+        name: mid
+        required: true
+        type: integer
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateMemberResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新成员
+      tags:
+      - script/group
   /scripts/{id}/issues:
     get:
       consumes:

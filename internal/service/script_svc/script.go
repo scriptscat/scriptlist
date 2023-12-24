@@ -181,7 +181,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	// 评分统计信息
 	statistics, err := script_repo.ScriptStatistics().FindByScriptID(ctx, item.ID)
 	if err != nil {
-		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		logger.Ctx(ctx).Warn("获取统计信息失败-评分", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	if statistics != nil {
 		data.Score = statistics.Score
@@ -190,12 +190,12 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	// 从平台统计拿数据,排序从脚本统计里拿数据
 	num, err := statistics_repo.ScriptStatistics().TotalPv(ctx, item.ID, statistics_repo.DownloadScriptStatistics)
 	if err != nil {
-		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		logger.Ctx(ctx).Warn("获取统计信息失败-total-pv", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	data.TotalInstall = num
 	num, err = statistics_repo.ScriptStatistics().DaysUvNum(ctx, item.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now())
 	if err != nil {
-		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		logger.Ctx(ctx).Warn("获取统计信息失败-day-uv", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	data.TodayInstall = num
 	// 脚本代码信息
