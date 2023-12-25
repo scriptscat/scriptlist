@@ -13,13 +13,16 @@ func T20231220() *gormigrate.Migration {
 			if err := tx.AutoMigrate(&script_entity.Script{}); err != nil {
 				return err
 			}
-			if err := tx.AutoMigrate(script_entity.ScriptAccess{}); err != nil {
+			if err := tx.AutoMigrate(&script_entity.ScriptAccess{}); err != nil {
 				return err
 			}
-			if err := tx.AutoMigrate(script_entity.ScriptGroup{}); err != nil {
+			if err := tx.AutoMigrate(&script_entity.ScriptGroup{}); err != nil {
 				return err
 			}
-			if err := tx.AutoMigrate(script_entity.ScriptGroupMember{}); err != nil {
+			if err := tx.AutoMigrate(&script_entity.ScriptGroupMember{}); err != nil {
+				return err
+			}
+			if err := tx.AutoMigrate(&script_entity.ScriptInvite{}); err != nil {
 				return err
 			}
 			return nil

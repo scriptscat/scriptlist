@@ -3,6 +3,7 @@ package script
 import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/codfrm/cago/server/mux"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
 type Group struct {
@@ -67,13 +68,14 @@ type GroupMemberListRequest struct {
 }
 
 type GroupMember struct {
-	ID         int64  `json:"id"`
-	UserID     int64  `json:"user_id"`
-	Username   string `json:"username"`
-	Avatar     string `json:"avatar"`
-	IsExpire   bool   `json:"is_expire"`
-	Expiretime int64  `json:"expiretime"`
-	Createtime int64  `json:"createtime"`
+	ID           int64                            `json:"id"`
+	UserID       int64                            `json:"user_id"`
+	Username     string                           `json:"username"`
+	Avatar       string                           `json:"avatar"`
+	InviteStatus script_entity.AccessInviteStatus `json:"invite_status"`
+	IsExpire     bool                             `json:"is_expire"`
+	Expiretime   int64                            `json:"expiretime"`
+	Createtime   int64                            `json:"createtime"`
 }
 
 type GroupMemberListResponse struct {

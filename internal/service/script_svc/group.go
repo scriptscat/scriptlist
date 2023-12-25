@@ -62,13 +62,14 @@ func (g *groupSvc) toMembers(ctx context.Context, m []*script_entity.ScriptGroup
 			return nil, err
 		}
 		list = append(list, &api.GroupMember{
-			ID:         v.ID,
-			UserID:     v.UserID,
-			Username:   user.Username,
-			Avatar:     user.Avatar(),
-			IsExpire:   v.IsExpired(),
-			Expiretime: v.Expiretime,
-			Createtime: v.Createtime,
+			ID:           v.ID,
+			UserID:       v.UserID,
+			Username:     user.Username,
+			Avatar:       user.Avatar(),
+			InviteStatus: v.InviteStatus,
+			IsExpire:     v.IsExpired(),
+			Expiretime:   v.Expiretime,
+			Createtime:   v.Createtime,
 		})
 	}
 	return list, nil

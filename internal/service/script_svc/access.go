@@ -23,8 +23,6 @@ import (
 type AccessSvc interface {
 	// AccessList 访问控制列表
 	AccessList(ctx context.Context, req *api.AccessListRequest) (*api.AccessListResponse, error)
-	// CreateAccess 创建访问控制
-	CreateAccess(ctx context.Context, req *api.CreateAccessRequest) (*api.CreateAccessResponse, error)
 	// UpdateAccess 更新访问控制
 	UpdateAccess(ctx context.Context, req *api.UpdateAccessRequest) (*api.UpdateAccessResponse, error)
 	// DeleteAccess 删除访问控制
@@ -37,6 +35,10 @@ type AccessSvc interface {
 	RequireAccess() gin.HandlerFunc
 	// CtxAccess 获取访问权限
 	CtxAccess(ctx context.Context) *script_entity.ScriptAccess
+	// AddGroupAccess 添加组权限
+	AddGroupAccess(ctx context.Context, req *api.AddGroupAccessRequest) (*api.AddGroupAccessResponse, error)
+	// AddUserAccess 添加用户权限, 通过用户名进行邀请
+	AddUserAccess(ctx context.Context, req *api.AddUserAccessRequest) (*api.AddUserAccessResponse, error)
 }
 
 type CheckOption func(*CheckOptions)
@@ -100,13 +102,14 @@ func (a *accessSvc) AccessList(ctx context.Context, req *api.AccessListRequest) 
 	}
 	for _, v := range list {
 		access := &api.Access{
-			ID:         v.ID,
-			LinkID:     v.LinkID,
-			Type:       int32(v.Type),
-			Role:       string(v.Role),
-			IsExpire:   v.IsExpired(),
-			Expiretime: v.Expiretime,
-			Createtime: v.Createtime,
+			ID:           v.ID,
+			LinkID:       v.LinkID,
+			Type:         v.Type,
+			InviteStatus: v.InviteStatus,
+			Role:         v.Role,
+			IsExpire:     v.IsExpired(),
+			Expiretime:   v.Expiretime,
+			Createtime:   v.Createtime,
 		}
 		switch v.Type {
 		case script_entity.AccessTypeUser:
@@ -156,37 +159,6 @@ func (a *accessSvc) checkLinkExist(ctx context.Context, scriptId, linkId int64, 
 		}
 	}
 	return nil
-}
-
-// CreateAccess 创建访问控制
-func (a *accessSvc) CreateAccess(ctx context.Context, req *api.CreateAccessRequest) (*api.CreateAccessResponse, error) {
-	script := Script().CtxScript(ctx)
-	// 检查是否重复
-	list, err := script_repo.ScriptAccess().FindByLinkID(ctx, script.ID, req.LinkID, req.Type)
-	if err != nil {
-		return nil, err
-	}
-	if len(list) > 0 {
-		return nil, i18n.NewError(ctx, code.AccessAlreadyExist)
-	}
-	if err := a.checkLinkExist(ctx, script.ID, req.LinkID, req.Type); err != nil {
-		return nil, err
-	}
-	// 创建
-	access := &script_entity.ScriptAccess{
-		ScriptID:   script.ID,
-		LinkID:     req.LinkID,
-		Type:       req.Type,
-		Role:       req.Role,
-		Status:     consts.ACTIVE,
-		Expiretime: req.Expiretime,
-		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
-	}
-	if err := script_repo.ScriptAccess().Create(ctx, access); err != nil {
-		return nil, err
-	}
-	return &api.CreateAccessResponse{}, nil
 }
 
 // UpdateAccess 更新访问控制
@@ -304,7 +276,7 @@ func (a *accessSvc) GetUserAccess(ctx context.Context, scriptId, userId int64) (
 	// 再通过组id查出组的权限
 	for _, v := range groups {
 		// 检查是否过期
-		if v.IsExpired() {
+		if !v.IsValid(ctx) {
 			continue
 		}
 		list, err := script_repo.ScriptAccess().FindByLinkID(ctx, scriptId, v.GroupID, script_entity.AccessTypeGroup)
@@ -312,13 +284,13 @@ func (a *accessSvc) GetUserAccess(ctx context.Context, scriptId, userId int64) (
 			return nil, err
 		}
 		for _, v := range list {
-			if !v.IsExpired() {
+			if v.IsValid(ctx) {
 				roles = append(roles, v.Role)
 			}
 		}
 	}
 	for _, v := range list {
-		if !v.IsExpired() {
+		if v.IsValid(ctx) {
 			roles = append(roles, v.Role)
 		}
 	}
@@ -403,4 +375,62 @@ func (a *accessSvc) CheckHandler(res, act string, opts ...CheckOption) gin.Handl
 			}
 		}
 	}
+}
+
+// AddGroupAccess 添加组权限
+func (a *accessSvc) AddGroupAccess(ctx context.Context, req *api.AddGroupAccessRequest) (*api.AddGroupAccessResponse, error) {
+	script := Script().CtxScript(ctx)
+	// 检查是否重复
+	list, err := script_repo.ScriptAccess().FindByLinkID(ctx, script.ID, req.GroupID, script_entity.AccessTypeGroup)
+	if err != nil {
+		return nil, err
+	}
+	if len(list) > 0 {
+		return nil, i18n.NewError(ctx, code.AccessAlreadyExist)
+	}
+	if err := a.checkLinkExist(ctx, script.ID, req.GroupID, script_entity.AccessTypeGroup); err != nil {
+		return nil, err
+	}
+	// 创建
+	access := &script_entity.ScriptAccess{
+		ScriptID:   script.ID,
+		LinkID:     req.GroupID,
+		Type:       script_entity.AccessTypeGroup,
+		Role:       req.Role,
+		Status:     consts.ACTIVE,
+		Expiretime: req.Expiretime,
+		Createtime: time.Now().Unix(),
+		Updatetime: time.Now().Unix(),
+	}
+	if err := script_repo.ScriptAccess().Create(ctx, access); err != nil {
+		return nil, err
+	}
+	return &api.AddGroupAccessResponse{}, nil
+}
+
+// AddUserAccess 添加用户权限, 通过用户名进行邀请
+func (a *accessSvc) AddUserAccess(ctx context.Context, req *api.AddUserAccessRequest) (*api.AddUserAccessResponse, error) {
+	// 检查是否重复
+	list, err := script_repo.ScriptAccess().FindByLinkID(ctx, req.ScriptID,
+		req.UserID, script_entity.AccessTypeUser)
+	if err != nil {
+		return nil, err
+	}
+	if len(list) > 0 {
+		return nil, i18n.NewError(ctx, code.AccessAlreadyExist)
+	}
+	// 检查用户
+	if err := a.checkLinkExist(ctx, Script().CtxScript(ctx).ID, req.UserID, script_entity.AccessTypeUser); err != nil {
+		return nil, err
+	}
+	// 创建邀请链接
+	_, err = AccessInvite().CreateInviteLink(ctx, &api.CreateInviteLinkRequest{
+		ScriptID: req.ScriptID,
+		Type:     script_entity.InviteTypeAccess,
+	})
+	if err != nil {
+		return nil, err
+	}
+	// 创建记录
+	return &api.AddUserAccessResponse{}, nil
 }

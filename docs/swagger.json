@@ -402,6 +402,114 @@
           }
         }
         },
+      "/scripts/invite/{code}/accept": {
+        "put": {
+          "description": "接受邀请",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "接受邀请",
+          "parameters": [
+            {
+              "type": "string",
+              "name": "code",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.AcceptInviteRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.AcceptInviteResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/invite/{code}/reject": {
+        "put": {
+          "description": "拒绝邀请",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "拒绝邀请",
+          "parameters": [
+            {
+              "type": "string",
+              "name": "code",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.RejectInviteRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.RejectInviteResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
       "/scripts/last-score": {
         "get": {
           "description": "最新评分脚本",
@@ -633,9 +741,11 @@
               }
             }
           }
-        },
+        }
+      },
+      "/scripts/{id}/access/group": {
         "post": {
-          "description": "创建访问控制",
+          "description": "添加组权限",
           "consumes": [
             "application/json"
           ],
@@ -645,7 +755,7 @@
           "tags": [
             "script/access"
           ],
-          "summary": "创建访问控制",
+          "summary": "添加组权限",
           "parameters": [
             {
               "type": "integer",
@@ -657,7 +767,7 @@
               "name": "body",
               "in": "body",
               "schema": {
-                "$ref": "#/definitions/script.CreateAccessRequest"
+                "$ref": "#/definitions/script.AddGroupAccessRequest"
               }
             }
           ],
@@ -670,7 +780,61 @@
                     "type": "integer"
                   },
                   "data": {
-                    "$ref": "#/definitions/script.CreateAccessResponse"
+                    "$ref": "#/definitions/script.AddGroupAccessResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+        },
+      "/scripts/{id}/access/user": {
+        "post": {
+          "description": "添加用户权限, 通过用户名进行邀请",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access"
+          ],
+          "summary": "添加用户权限, 通过用户名进行邀请",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.AddUserAccessRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.AddUserAccessResponse"
                   },
                   "msg": {
                     "type": "string"
@@ -1534,6 +1698,336 @@
                 }
             }
         },
+      "/scripts/{id}/invite/code": {
+        "get": {
+          "description": "邀请码列表",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "邀请码列表",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.InviteCodeListResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "post": {
+          "description": "创建邀请码",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "创建邀请码",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.CreateInviteCodeRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.CreateInviteCodeResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/{id}/invite/code/{code_id}": {
+        "delete": {
+          "description": "删除邀请码",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "删除邀请码",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "name": "code_id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.DeleteInviteCodeRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.DeleteInviteCodeResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/{id}/invite/code/{code_id}/audit": {
+        "put": {
+          "description": "审核邀请码",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "审核邀请码",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "name": "code_id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.AuditInviteCodeRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.AuditInviteCodeResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
+      "/scripts/{id}/invite/group/{gid}/code": {
+        "get": {
+          "description": "群组邀请码列表",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "群组邀请码列表",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "name": "gid",
+              "in": "path",
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.GroupInviteCodeResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        },
+        "post": {
+          "description": "创建群组邀请码",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script/access_invite"
+          ],
+          "summary": "创建群组邀请码",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "name": "gid",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.CreateGroupInviteCodeRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.CreateGroupInviteCodeResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
         "/scripts/{id}/issues": {
             "get": {
                 "description": "获取脚本反馈列表",
@@ -4234,6 +4728,17 @@
                 }
             }
         },
+      "script.AcceptInviteRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "script.AcceptInviteResponse": {
+        "type": "object"
+      },
       "script.Access": {
         "type": "object",
         "properties": {
@@ -4249,6 +4754,10 @@
           "id": {
             "type": "integer"
           },
+          "invite_tatus": {
+            "description": "邀请状态 1=已接受 2=已拒绝 3=待接受",
+            "$ref": "#/definitions/script_entity.AccessInviteStatus"
+          },
           "is_expire": {
             "type": "boolean"
           },
@@ -4260,11 +4769,11 @@
             "type": "string"
           },
           "role": {
-            "type": "string"
+            "$ref": "#/definitions/script_entity.AccessRole"
           },
           "type": {
             "description": "id类型 1=用户id 2=组id",
-            "type": "integer"
+            "$ref": "#/definitions/script_entity.AccessType"
           }
         }
       },
@@ -4282,6 +4791,28 @@
             "type": "integer"
           }
         }
+      },
+      "script.AddGroupAccessRequest": {
+        "type": "object",
+        "properties": {
+          "expiretime,default=0": {
+            "description": "0 为永久",
+            "type": "integer"
+          },
+          "group_id": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "role": {
+            "description": "访问权限 guest=访客 manager=管理员",
+            "$ref": "#/definitions/script_entity.AccessRole"
+          }
+        }
+      },
+      "script.AddGroupAccessResponse": {
+        "type": "object"
       },
       "script.AddMemberRequest": {
         "type": "object",
@@ -4303,6 +4834,28 @@
       "script.AddMemberResponse": {
         "type": "object"
       },
+      "script.AddUserAccessRequest": {
+        "type": "object",
+        "properties": {
+          "expiretime,default=0": {
+            "description": "0 为永久",
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "role": {
+            "description": "访问权限 guest=访客 manager=管理员",
+            "$ref": "#/definitions/script_entity.AccessRole"
+          },
+          "user_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.AddUserAccessResponse": {
+        "type": "object"
+      },
         "script.ArchiveRequest": {
             "type": "object",
             "properties": {
@@ -4317,6 +4870,24 @@
         "script.ArchiveResponse": {
             "type": "object"
         },
+      "script.AuditInviteCodeRequest": {
+        "type": "object",
+        "properties": {
+          "code_id": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "status": {
+            "description": "1=通过 2=拒绝",
+            "type": "integer"
+          }
+        }
+      },
+      "script.AuditInviteCodeResponse": {
+        "type": "object"
+      },
         "script.CategoryList": {
             "type": "object",
             "properties": {
@@ -4471,30 +5042,28 @@
                 }
             }
         },
-      "script.CreateAccessRequest": {
+      "script.CreateGroupInviteCodeRequest": {
         "type": "object",
         "properties": {
+          "audit": {
+            "type": "boolean"
+          },
+          "count,default=1": {
+            "type": "integer"
+          },
           "expiretime,default=0": {
             "description": "0 为永久",
             "type": "integer"
           },
+          "gid": {
+            "type": "integer"
+          },
           "id": {
             "type": "integer"
-          },
-          "link_id": {
-            "type": "integer"
-          },
-          "role": {
-            "description": "访问权限 guest=访客 manager=管理员",
-            "$ref": "#/definitions/script_entity.AccessRole"
-          },
-          "type": {
-            "description": "id类型 1=用户id 2=组id",
-            "$ref": "#/definitions/script_entity.AccessType"
           }
         }
       },
-      "script.CreateAccessResponse": {
+      "script.CreateGroupInviteCodeResponse": {
         "type": "object"
       },
       "script.CreateGroupRequest": {
@@ -4512,6 +5081,30 @@
         }
       },
       "script.CreateGroupResponse": {
+        "type": "object"
+      },
+      "script.CreateInviteCodeRequest": {
+        "type": "object",
+        "properties": {
+          "audit": {
+            "type": "boolean"
+          },
+          "count,default=1": {
+            "type": "integer"
+          },
+          "expiretime,default=0": {
+            "description": "0 为永久",
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.CreateInviteCodeResponse": {
+        "type": "object"
+      },
+      "script.CreateInviteLinkResponse": {
         "type": "object"
       },
         "script.CreateRequest": {
@@ -4616,6 +5209,20 @@
       "script.DeleteGroupResponse": {
         "type": "object"
       },
+      "script.DeleteInviteCodeRequest": {
+        "type": "object",
+        "properties": {
+          "code_id": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          }
+        }
+      },
+      "script.DeleteInviteCodeResponse": {
+        "type": "object"
+      },
         "script.DeleteRequest": {
             "type": "object",
             "properties": {
@@ -4679,6 +5286,21 @@
           }
         }
       },
+      "script.GroupInviteCodeResponse": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "#/definitions/issue.Comment"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
       "script.GroupListResponse": {
         "type": "object",
         "properties": {
@@ -4708,6 +5330,9 @@
           },
           "id": {
             "type": "integer"
+          },
+          "invite_status": {
+            "$ref": "#/definitions/script_entity.AccessInviteStatus"
           },
           "is_expire": {
             "type": "boolean"
@@ -4815,6 +5440,55 @@
                 }
             }
         },
+      "script.InviteCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "邀请码",
+            "type": "string"
+          },
+          "createtime": {
+            "type": "integer"
+          },
+          "expiretime": {
+            "description": "到期时间",
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "inv_status": {
+            "$ref": "#/definitions/script_entity.InviteStatus"
+          },
+          "is_audit": {
+            "description": "是否需要审核",
+            "type": "boolean"
+          },
+          "used": {
+            "description": "使用用户",
+            "type": "integer"
+          },
+          "username": {
+            "description": "使用用户名",
+            "type": "string"
+          }
+        }
+      },
+      "script.InviteCodeListResponse": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "#/definitions/issue.Comment"
+            }
+          },
+          "total": {
+            "type": "integer"
+                }
+            }
+        },
         "script.LastScoreResponse": {
             "type": "object",
             "properties": {
@@ -4868,6 +5542,17 @@
         "script.PutScoreResponse": {
             "type": "object"
         },
+      "script.RejectInviteRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "script.RejectInviteResponse": {
+        "type": "object"
+      },
       "script.RemoveMemberRequest": {
         "type": "object",
         "properties": {
@@ -5346,6 +6031,15 @@
         "script.WebhookResponse": {
             "type": "object"
         },
+      "script_entity.AccessInviteStatus": {
+        "description": "AccessInviteStatus enum type:\n- AccessInviteStatusAccept: 1\n- AccessInviteStatusReject: 2\n- AccessInviteStatusPending: 3",
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3
+        ]
+      },
       "script_entity.AccessRole": {
         "description": "AccessRole enum type:\n- AccessRoleGuest: guest\n- AccessRoleManager: manager\n- AccessRoleOwner: owner",
         "type": "string",
@@ -5359,8 +6053,8 @@
         "description": "AccessType enum type:\n- AccessTypeUser: 1\n- AccessTypeGroup: 2",
         "type": "integer",
         "enum": [
-          "1",
-          "2"
+          1,
+          2
         ]
       },
         "script_entity.Control": {
@@ -5419,6 +6113,17 @@
                 "pre-release"
             ]
         },
+      "script_entity.InviteStatus": {
+        "description": "InviteStatus enum type:\n- InviteStatusUnused: 1\n- InviteStatusUsed: 2\n- InviteStatusExpired: 3\n- InviteStatusPending: 4\n- InviteStatusReject: 5",
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
         "script_entity.Public": {
           "description": "Public enum type:\n- PublicScript: 1\n- UnPublicScript: 2\n- PrivateScript: 3",
             "type": "integer",

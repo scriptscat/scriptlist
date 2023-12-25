@@ -141,13 +141,14 @@ func TestIssue_Router(t *testing.T) {
 				mockAuth.U().Get().Times(2)
 				mockAccessRepo.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).
 					Return([]*script_entity.ScriptAccess{{
-						ID:         1,
-						ScriptID:   1,
-						LinkID:     1,
-						Type:       1,
-						Role:       script_entity.AccessRoleManager,
-						Status:     consts.ACTIVE,
-						Expiretime: time.Now().Add(time.Hour).Unix(),
+						ID:           1,
+						ScriptID:     1,
+						LinkID:       1,
+						Type:         1,
+						Role:         script_entity.AccessRoleManager,
+						InviteStatus: script_entity.AccessInviteStatusAccept,
+						Status:       consts.ACTIVE,
+						Expiretime:   time.Now().Add(time.Hour).Unix(),
 					}}, nil)
 				mockIssue.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 				mockComment.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)

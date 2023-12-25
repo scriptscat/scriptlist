@@ -7,15 +7,16 @@ import (
 )
 
 type Access struct {
-	ID         int64  `json:"id"`
-	LinkID     int64  `json:"link_id"` // 关联id
-	Name       string `json:"name"`
-	Avatar     string `json:"avatar"`
-	Type       int32  `json:"type"` // id类型 1=用户id 2=组id
-	Role       string `json:"role"`
-	IsExpire   bool   `json:"is_expire"`
-	Expiretime int64  `json:"expiretime"`
-	Createtime int64  `json:"createtime"`
+	ID           int64                            `json:"id"`
+	LinkID       int64                            `json:"link_id"` // 关联id
+	Name         string                           `json:"name"`
+	Avatar       string                           `json:"avatar"`
+	Type         script_entity.AccessType         `json:"type"`         // id类型 1=用户id 2=组id
+	InviteStatus script_entity.AccessInviteStatus `json:"invite_tatus"` // 邀请状态 1=已接受 2=已拒绝 3=待接受
+	Role         script_entity.AccessRole         `json:"role"`
+	IsExpire     bool                             `json:"is_expire"`
+	Expiretime   int64                            `json:"expiretime"`
+	Createtime   int64                            `json:"createtime"`
 }
 
 // AccessListRequest 访问控制列表
@@ -29,17 +30,28 @@ type AccessListResponse struct {
 	httputils.PageResponse[*Access] `json:",inline"`
 }
 
-// CreateAccessRequest 创建访问控制
-type CreateAccessRequest struct {
-	mux.Meta   `path:"/scripts/:id/access" method:"POST"`
+// AddGroupAccessRequest 添加组权限
+type AddGroupAccessRequest struct {
+	mux.Meta   `path:"/scripts/:id/access/group" method:"POST"`
 	ScriptID   int64                    `uri:"id" binding:"required" label:"id"`
-	LinkID     int64                    `form:"link_id" json:"link_id"  binding:"required" label:"关联id"`
-	Type       script_entity.AccessType `form:"type" binding:"required,oneof=1 2" label:"id类型"`           // id类型 1=用户id 2=组id
+	GroupID    int64                    `form:"group_id" json:"group_id"  binding:"required" label:"群组id"`
 	Role       script_entity.AccessRole `form:"role" binding:"required,oneof=guest manager" label:"访问权限"` // 访问权限 guest=访客 manager=管理员
 	Expiretime int64                    `form:"expiretime,default=0" label:"过期时间"`                        // 0 为永久
 }
 
-type CreateAccessResponse struct {
+type AddGroupAccessResponse struct {
+}
+
+// AddUserAccessRequest 添加用户权限, 通过用户名进行邀请
+type AddUserAccessRequest struct {
+	mux.Meta   `path:"/scripts/:id/access/user" method:"POST"`
+	ScriptID   int64                    `uri:"id" binding:"required" label:"id"`
+	UserID     int64                    `form:"user_id" json:"user_id"  binding:"required" label:"用户id"`
+	Role       script_entity.AccessRole `form:"role" binding:"required,oneof=guest manager" label:"访问权限"` // 访问权限 guest=访客 manager=管理员
+	Expiretime int64                    `form:"expiretime,default=0" label:"过期时间"`                        // 0 为永久
+}
+
+type AddUserAccessResponse struct {
 }
 
 // UpdateAccessRequest 更新访问控制

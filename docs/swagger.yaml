@@ -377,6 +377,13 @@ definitions:
       name:
         type: string
     type: object
+  script.AcceptInviteRequest:
+    properties:
+      code:
+        type: string
+    type: object
+  script.AcceptInviteResponse:
+    type: object
   script.Access:
     properties:
       avatar:
@@ -387,6 +394,9 @@ definitions:
         type: integer
       id:
         type: integer
+      invite_tatus:
+        $ref: '#/definitions/script_entity.AccessInviteStatus'
+        description: 邀请状态 1=已接受 2=已拒绝 3=待接受
       is_expire:
         type: boolean
       link_id:
@@ -395,10 +405,10 @@ definitions:
       name:
         type: string
       role:
-        type: string
+        $ref: '#/definitions/script_entity.AccessRole'
       type:
+        $ref: '#/definitions/script_entity.AccessType'
         description: id类型 1=用户id 2=组id
-        type: integer
     type: object
   script.AccessListResponse:
     properties:
@@ -409,6 +419,21 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  script.AddGroupAccessRequest:
+    properties:
+      expiretime,default=0:
+        description: 0 为永久
+        type: integer
+      group_id:
+        type: integer
+      id:
+        type: integer
+      role:
+        $ref: '#/definitions/script_entity.AccessRole'
+        description: 访问权限 guest=访客 manager=管理员
+    type: object
+  script.AddGroupAccessResponse:
     type: object
   script.AddMemberRequest:
     properties:
@@ -423,6 +448,21 @@ definitions:
     type: object
   script.AddMemberResponse:
     type: object
+  script.AddUserAccessRequest:
+    properties:
+      expiretime,default=0:
+        description: 0 为永久
+        type: integer
+      id:
+        type: integer
+      role:
+        $ref: '#/definitions/script_entity.AccessRole'
+        description: 访问权限 guest=访客 manager=管理员
+      user_id:
+        type: integer
+    type: object
+  script.AddUserAccessResponse:
+    type: object
   script.ArchiveRequest:
     properties:
       archive:
@@ -431,6 +471,18 @@ definitions:
         type: integer
     type: object
   script.ArchiveResponse:
+    type: object
+  script.AuditInviteCodeRequest:
+    properties:
+      code_id:
+        type: integer
+      id:
+        type: integer
+      status:
+        description: 1=通过 2=拒绝
+        type: integer
+    type: object
+  script.AuditInviteCodeResponse:
     type: object
   script.CategoryList:
     properties:
@@ -534,23 +586,21 @@ definitions:
       username:
         type: string
     type: object
-  script.CreateAccessRequest:
+  script.CreateGroupInviteCodeRequest:
     properties:
+      audit:
+        type: boolean
+      count,default=1:
+        type: integer
       expiretime,default=0:
         description: 0 为永久
         type: integer
+      gid:
+        type: integer
       id:
         type: integer
-      link_id:
-        type: integer
-      role:
-        $ref: '#/definitions/script_entity.AccessRole'
-        description: 访问权限 guest=访客 manager=管理员
-      type:
-        $ref: '#/definitions/script_entity.AccessType'
-        description: id类型 1=用户id 2=组id
     type: object
-  script.CreateAccessResponse:
+  script.CreateGroupInviteCodeResponse:
     type: object
   script.CreateGroupRequest:
     properties:
@@ -562,6 +612,22 @@ definitions:
         type: string
     type: object
   script.CreateGroupResponse:
+    type: object
+  script.CreateInviteCodeRequest:
+    properties:
+      audit:
+        type: boolean
+      count,default=1:
+        type: integer
+      expiretime,default=0:
+        description: 0 为永久
+        type: integer
+      id:
+        type: integer
+    type: object
+  script.CreateInviteCodeResponse:
+    type: object
+  script.CreateInviteLinkResponse:
     type: object
   script.CreateRequest:
     properties:
@@ -630,6 +696,15 @@ definitions:
     type: object
   script.DeleteGroupResponse:
     type: object
+  script.DeleteInviteCodeRequest:
+    properties:
+      code_id:
+        type: integer
+      id:
+        type: integer
+    type: object
+  script.DeleteInviteCodeResponse:
+    type: object
   script.DeleteRequest:
     properties:
       id:
@@ -671,6 +746,16 @@ definitions:
       name:
         type: string
     type: object
+  script.GroupInviteCodeResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
   script.GroupListResponse:
     properties:
       list:
@@ -691,6 +776,8 @@ definitions:
         type: integer
       id:
         type: integer
+      invite_status:
+        $ref: '#/definitions/script_entity.AccessInviteStatus'
       is_expire:
         type: boolean
       user_id:
@@ -761,6 +848,40 @@ definitions:
       username:
         type: string
     type: object
+  script.InviteCode:
+    properties:
+      code:
+        description: 邀请码
+        type: string
+      createtime:
+        type: integer
+      expiretime:
+        description: 到期时间
+        type: integer
+      id:
+        type: integer
+      inv_status:
+        $ref: '#/definitions/script_entity.InviteStatus'
+      is_audit:
+        description: 是否需要审核
+        type: boolean
+      used:
+        description: 使用用户
+        type: integer
+      username:
+        description: 使用用户名
+        type: string
+    type: object
+  script.InviteCodeListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
   script.LastScoreResponse:
     properties:
       list:
@@ -795,6 +916,13 @@ definitions:
         type: integer
     type: object
   script.PutScoreResponse:
+    type: object
+  script.RejectInviteRequest:
+    properties:
+      code:
+        type: string
+    type: object
+  script.RejectInviteResponse:
     type: object
   script.RemoveMemberRequest:
     properties:
@@ -1112,6 +1240,17 @@ definitions:
     type: object
   script.WebhookResponse:
     type: object
+  script_entity.AccessInviteStatus:
+    description: |-
+      AccessInviteStatus enum type:
+      - AccessInviteStatusAccept: 1
+      - AccessInviteStatusReject: 2
+      - AccessInviteStatusPending: 3
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
   script_entity.AccessRole:
     description: |-
       AccessRole enum type:
@@ -1129,8 +1268,8 @@ definitions:
       - AccessTypeUser: 1
       - AccessTypeGroup: 2
     enum:
-    - "1"
-    - "2"
+    - 1
+    - 2
     type: integer
   script_entity.Control:
     properties:
@@ -1177,6 +1316,21 @@ definitions:
     - cookie
     - pre-release
     type: string
+  script_entity.InviteStatus:
+    description: |-
+      InviteStatus enum type:
+      - InviteStatusUnused: 1
+      - InviteStatusUsed: 2
+      - InviteStatusExpired: 3
+      - InviteStatusPending: 4
+      - InviteStatusReject: 5
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    type: integer
   script_entity.Public:
     description: |-
       Public enum type:
@@ -1908,39 +2062,6 @@ paths:
       summary: 访问控制列表
       tags:
       - script/access
-    post:
-      consumes:
-      - application/json
-      description: 创建访问控制
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.CreateAccessRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.CreateAccessResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 创建访问控制
-      tags:
-      - script/access
   /scripts/{id}/access/{aid}:
     delete:
       consumes:
@@ -2014,6 +2135,74 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新访问控制
+      tags:
+      - script/access
+  /scripts/{id}/access/group:
+    post:
+      consumes:
+      - application/json
+      description: 添加组权限
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.AddGroupAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AddGroupAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 添加组权限
+      tags:
+      - script/access
+  /scripts/{id}/access/user:
+    post:
+      consumes:
+      - application/json
+      description: 添加用户权限, 通过用户名进行邀请
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.AddUserAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AddUserAccessResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 添加用户权限, 通过用户名进行邀请
       tags:
       - script/access
   /scripts/{id}/archive:
@@ -2480,6 +2669,216 @@ paths:
       summary: 更新成员
       tags:
       - script/group
+  /scripts/{id}/invite/code:
+    get:
+      consumes:
+      - application/json
+      description: 邀请码列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.InviteCodeListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 邀请码列表
+      tags:
+      - script/access_invite
+    post:
+      consumes:
+      - application/json
+      description: 创建邀请码
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateInviteCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateInviteCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建邀请码
+      tags:
+      - script/access_invite
+  /scripts/{id}/invite/code/{code_id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除邀请码
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: code_id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteInviteCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteInviteCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除邀请码
+      tags:
+      - script/access_invite
+  /scripts/{id}/invite/code/{code_id}/audit:
+    put:
+      consumes:
+      - application/json
+      description: 审核邀请码
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: code_id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.AuditInviteCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AuditInviteCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 审核邀请码
+      tags:
+      - script/access_invite
+  /scripts/{id}/invite/group/{gid}/code:
+    get:
+      consumes:
+      - application/json
+      description: 群组邀请码列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.GroupInviteCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 群组邀请码列表
+      tags:
+      - script/access_invite
+    post:
+      consumes:
+      - application/json
+      description: 创建群组邀请码
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: gid
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateGroupInviteCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateGroupInviteCodeResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建群组邀请码
+      tags:
+      - script/access_invite
   /scripts/{id}/issues:
     get:
       consumes:
@@ -3302,6 +3701,74 @@ paths:
       summary: 关注脚本
       tags:
       - script
+  /scripts/invite/{code}/accept:
+    put:
+      consumes:
+      - application/json
+      description: 接受邀请
+      parameters:
+      - in: path
+        name: code
+        required: true
+        type: string
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.AcceptInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.AcceptInviteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 接受邀请
+      tags:
+      - script/access_invite
+  /scripts/invite/{code}/reject:
+    put:
+      consumes:
+      - application/json
+      description: 拒绝邀请
+      parameters:
+      - in: path
+        name: code
+        required: true
+        type: string
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.RejectInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.RejectInviteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 拒绝邀请
+      tags:
+      - script/access_invite
   /scripts/last-score:
     get:
       consumes:

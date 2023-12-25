@@ -2,7 +2,10 @@ package script_ctr
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/limit"
 	"github.com/codfrm/cago/pkg/utils/muxutils"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
@@ -29,7 +32,8 @@ func (a *Access) Router(r *mux.Router) {
 				a.AccessList,
 			),
 			muxutils.Use(script_svc.Access().CheckHandler("access", "manage")).Append(
-				a.CreateAccess,
+				a.AddGroupAccess,
+				a.AddUserAccess,
 				muxutils.Use(script_svc.Access().RequireAccess()).Append(
 					a.UpdateAccess,
 					a.DeleteAccess,
@@ -44,11 +48,6 @@ func (a *Access) AccessList(ctx context.Context, req *api.AccessListRequest) (*a
 	return script_svc.Access().AccessList(ctx, req)
 }
 
-// CreateAccess 创建访问控制
-func (a *Access) CreateAccess(ctx context.Context, req *api.CreateAccessRequest) (*api.CreateAccessResponse, error) {
-	return script_svc.Access().CreateAccess(ctx, req)
-}
-
 // UpdateAccess 更新访问控制
 func (a *Access) UpdateAccess(ctx context.Context, req *api.UpdateAccessRequest) (*api.UpdateAccessResponse, error) {
 	return script_svc.Access().UpdateAccess(ctx, req)
@@ -57,4 +56,21 @@ func (a *Access) UpdateAccess(ctx context.Context, req *api.UpdateAccessRequest)
 // DeleteAccess 删除访问控制
 func (a *Access) DeleteAccess(ctx context.Context, req *api.DeleteAccessRequest) (*api.DeleteAccessResponse, error) {
 	return script_svc.Access().DeleteAccess(ctx, req)
+}
+
+// AddGroupAccess 添加组权限
+func (a *Access) AddGroupAccess(ctx context.Context, req *api.AddGroupAccessRequest) (*api.AddGroupAccessResponse, error) {
+	return script_svc.Access().AddGroupAccess(ctx, req)
+}
+
+// AddUserAccess 添加用户权限, 通过用户名进行邀请
+func (a *Access) AddUserAccess(ctx context.Context, req *api.AddUserAccessRequest) (*api.AddUserAccessResponse, error) {
+	ret, err := limit.NewPeriodLimit(1, 1, redis.Default(), "script:access:").
+		FuncTake(ctx, strconv.FormatInt(req.ScriptID, 10), func() (interface{}, error) {
+			return script_svc.Access().AddUserAccess(ctx, req)
+		})
+	if err != nil {
+		return nil, err
+	}
+	return ret.(*api.AddUserAccessResponse), nil
 }
