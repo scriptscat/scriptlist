@@ -32,7 +32,7 @@ type ScriptIssue struct {
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);not null"`
 	Title      string `gorm:"column:title;type:varchar(255);not null"`
 	Content    string `gorm:"column:content;type:text"`
-	Labels     string `gorm:"column:labels;type:varchar(255)"`
+	Labels     string `gorm:"column:labels;type:varchar(255);default:''"`
 	Status     int32  `gorm:"column:status;type:tinyint(4);default:0;not null"`
 	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`

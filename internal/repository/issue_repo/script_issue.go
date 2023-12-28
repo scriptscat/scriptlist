@@ -50,7 +50,8 @@ func (u *scriptIssueRepo) Create(ctx context.Context, scriptIssue *issue_entity.
 }
 
 func (u *scriptIssueRepo) Update(ctx context.Context, scriptIssue *issue_entity.ScriptIssue) error {
-	return db.Ctx(ctx).Updates(scriptIssue).Error
+	return db.Ctx(ctx).Model(&scriptIssue).
+		Select("*").Updates(scriptIssue).Error
 }
 
 func (u *scriptIssueRepo) Delete(ctx context.Context, scriptId int64, id int64) error {
