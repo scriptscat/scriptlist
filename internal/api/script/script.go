@@ -240,6 +240,30 @@ type UpdateSettingResponse struct {
 	SyncError string
 }
 
+// UpdateLibInfoRequest 更新库信息
+type UpdateLibInfoRequest struct {
+	mux.Meta    `path:"/scripts/:id/lib-info" method:"PUT"`
+	Name        string `json:"name" binding:"max=128" label:"库的名字"`
+	Description string `json:"description" binding:"max=102400" label:"库的描述"`
+}
+
+type UpdateLibInfoResponse struct {
+}
+
+// UpdateSyncSettingRequest 更新同步配置
+type UpdateSyncSettingRequest struct {
+	mux.Meta      `path:"/scripts/:id/sync" method:"PUT"`
+	SyncUrl       string                 `json:"sync_url" binding:"omitempty,url,max=1024" label:"代码同步url"`
+	ContentUrl    string                 `json:"content_url" binding:"omitempty,url,max=1024" label:"详细描述同步url"`
+	DefinitionUrl string                 `json:"definition_url" binding:"omitempty,url,max=1024" label:"定义文件同步url"`
+	SyncMode      script_entity.SyncMode `json:"sync_mode" binding:"number" label:"同步模式"`
+}
+
+type UpdateSyncSettingResponse struct {
+	Sync      bool
+	SyncError string
+}
+
 // ArchiveRequest 归档脚本
 type ArchiveRequest struct {
 	mux.Meta `path:"/scripts/:id/archive" method:"PUT"`

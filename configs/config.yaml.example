@@ -1,0 +1,44 @@
+broker:
+    nsq:
+        addr: 127.0.0.1:4150
+        nsqlookupaddr:
+            - 127.0.0.1:4161
+    type: nsq
+cache:
+    addr: 127.0.0.1:6379
+    db: 1
+    password: ""
+    type: redis
+clickhouse:
+    dsn: clickhouse://127.0.0.1:9009/default?read_timeout=10s
+db:
+    dsn: root:password@tcp(127.0.0.1:3306)/scriptlist?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+    prefix: sm_
+debug: true
+elasticsearch:
+    address:
+        - http://127.0.0.1:9200
+    cert: ""
+    password: ""
+    username: ""
+env: dev
+http:
+    address:
+        - :8080
+logger:
+    level: info
+    logfile:
+        enable: true
+        errorfilename: ./runtime/logs/cago.err.log
+        filename: ./runtime/logs/cago.log
+oauth:
+  bbs:
+    serverUrl: "https://bbs.tampermonkey.net.cn"
+    clientID: "dC37Fgznr5aAFZU"
+    clientSecret: "KLIsIQDjcnO3VtEFBrz7JgylZKQsh6dE"
+redis:
+    addr: 127.0.0.1:6379
+    db: 0
+    password: ""
+source: file
+version: 2.0.0

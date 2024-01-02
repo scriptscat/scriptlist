@@ -482,3 +482,13 @@ func (s *Script) Webhook(ctx *gin.Context) {
 func (s *Script) LastScore(ctx context.Context, req *api.LastScoreRequest) (*api.LastScoreResponse, error) {
 	return script_svc.Script().LastScore(ctx, req)
 }
+
+// UpdateLibInfo 更新库信息
+func (s *Script) UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoRequest) (*api.UpdateLibInfoResponse, error) {
+	return script_svc.Script().UpdateLibInfo(ctx, req)
+}
+
+// UpdateSyncSetting 更新同步配置
+func (s *Script) UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error) {
+	return script_svc.Script().UpdateSyncSetting(ctx, req)
+}
