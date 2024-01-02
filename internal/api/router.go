@@ -42,6 +42,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 			controller.RefreshWebhook,
 			controller.GetConfig,
 			controller.UpdateConfig,
+			controller.Search,
 		)
 		r.GET("/users/:uid/avatar", controller.Avatar())
 		r.Group("/").Bind(

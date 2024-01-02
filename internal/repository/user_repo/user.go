@@ -13,6 +13,7 @@ import (
 //go:generate mockgen -source=user.go -destination=mock/user.go
 type UserRepo interface {
 	Find(ctx context.Context, id int64) (*user_entity.User, error)
+	FindByPrefix(ctx context.Context, query string) ([]*user_entity.User, error)
 }
 
 var defaultUser UserRepo
@@ -58,6 +59,27 @@ func (u *user) Find(ctx context.Context, id int64) (*user_entity.User, error) {
 		return ret, nil
 	}, cache.Expiration(time.Minute)).Scan(&ret); err != nil {
 		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *user) FindByPrefix(ctx context.Context, query string) ([]*user_entity.User, error) {
+	var ret []*user_entity.User
+	if err := db.Ctx(ctx).Where("username LIKE ?", fmt.Sprintf("%s%%", query)).Find(&ret).Error; err != nil {
+		return nil, err
+	}
+	if len(ret) < 5 {
+		// 从归档表中查找
+		var archive []*user_entity.UserArchive
+		if err := db.Ctx(ctx).Where("username LIKE ?", fmt.Sprintf("%s%%", query)).Find(&archive).Error; err != nil {
+			return nil, err
+		}
+		for _, v := range archive {
+			ret = append(ret, (*user_entity.User)(v))
+			if len(ret) >= 5 {
+				break
+			}
+		}
 	}
 	return ret, nil
 }

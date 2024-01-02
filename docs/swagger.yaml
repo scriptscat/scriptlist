@@ -1676,6 +1676,13 @@ definitions:
       total:
         type: integer
     type: object
+  user.SearchResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/user.InfoResponse'
+        type: array
+    type: object
   user.UpdateConfigRequest:
     properties:
       notify:
@@ -2061,7 +2068,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 访问控制列表
       tags:
-      - script/access
+      - script
   /scripts/{id}/access/{aid}:
     delete:
       consumes:
@@ -2099,7 +2106,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除访问控制
       tags:
-      - script/access
+      - script
     put:
       consumes:
       - application/json
@@ -2136,7 +2143,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 更新访问控制
       tags:
-      - script/access
+      - script
   /scripts/{id}/access/group:
     post:
       consumes:
@@ -2170,7 +2177,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 添加组权限
       tags:
-      - script/access
+      - script
   /scripts/{id}/access/user:
     post:
       consumes:
@@ -2204,7 +2211,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 添加用户权限, 通过用户名进行邀请
       tags:
-      - script/access
+      - script
   /scripts/{id}/archive:
     put:
       consumes:
@@ -2406,7 +2413,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 群组列表
       tags:
-      - script/group
+      - script
     post:
       consumes:
       - application/json
@@ -2439,7 +2446,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建群组
       tags:
-      - script/group
+      - script
   /scripts/{id}/group/{gid}:
     delete:
       consumes:
@@ -2477,7 +2484,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除群组
       tags:
-      - script/group
+      - script
     put:
       consumes:
       - application/json
@@ -2514,7 +2521,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 更新群组
       tags:
-      - script/group
+      - script
   /scripts/{id}/group/{gid}/member:
     get:
       consumes:
@@ -2548,7 +2555,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 群组成员列表
       tags:
-      - script/group
+      - script
     post:
       consumes:
       - application/json
@@ -2585,7 +2592,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 添加成员
       tags:
-      - script/group
+      - script
   /scripts/{id}/group/{gid}/member/{mid}:
     delete:
       consumes:
@@ -2627,7 +2634,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 移除成员
       tags:
-      - script/group
+      - script
     put:
       consumes:
       - application/json
@@ -2668,7 +2675,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 更新成员
       tags:
-      - script/group
+      - script
   /scripts/{id}/invite/code:
     get:
       consumes:
@@ -2698,7 +2705,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 邀请码列表
       tags:
-      - script/access_invite
+      - script
     post:
       consumes:
       - application/json
@@ -2731,7 +2738,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建邀请码
       tags:
-      - script/access_invite
+      - script
   /scripts/{id}/invite/code/{code_id}:
     delete:
       consumes:
@@ -2769,7 +2776,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除邀请码
       tags:
-      - script/access_invite
+      - script
   /scripts/{id}/invite/code/{code_id}/audit:
     put:
       consumes:
@@ -2807,7 +2814,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 审核邀请码
       tags:
-      - script/access_invite
+      - script
   /scripts/{id}/invite/group/{gid}/code:
     get:
       consumes:
@@ -2841,7 +2848,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 群组邀请码列表
       tags:
-      - script/access_invite
+      - script
     post:
       consumes:
       - application/json
@@ -2878,7 +2885,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建群组邀请码
       tags:
-      - script/access_invite
+      - script
   /scripts/{id}/issues:
     get:
       consumes:
@@ -3084,7 +3091,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取反馈评论列表
       tags:
-      - issue/comment
+      - issue
     post:
       consumes:
       - application/json
@@ -3121,7 +3128,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建反馈评论
       tags:
-      - issue/comment
+      - issue
   /scripts/{id}/issues/{issueId}/comment/{commentId}:
     delete:
       consumes:
@@ -3163,7 +3170,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除反馈评论
       tags:
-      - issue/comment
+      - issue
   /scripts/{id}/issues/{issueId}/labels:
     put:
       consumes:
@@ -3374,7 +3381,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取脚本评分列表
       tags:
-      - script/score
+      - script
     put:
       consumes:
       - application/json
@@ -3407,7 +3414,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 脚本评分
       tags:
-      - script/score
+      - script
   /scripts/{id}/score/{scoreId}:
     delete:
       consumes:
@@ -3445,7 +3452,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于删除脚本的评价，注意，只有管理员才有权限删除评价
       tags:
-      - script/score
+      - script
   /scripts/{id}/score/self:
     get:
       consumes:
@@ -3475,7 +3482,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于获取自己对脚本的评价
       tags:
-      - script/score
+      - script
   /scripts/{id}/setting:
     get:
       consumes:
@@ -3734,7 +3741,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 接受邀请
       tags:
-      - script/access_invite
+      - script
   /scripts/invite/{code}/reject:
     put:
       consumes:
@@ -3768,7 +3775,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 拒绝邀请
       tags:
-      - script/access_invite
+      - script
   /scripts/last-score:
     get:
       consumes:
@@ -4274,6 +4281,35 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新用户配置
+      tags:
+      - user
+  /users/search:
+    get:
+      consumes:
+      - application/json
+      description: 搜索用户
+      parameters:
+      - in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.SearchResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 搜索用户
       tags:
       - user
   /users/webhook:

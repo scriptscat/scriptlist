@@ -57,53 +57,53 @@
                 }
             }
         },
-      "/open/crx-download/{id}": {
-        "get": {
-          "description": "谷歌crx下载服务",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "open"
-          ],
-          "summary": "谷歌crx下载服务",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/open.CrxDownloadResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/open/crx-download/{id}": {
+            "get": {
+                "description": "谷歌crx下载服务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "open"
+                ],
+                "summary": "谷歌crx下载服务",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/open.CrxDownloadResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
+        },
         "/resource/image": {
             "post": {
                 "description": "上传图片",
@@ -354,1223 +354,9 @@
                 }
             }
         },
-      "/scripts/:id/gray": {
-        "put": {
-          "description": "更新脚本灰度策略",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "更新脚本灰度策略",
-          "parameters": [
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UpdateScriptGrayRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UpdateScriptGrayResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-        },
-      "/scripts/invite/{code}/accept": {
-        "put": {
-          "description": "接受邀请",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "接受邀请",
-          "parameters": [
-            {
-              "type": "string",
-              "name": "code",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.AcceptInviteRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.AcceptInviteResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/invite/{code}/reject": {
-        "put": {
-          "description": "拒绝邀请",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "拒绝邀请",
-          "parameters": [
-            {
-              "type": "string",
-              "name": "code",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.RejectInviteRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.RejectInviteResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/last-score": {
-        "get": {
-          "description": "最新评分脚本",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "最新评分脚本",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.LastScoreResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/migrate/es": {
-        "post": {
-          "description": "全量迁移数据到es",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "全量迁移数据到es",
-          "parameters": [
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.MigrateEsRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.MigrateEsResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-        },
-      "/scripts/{id}": {
-        "get": {
-          "description": "获取脚本信息",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "获取脚本信息",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.InfoResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        },
-        "delete": {
-          "description": "删除脚本",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "script"
-                ],
-          "summary": "删除脚本",
-                "parameters": [
-                    {
-                      "type": "integer",
-                      "name": "id",
-                      "in": "path",
-                      "required": true
-                    },
-                  {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                          "$ref": "#/definitions/script.DeleteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.DeleteResponse"
-                                },
-                              "msg": {
-                                "type": "string"
-                              }
-                            }
-                        }
-                    },
-                  "400": {
-                    "description": "Bad Request",
-                    "schema": {
-                      "$ref": "#/definitions/BadRequest"
-                    }
-                  }
-                }
-            }
-        },
-      "/scripts/{id}/access": {
-        "get": {
-          "description": "访问控制列表",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access"
-          ],
-          "summary": "访问控制列表",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.AccessListResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/{id}/access/group": {
-        "post": {
-          "description": "添加组权限",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access"
-          ],
-          "summary": "添加组权限",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.AddGroupAccessRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.AddGroupAccessResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-        },
-      "/scripts/{id}/access/user": {
-        "post": {
-          "description": "添加用户权限, 通过用户名进行邀请",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access"
-          ],
-          "summary": "添加用户权限, 通过用户名进行邀请",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.AddUserAccessRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.AddUserAccessResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/{id}/access/{aid}": {
-        "put": {
-          "description": "更新访问控制",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access"
-          ],
-          "summary": "更新访问控制",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "aid",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UpdateAccessRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UpdateAccessResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        },
-        "delete": {
-          "description": "删除访问控制",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access"
-          ],
-          "summary": "删除访问控制",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "aid",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.DeleteAccessRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.DeleteAccessResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/{id}/archive": {
-        "put": {
-          "description": "归档脚本",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "归档脚本",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.ArchiveRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.ArchiveResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-        },
-      "/scripts/{id}/code": {
-        "get": {
-          "description": "获取脚本代码信息",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "获取脚本代码信息",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.CodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        },
-        "put": {
-          "description": "更新脚本/库代码",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "更新脚本/库代码",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UpdateCodeRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UpdateCodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-        },
-      "/scripts/{id}/code/{codeId}": {
-        "put": {
-          "description": "更新脚本设置",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "更新脚本设置",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "codeId",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UpdateCodeSettingRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UpdateCodeSettingResponse"
-                  },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-        },
-        "delete": {
-          "description": "删除脚本/库代码",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "script"
-                ],
-          "summary": "删除脚本/库代码",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "codeId",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.DeleteCodeRequest"
-              }
-            }
-          ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.DeleteCodeResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-      "/scripts/{id}/group": {
-        "get": {
-          "description": "群组列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                  "script/group"
-                ],
-          "summary": "群组列表",
-                "parameters": [
-                    {
-                      "type": "integer",
-                      "name": "id",
-                      "in": "path",
-                      "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.GroupListResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-        },
-        "post": {
-          "description": "创建群组",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                  "script/group"
-                ],
-          "summary": "创建群组",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                  {
-                    "name": "body",
-                    "in": "body",
-                    "schema": {
-                      "$ref": "#/definitions/script.CreateGroupRequest"
-                    }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.CreateGroupResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-        }
-      },
-      "/scripts/{id}/group/{gid}": {
-        "put": {
-          "description": "更新群组",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                  "script/group"
-                ],
-          "summary": "更新群组",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                  {
-                    "type": "integer",
-                    "name": "gid",
-                    "in": "path",
-                    "required": true
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                          "$ref": "#/definitions/script.UpdateGroupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.UpdateGroupResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-        },
-        "delete": {
-          "description": "删除群组",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                  "script/group"
-                ],
-          "summary": "删除群组",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                  {
-                    "type": "integer",
-                    "name": "gid",
-                    "in": "path",
-                    "required": true
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                          "$ref": "#/definitions/script.DeleteGroupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.DeleteGroupResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-      "/scripts/{id}/group/{gid}/member": {
-            "get": {
-              "description": "群组成员列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                  "script/group"
-                ],
-              "summary": "群组成员列表",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                  {
-                    "type": "integer",
-                    "name": "gid",
-                    "in": "path",
-                    "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.GroupMemberListResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            },
-        "post": {
-          "description": "添加成员",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                  "script/group"
-                ],
-          "summary": "添加成员",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                  {
-                    "type": "integer",
-                    "name": "gid",
-                    "in": "path",
-                    "required": true
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                          "$ref": "#/definitions/script.AddMemberRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "data": {
-                                  "$ref": "#/definitions/script.AddMemberResponse"
-                                },
-                                "msg": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-      "/scripts/{id}/group/{gid}/member/{mid}": {
+        "/scripts/:id/gray": {
             "put": {
-              "description": "更新成员",
+                "description": "更新脚本灰度策略",
                 "consumes": [
                     "application/json"
                 ],
@@ -1578,33 +364,15 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script"
                 ],
-              "summary": "更新成员",
+                "summary": "更新脚本灰度策略",
                 "parameters": [
-                    {
-                      "type": "integer",
-                      "name": "mid",
-                      "in": "path",
-                      "required": true
-                    },
-                  {
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                      "name": "gid",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "name": "body",
                         "in": "body",
                         "schema": {
-                          "$ref": "#/definitions/script.UpdateMemberRequest"
+                            "$ref": "#/definitions/script.UpdateScriptGrayRequest"
                         }
                     }
                 ],
@@ -1617,7 +385,249 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                  "$ref": "#/definitions/script.UpdateMemberResponse"
+                                    "$ref": "#/definitions/script.UpdateScriptGrayResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/invite/{code}/accept": {
+            "put": {
+                "description": "接受邀请",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "接受邀请",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.AcceptInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.AcceptInviteResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/invite/{code}/reject": {
+            "put": {
+                "description": "拒绝邀请",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "拒绝邀请",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.RejectInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.RejectInviteResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/last-score": {
+            "get": {
+                "description": "最新评分脚本",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "最新评分脚本",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.LastScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/migrate/es": {
+            "post": {
+                "description": "全量迁移数据到es",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "全量迁移数据到es",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.MigrateEsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.MigrateEsResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}": {
+            "get": {
+                "description": "获取脚本信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.InfoResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -1634,7 +644,7 @@
                 }
             },
             "delete": {
-              "description": "移除成员",
+                "description": "删除脚本",
                 "consumes": [
                     "application/json"
                 ],
@@ -1642,9 +652,9 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script"
                 ],
-              "summary": "移除成员",
+                "summary": "删除脚本",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1653,22 +663,10 @@
                         "required": true
                     },
                     {
-                        "type": "integer",
-                      "name": "gid",
-                      "in": "path",
-                      "required": true
-                    },
-                  {
-                    "type": "integer",
-                    "name": "mid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
                         "name": "body",
                         "in": "body",
                         "schema": {
-                          "$ref": "#/definitions/script.RemoveMemberRequest"
+                            "$ref": "#/definitions/script.DeleteRequest"
                         }
                     }
                 ],
@@ -1681,7 +679,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                  "$ref": "#/definitions/script.RemoveMemberResponse"
+                                    "$ref": "#/definitions/script.DeleteResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -1698,336 +696,1338 @@
                 }
             }
         },
-      "/scripts/{id}/invite/code": {
-        "get": {
-          "description": "邀请码列表",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "邀请码列表",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.InviteCodeListResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/scripts/{id}/access": {
+            "get": {
+                "description": "访问控制列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "访问控制列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.AccessListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
         },
-        "post": {
-          "description": "创建邀请码",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "创建邀请码",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.CreateInviteCodeRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.CreateInviteCodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/scripts/{id}/access/group": {
+            "post": {
+                "description": "添加组权限",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "添加组权限",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.AddGroupAccessRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.AddGroupAccessResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
-      "/scripts/{id}/invite/code/{code_id}": {
-        "delete": {
-          "description": "删除邀请码",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "删除邀请码",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "code_id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.DeleteInviteCodeRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.DeleteInviteCodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/{id}/invite/code/{code_id}/audit": {
-        "put": {
-          "description": "审核邀请码",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "审核邀请码",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "code_id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.AuditInviteCodeRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.AuditInviteCodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
-        }
-      },
-      "/scripts/{id}/invite/group/{gid}/code": {
-        "get": {
-          "description": "群组邀请码列表",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "群组邀请码列表",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "gid",
-              "in": "path",
-              "required": true
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.GroupInviteCodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
-            }
-          }
         },
-        "post": {
-          "description": "创建群组邀请码",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/access_invite"
-          ],
-          "summary": "创建群组邀请码",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "type": "integer",
-              "name": "gid",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.CreateGroupInviteCodeRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.CreateGroupInviteCodeResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/scripts/{id}/access/user": {
+            "post": {
+                "description": "添加用户权限, 通过用户名进行邀请",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "添加用户权限, 通过用户名进行邀请",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.AddUserAccessRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.AddUserAccessResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
+        },
+        "/scripts/{id}/access/{aid}": {
+            "put": {
+                "description": "更新访问控制",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新访问控制",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "aid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateAccessRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateAccessResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除访问控制",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "删除访问控制",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "aid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DeleteAccessRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DeleteAccessResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/archive": {
+            "put": {
+                "description": "归档脚本",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "归档脚本",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.ArchiveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.ArchiveResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/code": {
+            "get": {
+                "description": "获取脚本代码信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本代码信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "更新脚本/库代码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本/库代码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/code/{codeId}": {
+            "put": {
+                "description": "更新脚本设置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新脚本设置",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "codeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateCodeSettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateCodeSettingResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除脚本/库代码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "删除脚本/库代码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "codeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DeleteCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DeleteCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/group": {
+            "get": {
+                "description": "群组列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "群组列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.GroupListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建群组",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "创建群组",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.CreateGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CreateGroupResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/group/{gid}": {
+            "put": {
+                "description": "更新群组",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新群组",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateGroupResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除群组",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "删除群组",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DeleteGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DeleteGroupResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/group/{gid}/member": {
+            "get": {
+                "description": "群组成员列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "群组成员列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.GroupMemberListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "添加成员",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "添加成员",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.AddMemberRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.AddMemberResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/group/{gid}/member/{mid}": {
+            "put": {
+                "description": "更新成员",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新成员",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "mid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateMemberRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateMemberResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "移除成员",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "移除成员",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "mid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.RemoveMemberRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.RemoveMemberResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/invite/code": {
+            "get": {
+                "description": "邀请码列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "邀请码列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.InviteCodeListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建邀请码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "创建邀请码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.CreateInviteCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CreateInviteCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/invite/code/{code_id}": {
+            "delete": {
+                "description": "删除邀请码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "删除邀请码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "code_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DeleteInviteCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DeleteInviteCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/invite/code/{code_id}/audit": {
+            "put": {
+                "description": "审核邀请码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "审核邀请码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "code_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.AuditInviteCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.AuditInviteCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/invite/group/{gid}/code": {
+            "get": {
+                "description": "群组邀请码列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "群组邀请码列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.GroupInviteCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建群组邀请码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "创建群组邀请码",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "gid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.CreateGroupInviteCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CreateGroupInviteCodeResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/{id}/issues": {
             "get": {
                 "description": "获取脚本反馈列表",
@@ -2308,7 +2308,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "issue/comment"
+                    "issue"
                 ],
                 "summary": "获取反馈评论列表",
                 "parameters": [
@@ -2359,7 +2359,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "issue/comment"
+                    "issue"
                 ],
                 "summary": "创建反馈评论",
                 "parameters": [
@@ -2419,7 +2419,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "issue/comment"
+                    "issue"
                 ],
                 "summary": "删除反馈评论",
                 "parameters": [
@@ -2770,7 +2770,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script"
                 ],
                 "summary": "获取脚本评分列表",
                 "parameters": [
@@ -2815,7 +2815,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script"
                 ],
                 "summary": "脚本评分",
                 "parameters": [
@@ -2869,7 +2869,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script"
                 ],
                 "summary": "用于获取自己对脚本的评价",
                 "parameters": [
@@ -2916,7 +2916,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script"
                 ],
                 "summary": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
                 "parameters": [
@@ -3809,6 +3809,52 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/user.UpdateConfigResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/search": {
+            "get": {
+                "description": "搜索用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "搜索用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "query",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.SearchResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -4728,134 +4774,134 @@
                 }
             }
         },
-      "script.AcceptInviteRequest": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        }
-      },
-      "script.AcceptInviteResponse": {
-        "type": "object"
-      },
-      "script.Access": {
-        "type": "object",
-        "properties": {
-          "avatar": {
-            "type": "string"
-          },
-          "createtime": {
-            "type": "integer"
-          },
-          "expiretime": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "invite_tatus": {
-            "description": "邀请状态 1=已接受 2=已拒绝 3=待接受",
-            "$ref": "#/definitions/script_entity.AccessInviteStatus"
-          },
-          "is_expire": {
-            "type": "boolean"
-          },
-          "link_id": {
-            "description": "关联id",
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "role": {
-            "$ref": "#/definitions/script_entity.AccessRole"
-          },
-          "type": {
-            "description": "id类型 1=用户id 2=组id",
-            "$ref": "#/definitions/script_entity.AccessType"
-          }
-        }
-      },
-      "script.AccessListResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "$ref": "#/definitions/issue.Comment"
+        "script.AcceptInviteRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
             }
-          },
-          "total": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.AddGroupAccessRequest": {
-        "type": "object",
-        "properties": {
-          "expiretime,default=0": {
-            "description": "0 为永久",
-            "type": "integer"
-          },
-          "group_id": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "role": {
-            "description": "访问权限 guest=访客 manager=管理员",
-            "$ref": "#/definitions/script_entity.AccessRole"
-          }
-        }
-      },
-      "script.AddGroupAccessResponse": {
-        "type": "object"
-      },
-      "script.AddMemberRequest": {
-        "type": "object",
-        "properties": {
-          "expiretime": {
-            "type": "integer"
-          },
-          "gid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "user_id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.AddMemberResponse": {
-        "type": "object"
-      },
-      "script.AddUserAccessRequest": {
-        "type": "object",
-        "properties": {
-          "expiretime,default=0": {
-            "description": "0 为永久",
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "role": {
-            "description": "访问权限 guest=访客 manager=管理员",
-            "$ref": "#/definitions/script_entity.AccessRole"
-          },
-          "user_id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.AddUserAccessResponse": {
-        "type": "object"
-      },
+        },
+        "script.AcceptInviteResponse": {
+            "type": "object"
+        },
+        "script.Access": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "expiretime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invite_tatus": {
+                    "description": "邀请状态 1=已接受 2=已拒绝 3=待接受",
+                    "$ref": "#/definitions/script_entity.AccessInviteStatus"
+                },
+                "is_expire": {
+                    "type": "boolean"
+                },
+                "link_id": {
+                    "description": "关联id",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/script_entity.AccessRole"
+                },
+                "type": {
+                    "description": "id类型 1=用户id 2=组id",
+                    "$ref": "#/definitions/script_entity.AccessType"
+                }
+            }
+        },
+        "script.AccessListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.AddGroupAccessRequest": {
+            "type": "object",
+            "properties": {
+                "expiretime,default=0": {
+                    "description": "0 为永久",
+                    "type": "integer"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "description": "访问权限 guest=访客 manager=管理员",
+                    "$ref": "#/definitions/script_entity.AccessRole"
+                }
+            }
+        },
+        "script.AddGroupAccessResponse": {
+            "type": "object"
+        },
+        "script.AddMemberRequest": {
+            "type": "object",
+            "properties": {
+                "expiretime": {
+                    "type": "integer"
+                },
+                "gid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.AddMemberResponse": {
+            "type": "object"
+        },
+        "script.AddUserAccessRequest": {
+            "type": "object",
+            "properties": {
+                "expiretime,default=0": {
+                    "description": "0 为永久",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "description": "访问权限 guest=访客 manager=管理员",
+                    "$ref": "#/definitions/script_entity.AccessRole"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.AddUserAccessResponse": {
+            "type": "object"
+        },
         "script.ArchiveRequest": {
             "type": "object",
             "properties": {
@@ -4870,24 +4916,24 @@
         "script.ArchiveResponse": {
             "type": "object"
         },
-      "script.AuditInviteCodeRequest": {
-        "type": "object",
-        "properties": {
-          "code_id": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "status": {
-            "description": "1=通过 2=拒绝",
-            "type": "integer"
-          }
-        }
-      },
-      "script.AuditInviteCodeResponse": {
-        "type": "object"
-      },
+        "script.AuditInviteCodeRequest": {
+            "type": "object",
+            "properties": {
+                "code_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "1=通过 2=拒绝",
+                    "type": "integer"
+                }
+            }
+        },
+        "script.AuditInviteCodeResponse": {
+            "type": "object"
+        },
         "script.CategoryList": {
             "type": "object",
             "properties": {
@@ -4983,9 +5029,9 @@
                 "createtime": {
                     "type": "integer"
                 },
-              "danger": {
-                "type": "integer"
-              },
+                "danger": {
+                    "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -5026,7 +5072,7 @@
                     "type": "integer"
                 },
                 "type": {
-                  "$ref": "#/definitions/script_entity.Type"
+                    "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -5042,71 +5088,71 @@
                 }
             }
         },
-      "script.CreateGroupInviteCodeRequest": {
-        "type": "object",
-        "properties": {
-          "audit": {
-            "type": "boolean"
-          },
-          "count,default=1": {
-            "type": "integer"
-          },
-          "expiretime,default=0": {
-            "description": "0 为永久",
-            "type": "integer"
-          },
-          "gid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.CreateGroupInviteCodeResponse": {
-        "type": "object"
-      },
-      "script.CreateGroupRequest": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "script.CreateGroupResponse": {
-        "type": "object"
-      },
-      "script.CreateInviteCodeRequest": {
-        "type": "object",
-        "properties": {
-          "audit": {
-            "type": "boolean"
-          },
-          "count,default=1": {
-            "type": "integer"
-          },
-          "expiretime,default=0": {
-            "description": "0 为永久",
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.CreateInviteCodeResponse": {
-        "type": "object"
-      },
-      "script.CreateInviteLinkResponse": {
-        "type": "object"
-      },
+        "script.CreateGroupInviteCodeRequest": {
+            "type": "object",
+            "properties": {
+                "audit": {
+                    "type": "boolean"
+                },
+                "count,default=1": {
+                    "type": "integer"
+                },
+                "expiretime,default=0": {
+                    "description": "0 为永久",
+                    "type": "integer"
+                },
+                "gid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.CreateGroupInviteCodeResponse": {
+            "type": "object"
+        },
+        "script.CreateGroupRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.CreateGroupResponse": {
+            "type": "object"
+        },
+        "script.CreateInviteCodeRequest": {
+            "type": "object",
+            "properties": {
+                "audit": {
+                    "type": "boolean"
+                },
+                "count,default=1": {
+                    "type": "integer"
+                },
+                "expiretime,default=0": {
+                    "description": "0 为永久",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.CreateInviteCodeResponse": {
+            "type": "object"
+        },
+        "script.CreateInviteLinkResponse": {
+            "type": "object"
+        },
         "script.CreateRequest": {
             "type": "object",
             "properties": {
@@ -5167,20 +5213,20 @@
         "script.DelScoreResponse": {
             "type": "object"
         },
-      "script.DeleteAccessRequest": {
-        "type": "object",
-        "properties": {
-          "aid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.DeleteAccessResponse": {
-        "type": "object"
-      },
+        "script.DeleteAccessRequest": {
+            "type": "object",
+            "properties": {
+                "aid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.DeleteAccessResponse": {
+            "type": "object"
+        },
         "script.DeleteCodeRequest": {
             "type": "object",
             "properties": {
@@ -5195,34 +5241,34 @@
         "script.DeleteCodeResponse": {
             "type": "object"
         },
-      "script.DeleteGroupRequest": {
-        "type": "object",
-        "properties": {
-          "gid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.DeleteGroupResponse": {
-        "type": "object"
-      },
-      "script.DeleteInviteCodeRequest": {
-        "type": "object",
-        "properties": {
-          "code_id": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.DeleteInviteCodeResponse": {
-        "type": "object"
-      },
+        "script.DeleteGroupRequest": {
+            "type": "object",
+            "properties": {
+                "gid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.DeleteGroupResponse": {
+            "type": "object"
+        },
+        "script.DeleteInviteCodeRequest": {
+            "type": "object",
+            "properties": {
+                "code_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.DeleteInviteCodeResponse": {
+            "type": "object"
+        },
         "script.DeleteRequest": {
             "type": "object",
             "properties": {
@@ -5260,103 +5306,103 @@
                 }
             }
         },
-      "script.Group": {
-        "type": "object",
-        "properties": {
-          "createtime": {
-            "type": "integer"
-          },
-          "description": {
-            "type": "string"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "member": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/script.GroupMember"
+        "script.Group": {
+            "type": "object",
+            "properties": {
+                "createtime": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "member": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.GroupMember"
+                    }
+                },
+                "member_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
             }
-          },
-          "member_count": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "script.GroupInviteCodeResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "$ref": "#/definitions/issue.Comment"
+        },
+        "script.GroupInviteCodeResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          },
-          "total": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.GroupListResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "$ref": "#/definitions/issue.Comment"
+        },
+        "script.GroupListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          },
-          "total": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.GroupMember": {
-        "type": "object",
-        "properties": {
-          "avatar": {
-            "type": "string"
-          },
-          "createtime": {
-            "type": "integer"
-          },
-          "expiretime": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "invite_status": {
-            "$ref": "#/definitions/script_entity.AccessInviteStatus"
-          },
-          "is_expire": {
-            "type": "boolean"
-          },
-          "user_id": {
-            "type": "integer"
-          },
-          "username": {
-            "type": "string"
-          }
-        }
-      },
-      "script.GroupMemberListResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "$ref": "#/definitions/issue.Comment"
+        },
+        "script.GroupMember": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "expiretime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invite_status": {
+                    "$ref": "#/definitions/script_entity.AccessInviteStatus"
+                },
+                "is_expire": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
             }
-          },
-          "total": {
-            "type": "integer"
+        },
+        "script.GroupMemberListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -5381,8 +5427,8 @@
                 "createtime": {
                     "type": "integer"
                 },
-              "danger": {
-                "type": "integer"
+                "danger": {
+                    "type": "integer"
                 },
                 "description": {
                     "type": "string"
@@ -5424,7 +5470,7 @@
                     "type": "integer"
                 },
                 "type": {
-                  "$ref": "#/definitions/script_entity.Type"
+                    "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -5440,52 +5486,52 @@
                 }
             }
         },
-      "script.InviteCode": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "description": "邀请码",
-            "type": "string"
-          },
-          "createtime": {
-            "type": "integer"
-          },
-          "expiretime": {
-            "description": "到期时间",
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "inv_status": {
-            "$ref": "#/definitions/script_entity.InviteStatus"
-          },
-          "is_audit": {
-            "description": "是否需要审核",
-            "type": "boolean"
-          },
-          "used": {
-            "description": "使用用户",
-            "type": "integer"
-          },
-          "username": {
-            "description": "使用用户名",
-            "type": "string"
-          }
-        }
-      },
-      "script.InviteCodeListResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "$ref": "#/definitions/issue.Comment"
+        "script.InviteCode": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "邀请码",
+                    "type": "string"
+                },
+                "createtime": {
+                    "type": "integer"
+                },
+                "expiretime": {
+                    "description": "到期时间",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "inv_status": {
+                    "$ref": "#/definitions/script_entity.InviteStatus"
+                },
+                "is_audit": {
+                    "description": "是否需要审核",
+                    "type": "boolean"
+                },
+                "used": {
+                    "description": "使用用户",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "使用用户名",
+                    "type": "string"
+                }
             }
-          },
-          "total": {
-            "type": "integer"
+        },
+        "script.InviteCodeListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -5542,34 +5588,34 @@
         "script.PutScoreResponse": {
             "type": "object"
         },
-      "script.RejectInviteRequest": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        }
-      },
-      "script.RejectInviteResponse": {
-        "type": "object"
-      },
-      "script.RemoveMemberRequest": {
-        "type": "object",
-        "properties": {
-          "gid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "mid": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.RemoveMemberResponse": {
-        "type": "object"
-      },
+        "script.RejectInviteRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.RejectInviteResponse": {
+            "type": "object"
+        },
+        "script.RemoveMemberRequest": {
+            "type": "object",
+            "properties": {
+                "gid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.RemoveMemberResponse": {
+            "type": "object"
+        },
         "script.Score": {
             "type": "object",
             "properties": {
@@ -5629,8 +5675,8 @@
                 "createtime": {
                     "type": "integer"
                 },
-              "danger": {
-                "type": "integer"
+                "danger": {
+                    "type": "integer"
                 },
                 "description": {
                     "type": "string"
@@ -5672,7 +5718,7 @@
                     "type": "integer"
                 },
                 "type": {
-                  "$ref": "#/definitions/script_entity.Type"
+                    "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -5722,28 +5768,28 @@
                 }
             }
         },
-      "script.UpdateAccessRequest": {
-        "type": "object",
-        "properties": {
-          "aid": {
-            "type": "integer"
-          },
-          "expiretime,default=0": {
-            "description": "0 为永久",
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "role": {
-            "description": "访问权限 guest=访客 manager=管理员",
-            "$ref": "#/definitions/script_entity.AccessRole"
-          }
-        }
-      },
-      "script.UpdateAccessResponse": {
-        "type": "object"
-      },
+        "script.UpdateAccessRequest": {
+            "type": "object",
+            "properties": {
+                "aid": {
+                    "type": "integer"
+                },
+                "expiretime,default=0": {
+                    "description": "0 为永久",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "description": "访问权限 guest=访客 manager=管理员",
+                    "$ref": "#/definitions/script_entity.AccessRole"
+                }
+            }
+        },
+        "script.UpdateAccessResponse": {
+            "type": "object"
+        },
         "script.UpdateCodeRequest": {
             "type": "object",
             "properties": {
@@ -5794,46 +5840,46 @@
         "script.UpdateCodeSettingResponse": {
             "type": "object"
         },
-      "script.UpdateGroupRequest": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "gid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "script.UpdateGroupResponse": {
-        "type": "object"
+        "script.UpdateGroupRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "gid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
         },
-      "script.UpdateMemberRequest": {
-        "type": "object",
-        "properties": {
-          "expiretime": {
-            "type": "integer"
-          },
-          "gid": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "mid": {
-            "type": "integer"
-          }
-        }
-      },
-      "script.UpdateMemberResponse": {
-        "type": "object"
-      },
+        "script.UpdateGroupResponse": {
+            "type": "object"
+        },
+        "script.UpdateMemberRequest": {
+            "type": "object",
+            "properties": {
+                "expiretime": {
+                    "type": "integer"
+                },
+                "gid": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.UpdateMemberResponse": {
+            "type": "object"
+        },
         "script.UpdateScriptGrayRequest": {
             "type": "object",
             "properties": {
@@ -5926,8 +5972,8 @@
                 "createtime": {
                     "type": "integer"
                 },
-              "danger": {
-                "type": "integer"
+                "danger": {
+                    "type": "integer"
                 },
                 "description": {
                     "type": "string"
@@ -5969,7 +6015,7 @@
                     "type": "integer"
                 },
                 "type": {
-                  "$ref": "#/definitions/script_entity.Type"
+                    "$ref": "#/definitions/script_entity.Type"
                 },
                 "unwell": {
                     "type": "integer"
@@ -6031,32 +6077,32 @@
         "script.WebhookResponse": {
             "type": "object"
         },
-      "script_entity.AccessInviteStatus": {
-        "description": "AccessInviteStatus enum type:\n- AccessInviteStatusAccept: 1\n- AccessInviteStatusReject: 2\n- AccessInviteStatusPending: 3",
-        "type": "integer",
-        "enum": [
-          1,
-          2,
-          3
-        ]
-      },
-      "script_entity.AccessRole": {
-        "description": "AccessRole enum type:\n- AccessRoleGuest: guest\n- AccessRoleManager: manager\n- AccessRoleOwner: owner",
-        "type": "string",
-        "enum": [
-          "guest",
-          "manager",
-          "owner"
-        ]
-      },
-      "script_entity.AccessType": {
-        "description": "AccessType enum type:\n- AccessTypeUser: 1\n- AccessTypeGroup: 2",
-        "type": "integer",
-        "enum": [
-          1,
-          2
-        ]
-      },
+        "script_entity.AccessInviteStatus": {
+            "description": "AccessInviteStatus enum type:\n- AccessInviteStatusAccept: 1\n- AccessInviteStatusReject: 2\n- AccessInviteStatusPending: 3",
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ]
+        },
+        "script_entity.AccessRole": {
+            "description": "AccessRole enum type:\n- AccessRoleGuest: guest\n- AccessRoleManager: manager\n- AccessRoleOwner: owner",
+            "type": "string",
+            "enum": [
+                "guest",
+                "manager",
+                "owner"
+            ]
+        },
+        "script_entity.AccessType": {
+            "description": "AccessType enum type:\n- AccessTypeUser: 1\n- AccessTypeGroup: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ]
+        },
         "script_entity.Control": {
             "type": "object",
             "properties": {
@@ -6113,24 +6159,24 @@
                 "pre-release"
             ]
         },
-      "script_entity.InviteStatus": {
-        "description": "InviteStatus enum type:\n- InviteStatusUnused: 1\n- InviteStatusUsed: 2\n- InviteStatusExpired: 3\n- InviteStatusPending: 4\n- InviteStatusReject: 5",
-        "type": "integer",
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5
-        ]
-      },
-        "script_entity.Public": {
-          "description": "Public enum type:\n- PublicScript: 1\n- UnPublicScript: 2\n- PrivateScript: 3",
+        "script_entity.InviteStatus": {
+            "description": "InviteStatus enum type:\n- InviteStatusUnused: 1\n- InviteStatusUsed: 2\n- InviteStatusExpired: 3\n- InviteStatusPending: 4\n- InviteStatusReject: 5",
             "type": "integer",
             "enum": [
                 1,
-              2,
-              3
+                2,
+                3,
+                4,
+                5
+            ]
+        },
+        "script_entity.Public": {
+            "description": "Public enum type:\n- PublicScript: 1\n- UnPublicScript: 2\n- PrivateScript: 3",
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
             ]
         },
         "script_entity.ScriptWatchLevel": {
@@ -6478,7 +6524,7 @@
                 }
             }
         },
-      "statistics.VisitListResponse": {
+        "statistics.VisitListResponse": {
             "type": "object",
             "properties": {
                 "list": {
@@ -6604,6 +6650,17 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "user.SearchResponse": {
+            "type": "object",
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/user.InfoResponse"
+                    }
                 }
             }
         },

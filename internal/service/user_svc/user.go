@@ -34,6 +34,8 @@ type UserSvc interface {
 	GetConfig(ctx context.Context, req *api.GetConfigRequest) (*api.GetConfigResponse, error)
 	// UpdateConfig 更新用户配置
 	UpdateConfig(ctx context.Context, req *api.UpdateConfigRequest) (*api.UpdateConfigResponse, error)
+	// Search 搜索用户
+	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
 }
 
 type userSvc struct {
@@ -246,4 +248,23 @@ func (u *userSvc) UpdateConfig(ctx context.Context, req *api.UpdateConfigRequest
 		return nil, err
 	}
 	return &api.UpdateConfigResponse{}, nil
+}
+
+// Search 搜索用户
+func (u *userSvc) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
+	resp, err := user_repo.User().FindByPrefix(ctx, req.Query)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]*api.InfoResponse, 0)
+	for _, item := range resp {
+		ret = append(ret, &api.InfoResponse{
+			UserID:   item.ID,
+			Username: item.Username,
+			Avatar:   item.Avatar(),
+		})
+	}
+	return &api.SearchResponse{
+		Users: ret,
+	}, nil
 }
