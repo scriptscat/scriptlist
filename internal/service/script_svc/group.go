@@ -77,7 +77,7 @@ func (g *groupSvc) toMembers(ctx context.Context, m []*script_entity.ScriptGroup
 
 // GroupList 群组列表
 func (g *groupSvc) GroupList(ctx context.Context, req *api.GroupListRequest) (*api.GroupListResponse, error) {
-	list, total, err := script_repo.ScriptGroup().FindPage(ctx, Script().CtxScript(ctx).ID, req.PageRequest)
+	list, total, err := script_repo.ScriptGroup().FindPage(ctx, Script().CtxScript(ctx).ID, req)
 	if err != nil {
 		return nil, err
 	}

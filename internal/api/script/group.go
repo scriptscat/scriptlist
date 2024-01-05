@@ -18,7 +18,8 @@ type Group struct {
 // GroupListRequest 群组列表
 type GroupListRequest struct {
 	mux.Meta              `path:"/scripts/:id/group" method:"GET"`
-	ScriptID              int64 `uri:"id" binding:"required" label:"id"`
+	ScriptID              int64  `uri:"id" binding:"required" label:"id"`
+	Query                 string `form:"query"`
 	httputils.PageRequest `form:",inline"`
 }
 

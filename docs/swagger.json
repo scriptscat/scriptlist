@@ -402,6 +402,54 @@
                 }
             }
         },
+      "/scripts/:id/lib-info": {
+        "put": {
+          "description": "更新库信息",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script"
+          ],
+          "summary": "更新库信息",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateLibInfoRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateLibInfoResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/invite/{code}/accept": {
             "put": {
                 "description": "接受邀请",
@@ -412,7 +460,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "接受邀请",
                 "parameters": [
@@ -466,7 +514,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "拒绝邀请",
                 "parameters": [
@@ -706,7 +754,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access"
                 ],
                 "summary": "访问控制列表",
                 "parameters": [
@@ -753,7 +801,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access"
                 ],
                 "summary": "添加组权限",
                 "parameters": [
@@ -807,7 +855,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access"
                 ],
                 "summary": "添加用户权限, 通过用户名进行邀请",
                 "parameters": [
@@ -861,7 +909,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access"
                 ],
                 "summary": "更新访问控制",
                 "parameters": [
@@ -919,7 +967,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access"
                 ],
                 "summary": "删除访问控制",
                 "parameters": [
@@ -1250,7 +1298,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "群组列表",
                 "parameters": [
@@ -1259,6 +1307,11 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                  {
+                    "type": "string",
+                    "name": "query",
+                    "in": "query"
                     }
                 ],
                 "responses": {
@@ -1295,7 +1348,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "创建群组",
                 "parameters": [
@@ -1349,7 +1402,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "更新群组",
                 "parameters": [
@@ -1407,7 +1460,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "删除群组",
                 "parameters": [
@@ -1467,7 +1520,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "群组成员列表",
                 "parameters": [
@@ -1518,7 +1571,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "添加成员",
                 "parameters": [
@@ -1578,7 +1631,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "更新成员",
                 "parameters": [
@@ -1642,7 +1695,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/group"
                 ],
                 "summary": "移除成员",
                 "parameters": [
@@ -1708,7 +1761,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "邀请码列表",
                 "parameters": [
@@ -1753,7 +1806,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "创建邀请码",
                 "parameters": [
@@ -1807,7 +1860,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "删除邀请码",
                 "parameters": [
@@ -1867,7 +1920,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "审核邀请码",
                 "parameters": [
@@ -1927,7 +1980,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "群组邀请码列表",
                 "parameters": [
@@ -1978,7 +2031,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/access_invite"
                 ],
                 "summary": "创建群组邀请码",
                 "parameters": [
@@ -2308,7 +2361,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "获取反馈评论列表",
                 "parameters": [
@@ -2359,7 +2412,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "创建反馈评论",
                 "parameters": [
@@ -2419,7 +2472,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "issue"
+                  "issue/comment"
                 ],
                 "summary": "删除反馈评论",
                 "parameters": [
@@ -2770,7 +2823,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "获取脚本评分列表",
                 "parameters": [
@@ -2815,7 +2868,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "脚本评分",
                 "parameters": [
@@ -2869,7 +2922,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "用于获取自己对脚本的评价",
                 "parameters": [
@@ -2916,7 +2969,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "script"
+                  "script/score"
                 ],
                 "summary": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
                 "parameters": [
@@ -3097,6 +3150,60 @@
                                 "data": {
                                     "$ref": "#/definitions/script.StateResponse"
                                 },
+                              "msg": {
+                                "type": "string"
+                              }
+                            }
+                        }
+                    },
+                  "400": {
+                    "description": "Bad Request",
+                    "schema": {
+                      "$ref": "#/definitions/BadRequest"
+                    }
+                  }
+                }
+            }
+        },
+      "/scripts/{id}/sync": {
+        "put": {
+          "description": "更新同步配置",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "script"
+          ],
+          "summary": "更新同步配置",
+          "parameters": [
+            {
+              "type": "integer",
+              "name": "id",
+              "in": "path",
+              "required": true
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/script.UpdateSyncSettingRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/script.UpdateSyncSettingResponse"
+                  },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -4265,8 +4372,7 @@
                 "list": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
+                      "type": "any"
                     }
                 },
                 "total": {
@@ -4275,60 +4381,14 @@
             }
         },
         "issue.CloseRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "issue.CloseResponse": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "issue_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/issue_entity.CommentType"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "issue.Comment": {
             "type": "object",
             "properties": {
-                "avatar": {
-                    "type": "string"
-                },
                 "content": {
                     "type": "string"
                 },
@@ -4336,9 +4396,6 @@
                     "type": "integer"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
                     "type": "integer"
                 },
                 "issue_id": {
@@ -4352,12 +4409,6 @@
                 },
                 "updatetime": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -4366,61 +4417,17 @@
             "properties": {
                 "content": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
                 }
             }
         },
         "issue.CreateCommentResponse": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "issue_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/issue_entity.CommentType"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "issue.CreateIssueRequest": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "labels": {
                     "type": "array",
@@ -4442,32 +4449,13 @@
             }
         },
         "issue.DeleteCommentRequest": {
-            "type": "object",
-            "properties": {
-                "commentId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "issue.DeleteCommentResponse": {
             "type": "object"
         },
         "issue.DeleteRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "issue.DeleteResponse": {
             "type": "object"
@@ -4475,43 +4463,7 @@
         "issue.GetIssueResponse": {
             "type": "object",
             "properties": {
-                "avatar": {
-                    "type": "string"
-                },
                 "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "labels": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "script_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
                     "type": "string"
                 }
             }
@@ -4527,16 +4479,10 @@
         "issue.Issue": {
             "type": "object",
             "properties": {
-                "avatar": {
-                    "type": "string"
-                },
                 "createtime": {
                     "type": "integer"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
                     "type": "integer"
                 },
                 "labels": {
@@ -4556,103 +4502,24 @@
                 },
                 "updatetime": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
         "issue.ListCommentResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "issue.ListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "issue.OpenRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "issue.OpenResponse": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "issue_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/issue_entity.CommentType"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "issue.UpdateLabelsRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
-                },
                 "labels": {
                     "type": "array",
                     "items": {
@@ -4662,52 +4529,11 @@
             }
         },
         "issue.UpdateLabelsResponse": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "issue_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/issue_entity.CommentType"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "issue.WatchRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "issueId": {
-                    "type": "integer"
-                },
                 "watch": {
                     "type": "boolean"
                 }
@@ -4775,12 +4601,7 @@
             }
         },
         "script.AcceptInviteRequest": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "script.AcceptInviteResponse": {
             "type": "object"
@@ -4824,19 +4645,7 @@
             }
         },
         "script.AccessListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.AddGroupAccessRequest": {
             "type": "object",
@@ -4846,9 +4655,6 @@
                     "type": "integer"
                 },
                 "group_id": {
-                    "type": "integer"
-                },
-                "id": {
                     "type": "integer"
                 },
                 "role": {
@@ -4866,12 +4672,6 @@
                 "expiretime": {
                     "type": "integer"
                 },
-                "gid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
                 "user_id": {
                     "type": "integer"
                 }
@@ -4885,9 +4685,6 @@
             "properties": {
                 "expiretime,default=0": {
                     "description": "0 为永久",
-                    "type": "integer"
-                },
-                "id": {
                     "type": "integer"
                 },
                 "role": {
@@ -4907,9 +4704,6 @@
             "properties": {
                 "archive": {
                     "type": "boolean"
-                },
-                "id": {
-                    "type": "integer"
                 }
             }
         },
@@ -4919,12 +4713,6 @@
         "script.AuditInviteCodeRequest": {
             "type": "object",
             "properties": {
-                "code_id": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
                 "status": {
                     "description": "1=通过 2=拒绝",
                     "type": "integer"
@@ -4961,9 +4749,6 @@
         "script.Code": {
             "type": "object",
             "properties": {
-                "avatar": {
-                    "type": "string"
-                },
                 "changelog": {
                     "type": "string"
                 },
@@ -4977,9 +4762,6 @@
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
                     "type": "integer"
                 },
                 "is_pre_release": {
@@ -4997,12 +4779,6 @@
                 "status": {
                     "type": "integer"
                 },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                },
                 "version": {
                     "type": "string"
                 }
@@ -5011,79 +4787,7 @@
         "script.CodeResponse": {
             "type": "object",
             "properties": {
-                "archive": {
-                    "type": "integer"
-                },
-                "avatar": {
-                    "type": "string"
-                },
-                "category": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/script.CategoryList"
-                    }
-                },
                 "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "danger": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "enable_pre_release": {
-                    "$ref": "#/definitions/script_entity.EnablePreRelease"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "post_id": {
-                    "type": "integer"
-                },
-                "public": {
-                    "type": "integer"
-                },
-                "score": {
-                    "type": "integer"
-                },
-                "score_num": {
-                    "type": "integer"
-                },
-                "script": {
-                    "$ref": "#/definitions/script.Code"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "today_install": {
-                    "type": "integer"
-                },
-                "total_install": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/script_entity.Type"
-                },
-                "unwell": {
-                    "type": "integer"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
                     "type": "string"
                 }
             }
@@ -5100,12 +4804,6 @@
                 "expiretime,default=0": {
                     "description": "0 为永久",
                     "type": "integer"
-                },
-                "gid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
                 }
             }
         },
@@ -5117,9 +4815,6 @@
             "properties": {
                 "description": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -5140,9 +4835,6 @@
                 },
                 "expiretime,default=0": {
                     "description": "0 为永久",
-                    "type": "integer"
-                },
-                "id": {
                     "type": "integer"
                 }
             }
@@ -5200,82 +4892,37 @@
             }
         },
         "script.DelScoreRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "scoreId": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.DelScoreResponse": {
             "type": "object"
         },
         "script.DeleteAccessRequest": {
-            "type": "object",
-            "properties": {
-                "aid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.DeleteAccessResponse": {
             "type": "object"
         },
         "script.DeleteCodeRequest": {
-            "type": "object",
-            "properties": {
-                "codeId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.DeleteCodeResponse": {
             "type": "object"
         },
         "script.DeleteGroupRequest": {
-            "type": "object",
-            "properties": {
-                "gid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.DeleteGroupResponse": {
             "type": "object"
         },
         "script.DeleteInviteCodeRequest": {
-            "type": "object",
-            "properties": {
-                "code_id": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.DeleteInviteCodeResponse": {
             "type": "object"
         },
         "script.DeleteRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.DeleteResponse": {
             "type": "object"
@@ -5333,34 +4980,10 @@
             }
         },
         "script.GroupInviteCodeResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.GroupListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.GroupMember": {
             "type": "object",
@@ -5392,96 +5015,12 @@
             }
         },
         "script.GroupMemberListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.InfoResponse": {
             "type": "object",
             "properties": {
-                "archive": {
-                    "type": "integer"
-                },
-                "avatar": {
-                    "type": "string"
-                },
-                "category": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/script.CategoryList"
-                    }
-                },
                 "content": {
-                    "type": "string"
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "danger": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "enable_pre_release": {
-                    "$ref": "#/definitions/script_entity.EnablePreRelease"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "post_id": {
-                    "type": "integer"
-                },
-                "public": {
-                    "type": "integer"
-                },
-                "score": {
-                    "type": "integer"
-                },
-                "score_num": {
-                    "type": "integer"
-                },
-                "script": {
-                    "$ref": "#/definitions/script.Code"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "today_install": {
-                    "type": "integer"
-                },
-                "total_install": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/script_entity.Type"
-                },
-                "unwell": {
-                    "type": "integer"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
                     "type": "string"
                 }
             }
@@ -5521,49 +5060,13 @@
             }
         },
         "script.InviteCodeListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.LastScoreResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.ListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.MigrateEsRequest": {
             "type": "object"
@@ -5574,9 +5077,6 @@
         "script.PutScoreRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "message": {
                     "type": "string"
                 },
@@ -5589,29 +5089,13 @@
             "type": "object"
         },
         "script.RejectInviteRequest": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "script.RejectInviteResponse": {
             "type": "object"
         },
         "script.RemoveMemberRequest": {
-            "type": "object",
-            "properties": {
-                "gid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mid": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.RemoveMemberResponse": {
             "type": "object"
@@ -5643,28 +5127,13 @@
             }
         },
         "script.ScoreListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.Script": {
             "type": "object",
             "properties": {
                 "archive": {
                     "type": "integer"
-                },
-                "avatar": {
-                    "type": "string"
                 },
                 "category": {
                     "type": "array",
@@ -5685,9 +5154,6 @@
                     "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
                     "type": "integer"
                 },
                 "name": {
@@ -5725,40 +5191,11 @@
                 },
                 "updatetime": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
         "script.SelfScoreResponse": {
-            "type": "object",
-            "properties": {
-                "createtime": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "score": {
-                    "type": "integer"
-                },
-                "script_id": {
-                    "type": "integer"
-                },
-                "state": {
-                    "type": "integer"
-                },
-                "updatetime": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.StateResponse": {
             "type": "object",
@@ -5771,14 +5208,8 @@
         "script.UpdateAccessRequest": {
             "type": "object",
             "properties": {
-                "aid": {
-                    "type": "integer"
-                },
                 "expiretime,default=0": {
                     "description": "0 为永久",
-                    "type": "integer"
-                },
-                "id": {
                     "type": "integer"
                 },
                 "role": {
@@ -5805,9 +5236,6 @@
                 "definition": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "is_pre_release": {
                     "$ref": "#/definitions/script_entity.EnablePreRelease"
                 },
@@ -5826,12 +5254,6 @@
                 "changelog": {
                     "type": "string"
                 },
-                "codeId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
                 "is_pre_release": {
                     "$ref": "#/definitions/script_entity.EnablePreRelease"
                 }
@@ -5846,12 +5268,6 @@
                 "description": {
                     "type": "string"
                 },
-                "gid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
                 "name": {
                     "type": "string"
                 }
@@ -5860,19 +5276,24 @@
         "script.UpdateGroupResponse": {
             "type": "object"
         },
+      "script.UpdateLibInfoRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "script.UpdateLibInfoResponse": {
+        "type": "object"
+        },
         "script.UpdateMemberRequest": {
             "type": "object",
             "properties": {
                 "expiretime": {
-                    "type": "integer"
-                },
-                "gid": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mid": {
                     "type": "integer"
                 }
             }
@@ -5900,9 +5321,6 @@
         "script.UpdateScriptPublicRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "public": {
                     "$ref": "#/definitions/script_entity.Public"
                 }
@@ -5914,9 +5332,6 @@
         "script.UpdateScriptUnwellRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "unwell": {
                     "$ref": "#/definitions/script_entity.UnwellContent"
                 }
@@ -5937,9 +5352,6 @@
                 "description": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -5954,104 +5366,35 @@
         "script.UpdateSettingResponse": {
             "type": "object"
         },
+      "script.UpdateSyncSettingRequest": {
+        "type": "object",
+        "properties": {
+          "content_url": {
+            "type": "string"
+          },
+          "definition_url": {
+            "type": "string"
+          },
+          "sync_mode": {
+            "$ref": "#/definitions/script_entity.SyncMode"
+          },
+          "sync_url": {
+            "type": "string"
+          }
+        }
+      },
+      "script.UpdateSyncSettingResponse": {
+        "type": "object"
+        },
         "script.VersionCodeResponse": {
-            "type": "object",
-            "properties": {
-                "archive": {
-                    "type": "integer"
-                },
-                "avatar": {
-                    "type": "string"
-                },
-                "category": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/script.CategoryList"
-                    }
-                },
-                "createtime": {
-                    "type": "integer"
-                },
-                "danger": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "enable_pre_release": {
-                    "$ref": "#/definitions/script_entity.EnablePreRelease"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "post_id": {
-                    "type": "integer"
-                },
-                "public": {
-                    "type": "integer"
-                },
-                "score": {
-                    "type": "integer"
-                },
-                "score_num": {
-                    "type": "integer"
-                },
-                "script": {
-                    "$ref": "#/definitions/script.Code"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "today_install": {
-                    "type": "integer"
-                },
-                "total_install": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/script_entity.Type"
-                },
-                "unwell": {
-                    "type": "integer"
-                },
-                "updatetime": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "script.VersionListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "script.WatchRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "watch": {
                     "$ref": "#/definitions/script_entity.ScriptWatchLevel"
                 }
@@ -6068,9 +5411,6 @@
                 },
                 "XHubSignature256": {
                     "type": "string"
-                },
-                "uid": {
-                    "type": "integer"
                 }
             }
         },
@@ -6450,9 +5790,6 @@
         "statistics.UpdateWhitelistRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "whitelist": {
                     "type": "array",
                     "items": {
@@ -6473,34 +5810,10 @@
             }
         },
         "statistics.UserOriginResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "statistics.VisitDomainResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "statistics.VisitItem": {
             "type": "object",
@@ -6525,46 +5838,14 @@
             }
         },
         "statistics.VisitListResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "user.CurrentUserResponse": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string"
-                },
-                "email_status": {
-                    "type": "integer"
-                },
-                "is_admin": {
-                    "$ref": "#/definitions/model.AdminLevel"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
+          "type": "object"
         },
         "user.FollowRequest": {
             "type": "object",
             "properties": {
-                "uid": {
-                    "type": "integer"
-                },
                 "unfollow": {
                     "type": "boolean"
                 }
@@ -6639,19 +5920,7 @@
             }
         },
         "user.ScriptResponse": {
-            "type": "object",
-            "properties": {
-                "list": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "$ref": "#/definitions/issue.Comment"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
+          "type": "object"
         },
         "user.SearchResponse": {
             "type": "object",

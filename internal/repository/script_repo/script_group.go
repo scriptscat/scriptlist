@@ -2,17 +2,17 @@ package script_repo
 
 import (
 	"context"
+	api "github.com/scriptscat/scriptlist/internal/api/script"
 
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
 type ScriptGroupRepo interface {
 	Find(ctx context.Context, scriptId, id int64) (*script_entity.ScriptGroup, error)
-	FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptGroup, int64, error)
+	FindPage(ctx context.Context, scriptId int64, req *api.GroupListRequest) ([]*script_entity.ScriptGroup, int64, error)
 	Create(ctx context.Context, scriptGroup *script_entity.ScriptGroup) error
 	Update(ctx context.Context, scriptGroup *script_entity.ScriptGroup) error
 	Delete(ctx context.Context, id int64) error
@@ -58,14 +58,17 @@ func (u *scriptGroupRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Model(&script_entity.ScriptGroup{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
-func (u *scriptGroupRepo) FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptGroup, int64, error) {
+func (u *scriptGroupRepo) FindPage(ctx context.Context, scriptId int64, req *api.GroupListRequest) ([]*script_entity.ScriptGroup, int64, error) {
 	var list []*script_entity.ScriptGroup
 	var count int64
 	find := db.Ctx(ctx).Model(&script_entity.ScriptGroup{}).Where("script_id=? and status=?", scriptId, consts.ACTIVE)
+	if req.Query != "" {
+		find = find.Where("name like ?", req.Query+"%")
+	}
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := find.Order("createtime desc").Offset(req.GetOffset()).Limit(req.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil

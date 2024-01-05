@@ -54,3 +54,18 @@ func (mr *MockUserRepoMockRecorder) Find(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserRepo)(nil).Find), ctx, id)
 }
+
+// FindByPrefix mocks base method.
+func (m *MockUserRepo) FindByPrefix(ctx context.Context, query string) ([]*user_entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByPrefix", ctx, query)
+	ret0, _ := ret[0].([]*user_entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByPrefix indicates an expected call of FindByPrefix.
+func (mr *MockUserRepoMockRecorder) FindByPrefix(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByPrefix", reflect.TypeOf((*MockUserRepo)(nil).FindByPrefix), ctx, query)
+}

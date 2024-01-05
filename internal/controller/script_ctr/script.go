@@ -107,6 +107,8 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 									Middleware: []gin.HandlerFunc{script_svc.Script().IsArchive()},
 									Handler: []interface{}{
 										s.UpdateSetting,
+										s.UpdateSyncSetting,
+										s.UpdateLibInfo,
 										s.UpdateCodeSetting,
 										s.UpdateScriptPublic,
 										s.UpdateScriptUnwell,

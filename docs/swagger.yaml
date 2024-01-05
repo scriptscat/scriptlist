@@ -30,55 +30,22 @@ definitions:
     properties:
       list:
         items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
+          type: any
         type: array
       total:
         type: integer
     type: object
   issue.CloseRequest:
-    properties:
-      id:
-        type: integer
-      issueId:
-        type: integer
     type: object
   issue.CloseResponse:
-    properties:
-      avatar:
-        type: string
-      content:
-        type: string
-      createtime:
-        type: integer
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      issue_id:
-        type: integer
-      status:
-        type: integer
-      type:
-        $ref: '#/definitions/issue_entity.CommentType'
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   issue.Comment:
     properties:
-      avatar:
-        type: string
       content:
         type: string
       createtime:
         type: integer
       id:
-        type: integer
-      is_admin:
         type: integer
       issue_id:
         type: integer
@@ -88,51 +55,18 @@ definitions:
         $ref: '#/definitions/issue_entity.CommentType'
       updatetime:
         type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   issue.CreateCommentRequest:
     properties:
       content:
         type: string
-      id:
-        type: integer
-      issueId:
-        type: integer
     type: object
   issue.CreateCommentResponse:
-    properties:
-      avatar:
-        type: string
-      content:
-        type: string
-      createtime:
-        type: integer
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      issue_id:
-        type: integer
-      status:
-        type: integer
-      type:
-        $ref: '#/definitions/issue_entity.CommentType'
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   issue.CreateIssueRequest:
     properties:
       content:
         type: string
-      id:
-        type: integer
       labels:
         items:
           type: string
@@ -146,52 +80,16 @@ definitions:
         type: integer
     type: object
   issue.DeleteCommentRequest:
-    properties:
-      commentId:
-        type: integer
-      id:
-        type: integer
-      issueId:
-        type: integer
     type: object
   issue.DeleteCommentResponse:
     type: object
   issue.DeleteRequest:
-    properties:
-      id:
-        type: integer
-      issueId:
-        type: integer
     type: object
   issue.DeleteResponse:
     type: object
   issue.GetIssueResponse:
     properties:
-      avatar:
-        type: string
       content:
-        type: string
-      createtime:
-        type: integer
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      labels:
-        items:
-          type: string
-        type: array
-      script_id:
-        type: integer
-      status:
-        type: integer
-      title:
-        type: string
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
         type: string
     type: object
   issue.GetWatchResponse:
@@ -201,13 +99,9 @@ definitions:
     type: object
   issue.Issue:
     properties:
-      avatar:
-        type: string
       createtime:
         type: integer
       id:
-        type: integer
-      is_admin:
         type: integer
       labels:
         items:
@@ -221,105 +115,26 @@ definitions:
         type: string
       updatetime:
         type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   issue.ListCommentResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   issue.ListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   issue.OpenRequest:
-    properties:
-      id:
-        type: integer
-      issueId:
-        type: integer
     type: object
   issue.OpenResponse:
-    properties:
-      avatar:
-        type: string
-      content:
-        type: string
-      createtime:
-        type: integer
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      issue_id:
-        type: integer
-      status:
-        type: integer
-      type:
-        $ref: '#/definitions/issue_entity.CommentType'
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   issue.UpdateLabelsRequest:
     properties:
-      id:
-        type: integer
-      issueId:
-        type: integer
       labels:
         items:
           type: string
         type: array
     type: object
   issue.UpdateLabelsResponse:
-    properties:
-      avatar:
-        type: string
-      content:
-        type: string
-      createtime:
-        type: integer
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      issue_id:
-        type: integer
-      status:
-        type: integer
-      type:
-        $ref: '#/definitions/issue_entity.CommentType'
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   issue.WatchRequest:
     properties:
-      id:
-        type: integer
-      issueId:
-        type: integer
       watch:
         type: boolean
     type: object
@@ -378,9 +193,6 @@ definitions:
         type: string
     type: object
   script.AcceptInviteRequest:
-    properties:
-      code:
-        type: string
     type: object
   script.AcceptInviteResponse:
     type: object
@@ -411,14 +223,6 @@ definitions:
         description: id类型 1=用户id 2=组id
     type: object
   script.AccessListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.AddGroupAccessRequest:
     properties:
@@ -426,8 +230,6 @@ definitions:
         description: 0 为永久
         type: integer
       group_id:
-        type: integer
-      id:
         type: integer
       role:
         $ref: '#/definitions/script_entity.AccessRole'
@@ -439,10 +241,6 @@ definitions:
     properties:
       expiretime:
         type: integer
-      gid:
-        type: integer
-      id:
-        type: integer
       user_id:
         type: integer
     type: object
@@ -452,8 +250,6 @@ definitions:
     properties:
       expiretime,default=0:
         description: 0 为永久
-        type: integer
-      id:
         type: integer
       role:
         $ref: '#/definitions/script_entity.AccessRole'
@@ -467,17 +263,11 @@ definitions:
     properties:
       archive:
         type: boolean
-      id:
-        type: integer
     type: object
   script.ArchiveResponse:
     type: object
   script.AuditInviteCodeRequest:
     properties:
-      code_id:
-        type: integer
-      id:
-        type: integer
       status:
         description: 1=通过 2=拒绝
         type: integer
@@ -502,8 +292,6 @@ definitions:
     type: object
   script.Code:
     properties:
-      avatar:
-        type: string
       changelog:
         type: string
       code,omitempty:
@@ -513,8 +301,6 @@ definitions:
       definition,omitempty:
         type: string
       id:
-        type: integer
-      is_admin:
         type: integer
       is_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
@@ -526,64 +312,12 @@ definitions:
         type: integer
       status:
         type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
       version:
         type: string
     type: object
   script.CodeResponse:
     properties:
-      archive:
-        type: integer
-      avatar:
-        type: string
-      category:
-        items:
-          $ref: '#/definitions/script.CategoryList'
-        type: array
       content:
-        type: string
-      createtime:
-        type: integer
-      danger:
-        type: integer
-      description:
-        type: string
-      enable_pre_release:
-        $ref: '#/definitions/script_entity.EnablePreRelease'
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      name:
-        type: string
-      post_id:
-        type: integer
-      public:
-        type: integer
-      score:
-        type: integer
-      score_num:
-        type: integer
-      script:
-        $ref: '#/definitions/script.Code'
-      status:
-        type: integer
-      today_install:
-        type: integer
-      total_install:
-        type: integer
-      type:
-        $ref: '#/definitions/script_entity.Type'
-      unwell:
-        type: integer
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
         type: string
     type: object
   script.CreateGroupInviteCodeRequest:
@@ -595,10 +329,6 @@ definitions:
       expiretime,default=0:
         description: 0 为永久
         type: integer
-      gid:
-        type: integer
-      id:
-        type: integer
     type: object
   script.CreateGroupInviteCodeResponse:
     type: object
@@ -606,8 +336,6 @@ definitions:
     properties:
       description:
         type: string
-      id:
-        type: integer
       name:
         type: string
     type: object
@@ -621,8 +349,6 @@ definitions:
         type: integer
       expiretime,default=0:
         description: 0 为永久
-        type: integer
-      id:
         type: integer
     type: object
   script.CreateInviteCodeResponse:
@@ -661,54 +387,26 @@ definitions:
         type: integer
     type: object
   script.DelScoreRequest:
-    properties:
-      id:
-        type: integer
-      scoreId:
-        type: integer
     type: object
   script.DelScoreResponse:
     type: object
   script.DeleteAccessRequest:
-    properties:
-      aid:
-        type: integer
-      id:
-        type: integer
     type: object
   script.DeleteAccessResponse:
     type: object
   script.DeleteCodeRequest:
-    properties:
-      codeId:
-        type: integer
-      id:
-        type: integer
     type: object
   script.DeleteCodeResponse:
     type: object
   script.DeleteGroupRequest:
-    properties:
-      gid:
-        type: integer
-      id:
-        type: integer
     type: object
   script.DeleteGroupResponse:
     type: object
   script.DeleteInviteCodeRequest:
-    properties:
-      code_id:
-        type: integer
-      id:
-        type: integer
     type: object
   script.DeleteInviteCodeResponse:
     type: object
   script.DeleteRequest:
-    properties:
-      id:
-        type: integer
     type: object
   script.DeleteResponse:
     type: object
@@ -747,24 +445,8 @@ definitions:
         type: string
     type: object
   script.GroupInviteCodeResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.GroupListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.GroupMember:
     properties:
@@ -786,66 +468,10 @@ definitions:
         type: string
     type: object
   script.GroupMemberListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.InfoResponse:
     properties:
-      archive:
-        type: integer
-      avatar:
-        type: string
-      category:
-        items:
-          $ref: '#/definitions/script.CategoryList'
-        type: array
       content:
-        type: string
-      createtime:
-        type: integer
-      danger:
-        type: integer
-      description:
-        type: string
-      enable_pre_release:
-        $ref: '#/definitions/script_entity.EnablePreRelease'
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      name:
-        type: string
-      post_id:
-        type: integer
-      public:
-        type: integer
-      score:
-        type: integer
-      score_num:
-        type: integer
-      script:
-        $ref: '#/definitions/script.Code'
-      status:
-        type: integer
-      today_install:
-        type: integer
-      total_install:
-        type: integer
-      type:
-        $ref: '#/definitions/script_entity.Type'
-      unwell:
-        type: integer
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
         type: string
     type: object
   script.InviteCode:
@@ -873,34 +499,10 @@ definitions:
         type: string
     type: object
   script.InviteCodeListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.LastScoreResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.ListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.MigrateEsRequest:
     type: object
@@ -908,8 +510,6 @@ definitions:
     type: object
   script.PutScoreRequest:
     properties:
-      id:
-        type: integer
       message:
         type: string
       score:
@@ -918,20 +518,10 @@ definitions:
   script.PutScoreResponse:
     type: object
   script.RejectInviteRequest:
-    properties:
-      code:
-        type: string
     type: object
   script.RejectInviteResponse:
     type: object
   script.RemoveMemberRequest:
-    properties:
-      gid:
-        type: integer
-      id:
-        type: integer
-      mid:
-        type: integer
     type: object
   script.RemoveMemberResponse:
     type: object
@@ -953,21 +543,11 @@ definitions:
         type: integer
     type: object
   script.ScoreListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.Script:
     properties:
       archive:
         type: integer
-      avatar:
-        type: string
       category:
         items:
           $ref: '#/definitions/script.CategoryList'
@@ -981,8 +561,6 @@ definitions:
       enable_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
       id:
-        type: integer
-      is_admin:
         type: integer
       name:
         type: string
@@ -1008,27 +586,8 @@ definitions:
         type: integer
       updatetime:
         type: integer
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   script.SelfScoreResponse:
-    properties:
-      createtime:
-        type: integer
-      id:
-        type: integer
-      message:
-        type: string
-      score:
-        type: integer
-      script_id:
-        type: integer
-      state:
-        type: integer
-      updatetime:
-        type: integer
     type: object
   script.StateResponse:
     properties:
@@ -1037,12 +596,8 @@ definitions:
     type: object
   script.UpdateAccessRequest:
     properties:
-      aid:
-        type: integer
       expiretime,default=0:
         description: 0 为永久
-        type: integer
-      id:
         type: integer
       role:
         $ref: '#/definitions/script_entity.AccessRole'
@@ -1060,8 +615,6 @@ definitions:
         type: string
       definition:
         type: string
-      id:
-        type: integer
       is_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
       version:
@@ -1076,10 +629,6 @@ definitions:
     properties:
       changelog:
         type: string
-      codeId:
-        type: integer
-      id:
-        type: integer
       is_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
     type: object
@@ -1089,24 +638,23 @@ definitions:
     properties:
       description:
         type: string
-      gid:
-        type: integer
-      id:
-        type: integer
       name:
         type: string
     type: object
   script.UpdateGroupResponse:
     type: object
+  script.UpdateLibInfoRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  script.UpdateLibInfoResponse:
+    type: object
   script.UpdateMemberRequest:
     properties:
       expiretime:
-        type: integer
-      gid:
-        type: integer
-      id:
-        type: integer
-      mid:
         type: integer
     type: object
   script.UpdateMemberResponse:
@@ -1124,8 +672,6 @@ definitions:
     type: object
   script.UpdateScriptPublicRequest:
     properties:
-      id:
-        type: integer
       public:
         $ref: '#/definitions/script_entity.Public'
     type: object
@@ -1133,8 +679,6 @@ definitions:
     type: object
   script.UpdateScriptUnwellRequest:
     properties:
-      id:
-        type: integer
       unwell:
         $ref: '#/definitions/script_entity.UnwellContent'
     type: object
@@ -1148,8 +692,6 @@ definitions:
         type: string
       description:
         type: string
-      id:
-        type: integer
       name:
         type: string
       sync_mode:
@@ -1159,71 +701,25 @@ definitions:
     type: object
   script.UpdateSettingResponse:
     type: object
-  script.VersionCodeResponse:
+  script.UpdateSyncSettingRequest:
     properties:
-      archive:
-        type: integer
-      avatar:
+      content_url:
         type: string
-      category:
-        items:
-          $ref: '#/definitions/script.CategoryList'
-        type: array
-      createtime:
-        type: integer
-      danger:
-        type: integer
-      description:
+      definition_url:
         type: string
-      enable_pre_release:
-        $ref: '#/definitions/script_entity.EnablePreRelease'
-      id:
-        type: integer
-      is_admin:
-        type: integer
-      name:
-        type: string
-      post_id:
-        type: integer
-      public:
-        type: integer
-      score:
-        type: integer
-      score_num:
-        type: integer
-      script:
-        $ref: '#/definitions/script.Code'
-      status:
-        type: integer
-      today_install:
-        type: integer
-      total_install:
-        type: integer
-      type:
-        $ref: '#/definitions/script_entity.Type'
-      unwell:
-        type: integer
-      updatetime:
-        type: integer
-      user_id:
-        type: integer
-      username:
+      sync_mode:
+        $ref: '#/definitions/script_entity.SyncMode'
+      sync_url:
         type: string
     type: object
+  script.UpdateSyncSettingResponse:
+    type: object
+  script.VersionCodeResponse:
+    type: object
   script.VersionListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   script.WatchRequest:
     properties:
-      id:
-        type: integer
       watch:
         $ref: '#/definitions/script_entity.ScriptWatchLevel'
     type: object
@@ -1235,8 +731,6 @@ definitions:
         type: string
       XHubSignature256:
         type: string
-      uid:
-        type: integer
     type: object
   script.WebhookResponse:
     type: object
@@ -1542,8 +1036,6 @@ definitions:
     type: object
   statistics.UpdateWhitelistRequest:
     properties:
-      id:
-        type: integer
       whitelist:
         items:
           type: string
@@ -1557,24 +1049,8 @@ definitions:
         type: array
     type: object
   statistics.UserOriginResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   statistics.VisitDomainResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   statistics.VisitItem:
     properties:
@@ -1592,32 +1068,11 @@ definitions:
         type: string
     type: object
   statistics.VisitListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   user.CurrentUserResponse:
-    properties:
-      avatar:
-        type: string
-      email_status:
-        type: integer
-      is_admin:
-        $ref: '#/definitions/model.AdminLevel'
-      user_id:
-        type: integer
-      username:
-        type: string
     type: object
   user.FollowRequest:
     properties:
-      uid:
-        type: integer
       unfollow:
         type: boolean
     type: object
@@ -1667,14 +1122,6 @@ definitions:
         type: string
     type: object
   user.ScriptResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/issue.Comment'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   user.SearchResponse:
     properties:
@@ -1976,6 +1423,36 @@ paths:
       summary: 更新脚本灰度策略
       tags:
       - script
+  /scripts/:id/lib-info:
+    put:
+      consumes:
+      - application/json
+      description: 更新库信息
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateLibInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateLibInfoResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新库信息
+      tags:
+      - script
   /scripts/{id}:
     delete:
       consumes:
@@ -2068,7 +1545,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 访问控制列表
       tags:
-      - script
+      - script/access
   /scripts/{id}/access/{aid}:
     delete:
       consumes:
@@ -2106,7 +1583,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除访问控制
       tags:
-      - script
+      - script/access
     put:
       consumes:
       - application/json
@@ -2143,7 +1620,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 更新访问控制
       tags:
-      - script
+      - script/access
   /scripts/{id}/access/group:
     post:
       consumes:
@@ -2177,7 +1654,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 添加组权限
       tags:
-      - script
+      - script/access
   /scripts/{id}/access/user:
     post:
       consumes:
@@ -2211,7 +1688,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 添加用户权限, 通过用户名进行邀请
       tags:
-      - script
+      - script/access
   /scripts/{id}/archive:
     put:
       consumes:
@@ -2394,6 +1871,9 @@ paths:
         name: id
         required: true
         type: integer
+      - in: query
+        name: query
+        type: string
       produces:
       - application/json
       responses:
@@ -2413,7 +1893,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 群组列表
       tags:
-      - script
+      - script/group
     post:
       consumes:
       - application/json
@@ -2446,7 +1926,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建群组
       tags:
-      - script
+      - script/group
   /scripts/{id}/group/{gid}:
     delete:
       consumes:
@@ -2484,7 +1964,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除群组
       tags:
-      - script
+      - script/group
     put:
       consumes:
       - application/json
@@ -2521,7 +2001,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 更新群组
       tags:
-      - script
+      - script/group
   /scripts/{id}/group/{gid}/member:
     get:
       consumes:
@@ -2555,7 +2035,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 群组成员列表
       tags:
-      - script
+      - script/group
     post:
       consumes:
       - application/json
@@ -2592,7 +2072,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 添加成员
       tags:
-      - script
+      - script/group
   /scripts/{id}/group/{gid}/member/{mid}:
     delete:
       consumes:
@@ -2634,7 +2114,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 移除成员
       tags:
-      - script
+      - script/group
     put:
       consumes:
       - application/json
@@ -2675,7 +2155,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 更新成员
       tags:
-      - script
+      - script/group
   /scripts/{id}/invite/code:
     get:
       consumes:
@@ -2705,7 +2185,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 邀请码列表
       tags:
-      - script
+      - script/access_invite
     post:
       consumes:
       - application/json
@@ -2738,7 +2218,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建邀请码
       tags:
-      - script
+      - script/access_invite
   /scripts/{id}/invite/code/{code_id}:
     delete:
       consumes:
@@ -2776,7 +2256,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除邀请码
       tags:
-      - script
+      - script/access_invite
   /scripts/{id}/invite/code/{code_id}/audit:
     put:
       consumes:
@@ -2814,7 +2294,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 审核邀请码
       tags:
-      - script
+      - script/access_invite
   /scripts/{id}/invite/group/{gid}/code:
     get:
       consumes:
@@ -2848,7 +2328,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 群组邀请码列表
       tags:
-      - script
+      - script/access_invite
     post:
       consumes:
       - application/json
@@ -2885,7 +2365,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建群组邀请码
       tags:
-      - script
+      - script/access_invite
   /scripts/{id}/issues:
     get:
       consumes:
@@ -3091,7 +2571,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取反馈评论列表
       tags:
-      - issue
+      - issue/comment
     post:
       consumes:
       - application/json
@@ -3128,7 +2608,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 创建反馈评论
       tags:
-      - issue
+      - issue/comment
   /scripts/{id}/issues/{issueId}/comment/{commentId}:
     delete:
       consumes:
@@ -3170,7 +2650,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 删除反馈评论
       tags:
-      - issue
+      - issue/comment
   /scripts/{id}/issues/{issueId}/labels:
     put:
       consumes:
@@ -3381,7 +2861,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 获取脚本评分列表
       tags:
-      - script
+      - script/score
     put:
       consumes:
       - application/json
@@ -3414,7 +2894,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 脚本评分
       tags:
-      - script
+      - script/score
   /scripts/{id}/score/{scoreId}:
     delete:
       consumes:
@@ -3452,7 +2932,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于删除脚本的评价，注意，只有管理员才有权限删除评价
       tags:
-      - script
+      - script/score
   /scripts/{id}/score/self:
     get:
       consumes:
@@ -3482,7 +2962,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 用于获取自己对脚本的评价
       tags:
-      - script
+      - script/score
   /scripts/{id}/setting:
     get:
       consumes:
@@ -3574,6 +3054,40 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取脚本状态,脚本关注等
+      tags:
+      - script
+  /scripts/{id}/sync:
+    put:
+      consumes:
+      - application/json
+      description: 更新同步配置
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UpdateSyncSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UpdateSyncSettingResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新同步配置
       tags:
       - script
   /scripts/{id}/unwell:
@@ -3741,7 +3255,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 接受邀请
       tags:
-      - script
+      - script/access_invite
   /scripts/invite/{code}/reject:
     put:
       consumes:
@@ -3775,7 +3289,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 拒绝邀请
       tags:
-      - script
+      - script/access_invite
   /scripts/last-score:
     get:
       consumes:

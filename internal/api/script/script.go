@@ -253,6 +253,7 @@ type UpdateLibInfoResponse struct {
 // UpdateSyncSettingRequest 更新同步配置
 type UpdateSyncSettingRequest struct {
 	mux.Meta      `path:"/scripts/:id/sync" method:"PUT"`
+	ID            int64                  `uri:"id" binding:"required"`
 	SyncUrl       string                 `json:"sync_url" binding:"omitempty,url,max=1024" label:"代码同步url"`
 	ContentUrl    string                 `json:"content_url" binding:"omitempty,url,max=1024" label:"详细描述同步url"`
 	DefinitionUrl string                 `json:"definition_url" binding:"omitempty,url,max=1024" label:"定义文件同步url"`
