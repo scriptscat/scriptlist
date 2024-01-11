@@ -4506,10 +4506,34 @@
             }
         },
         "issue.ListCommentResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/issue.Comment"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "issue.ListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/issue.Issue"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "issue.OpenRequest": {
           "type": "object"
@@ -4645,7 +4669,19 @@
             }
         },
         "script.AccessListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Access"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.AddGroupAccessRequest": {
             "type": "object",
@@ -4980,10 +5016,34 @@
             }
         },
         "script.GroupInviteCodeResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.InviteCode"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.GroupListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Group"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.GroupMember": {
             "type": "object",
@@ -5015,7 +5075,19 @@
             }
         },
         "script.GroupMemberListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.GroupMember"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.InfoResponse": {
             "type": "object",
@@ -5060,13 +5132,49 @@
             }
         },
         "script.InviteCodeListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.InviteCode"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.LastScoreResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Script"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.ListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Script"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.MigrateEsRequest": {
             "type": "object"
@@ -5127,7 +5235,19 @@
             }
         },
         "script.ScoreListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Score"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.Script": {
             "type": "object",
@@ -5390,7 +5510,19 @@
           "type": "object"
         },
         "script.VersionListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Code"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "script.WatchRequest": {
             "type": "object",
@@ -5810,10 +5942,34 @@
             }
         },
         "statistics.UserOriginResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/statistics.PieChart"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "statistics.VisitDomainResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/statistics.PieChart"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "statistics.VisitItem": {
             "type": "object",
@@ -5838,7 +5994,19 @@
             }
         },
         "statistics.VisitListResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/statistics.VisitItem"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "user.CurrentUserResponse": {
           "type": "object"
@@ -5920,7 +6088,19 @@
             }
         },
         "user.ScriptResponse": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "$ref": "#/definitions/script.Script"
+              }
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
         },
         "user.SearchResponse": {
             "type": "object",

@@ -117,8 +117,24 @@ definitions:
         type: integer
     type: object
   issue.ListCommentResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Comment'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   issue.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/issue.Issue'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   issue.OpenRequest:
     type: object
@@ -223,6 +239,14 @@ definitions:
         description: id类型 1=用户id 2=组id
     type: object
   script.AccessListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Access'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.AddGroupAccessRequest:
     properties:
@@ -445,8 +469,24 @@ definitions:
         type: string
     type: object
   script.GroupInviteCodeResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.InviteCode'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.GroupListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Group'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.GroupMember:
     properties:
@@ -468,6 +508,14 @@ definitions:
         type: string
     type: object
   script.GroupMemberListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.GroupMember'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.InfoResponse:
     properties:
@@ -499,10 +547,34 @@ definitions:
         type: string
     type: object
   script.InviteCodeListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.InviteCode'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.LastScoreResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Script'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Script'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.MigrateEsRequest:
     type: object
@@ -543,6 +615,14 @@ definitions:
         type: integer
     type: object
   script.ScoreListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Score'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.Script:
     properties:
@@ -717,6 +797,14 @@ definitions:
   script.VersionCodeResponse:
     type: object
   script.VersionListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Code'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.WatchRequest:
     properties:
@@ -1049,8 +1137,24 @@ definitions:
         type: array
     type: object
   statistics.UserOriginResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/statistics.PieChart'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   statistics.VisitDomainResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/statistics.PieChart'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   statistics.VisitItem:
     properties:
@@ -1068,6 +1172,14 @@ definitions:
         type: string
     type: object
   statistics.VisitListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/statistics.VisitItem'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   user.CurrentUserResponse:
     type: object
@@ -1122,6 +1234,14 @@ definitions:
         type: string
     type: object
   user.ScriptResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Script'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   user.SearchResponse:
     properties:
