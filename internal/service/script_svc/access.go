@@ -432,5 +432,19 @@ func (a *accessSvc) AddUserAccess(ctx context.Context, req *api.AddUserAccessReq
 		return nil, err
 	}
 	// 创建记录
+	access := &script_entity.ScriptAccess{
+		ScriptID:     req.ScriptID,
+		LinkID:       req.UserID,
+		Type:         script_entity.AccessTypeUser,
+		Role:         req.Role,
+		InviteStatus: script_entity.AccessInviteStatusPending,
+		Status:       consts.ACTIVE,
+		Expiretime:   req.Expiretime,
+		Createtime:   time.Now().Unix(),
+		Updatetime:   time.Now().Unix(),
+	}
+	if err := script_repo.ScriptAccess().Create(ctx, access); err != nil {
+		return nil, err
+	}
 	return &api.AddUserAccessResponse{}, nil
 }

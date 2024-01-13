@@ -11,8 +11,8 @@ type Access struct {
 	LinkID       int64                            `json:"link_id"` // 关联id
 	Name         string                           `json:"name"`
 	Avatar       string                           `json:"avatar"`
-	Type         script_entity.AccessType         `json:"type"`         // id类型 1=用户id 2=组id
-	InviteStatus script_entity.AccessInviteStatus `json:"invite_tatus"` // 邀请状态 1=已接受 2=已拒绝 3=待接受
+	Type         script_entity.AccessType         `json:"type"`          // id类型 1=用户id 2=组id
+	InviteStatus script_entity.AccessInviteStatus `json:"invite_status"` // 邀请状态 1=已接受 2=已拒绝 3=待接受
 	Role         script_entity.AccessRole         `json:"role"`
 	IsExpire     bool                             `json:"is_expire"`
 	Expiretime   int64                            `json:"expiretime"`

@@ -43,6 +43,7 @@ func (a *accessInviteSvc) InviteCodeList(ctx context.Context, req *api.InviteCod
 
 // CreateInviteLink 创建邀请链接
 func (a *accessInviteSvc) CreateInviteLink(ctx context.Context, req *api.CreateInviteLinkRequest) (*api.CreateInviteLinkResponse, error) {
+
 	return nil, nil
 }
 

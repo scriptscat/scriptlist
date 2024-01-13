@@ -42,11 +42,11 @@ type GroupInviteCodeResponse struct {
 
 // CreateInviteCodeRequest 创建邀请码
 type CreateInviteCodeRequest struct {
-	mux.Meta   `path:"/scripts/:id/invite/code" method:"POST"`
-	ScriptID   int64 `uri:"id" binding:"required" label:"id"`
-	Count      int32 `form:"count,default=1" label:"数量"`
-	Audit      bool  `form:"audit" label:"是否需要审核"`
-	Expiretime int64 `form:"expiretime,default=0" label:"过期时间"` // 0 为永久
+	mux.Meta `path:"/scripts/:id/invite/code" method:"POST"`
+	ScriptID int64 `uri:"id" binding:"required" label:"id"`
+	Count    int32 `form:"count,default=1" label:"数量"`
+	Audit    bool  `form:"audit" label:"是否需要审核"`
+	Days     int32 `form:"days,default=0" label:"有效天数"` // 0 为永久
 }
 
 type CreateInviteCodeResponse struct {
@@ -54,12 +54,12 @@ type CreateInviteCodeResponse struct {
 
 // CreateGroupInviteCodeRequest 创建群组邀请码
 type CreateGroupInviteCodeRequest struct {
-	mux.Meta   `path:"/scripts/:id/invite/group/:gid/code" method:"POST"`
-	ScriptID   int64 `uri:"id" binding:"required" label:"id"`
-	GroupID    int64 `uri:"gid" binding:"required" label:"gid"`
-	Count      int32 `form:"count,default=1" label:"数量"`
-	Audit      bool  `form:"audit" label:"是否需要审核"`
-	Expiretime int64 `form:"expiretime,default=0" label:"过期时间"` // 0 为永久
+	mux.Meta `path:"/scripts/:id/invite/group/:gid/code" method:"POST"`
+	ScriptID int64 `uri:"id" binding:"required" label:"id"`
+	GroupID  int64 `uri:"gid" binding:"required" label:"gid"`
+	Count    int32 `form:"count,default=1" label:"数量"`
+	Audit    bool  `form:"audit" label:"是否需要审核"`
+	Days     int32 `form:"days,default=0" label:"有效天数"` // 0 为永久
 }
 
 type CreateGroupInviteCodeResponse struct {
