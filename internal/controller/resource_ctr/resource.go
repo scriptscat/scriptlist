@@ -34,7 +34,7 @@ func (r *Resource) UploadImage(gCtx *gin.Context, req *api.UploadImageRequest) (
 		return nil, err
 	}
 	// 1M限制
-	if img.Size > 1048576 {
+	if img.Size > 1024*1024*5 {
 		return nil, i18n.NewError(ctx, code.ResourceImageTooLarge)
 	}
 	resp, err := r.limit.FuncTake(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10), func() (interface{}, error) {

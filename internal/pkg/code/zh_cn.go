@@ -41,7 +41,7 @@ var zhCN = map[int]string{
 	IssueCommentNotFound: "评论不存在",
 	IssueLabelNotChange:  "标签未改变",
 
-	ResourceImageTooLarge: "图片过大,不能超过1M",
+	ResourceImageTooLarge: "图片过大,不能超过5M",
 	ResourceNotImage:      "不是图片",
 	ResourceNotFound:      "资源不存在",
 
