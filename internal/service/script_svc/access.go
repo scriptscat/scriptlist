@@ -2,10 +2,10 @@ package script_svc
 
 import (
 	"context"
+	"github.com/codfrm/cago/pkg/consts"
+	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"strconv"
 	"time"
-
-	"github.com/codfrm/cago/pkg/consts"
 
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -39,6 +39,8 @@ type AccessSvc interface {
 	AddGroupAccess(ctx context.Context, req *api.AddGroupAccessRequest) (*api.AddGroupAccessResponse, error)
 	// AddUserAccess 添加用户权限, 通过用户名进行邀请
 	AddUserAccess(ctx context.Context, req *api.AddUserAccessRequest) (*api.AddUserAccessResponse, error)
+	// AddAccess 添加权限 内部用
+	AddAccess(ctx context.Context, entity *script_entity.ScriptAccess) error
 }
 
 type CheckOption func(*CheckOptions)
@@ -380,29 +382,17 @@ func (a *accessSvc) CheckHandler(res, act string, opts ...CheckOption) gin.Handl
 // AddGroupAccess 添加组权限
 func (a *accessSvc) AddGroupAccess(ctx context.Context, req *api.AddGroupAccessRequest) (*api.AddGroupAccessResponse, error) {
 	script := Script().CtxScript(ctx)
-	// 检查是否重复
-	list, err := script_repo.ScriptAccess().FindByLinkID(ctx, script.ID, req.GroupID, script_entity.AccessTypeGroup)
-	if err != nil {
-		return nil, err
-	}
-	if len(list) > 0 {
-		return nil, i18n.NewError(ctx, code.AccessAlreadyExist)
-	}
-	if err := a.checkLinkExist(ctx, script.ID, req.GroupID, script_entity.AccessTypeGroup); err != nil {
-		return nil, err
-	}
 	// 创建
 	access := &script_entity.ScriptAccess{
-		ScriptID:   script.ID,
-		LinkID:     req.GroupID,
-		Type:       script_entity.AccessTypeGroup,
-		Role:       req.Role,
-		Status:     consts.ACTIVE,
-		Expiretime: req.Expiretime,
-		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
+		ScriptID:     script.ID,
+		LinkID:       req.GroupID,
+		Type:         script_entity.AccessTypeGroup,
+		Role:         req.Role,
+		Status:       consts.ACTIVE,
+		InviteStatus: script_entity.AccessInviteStatusAccept,
+		Expiretime:   req.Expiretime,
 	}
-	if err := script_repo.ScriptAccess().Create(ctx, access); err != nil {
+	if err := a.AddAccess(ctx, access); err != nil {
 		return nil, err
 	}
 	return &api.AddGroupAccessResponse{}, nil
@@ -410,41 +400,61 @@ func (a *accessSvc) AddGroupAccess(ctx context.Context, req *api.AddGroupAccessR
 
 // AddUserAccess 添加用户权限, 通过用户名进行邀请
 func (a *accessSvc) AddUserAccess(ctx context.Context, req *api.AddUserAccessRequest) (*api.AddUserAccessResponse, error) {
-	// 检查是否重复
-	list, err := script_repo.ScriptAccess().FindByLinkID(ctx, req.ScriptID,
-		req.UserID, script_entity.AccessTypeUser)
-	if err != nil {
-		return nil, err
-	}
-	if len(list) > 0 {
-		return nil, i18n.NewError(ctx, code.AccessAlreadyExist)
-	}
-	// 检查用户
-	if err := a.checkLinkExist(ctx, Script().CtxScript(ctx).ID, req.UserID, script_entity.AccessTypeUser); err != nil {
-		return nil, err
-	}
-	// 创建邀请链接
-	_, err = AccessInvite().CreateInviteLink(ctx, &api.CreateInviteLinkRequest{
-		ScriptID: req.ScriptID,
-		Type:     script_entity.InviteTypeAccess,
-	})
-	if err != nil {
-		return nil, err
-	}
+	script := Script().CtxScript(ctx)
 	// 创建记录
 	access := &script_entity.ScriptAccess{
-		ScriptID:     req.ScriptID,
+		ScriptID:     script.ID,
 		LinkID:       req.UserID,
 		Type:         script_entity.AccessTypeUser,
 		Role:         req.Role,
 		InviteStatus: script_entity.AccessInviteStatusPending,
 		Status:       consts.ACTIVE,
 		Expiretime:   req.Expiretime,
-		Createtime:   time.Now().Unix(),
-		Updatetime:   time.Now().Unix(),
 	}
-	if err := script_repo.ScriptAccess().Create(ctx, access); err != nil {
+	if err := a.AddAccess(ctx, access); err != nil {
+		return nil, err
+	}
+	// 创建邀请链接
+	invResp, err := AccessInvite().CreateInviteLink(ctx, &script_entity.ScriptInvite{
+		ScriptID: script.ID,
+		Type:     script_entity.InviteTypeAccess,
+		UserID:   access.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	// 发送邮件通知
+	if err := producer.PublishAccessInvite(ctx, auth_svc.Auth().Get(ctx).UID, req.UserID, invResp); err != nil {
 		return nil, err
 	}
 	return &api.AddUserAccessResponse{}, nil
+}
+
+// AddAccess 添加权限 内部用
+func (a *accessSvc) AddAccess(ctx context.Context, entity *script_entity.ScriptAccess) error {
+	// 检查用户
+	if err := a.checkLinkExist(ctx, entity.ScriptID, entity.LinkID, entity.Type); err != nil {
+		return err
+	}
+	entity.Updatetime = time.Now().Unix()
+	if entity.ID == 0 {
+		entity.Createtime = time.Now().Unix()
+		// 检查是否重复
+		list, err := script_repo.ScriptAccess().FindByLinkID(ctx, entity.ScriptID,
+			entity.LinkID, entity.Type)
+		if err != nil {
+			return err
+		}
+		if len(list) > 0 {
+			return i18n.NewError(ctx, code.AccessAlreadyExist)
+		}
+		if err := script_repo.ScriptAccess().Create(ctx, entity); err != nil {
+			return err
+		}
+	} else {
+		if err := script_repo.ScriptAccess().Update(ctx, entity); err != nil {
+			return err
+		}
+	}
+	return nil
 }

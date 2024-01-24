@@ -62,6 +62,9 @@ func Router(ctx context.Context, root *mux.Router) error {
 	// 群组管理
 	scriptGroupCtr := script_ctr.NewGroup()
 	scriptGroupCtr.Router(r)
+	// 邀请码
+	scriptInvCtr := script_ctr.NewAccessInvite()
+	scriptInvCtr.Router(r)
 	// 脚本权限
 	scriptAccessCtr := script_ctr.NewAccess()
 	scriptAccessCtr.Router(r)

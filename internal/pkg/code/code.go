@@ -72,3 +72,15 @@ const (
 	GroupMemberNotFound
 	GroupMemberExist
 )
+
+// access invite
+const (
+	AccessInviteNotFound = iota + 107000
+	AccessInviteIsAudit
+	AccessInviteNotAudit
+	AccessInviteNotPending
+	AccessInviteExist
+	AccessInviteExpired
+	AccessInviteUsed
+	AccessInviteInvalid
+)

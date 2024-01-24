@@ -11,11 +11,12 @@ import (
 )
 
 type ScriptInviteRepo interface {
-	Find(ctx context.Context, id int64) (*script_entity.ScriptInvite, error)
-	FindPage(ctx context.Context, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error)
+	Find(ctx context.Context, scriptId int64, id int64) (*script_entity.ScriptInvite, error)
+	FindByCode(ctx context.Context, code string) (*script_entity.ScriptInvite, error)
+	FindPage(ctx context.Context, scriptId int64, inviteType script_entity.InviteType, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error)
 	Create(ctx context.Context, scriptInvite *script_entity.ScriptInvite) error
 	Update(ctx context.Context, scriptInvite *script_entity.ScriptInvite) error
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, scriptId int64, id int64) error
 }
 
 var defaultScriptInvite ScriptInviteRepo
@@ -35,9 +36,20 @@ func NewScriptInvite() ScriptInviteRepo {
 	return &scriptInviteRepo{}
 }
 
-func (u *scriptInviteRepo) Find(ctx context.Context, id int64) (*script_entity.ScriptInvite, error) {
+func (u *scriptInviteRepo) Find(ctx context.Context, scriptId int64, id int64) (*script_entity.ScriptInvite, error) {
 	ret := &script_entity.ScriptInvite{}
-	if err := db.Ctx(ctx).Where("id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
+	if err := db.Ctx(ctx).Where("id=? and script_id=? and status=?", id, scriptId, consts.ACTIVE).First(ret).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *scriptInviteRepo) FindByCode(ctx context.Context, code string) (*script_entity.ScriptInvite, error) {
+	ret := &script_entity.ScriptInvite{}
+	if err := db.Ctx(ctx).Where("code=? and status=?", code, consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -54,14 +66,16 @@ func (u *scriptInviteRepo) Update(ctx context.Context, scriptInvite *script_enti
 	return db.Ctx(ctx).Updates(scriptInvite).Error
 }
 
-func (u *scriptInviteRepo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Model(&script_entity.ScriptInvite{}).Where("id=?", id).Update("status", consts.DELETE).Error
+func (u *scriptInviteRepo) Delete(ctx context.Context, scriptId int64, id int64) error {
+	return db.Ctx(ctx).Model(&script_entity.ScriptInvite{}).Where("id=? and script_id=?", id, scriptId).
+		Update("status", consts.DELETE).Error
 }
 
-func (u *scriptInviteRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error) {
+func (u *scriptInviteRepo) FindPage(ctx context.Context, scriptId int64, inviteType script_entity.InviteType, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error) {
 	var list []*script_entity.ScriptInvite
 	var count int64
-	find := db.Ctx(ctx).Model(&script_entity.ScriptInvite{}).Where("status=?", consts.ACTIVE)
+	find := db.Ctx(ctx).Model(&script_entity.ScriptInvite{}).
+		Where("script_id=? and type=? and status=?", scriptId, inviteType, consts.ACTIVE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

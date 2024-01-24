@@ -50,6 +50,7 @@ type CreateInviteCodeRequest struct {
 }
 
 type CreateInviteCodeResponse struct {
+	Code []string `json:"code"`
 }
 
 // CreateGroupInviteCodeRequest 创建群组邀请码
@@ -63,6 +64,7 @@ type CreateGroupInviteCodeRequest struct {
 }
 
 type CreateGroupInviteCodeResponse struct {
+	Code []string `json:"code"`
 }
 
 // DeleteInviteCodeRequest 删除邀请码
@@ -88,27 +90,18 @@ type AuditInviteCodeResponse struct {
 
 // CreateInviteLinkRequest 创建邀请链接
 type CreateInviteLinkRequest struct {
-	ScriptID int64                    `json:"script_id" label:"脚本ID"`
-	Type     script_entity.InviteType `json:"type" label:"类型"` // 1=权限邀请码 2=群组邀请码
-}
-
-type CreateInviteLinkResponse struct {
+	ScriptID int64
+	LinkID   int64
+	Type     script_entity.InviteType // 1=权限邀请码 2=群组邀请码
 }
 
 // AcceptInviteRequest 接受邀请
 type AcceptInviteRequest struct {
 	mux.Meta `path:"/scripts/invite/:code/accept" method:"PUT"`
 	Code     string `uri:"code" binding:"required" label:"code"`
+	// 邀请码类型不能拒绝
+	Accept bool `form:"accept" json:"accept" binding:"required" label:"是否接受"`
 }
 
 type AcceptInviteResponse struct {
-}
-
-// RejectInviteRequest 拒绝邀请
-type RejectInviteRequest struct {
-	mux.Meta `path:"/scripts/invite/:code/reject" method:"PUT"`
-	Code     string `uri:"code" binding:"required" label:"code"`
-}
-
-type RejectInviteResponse struct {
 }

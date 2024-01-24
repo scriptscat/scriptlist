@@ -2,6 +2,9 @@ package script_ctr
 
 import (
 	"context"
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/gin-gonic/gin"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 
 	"github.com/codfrm/cago/server/mux"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
@@ -16,17 +19,36 @@ func NewAccessInvite() *AccessInvite {
 }
 
 func (a *AccessInvite) Router(r *mux.Router) {
-
+	muxutils.BindTree(r, []*muxutils.RouterTree{{
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+		},
+		Handler: []interface{}{
+			a.AcceptInvite,
+		},
+	}, {
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
+		},
+		Handler: []interface{}{
+			muxutils.Use(script_svc.Access().CheckHandler("access", "read")).Append(
+				a.InviteCodeList,
+				a.GroupInviteCode,
+			),
+			muxutils.Use(script_svc.Access().CheckHandler("access", "manage")).Append(
+				a.CreateInviteCode,
+				a.CreateGroupInviteCode,
+				a.DeleteInviteCode,
+				a.AuditInviteCode,
+			),
+		},
+	}})
 }
 
 // InviteCodeList 邀请码列表
 func (a *AccessInvite) InviteCodeList(ctx context.Context, req *api.InviteCodeListRequest) (*api.InviteCodeListResponse, error) {
 	return script_svc.AccessInvite().InviteCodeList(ctx, req)
-}
-
-// CreateInviteLink 创建邀请链接
-func (a *AccessInvite) CreateInviteLink(ctx context.Context, req *api.CreateInviteLinkRequest) (*api.CreateInviteLinkResponse, error) {
-	return script_svc.AccessInvite().CreateInviteLink(ctx, req)
 }
 
 // CreateInviteCode 创建邀请码
@@ -47,11 +69,6 @@ func (a *AccessInvite) AuditInviteCode(ctx context.Context, req *api.AuditInvite
 // AcceptInvite 接受邀请
 func (a *AccessInvite) AcceptInvite(ctx context.Context, req *api.AcceptInviteRequest) (*api.AcceptInviteResponse, error) {
 	return script_svc.AccessInvite().AcceptInvite(ctx, req)
-}
-
-// RejectInvite 拒绝邀请
-func (a *AccessInvite) RejectInvite(ctx context.Context, req *api.RejectInviteRequest) (*api.RejectInviteResponse, error) {
-	return script_svc.AccessInvite().RejectInvite(ctx, req)
 }
 
 // GroupInviteCode 群组邀请码列表

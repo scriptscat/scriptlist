@@ -2,13 +2,15 @@ package script_svc
 
 import (
 	"context"
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"strconv"
 	"time"
 
 	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -31,6 +33,8 @@ type GroupSvc interface {
 	GroupMemberList(ctx context.Context, req *api.GroupMemberListRequest) (*api.GroupMemberListResponse, error)
 	// AddMember 添加成员
 	AddMember(ctx context.Context, req *api.AddMemberRequest) (*api.AddMemberResponse, error)
+	// AddMemberInternal 添加成员 内部调用
+	AddMemberInternal(ctx context.Context, entity *script_entity.ScriptGroupMember) error
 	// RemoveMember 移除成员
 	RemoveMember(ctx context.Context, req *api.RemoveMemberRequest) (*api.RemoveMemberResponse, error)
 	// RequireGroup 需要群组存在
@@ -166,32 +170,68 @@ func (g *groupSvc) GroupMemberList(ctx context.Context, req *api.GroupMemberList
 
 // AddMember 添加成员
 func (g *groupSvc) AddMember(ctx context.Context, req *api.AddMemberRequest) (*api.AddMemberResponse, error) {
-	// 检查用户
-	user, err := user_repo.User().Find(ctx, req.UserID)
+	script := Script().CtxScript(ctx)
+	group := g.CtxGroup(ctx)
+	// 添加成员
+	member := &script_entity.ScriptGroupMember{
+		ScriptID:     script.ID,
+		GroupID:      group.ID,
+		UserID:       req.UserID,
+		InviteStatus: script_entity.AccessInviteStatusPending,
+		Status:       consts.ACTIVE,
+		Expiretime:   req.Expiretime,
+		Createtime:   time.Now().Unix(),
+		Updatetime:   time.Now().Unix(),
+	}
+	if err := g.AddMemberInternal(ctx, member); err != nil {
+		return nil, err
+	}
+	// 创建邀请链接
+	invResp, err := AccessInvite().CreateInviteLink(ctx, &script_entity.ScriptInvite{
+		ScriptID: script.ID,
+		GroupID:  group.ID,
+		Type:     script_entity.InviteTypeAccess,
+		UserID:   member.ID,
+	})
 	if err != nil {
 		return nil, err
 	}
-	if err := user.IsBanned(ctx); err != nil {
-		return nil, err
-	}
-	// 检查是否已经在群组中
-	if list, err := script_repo.ScriptGroupMember().FindByUserId(ctx, Script().CtxScript(ctx).ID, req.UserID); err != nil {
-		return nil, err
-	} else if len(list) > 0 {
-		return nil, i18n.NewError(ctx, code.GroupMemberExist)
-	}
-	// 添加成员
-	if err := script_repo.ScriptGroupMember().Create(ctx, &script_entity.ScriptGroupMember{
-		ScriptID:   Script().CtxScript(ctx).ID,
-		GroupID:    g.CtxGroup(ctx).ID,
-		UserID:     req.UserID,
-		Status:     consts.ACTIVE,
-		Expiretime: req.Expiretime,
-		Createtime: time.Now().Unix(),
-	}); err != nil {
+	// 发送邮件通知
+	if err := producer.PublishAccessInvite(ctx, auth_svc.Auth().Get(ctx).UID, req.UserID, invResp); err != nil {
 		return nil, err
 	}
 	return &api.AddMemberResponse{}, nil
+}
+
+// AddMemberInternal 添加成员 内部调用
+func (g *groupSvc) AddMemberInternal(ctx context.Context, entity *script_entity.ScriptGroupMember) error {
+	// 检查用户
+	user, err := user_repo.User().Find(ctx, entity.UserID)
+	if err != nil {
+		return err
+	}
+	if err := user.IsBanned(ctx); err != nil {
+		return err
+	}
+	// 添加成员
+	entity.Updatetime = time.Now().Unix()
+	if entity.ID == 0 {
+		// 检查是否已经在群组中
+		if list, err := script_repo.ScriptGroupMember().FindByUserId(ctx, Script().CtxScript(ctx).ID, entity.UserID); err != nil {
+			return err
+		} else if len(list) > 0 {
+			return i18n.NewError(ctx, code.GroupMemberExist)
+		}
+		entity.Createtime = time.Now().Unix()
+		if err := script_repo.ScriptGroupMember().Create(ctx, entity); err != nil {
+			return err
+		}
+	} else {
+		if err := script_repo.ScriptGroupMember().Update(ctx, entity); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // UpdateMember 更新成员

@@ -42,7 +42,7 @@ var zhCN = map[int]string{
 	IssueCommentNotFound: "评论不存在",
 	IssueLabelNotChange:  "标签未改变",
 
-	ResourceImageTooLarge: "图片过大,不能超过1M",
+	ResourceImageTooLarge: "图片过大,不能超过5M",
 	ResourceNotImage:      "不是图片",
 	ResourceNotFound:      "资源不存在",
 
@@ -58,4 +58,13 @@ var zhCN = map[int]string{
 	GroupNotFound:       "群组不存在",
 	GroupMemberNotFound: "群组成员不存在",
 	GroupMemberExist:    "群组成员已存在",
+
+	AccessInviteNotFound:   "邀请不存在",
+	AccessInviteIsAudit:    "邀请已审核",
+	AccessInviteNotAudit:   "邀请未审核",
+	AccessInviteNotPending: "邀请不是待审核状态",
+	AccessInviteExist:      "邀请已存在",
+	AccessInviteExpired:    "邀请已过期",
+	AccessInviteUsed:       "邀请已使用",
+	AccessInviteInvalid:    "邀请无效",
 }

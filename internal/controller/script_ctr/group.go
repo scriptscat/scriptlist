@@ -2,12 +2,10 @@ package script_ctr
 
 import (
 	"context"
-
 	"github.com/codfrm/cago/pkg/utils/muxutils"
 	"github.com/codfrm/cago/server/mux"
-	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
-
 	"github.com/gin-gonic/gin"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
@@ -18,6 +16,40 @@ type Group struct {
 
 func NewGroup() *Group {
 	return &Group{}
+}
+
+func (g *Group) Router(r *mux.Router) {
+	muxutils.BindTree(r, []*muxutils.RouterTree{{
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
+			script_svc.Access().CheckHandler("group", "read"),
+		},
+		Handler: []interface{}{
+			g.GroupList,
+			muxutils.Use(script_svc.Group().RequireGroup()).Append(
+				g.GroupMemberList,
+			),
+		},
+	}, {
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
+			script_svc.Access().CheckHandler("group", "manage"),
+		},
+		Handler: []interface{}{
+			g.CreateGroup,
+			muxutils.Use(script_svc.Group().RequireGroup()).Append(
+				g.UpdateGroup,
+				g.DeleteGroup,
+				g.AddMember,
+				muxutils.Use(script_svc.Group().RequireMember()).Append(
+					g.UpdateMember,
+					g.RemoveMember,
+				),
+			),
+		},
+	}})
 }
 
 // GroupList 群组列表
@@ -53,40 +85,6 @@ func (g *Group) AddMember(ctx context.Context, req *api.AddMemberRequest) (*api.
 // RemoveMember 移除成员
 func (g *Group) RemoveMember(ctx context.Context, req *api.RemoveMemberRequest) (*api.RemoveMemberResponse, error) {
 	return script_svc.Group().RemoveMember(ctx, req)
-}
-
-func (g *Group) Router(r *mux.Router) {
-	muxutils.BindTree(r, []*muxutils.RouterTree{{
-		Middleware: []gin.HandlerFunc{
-			auth_svc.Auth().RequireLogin(true),
-			script_svc.Script().RequireScript(),
-			script_svc.Access().CheckHandler("group", "read"),
-		},
-		Handler: []interface{}{
-			g.GroupList,
-			muxutils.Use(script_svc.Group().RequireGroup()).Append(
-				g.GroupMemberList,
-			),
-		},
-	}, {
-		Middleware: []gin.HandlerFunc{
-			auth_svc.Auth().RequireLogin(true),
-			script_svc.Script().RequireScript(),
-			script_svc.Access().CheckHandler("group", "manage"),
-		},
-		Handler: []interface{}{
-			g.CreateGroup,
-			muxutils.Use(script_svc.Group().RequireGroup()).Append(
-				g.UpdateGroup,
-				g.DeleteGroup,
-				g.AddMember,
-				muxutils.Use(script_svc.Group().RequireMember()).Append(
-					g.UpdateMember,
-					g.RemoveMember,
-				),
-			),
-		},
-	}})
 }
 
 // UpdateMember 更新成员
