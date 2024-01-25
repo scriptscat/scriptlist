@@ -24,7 +24,7 @@ const (
 type InviteStatus int32
 
 const (
-	InviteStatusUnused  InviteStatus = 1 + iota // 未使用
+	InviteStatusUnused  InviteStatus = 1 + iota // 未使用/等待接受
 	InviteStatusUsed                            // 已使用
 	InviteStatusExpired                         // 过期
 	InviteStatusPending                         // 等待审核
@@ -38,7 +38,7 @@ type ScriptInvite struct {
 	CodeType InviteCodeType `gorm:"column:code_type;type:tinyint(4);not null"` // 邀请码类型 1=邀请码 2=邀请链接
 	GroupID  int64          `gorm:"column:group_id;type:bigint(20)"`           // 群组id
 	Type     InviteType     `gorm:"column:type;type:tinyint(4);not null"`      // 邀请类型 1=权限邀请码 2=群组邀请码
-	UserID   int64          `gorm:"column:user_id;type:bigint(20)"`            // 使用用户
+	UserID   int64          `gorm:"column:user_id;type:bigint(20)"`            // 使用用户 当code_type=2 invite_type=1时 改字段为相关联的access/group member id
 	IsAudit  int32          `gorm:"column:is_audit;type:tinyint(4);not null"`  // 是否需要审核 1=是 2=否
 	// 等待审核->已使用 等待审核->拒绝
 	// 未使用->已使用 未使用->等待审核

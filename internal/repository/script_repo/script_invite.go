@@ -13,7 +13,8 @@ import (
 type ScriptInviteRepo interface {
 	Find(ctx context.Context, scriptId int64, id int64) (*script_entity.ScriptInvite, error)
 	FindByCode(ctx context.Context, code string) (*script_entity.ScriptInvite, error)
-	FindPage(ctx context.Context, scriptId int64, inviteType script_entity.InviteType, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error)
+	FindAccessPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error)
+	FindGroupPage(ctx context.Context, scriptId int64, groupId int64, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error)
 	Create(ctx context.Context, scriptInvite *script_entity.ScriptInvite) error
 	Update(ctx context.Context, scriptInvite *script_entity.ScriptInvite) error
 	Delete(ctx context.Context, scriptId int64, id int64) error
@@ -71,11 +72,27 @@ func (u *scriptInviteRepo) Delete(ctx context.Context, scriptId int64, id int64)
 		Update("status", consts.DELETE).Error
 }
 
-func (u *scriptInviteRepo) FindPage(ctx context.Context, scriptId int64, inviteType script_entity.InviteType, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error) {
+func (u *scriptInviteRepo) FindAccessPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error) {
 	var list []*script_entity.ScriptInvite
 	var count int64
 	find := db.Ctx(ctx).Model(&script_entity.ScriptInvite{}).
-		Where("script_id=? and type=? and status=?", scriptId, inviteType, consts.ACTIVE)
+		Where("script_id=? and code_type=? and type=? and status=?", scriptId,
+			script_entity.InviteCodeTypeCode, script_entity.InviteTypeAccess, consts.ACTIVE)
+	if err := find.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, count, nil
+}
+
+func (u *scriptInviteRepo) FindGroupPage(ctx context.Context, scriptId int64, groupId int64, page httputils.PageRequest) ([]*script_entity.ScriptInvite, int64, error) {
+	var list []*script_entity.ScriptInvite
+	var count int64
+	find := db.Ctx(ctx).Model(&script_entity.ScriptInvite{}).
+		Where("script_id=? and group_id=? and code_type=? and type=? and status=?", scriptId, groupId,
+			script_entity.InviteCodeTypeCode, script_entity.InviteTypeGroup, consts.ACTIVE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

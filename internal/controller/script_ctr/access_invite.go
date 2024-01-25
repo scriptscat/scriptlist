@@ -35,11 +35,11 @@ func (a *AccessInvite) Router(r *mux.Router) {
 		Handler: []interface{}{
 			muxutils.Use(script_svc.Access().CheckHandler("access", "read")).Append(
 				a.InviteCodeList,
-				a.GroupInviteCode,
+				muxutils.Use(script_svc.Group().RequireGroup()).Append(a.GroupInviteCodeList),
 			),
 			muxutils.Use(script_svc.Access().CheckHandler("access", "manage")).Append(
 				a.CreateInviteCode,
-				a.CreateGroupInviteCode,
+				muxutils.Use(script_svc.Group().RequireGroup()).Append(a.CreateGroupInviteCode),
 				a.DeleteInviteCode,
 				a.AuditInviteCode,
 			),
@@ -72,9 +72,9 @@ func (a *AccessInvite) AcceptInvite(ctx context.Context, req *api.AcceptInviteRe
 	return script_svc.AccessInvite().AcceptInvite(ctx, req)
 }
 
-// GroupInviteCode 群组邀请码列表
-func (a *AccessInvite) GroupInviteCode(ctx context.Context, req *api.GroupInviteCodeRequest) (*api.GroupInviteCodeResponse, error) {
-	return script_svc.AccessInvite().GroupInviteCode(ctx, req)
+// GroupInviteCodeList 群组邀请码列表
+func (a *AccessInvite) GroupInviteCodeList(ctx context.Context, req *api.GroupInviteCodeListRequest) (*api.GroupInviteCodeListResponse, error) {
+	return script_svc.AccessInvite().GroupInviteCodeList(ctx, req)
 }
 
 // CreateGroupInviteCode 创建群组邀请码

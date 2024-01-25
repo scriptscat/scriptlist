@@ -12,7 +12,7 @@ type InviteCode struct {
 	UserID       int64                      `json:"used"`     // 使用用户
 	Username     string                     `json:"username"` // 使用用户名
 	IsAudit      bool                       `json:"is_audit"` // 是否需要审核
-	InviteStatus script_entity.InviteStatus `json:"inv_status"`
+	InviteStatus script_entity.InviteStatus `json:"invite_status"`
 	Expiretime   int64                      `json:"expiretime"` // 到期时间
 	Createtime   int64                      `json:"createtime"`
 }
@@ -28,15 +28,15 @@ type InviteCodeListResponse struct {
 	httputils.PageResponse[*InviteCode] `json:",inline"`
 }
 
-// GroupInviteCodeRequest 群组邀请码列表
-type GroupInviteCodeRequest struct {
+// GroupInviteCodeListRequest 群组邀请码列表
+type GroupInviteCodeListRequest struct {
 	mux.Meta              `path:"/scripts/:id/invite/group/:gid/code" method:"GET"`
 	ScriptID              int64 `uri:"id" binding:"required" label:"id"`
 	GroupID               int64 `uri:"gid" binding:"required" label:"gid"`
 	httputils.PageRequest `form:",inline"`
 }
 
-type GroupInviteCodeResponse struct {
+type GroupInviteCodeListResponse struct {
 	httputils.PageResponse[*InviteCode] `json:",inline"`
 }
 
@@ -44,9 +44,9 @@ type GroupInviteCodeResponse struct {
 type CreateInviteCodeRequest struct {
 	mux.Meta `path:"/scripts/:id/invite/code" method:"POST"`
 	ScriptID int64 `uri:"id" binding:"required" label:"id"`
-	Count    int32 `form:"count,default=1" label:"数量"`
-	Audit    bool  `form:"audit" label:"是否需要审核"`
-	Days     int32 `form:"days,default=0" label:"有效天数"` // 0 为永久
+	Count    int32 `form:"count,default=1" json:"count" label:"数量"`
+	Audit    bool  `form:"audit" json:"audit" label:"是否需要审核"`
+	Days     int32 `form:"days,default=0" json:"days" label:"有效天数"` // 0 为永久
 }
 
 type CreateInviteCodeResponse struct {
@@ -58,9 +58,9 @@ type CreateGroupInviteCodeRequest struct {
 	mux.Meta `path:"/scripts/:id/invite/group/:gid/code" method:"POST"`
 	ScriptID int64 `uri:"id" binding:"required" label:"id"`
 	GroupID  int64 `uri:"gid" binding:"required" label:"gid"`
-	Count    int32 `form:"count,default=1" label:"数量"`
-	Audit    bool  `form:"audit" label:"是否需要审核"`
-	Days     int32 `form:"days,default=0" label:"有效天数"` // 0 为永久
+	Count    int32 `form:"count,default=1" json:"count" label:"数量"`
+	Audit    bool  `form:"audit" json:"audit" label:"是否需要审核"`
+	Days     int32 `form:"days,default=0" json:"days" label:"有效天数"` // 0 为永久
 }
 
 type CreateGroupInviteCodeResponse struct {
@@ -117,7 +117,8 @@ type InviteCodeInfoAccess struct {
 }
 
 type InviteCodeInfoGroup struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type InviteCodeInfoResponse struct {

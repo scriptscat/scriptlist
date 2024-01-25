@@ -89,7 +89,7 @@ type AddMemberRequest struct {
 	ScriptID   int64 `uri:"id" binding:"required" label:"id"`
 	GroupID    int64 `uri:"gid" binding:"required" label:"gid"`
 	UserID     int64 `json:"user_id" binding:"required"`
-	Expiretime int64 `json:"expiretime" binding:"required"`
+	Expiretime int64 `form:"expiretime,default=0" json:"expiretime"`
 }
 
 type AddMemberResponse struct {
@@ -101,7 +101,7 @@ type UpdateMemberRequest struct {
 	ID         int64 `uri:"mid" binding:"required"`
 	ScriptID   int64 `uri:"id" binding:"required" label:"id"`
 	GroupID    int64 `uri:"gid" binding:"required" label:"gid"`
-	Expiretime int64 `json:"expiretime" binding:"required"`
+	Expiretime int64 `form:"expiretime,default=0" json:"expiretime"`
 }
 
 type UpdateMemberResponse struct {

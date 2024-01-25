@@ -31,8 +31,8 @@ type AccessInviteSvc interface {
 	AuditInviteCode(ctx context.Context, req *api.AuditInviteCodeRequest) (*api.AuditInviteCodeResponse, error)
 	// AcceptInvite 接受邀请
 	AcceptInvite(ctx context.Context, req *api.AcceptInviteRequest) (*api.AcceptInviteResponse, error)
-	// GroupInviteCode 群组邀请码列表
-	GroupInviteCode(ctx context.Context, req *api.GroupInviteCodeRequest) (*api.GroupInviteCodeResponse, error)
+	// GroupInviteCodeList 群组邀请码列表
+	GroupInviteCodeList(ctx context.Context, req *api.GroupInviteCodeListRequest) (*api.GroupInviteCodeListResponse, error)
 	// CreateGroupInviteCode 创建群组邀请码
 	CreateGroupInviteCode(ctx context.Context, req *api.CreateGroupInviteCodeRequest) (*api.CreateGroupInviteCodeResponse, error)
 	// InviteCodeInfo 邀请码信息
@@ -51,7 +51,7 @@ func AccessInvite() AccessInviteSvc {
 // InviteCodeList 邀请码列表
 func (a *accessInviteSvc) InviteCodeList(ctx context.Context, req *api.InviteCodeListRequest) (*api.InviteCodeListResponse, error) {
 	script := Script().CtxScript(ctx)
-	list, total, err := script_repo.ScriptInvite().FindPage(ctx, script.ID, script_entity.InviteTypeAccess, req.PageRequest)
+	list, total, err := script_repo.ScriptInvite().FindAccessPage(ctx, script.ID, req.PageRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (a *accessInviteSvc) CreateInviteLink(ctx context.Context, entity *script_e
 		Type:         entity.Type,
 		UserID:       entity.UserID,
 		IsAudit:      consts.NO,
-		InviteStatus: script_entity.InviteStatusPending,
+		InviteStatus: script_entity.InviteStatusUnused,
 		Status:       consts.ACTIVE,
 		Createtime:   time.Now().Unix(),
 		Updatetime:   time.Now().Unix(),
@@ -132,14 +132,14 @@ func (a *accessInviteSvc) createInviteCode(ctx context.Context, count int32, ent
 		ctx = db.ContextWithDB(ctx, tx)
 		for i := 0; i < int(count); i++ {
 			invite := &script_entity.ScriptInvite{
-				ScriptID:     entity.ID,
-				Code:         utils.RandString(8, utils.Letter),
+				ScriptID:     entity.ScriptID,
+				Code:         utils.RandString(16, utils.Letter),
 				CodeType:     script_entity.InviteCodeTypeCode,
 				GroupID:      entity.GroupID,
 				Type:         entity.Type,
 				UserID:       0,
 				IsAudit:      entity.IsAudit,
-				InviteStatus: script_entity.InviteStatusPending,
+				InviteStatus: script_entity.InviteStatusUnused,
 				Status:       consts.ACTIVE,
 				Expiretime:   entity.Expiretime,
 				Createtime:   time.Now().Unix(),
@@ -164,12 +164,15 @@ func (a *accessInviteSvc) CreateInviteCode(ctx context.Context, req *api.CreateI
 	if req.Audit {
 		isAudit = consts.YES
 	}
-	codes, err := a.createInviteCode(ctx, req.Count, &script_entity.ScriptInvite{
-		ScriptID:   script.ID,
-		IsAudit:    isAudit,
-		Type:       script_entity.InviteTypeAccess,
-		Expiretime: time.Now().Add(time.Duration(req.Days) * 24 * time.Hour).Unix(),
-	})
+	entity := &script_entity.ScriptInvite{
+		ScriptID: script.ID,
+		IsAudit:  isAudit,
+		Type:     script_entity.InviteTypeAccess,
+	}
+	if req.Days != 0 {
+		entity.Expiretime = time.Now().Add(time.Duration(req.Days) * 24 * time.Hour).Unix()
+	}
+	codes, err := a.createInviteCode(ctx, req.Count, entity)
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +197,7 @@ func (a *accessInviteSvc) AuditInviteCode(ctx context.Context, req *api.AuditInv
 	if err != nil {
 		return nil, err
 	}
-	if invite == nil || invite.Type != script_entity.InviteTypeAccess ||
-		invite.CodeType != script_entity.InviteCodeTypeCode {
+	if invite == nil || invite.CodeType != script_entity.InviteCodeTypeCode {
 		return nil, i18n.NewNotFoundError(ctx, code.AccessInviteNotFound)
 	}
 	if invite.IsAudit != consts.YES {
@@ -208,17 +210,32 @@ func (a *accessInviteSvc) AuditInviteCode(ctx context.Context, req *api.AuditInv
 		case script_entity.InviteStatusPending:
 			if req.Status == 1 {
 				invite.InviteStatus = script_entity.InviteStatusUsed
-				// 加入access
-				if err := Access().AddAccess(ctx, &script_entity.ScriptAccess{
-					ScriptID:     script.ID,
-					LinkID:       invite.UserID,
-					Type:         script_entity.AccessTypeUser,
-					Role:         script_entity.AccessRoleGuest,
-					InviteStatus: script_entity.AccessInviteStatusAccept,
-					Status:       consts.ACTIVE,
-					Expiretime:   0,
-				}); err != nil {
-					return err
+				switch invite.Type {
+				case script_entity.InviteTypeAccess:
+					// 加入access
+					if err := Access().AddAccess(ctx, &script_entity.ScriptAccess{
+						ScriptID:     script.ID,
+						LinkID:       invite.UserID,
+						Type:         script_entity.AccessTypeUser,
+						Role:         script_entity.AccessRoleGuest,
+						InviteStatus: script_entity.AccessInviteStatusAccept,
+						Status:       consts.ACTIVE,
+						Expiretime:   0,
+					}); err != nil {
+						return err
+					}
+				case script_entity.InviteTypeGroup:
+					// 加入群组
+					if err := Group().AddMemberInternal(ctx, &script_entity.ScriptGroupMember{
+						ScriptID:     invite.ScriptID,
+						GroupID:      invite.GroupID,
+						UserID:       invite.UserID,
+						InviteStatus: script_entity.AccessInviteStatusAccept,
+						Status:       consts.ACTIVE,
+						Expiretime:   0,
+					}); err != nil {
+						return err
+					}
 				}
 			} else {
 				invite.InviteStatus = script_entity.InviteStatusReject
@@ -244,14 +261,8 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 	if err != nil {
 		return nil, err
 	}
-	if invite == nil {
-		return nil, i18n.NewNotFoundError(ctx, code.AccessInviteNotFound)
-	}
-	if invite.IsExpired() {
-		return nil, i18n.NewNotFoundError(ctx, code.AccessInviteExpired)
-	}
-	if !invite.CanUse() {
-		return nil, i18n.NewNotFoundError(ctx, code.AccessInviteUsed)
+	if err := invite.Check(ctx); err != nil {
+		return nil, err
 	}
 	if invite.CodeType == script_entity.InviteCodeTypeLink {
 		// 邀请链接
@@ -283,20 +294,23 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 			case script_entity.InviteTypeGroup:
 				// 加入群组
 				// 搜索群组记录
-				group, err := script_repo.ScriptGroupMember().Find(ctx, invite.ScriptID, invite.UserID)
+				member, err := script_repo.ScriptGroupMember().Find(ctx, invite.ScriptID, invite.UserID)
 				if err != nil {
 					return err
 				}
-				if group == nil {
-					return i18n.NewNotFoundError(ctx, code.GroupMemberNotFound)
+				if err := member.Check(ctx); err != nil {
+					return err
+				}
+				if user.UID != member.UserID {
+					return i18n.NewNotFoundError(ctx, code.AccessInviteUserError)
 				}
 				// 修改状态
 				if req.Accept {
-					group.InviteStatus = script_entity.AccessInviteStatusAccept
+					member.InviteStatus = script_entity.AccessInviteStatusAccept
 				} else {
-					group.InviteStatus = script_entity.AccessInviteStatusReject
+					member.InviteStatus = script_entity.AccessInviteStatusReject
 				}
-				if err := Group().AddMemberInternal(ctx, group); err != nil {
+				if err := Group().AddMemberInternal(ctx, member); err != nil {
 					return err
 				}
 			default:
@@ -376,14 +390,14 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 	return &api.AcceptInviteResponse{}, nil
 }
 
-// GroupInviteCode 群组邀请码列表
-func (a *accessInviteSvc) GroupInviteCode(ctx context.Context, req *api.GroupInviteCodeRequest) (*api.GroupInviteCodeResponse, error) {
+// GroupInviteCodeList 群组邀请码列表
+func (a *accessInviteSvc) GroupInviteCodeList(ctx context.Context, req *api.GroupInviteCodeListRequest) (*api.GroupInviteCodeListResponse, error) {
 	script := Script().CtxScript(ctx)
-	list, total, err := script_repo.ScriptInvite().FindPage(ctx, script.ID, script_entity.InviteTypeAccess, req.PageRequest)
+	list, total, err := script_repo.ScriptInvite().FindGroupPage(ctx, script.ID, req.GroupID, req.PageRequest)
 	if err != nil {
 		return nil, err
 	}
-	resp := &api.GroupInviteCodeResponse{
+	resp := &api.GroupInviteCodeListResponse{
 		PageResponse: httputils.PageResponse[*api.InviteCode]{
 			List:  make([]*api.InviteCode, 0),
 			Total: total,
@@ -408,12 +422,16 @@ func (a *accessInviteSvc) CreateGroupInviteCode(ctx context.Context, req *api.Cr
 	if req.Audit {
 		isAudit = consts.YES
 	}
-	codes, err := a.createInviteCode(ctx, req.Count, &script_entity.ScriptInvite{
-		ScriptID:   script.ID,
-		IsAudit:    isAudit,
-		Type:       script_entity.InviteTypeGroup,
-		Expiretime: time.Now().Add(time.Duration(req.Days) * 24 * time.Hour).Unix(),
-	})
+	entity := &script_entity.ScriptInvite{
+		ScriptID: script.ID,
+		GroupID:  req.GroupID,
+		IsAudit:  isAudit,
+		Type:     script_entity.InviteTypeGroup,
+	}
+	if req.Days != 0 {
+		entity.Expiretime = time.Now().Add(time.Duration(req.Days) * 24 * time.Hour).Unix()
+	}
+	codes, err := a.createInviteCode(ctx, req.Count, entity)
 	if err != nil {
 		return nil, err
 	}
@@ -478,7 +496,8 @@ func (a *accessInviteSvc) InviteCodeInfo(ctx context.Context, req *api.InviteCod
 			return nil, err
 		}
 		resp.Group = &api.InviteCodeInfoGroup{
-			Name: group.Name,
+			Name:        group.Name,
+			Description: group.Description,
 		}
 		// 链接的话还要检查邀请用户与当前用户是否一致
 		if invite.CodeType == script_entity.InviteCodeTypeLink {

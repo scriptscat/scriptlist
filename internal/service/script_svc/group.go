@@ -190,7 +190,7 @@ func (g *groupSvc) AddMember(ctx context.Context, req *api.AddMemberRequest) (*a
 	invResp, err := AccessInvite().CreateInviteLink(ctx, &script_entity.ScriptInvite{
 		ScriptID: script.ID,
 		GroupID:  group.ID,
-		Type:     script_entity.InviteTypeAccess,
+		Type:     script_entity.InviteTypeGroup,
 		UserID:   member.ID,
 	})
 	if err != nil {

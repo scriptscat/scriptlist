@@ -48,6 +48,7 @@ func main() {
 	script_repo.RegisterScriptAccess(script_repo.NewScriptAccess())
 	script_repo.RegisterScriptGroup(script_repo.NewScriptGroup())
 	script_repo.RegisterScriptGroupMember(script_repo.NewScriptGroupMember())
+	script_repo.RegisterScriptInvite(script_repo.NewScriptInvite())
 	//注册评分
 	script_repo.RegisterScriptScore(script_repo.NewScriptScore())
 
