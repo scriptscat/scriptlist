@@ -59,7 +59,6 @@ func (s *Script) Subscribe(ctx context.Context) error {
 	if err := producer.SubscribeScriptCodeUpdate(ctx, s.scriptCodeUpdate); err != nil {
 		return err
 	}
-
 	return nil
 }
 
