@@ -25,6 +25,7 @@ func (a *AccessInvite) Router(r *mux.Router) {
 		},
 		Handler: []interface{}{
 			a.AcceptInvite,
+			a.InviteCodeInfo,
 		},
 	}, {
 		Middleware: []gin.HandlerFunc{
@@ -79,4 +80,9 @@ func (a *AccessInvite) GroupInviteCode(ctx context.Context, req *api.GroupInvite
 // CreateGroupInviteCode 创建群组邀请码
 func (a *AccessInvite) CreateGroupInviteCode(ctx context.Context, req *api.CreateGroupInviteCodeRequest) (*api.CreateGroupInviteCodeResponse, error) {
 	return script_svc.AccessInvite().CreateGroupInviteCode(ctx, req)
+}
+
+// InviteCodeInfo 邀请码信息
+func (a *AccessInvite) InviteCodeInfo(ctx context.Context, req *api.InviteCodeInfoRequest) (*api.InviteCodeInfoResponse, error) {
+	return script_svc.AccessInvite().InviteCodeInfo(ctx, req)
 }

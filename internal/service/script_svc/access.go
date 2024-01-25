@@ -3,21 +3,19 @@ package script_svc
 import (
 	"context"
 	"github.com/codfrm/cago/pkg/consts"
-	"github.com/scriptscat/scriptlist/internal/task/producer"
-	"strconv"
-	"time"
-
-	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
-
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"github.com/scriptscat/scriptlist/internal/task/producer"
+	"strconv"
+	"time"
 )
 
 type AccessSvc interface {

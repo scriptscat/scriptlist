@@ -209,6 +209,10 @@ definitions:
         type: string
     type: object
   script.AcceptInviteRequest:
+    properties:
+      accept:
+        description: 邀请码类型不能拒绝
+        type: boolean
     type: object
   script.AcceptInviteResponse:
     type: object
@@ -222,7 +226,7 @@ definitions:
         type: integer
       id:
         type: integer
-      invite_tatus:
+      invite_status:
         $ref: '#/definitions/script_entity.AccessInviteStatus'
         description: 邀请状态 1=已接受 2=已拒绝 3=待接受
       is_expire:
@@ -350,11 +354,16 @@ definitions:
         type: boolean
       count,default=1:
         type: integer
-      expiretime,default=0:
+      days,default=0:
         description: 0 为永久
         type: integer
     type: object
   script.CreateGroupInviteCodeResponse:
+    properties:
+      code:
+        items:
+          type: string
+        type: array
     type: object
   script.CreateGroupRequest:
     properties:
@@ -371,13 +380,16 @@ definitions:
         type: boolean
       count,default=1:
         type: integer
-      expiretime,default=0:
+      days,default=0:
         description: 0 为永久
         type: integer
     type: object
   script.CreateInviteCodeResponse:
-    type: object
-  script.CreateInviteLinkResponse:
+    properties:
+      code:
+        items:
+          type: string
+        type: array
     type: object
   script.CreateRequest:
     properties:
@@ -546,6 +558,33 @@ definitions:
         description: 使用用户名
         type: string
     type: object
+  script.InviteCodeInfoResponse:
+    properties:
+      access,omitempty:
+        description: 如果type=1, 则返回权限信息
+        properties:
+          role:
+            $ref: '#/definitions/script_entity.AccessRole'
+            description: 访问权限 guest=访客 manager=管理员
+        type: object
+      code_type:
+        $ref: '#/definitions/script_entity.InviteCodeType'
+        description: 邀请码类型 1=邀请码 2=邀请链接
+      group,omitempty:
+        description: 如果type=2, 则返回群组信息
+        properties:
+          name:
+            type: string
+        type: object
+      is_audit:
+        description: 是否需要审核 邀请码类型为邀请链接时，该字段固定为false
+        type: boolean
+      script:
+        $ref: '#/definitions/script.Script'
+      type:
+        $ref: '#/definitions/script_entity.InviteType'
+        description: 邀请类型 1=权限邀请码 2=群组邀请码
+    type: object
   script.InviteCodeListResponse:
     properties:
       list:
@@ -588,10 +627,6 @@ definitions:
         type: integer
     type: object
   script.PutScoreResponse:
-    type: object
-  script.RejectInviteRequest:
-    type: object
-  script.RejectInviteResponse:
     type: object
   script.RemoveMemberRequest:
     type: object
@@ -898,6 +933,15 @@ definitions:
     - cookie
     - pre-release
     type: string
+  script_entity.InviteCodeType:
+    description: |-
+      InviteCodeType enum type:
+      - InviteCodeTypeCode: 1
+      - InviteCodeTypeLink: 2
+    enum:
+    - 1
+    - 2
+    type: integer
   script_entity.InviteStatus:
     description: |-
       InviteStatus enum type:
@@ -912,6 +956,15 @@ definitions:
     - 3
     - 4
     - 5
+    type: integer
+  script_entity.InviteType:
+    description: |-
+      InviteType enum type:
+      - InviteTypeAccess: 1
+      - InviteTypeGroup: 2
+    enum:
+    - 1
+    - 2
     type: integer
   script_entity.Public:
     description: |-
@@ -3342,6 +3395,36 @@ paths:
       summary: 关注脚本
       tags:
       - script
+  /scripts/invite/{code}:
+    get:
+      consumes:
+      - application/json
+      description: 邀请码信息
+      parameters:
+      - in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.InviteCodeInfoResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 邀请码信息
+      tags:
+      - script/access_invite
   /scripts/invite/{code}/accept:
     put:
       consumes:
@@ -3374,40 +3457,6 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 接受邀请
-      tags:
-      - script/access_invite
-  /scripts/invite/{code}/reject:
-    put:
-      consumes:
-      - application/json
-      description: 拒绝邀请
-      parameters:
-      - in: path
-        name: code
-        required: true
-        type: string
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.RejectInviteRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.RejectInviteResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 拒绝邀请
       tags:
       - script/access_invite
   /scripts/last-score:

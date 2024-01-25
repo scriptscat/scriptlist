@@ -2,12 +2,10 @@ package script_repo
 
 import (
 	"context"
-	api "github.com/scriptscat/scriptlist/internal/api/script"
-
-	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
+	api "github.com/scriptscat/scriptlist/internal/api/script"
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 
 type ScriptGroupRepo interface {

@@ -105,3 +105,26 @@ type AcceptInviteRequest struct {
 
 type AcceptInviteResponse struct {
 }
+
+// InviteCodeInfoRequest 邀请码信息
+type InviteCodeInfoRequest struct {
+	mux.Meta `path:"/scripts/invite/:code" method:"GET"`
+	Code     string `uri:"code" binding:"required" label:"code"`
+}
+
+type InviteCodeInfoAccess struct {
+	Role script_entity.AccessRole `json:"role"` // 访问权限 guest=访客 manager=管理员
+}
+
+type InviteCodeInfoGroup struct {
+	Name string `json:"name"`
+}
+
+type InviteCodeInfoResponse struct {
+	CodeType script_entity.InviteCodeType `json:"code_type"` // 邀请码类型 1=邀请码 2=邀请链接
+	Type     script_entity.InviteType     `json:"type"`      // 邀请类型 1=权限邀请码 2=群组邀请码
+	IsAudit  bool                         `json:"is_audit"`  // 是否需要审核 邀请码类型为邀请链接时，该字段固定为false
+	Script   *Script                      `json:"script"`
+	Access   *InviteCodeInfoAccess        `json:"access,omitempty"` // 如果type=1, 则返回权限信息
+	Group    *InviteCodeInfoGroup         `json:"group,omitempty"`  // 如果type=2, 则返回群组信息
+}

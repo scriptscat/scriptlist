@@ -10,6 +10,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"gorm.io/gorm"
 	"time"
@@ -34,6 +35,8 @@ type AccessInviteSvc interface {
 	GroupInviteCode(ctx context.Context, req *api.GroupInviteCodeRequest) (*api.GroupInviteCodeResponse, error)
 	// CreateGroupInviteCode 创建群组邀请码
 	CreateGroupInviteCode(ctx context.Context, req *api.CreateGroupInviteCodeRequest) (*api.CreateGroupInviteCodeResponse, error)
+	// InviteCodeInfo 邀请码信息
+	InviteCodeInfo(ctx context.Context, req *api.InviteCodeInfoRequest) (*api.InviteCodeInfoResponse, error)
 }
 
 type accessInviteSvc struct {
@@ -59,7 +62,7 @@ func (a *accessInviteSvc) InviteCodeList(ctx context.Context, req *api.InviteCod
 		},
 	}
 	for _, v := range list {
-		v, err := v.ToInviteCode(ctx)
+		v, err := a.toInviteCode(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -68,6 +71,35 @@ func (a *accessInviteSvc) InviteCodeList(ctx context.Context, req *api.InviteCod
 		}
 	}
 	return resp, nil
+}
+
+func (a *accessInviteSvc) toInviteCode(ctx context.Context, invite *script_entity.ScriptInvite) (*api.InviteCode, error) {
+	ret := &api.InviteCode{
+		ID:           invite.ID,
+		Code:         invite.Code,
+		UserID:       0,
+		Username:     "",
+		IsAudit:      invite.IsAudit == consts.YES,
+		InviteStatus: invite.InviteStatus,
+		Expiretime:   invite.Expiretime,
+		Createtime:   invite.Createtime,
+	}
+	if invite.UserID > 0 {
+		user, err := user_repo.User().Find(ctx, invite.UserID)
+		if err != nil {
+			return nil, err
+		}
+		if user == nil {
+			return nil, nil
+		}
+		ret.UserID = user.ID
+		ret.Username = user.Username
+	}
+	if ret.InviteStatus == script_entity.InviteStatusUnused && ret.Expiretime > 0 && ret.Expiretime < time.Now().Unix() {
+		ret.InviteStatus = script_entity.InviteStatusExpired
+	}
+
+	return ret, nil
 }
 
 // CreateInviteLink 创建邀请链接
@@ -233,8 +265,11 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 				if err != nil {
 					return err
 				}
-				if access == nil {
-					return i18n.NewNotFoundError(ctx, code.AccessNotFound)
+				if err := access.Check(ctx); err != nil {
+					return err
+				}
+				if user.UID != access.LinkID {
+					return i18n.NewNotFoundError(ctx, code.AccessInviteUserError)
 				}
 				// 修改状态
 				if req.Accept {
@@ -276,6 +311,9 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 			}
 			return nil
 		})
+		if err != nil {
+			return nil, err
+		}
 		return &api.AcceptInviteResponse{}, nil
 	}
 	// 邀请码
@@ -332,6 +370,9 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	return &api.AcceptInviteResponse{}, nil
 }
 
@@ -349,7 +390,7 @@ func (a *accessInviteSvc) GroupInviteCode(ctx context.Context, req *api.GroupInv
 		},
 	}
 	for _, v := range list {
-		v, err := v.ToInviteCode(ctx)
+		v, err := a.toInviteCode(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -379,4 +420,79 @@ func (a *accessInviteSvc) CreateGroupInviteCode(ctx context.Context, req *api.Cr
 	return &api.CreateGroupInviteCodeResponse{
 		Code: codes,
 	}, nil
+}
+
+// InviteCodeInfo 邀请码信息
+func (a *accessInviteSvc) InviteCodeInfo(ctx context.Context, req *api.InviteCodeInfoRequest) (*api.InviteCodeInfoResponse, error) {
+	user := auth_svc.Auth().Get(ctx)
+	invite, err := script_repo.ScriptInvite().FindByCode(ctx, req.Code)
+	if err != nil {
+		return nil, err
+	}
+	if err := invite.Check(ctx); err != nil {
+		return nil, err
+	}
+	script, err := script_repo.Script().Find(ctx, invite.ScriptID)
+	if err != nil {
+		return nil, err
+	}
+	if err := script.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	scriptInfo, err := Script().ToScript(ctx, script, false, "")
+	if err != nil {
+		return nil, err
+	}
+	resp := &api.InviteCodeInfoResponse{
+		CodeType: invite.CodeType,
+		Type:     invite.Type,
+		IsAudit:  invite.IsAudit == consts.YES,
+		Script:   scriptInfo,
+	}
+	if invite.Type == script_entity.InviteTypeAccess {
+		if invite.CodeType == script_entity.InviteCodeTypeLink {
+			access, err := script_repo.ScriptAccess().Find(ctx, invite.ScriptID, invite.UserID)
+			if err != nil {
+				return nil, err
+			}
+			if err := access.Check(ctx); err != nil {
+				return nil, err
+			}
+			if user.UID != access.LinkID {
+				return nil, i18n.NewNotFoundError(ctx, code.AccessInviteUserError)
+			}
+			resp.Access = &api.InviteCodeInfoAccess{
+				Role: access.Role,
+			}
+		} else {
+			resp.Access = &api.InviteCodeInfoAccess{
+				Role: script_entity.AccessRoleGuest,
+			}
+		}
+	} else {
+		group, err := script_repo.ScriptGroup().Find(ctx, invite.ScriptID, invite.GroupID)
+		if err != nil {
+			return nil, err
+		}
+		if err := group.Check(ctx); err != nil {
+			return nil, err
+		}
+		resp.Group = &api.InviteCodeInfoGroup{
+			Name: group.Name,
+		}
+		// 链接的话还要检查邀请用户与当前用户是否一致
+		if invite.CodeType == script_entity.InviteCodeTypeLink {
+			member, err := script_repo.ScriptGroupMember().Find(ctx, invite.ScriptID, invite.UserID)
+			if err != nil {
+				return nil, err
+			}
+			if err := member.Check(ctx); err != nil {
+				return nil, err
+			}
+			if user.UID != member.UserID {
+				return nil, i18n.NewNotFoundError(ctx, code.AccessInviteUserError)
+			}
+		}
+	}
+	return resp, nil
 }

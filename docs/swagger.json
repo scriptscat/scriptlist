@@ -450,9 +450,9 @@
                 }
             }
         },
-        "/scripts/invite/{code}/accept": {
-            "put": {
-                "description": "接受邀请",
+      "/scripts/invite/{code}": {
+        "get": {
+          "description": "邀请码信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -462,20 +462,13 @@
                 "tags": [
                   "script/access_invite"
                 ],
-                "summary": "接受邀请",
+          "summary": "邀请码信息",
                 "parameters": [
                     {
                         "type": "string",
                         "name": "code",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/script.AcceptInviteRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -487,7 +480,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/script.AcceptInviteResponse"
+                                  "$ref": "#/definitions/script.InviteCodeInfoResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -504,9 +497,9 @@
                 }
             }
         },
-        "/scripts/invite/{code}/reject": {
+      "/scripts/invite/{code}/accept": {
             "put": {
-                "description": "拒绝邀请",
+              "description": "接受邀请",
                 "consumes": [
                     "application/json"
                 ],
@@ -516,7 +509,7 @@
                 "tags": [
                   "script/access_invite"
                 ],
-                "summary": "拒绝邀请",
+              "summary": "接受邀请",
                 "parameters": [
                     {
                         "type": "string",
@@ -528,7 +521,7 @@
                         "name": "body",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/script.RejectInviteRequest"
+                          "$ref": "#/definitions/script.AcceptInviteRequest"
                         }
                     }
                 ],
@@ -541,7 +534,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/script.RejectInviteResponse"
+                                  "$ref": "#/definitions/script.AcceptInviteResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -4625,7 +4618,13 @@
             }
         },
         "script.AcceptInviteRequest": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "accept": {
+              "description": "邀请码类型不能拒绝",
+              "type": "boolean"
+            }
+          }
         },
         "script.AcceptInviteResponse": {
             "type": "object"
@@ -4645,7 +4644,7 @@
                 "id": {
                     "type": "integer"
                 },
-                "invite_tatus": {
+              "invite_status": {
                     "description": "邀请状态 1=已接受 2=已拒绝 3=待接受",
                     "$ref": "#/definitions/script_entity.AccessInviteStatus"
                 },
@@ -4837,14 +4836,22 @@
                 "count,default=1": {
                     "type": "integer"
                 },
-                "expiretime,default=0": {
+              "days,default=0": {
                     "description": "0 为永久",
                     "type": "integer"
                 }
             }
         },
         "script.CreateGroupInviteCodeResponse": {
-            "type": "object"
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         },
         "script.CreateGroupRequest": {
             "type": "object",
@@ -4869,17 +4876,22 @@
                 "count,default=1": {
                     "type": "integer"
                 },
-                "expiretime,default=0": {
+              "days,default=0": {
                     "description": "0 为永久",
                     "type": "integer"
                 }
             }
         },
         "script.CreateInviteCodeResponse": {
-            "type": "object"
-        },
-        "script.CreateInviteLinkResponse": {
-            "type": "object"
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         },
         "script.CreateRequest": {
             "type": "object",
@@ -5131,6 +5143,45 @@
                 }
             }
         },
+      "script.InviteCodeInfoResponse": {
+        "type": "object",
+        "properties": {
+          "access,omitempty": {
+            "description": "如果type=1, 则返回权限信息",
+            "type": "object",
+            "properties": {
+              "role": {
+                "description": "访问权限 guest=访客 manager=管理员",
+                "$ref": "#/definitions/script_entity.AccessRole"
+              }
+            }
+          },
+          "code_type": {
+            "description": "邀请码类型 1=邀请码 2=邀请链接",
+            "$ref": "#/definitions/script_entity.InviteCodeType"
+          },
+          "group,omitempty": {
+            "description": "如果type=2, 则返回群组信息",
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "is_audit": {
+            "description": "是否需要审核 邀请码类型为邀请链接时，该字段固定为false",
+            "type": "boolean"
+          },
+          "script": {
+            "$ref": "#/definitions/script.Script"
+          },
+          "type": {
+            "description": "邀请类型 1=权限邀请码 2=群组邀请码",
+            "$ref": "#/definitions/script_entity.InviteType"
+          }
+        }
+      },
         "script.InviteCodeListResponse": {
           "type": "object",
           "properties": {
@@ -5194,12 +5245,6 @@
             }
         },
         "script.PutScoreResponse": {
-            "type": "object"
-        },
-        "script.RejectInviteRequest": {
-          "type": "object"
-        },
-        "script.RejectInviteResponse": {
             "type": "object"
         },
         "script.RemoveMemberRequest": {
@@ -5631,6 +5676,14 @@
                 "pre-release"
             ]
         },
+      "script_entity.InviteCodeType": {
+        "description": "InviteCodeType enum type:\n- InviteCodeTypeCode: 1\n- InviteCodeTypeLink: 2",
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ]
+      },
         "script_entity.InviteStatus": {
             "description": "InviteStatus enum type:\n- InviteStatusUnused: 1\n- InviteStatusUsed: 2\n- InviteStatusExpired: 3\n- InviteStatusPending: 4\n- InviteStatusReject: 5",
             "type": "integer",
@@ -5640,6 +5693,14 @@
                 3,
                 4,
                 5
+            ]
+        },
+      "script_entity.InviteType": {
+        "description": "InviteType enum type:\n- InviteTypeAccess: 1\n- InviteTypeGroup: 2",
+        "type": "integer",
+        "enum": [
+          1,
+          2
             ]
         },
         "script_entity.Public": {

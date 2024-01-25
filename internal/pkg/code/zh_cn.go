@@ -67,4 +67,5 @@ var zhCN = map[int]string{
 	AccessInviteExpired:    "邀请已过期",
 	AccessInviteUsed:       "邀请已使用",
 	AccessInviteInvalid:    "邀请无效",
+	AccessInviteUserError:  "邀请用户错误",
 }

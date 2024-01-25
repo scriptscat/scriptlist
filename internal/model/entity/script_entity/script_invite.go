@@ -2,9 +2,8 @@ package script_entity
 
 import (
 	"context"
-	"github.com/codfrm/cago/pkg/consts"
-	api "github.com/scriptscat/scriptlist/internal/api/script"
-	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"time"
 )
 
@@ -50,6 +49,19 @@ type ScriptInvite struct {
 	Updatetime   int64        `gorm:"column:updatetime;type:bigint(20);not null"`
 }
 
+func (i *ScriptInvite) Check(ctx context.Context) error {
+	if i == nil {
+		return i18n.NewNotFoundError(ctx, code.AccessInviteNotFound)
+	}
+	if i.IsExpired() {
+		return i18n.NewNotFoundError(ctx, code.AccessInviteExpired)
+	}
+	if !i.CanUse() {
+		return i18n.NewNotFoundError(ctx, code.AccessInviteUsed)
+	}
+	return nil
+}
+
 // IsExpired 是否过期
 func (i *ScriptInvite) IsExpired() bool {
 	return i.Expiretime > 0 && i.Expiretime < time.Now().Unix()
@@ -58,33 +70,4 @@ func (i *ScriptInvite) IsExpired() bool {
 // CanUse 是否可以使用
 func (i *ScriptInvite) CanUse() bool {
 	return i.InviteStatus == InviteStatusUnused
-}
-
-func (i *ScriptInvite) ToInviteCode(ctx context.Context) (*api.InviteCode, error) {
-	ret := &api.InviteCode{
-		ID:           i.ID,
-		Code:         i.Code,
-		UserID:       0,
-		Username:     "",
-		IsAudit:      i.IsAudit == consts.YES,
-		InviteStatus: i.InviteStatus,
-		Expiretime:   i.Expiretime,
-		Createtime:   i.Createtime,
-	}
-	if i.UserID > 0 {
-		user, err := user_repo.User().Find(ctx, i.UserID)
-		if err != nil {
-			return nil, err
-		}
-		if user == nil {
-			return nil, nil
-		}
-		ret.UserID = user.ID
-		ret.Username = user.Username
-	}
-	if ret.InviteStatus == InviteStatusUnused && ret.Expiretime > 0 && ret.Expiretime < time.Now().Unix() {
-		ret.InviteStatus = InviteStatusExpired
-	}
-
-	return ret, nil
 }

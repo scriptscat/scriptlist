@@ -83,4 +83,5 @@ const (
 	AccessInviteExpired
 	AccessInviteUsed
 	AccessInviteInvalid
+	AccessInviteUserError
 )
