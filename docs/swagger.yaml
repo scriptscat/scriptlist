@@ -352,9 +352,9 @@ definitions:
     properties:
       audit:
         type: boolean
-      count,default=1:
+      count:
         type: integer
-      days,default=0:
+      days:
         description: 0 为永久
         type: integer
     type: object
@@ -378,9 +378,9 @@ definitions:
     properties:
       audit:
         type: boolean
-      count,default=1:
+      count:
         type: integer
-      days,default=0:
+      days:
         description: 0 为永久
         type: integer
     type: object
@@ -480,7 +480,7 @@ definitions:
       name:
         type: string
     type: object
-  script.GroupInviteCodeResponse:
+  script.GroupInviteCodeListResponse:
     properties:
       list:
         items:
@@ -546,7 +546,7 @@ definitions:
         type: integer
       id:
         type: integer
-      inv_status:
+      invite_status:
         $ref: '#/definitions/script_entity.InviteStatus'
       is_audit:
         description: 是否需要审核
@@ -558,24 +558,33 @@ definitions:
         description: 使用用户名
         type: string
     type: object
+  script.InviteCodeInfoAccess:
+    properties:
+      role:
+        $ref: '#/definitions/script_entity.AccessRole'
+        description: 访问权限 guest=访客 manager=管理员
+    type: object
+  script.InviteCodeInfoGroup:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
   script.InviteCodeInfoResponse:
     properties:
       access,omitempty:
+        $ref: '#/definitions/script.InviteCodeInfoAccess'
         description: 如果type=1, 则返回权限信息
-        properties:
-          role:
-            $ref: '#/definitions/script_entity.AccessRole'
-            description: 访问权限 guest=访客 manager=管理员
-        type: object
       code_type:
         $ref: '#/definitions/script_entity.InviteCodeType'
         description: 邀请码类型 1=邀请码 2=邀请链接
       group,omitempty:
+        $ref: '#/definitions/script.InviteCodeInfoGroup'
         description: 如果type=2, 则返回群组信息
-        properties:
-          name:
-            type: string
-        type: object
+      invite_status:
+        $ref: '#/definitions/script_entity.InviteStatus'
+        description: 使用状态
       is_audit:
         description: 是否需要审核 邀请码类型为邀请链接时，该字段固定为false
         type: boolean
@@ -2492,7 +2501,7 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/script.GroupInviteCodeResponse'
+                $ref: '#/definitions/script.GroupInviteCodeListResponse'
               msg:
                 type: string
         "400":

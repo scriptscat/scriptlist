@@ -62,6 +62,13 @@ func (i *ScriptInvite) Check(ctx context.Context) error {
 	return nil
 }
 
+func (i *ScriptInvite) GetInviteStatus() InviteStatus {
+	if i.IsExpired() {
+		return InviteStatusExpired
+	}
+	return i.InviteStatus
+}
+
 // IsExpired 是否过期
 func (i *ScriptInvite) IsExpired() bool {
 	return i.Expiretime > 0 && i.Expiretime < time.Now().Unix()

@@ -1999,7 +1999,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/script.GroupInviteCodeResponse"
+                                  "$ref": "#/definitions/script.GroupInviteCodeListResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -4833,10 +4833,10 @@
                 "audit": {
                     "type": "boolean"
                 },
-                "count,default=1": {
+              "count": {
                     "type": "integer"
                 },
-              "days,default=0": {
+              "days": {
                     "description": "0 为永久",
                     "type": "integer"
                 }
@@ -4873,10 +4873,10 @@
                 "audit": {
                     "type": "boolean"
                 },
-                "count,default=1": {
+              "count": {
                     "type": "integer"
                 },
-              "days,default=0": {
+              "days": {
                     "description": "0 为永久",
                     "type": "integer"
                 }
@@ -5027,20 +5027,20 @@
                 }
             }
         },
-        "script.GroupInviteCodeResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.InviteCode"
-              }
-            },
-            "total": {
-              "type": "integer"
+      "script.GroupInviteCodeListResponse": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "#/definitions/script.InviteCode"
             }
+          },
+          "total": {
+            "type": "integer"
           }
+        }
         },
         "script.GroupListResponse": {
           "type": "object",
@@ -5126,7 +5126,7 @@
                 "id": {
                     "type": "integer"
                 },
-                "inv_status": {
+              "invite_status": {
                     "$ref": "#/definitions/script_entity.InviteStatus"
                 },
                 "is_audit": {
@@ -5143,18 +5143,32 @@
                 }
             }
         },
+      "script.InviteCodeInfoAccess": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "description": "访问权限 guest=访客 manager=管理员",
+            "$ref": "#/definitions/script_entity.AccessRole"
+          }
+        }
+      },
+      "script.InviteCodeInfoGroup": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+                }
+            }
+        },
       "script.InviteCodeInfoResponse": {
         "type": "object",
         "properties": {
           "access,omitempty": {
             "description": "如果type=1, 则返回权限信息",
-            "type": "object",
-            "properties": {
-              "role": {
-                "description": "访问权限 guest=访客 manager=管理员",
-                "$ref": "#/definitions/script_entity.AccessRole"
-              }
-            }
+            "$ref": "#/definitions/script.InviteCodeInfoAccess"
           },
           "code_type": {
             "description": "邀请码类型 1=邀请码 2=邀请链接",
@@ -5162,12 +5176,11 @@
           },
           "group,omitempty": {
             "description": "如果type=2, 则返回群组信息",
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/definitions/script.InviteCodeInfoGroup"
+          },
+          "invite_status": {
+            "description": "使用状态",
+            "$ref": "#/definitions/script_entity.InviteStatus"
           },
           "is_audit": {
             "description": "是否需要审核 邀请码类型为邀请链接时，该字段固定为false",

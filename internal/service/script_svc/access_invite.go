@@ -447,8 +447,8 @@ func (a *accessInviteSvc) InviteCodeInfo(ctx context.Context, req *api.InviteCod
 	if err != nil {
 		return nil, err
 	}
-	if err := invite.Check(ctx); err != nil {
-		return nil, err
+	if invite == nil {
+		return nil, i18n.NewNotFoundError(ctx, code.AccessInviteNotFound)
 	}
 	script, err := script_repo.Script().Find(ctx, invite.ScriptID)
 	if err != nil {
@@ -462,10 +462,11 @@ func (a *accessInviteSvc) InviteCodeInfo(ctx context.Context, req *api.InviteCod
 		return nil, err
 	}
 	resp := &api.InviteCodeInfoResponse{
-		CodeType: invite.CodeType,
-		Type:     invite.Type,
-		IsAudit:  invite.IsAudit == consts.YES,
-		Script:   scriptInfo,
+		CodeType:     invite.CodeType,
+		InviteStatus: invite.GetInviteStatus(),
+		Type:         invite.Type,
+		IsAudit:      invite.IsAudit == consts.YES,
+		Script:       scriptInfo,
 	}
 	if invite.Type == script_entity.InviteTypeAccess {
 		if invite.CodeType == script_entity.InviteCodeTypeLink {
