@@ -5,6 +5,7 @@ import (
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
@@ -12,6 +13,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"
 
@@ -289,6 +291,10 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 					access.InviteStatus = script_entity.AccessInviteStatusReject
 				}
 				if err := Access().AddAccess(ctx, access); err != nil {
+					logger.Ctx(ctx).Error("邀请链接邀请失败",
+						zap.Int64("script_id", invite.ScriptID), zap.Int64("access_id", invite.UserID),
+						zap.Int64("user_id", user.UID), zap.String("code", req.Code), zap.Error(err),
+						zap.String("code", req.Code), zap.Error(err))
 					return err
 				}
 			case script_entity.InviteTypeGroup:
@@ -365,7 +371,7 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 			if err := Group().AddMemberInternal(ctx, &script_entity.ScriptGroupMember{
 				ScriptID:     invite.ScriptID,
 				GroupID:      invite.GroupID,
-				UserID:       invite.UserID,
+				UserID:       user.UID,
 				InviteStatus: script_entity.AccessInviteStatusAccept,
 				Status:       consts.ACTIVE,
 				Expiretime:   0,

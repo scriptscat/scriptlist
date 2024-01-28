@@ -20,7 +20,7 @@ const (
 	AccessInviteTemplate = `
 {{.Value.Username}}邀请您加入脚本:{{.Value.Name}}
 <hr/>
-<a href="{{.Config.Url}}/script/invite/{{.Value.Code}}">点击此链接加入</a>
+<a href="{{.Config.Url}}/script/invite/?code={{.Value.Code}}">点击此链接加入</a>
 `
 )
 

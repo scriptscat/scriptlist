@@ -217,7 +217,7 @@ func (g *groupSvc) AddMemberInternal(ctx context.Context, entity *script_entity.
 	entity.Updatetime = time.Now().Unix()
 	if entity.ID == 0 {
 		// 检查是否已经在群组中
-		if list, err := script_repo.ScriptGroupMember().FindByUserId(ctx, Script().CtxScript(ctx).ID, entity.UserID); err != nil {
+		if list, err := script_repo.ScriptGroupMember().FindByUserId(ctx, entity.ScriptID, entity.UserID); err != nil {
 			return err
 		} else if len(list) > 0 {
 			return i18n.NewError(ctx, code.GroupMemberExist)
