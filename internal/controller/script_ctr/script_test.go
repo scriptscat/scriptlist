@@ -203,6 +203,34 @@ func TestScript_Router(t *testing.T) {
 						convey.So(err, convey.ShouldBeError, "脚本已归档,无法进行此操作")
 					})
 				})
+				convey.Convey("访客用户组", func() {
+					mockMember.EXPECT().FindByUserId(gomock.Any(), int64(1), int64(1)).Return([]*script_entity.ScriptGroupMember{{
+						ID:           1,
+						ScriptID:     1,
+						GroupID:      1,
+						UserID:       1,
+						InviteStatus: 1,
+						Status:       1,
+					}}, nil)
+					mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeUser).
+						Return(nil, nil)
+					convey.Convey("可访问", func() {
+						mockAccess.EXPECT().FindByLinkID(gomock.Any(), int64(1), int64(1), script_entity.AccessTypeGroup).
+							Return([]*script_entity.ScriptAccess{{
+								ID:           1,
+								ScriptID:     1,
+								LinkID:       1,
+								Type:         1,
+								Role:         script_entity.AccessRoleGuest,
+								InviteStatus: script_entity.AccessInviteStatusAccept,
+								Status:       consts.ACTIVE,
+								Expiretime:   time.Now().Add(time.Hour).Unix(),
+							}}, nil)
+						mockCodeRepo.EXPECT().List(gomock.Any(), int64(1), gomock.Any()).Return(nil, int64(0), nil)
+						err := testMux.Do(ctx, &script.VersionListRequest{ID: 1}, &script.VersionListRequest{})
+						convey.So(err, convey.ShouldBeNil)
+					})
+				})
 			})
 		})
 	})

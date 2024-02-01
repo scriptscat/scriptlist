@@ -43,5 +43,5 @@ func (m *ScriptGroupMember) IsValid(ctx context.Context) bool {
 }
 
 func (m *ScriptGroupMember) IsExpired() bool {
-	return m.Expiretime < time.Now().Unix()
+	return m.Expiretime != 0 && m.Expiretime < time.Now().Unix()
 }
