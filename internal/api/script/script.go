@@ -152,7 +152,8 @@ type InfoRequest struct {
 
 type InfoResponse struct {
 	*Script `json:",inline"`
-	Content string `json:"content"`
+	Content string                   `json:"content"`
+	Role    script_entity.AccessRole `json:"role"`
 }
 
 // CodeRequest 获取脚本代码信息

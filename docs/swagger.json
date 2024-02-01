@@ -4915,7 +4915,7 @@
                     "type": "string"
                 },
                 "public": {
-                    "description": "公开类型：1 公开 2 半公开",
+                  "description": "公开类型：1 公开 2 半公开 3 私有",
                     "$ref": "#/definitions/script_entity.Public"
                 },
                 "type": {
@@ -5106,6 +5106,9 @@
             "properties": {
                 "content": {
                     "type": "string"
+                },
+              "role": {
+                "$ref": "#/definitions/script_entity.AccessRole"
                 }
             }
         },

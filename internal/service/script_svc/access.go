@@ -39,6 +39,9 @@ type AccessSvc interface {
 	AddUserAccess(ctx context.Context, req *api.AddUserAccessRequest) (*api.AddUserAccessResponse, error)
 	// AddAccess 添加权限 内部用
 	AddAccess(ctx context.Context, entity *script_entity.ScriptAccess) error
+	// GetRole 获取用户角色
+	GetRole(ctx context.Context, user *model.AuthInfo,
+		script *script_entity.Script) ([]script_entity.AccessRole, error)
 }
 
 type CheckOption func(*CheckOptions)
@@ -319,6 +322,23 @@ func (a *accessSvc) Check(ctx context.Context, res, act string) (*CheckAccess, e
 	// 获取用户对该脚本拥有的权限
 	script := Script().CtxScript(ctx)
 	user := auth_svc.Auth().Get(ctx)
+	roles, err := a.GetRole(ctx, user, script)
+	if err != nil {
+		return nil, err
+	}
+	accessMap := a.RoleToAccess(roles)
+	access := &CheckAccess{
+		Roles:     roles,
+		AccessMap: accessMap,
+	}
+	if err := access.Check(ctx, res, act); err != nil {
+		return nil, err
+	}
+	return access, nil
+}
+
+func (a *accessSvc) GetRole(ctx context.Context, user *model.AuthInfo,
+	script *script_entity.Script) ([]script_entity.AccessRole, error) {
 	var (
 		roles = make([]script_entity.AccessRole, 0)
 		err   error
@@ -335,15 +355,7 @@ func (a *accessSvc) Check(ctx context.Context, res, act string) (*CheckAccess, e
 			return nil, err
 		}
 	}
-	accessMap := a.RoleToAccess(roles)
-	access := &CheckAccess{
-		Roles:     roles,
-		AccessMap: accessMap,
-	}
-	if err := access.Check(ctx, res, act); err != nil {
-		return nil, err
-	}
-	return access, nil
+	return roles, nil
 }
 
 func (a *accessSvc) CheckHandler(res, act string, opts ...CheckOption) gin.HandlerFunc {

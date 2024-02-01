@@ -564,10 +564,31 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 	if err != nil {
 		return nil, err
 	}
-	return &api.InfoResponse{
+	resp := &api.InfoResponse{
 		Script:  script,
 		Content: m.Content,
-	}, nil
+	}
+	user := auth_svc.Auth().Get(ctx)
+	if user != nil {
+		roles, err := Access().GetRole(ctx, user, m)
+		if err != nil {
+			return nil, err
+		}
+		if len(roles) > 0 {
+			maxRole := roles[0]
+			for _, role := range roles {
+				if role.Compare(maxRole) > 0 {
+					maxRole = role
+				}
+			}
+			resp.Role = maxRole
+		} else {
+			resp.Role = script_entity.AccessRoleGuest
+		}
+	} else {
+		resp.Role = script_entity.AccessRoleGuest
+	}
+	return resp, nil
 }
 
 // Code 获取脚本代码

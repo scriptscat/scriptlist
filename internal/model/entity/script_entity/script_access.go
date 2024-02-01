@@ -24,6 +24,20 @@ const (
 	AccessRoleOwner   AccessRole = "owner"
 )
 
+var AccessRoleMap = map[AccessRole]int{
+	AccessRoleGuest:   1,
+	AccessRoleManager: 2,
+	AccessRoleOwner:   3,
+}
+
+// Compare 比较权限优先级
+func (a AccessRole) Compare(b AccessRole) int {
+	if AccessRoleMap[a] > AccessRoleMap[b] {
+		return 1
+	}
+	return 0
+}
+
 type AccessInviteStatus int32
 
 const (

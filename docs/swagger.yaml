@@ -407,7 +407,7 @@ definitions:
         type: string
       public:
         $ref: '#/definitions/script_entity.Public'
-        description: 公开类型：1 公开 2 半公开
+        description: 公开类型：1 公开 2 半公开 3 私有
       type:
         $ref: '#/definitions/script_entity.Type'
         description: 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
@@ -533,6 +533,8 @@ definitions:
     properties:
       content:
         type: string
+      role:
+        $ref: '#/definitions/script_entity.AccessRole'
     type: object
   script.InviteCode:
     properties:
