@@ -683,13 +683,7 @@ func (s *scriptSvc) Watch(ctx context.Context, req *api.WatchRequest) (*api.Watc
 
 // GetSetting 获取脚本设置
 func (s *scriptSvc) GetSetting(ctx context.Context, req *api.GetSettingRequest) (*api.GetSettingResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckPermission(ctx); err != nil {
-		return nil, err
-	}
+	m := s.CtxScript(ctx)
 	resp := &api.GetSettingResponse{
 		SyncUrl:          m.SyncUrl,
 		ContentUrl:       m.ContentUrl,
@@ -705,16 +699,7 @@ func (s *scriptSvc) GetSetting(ctx context.Context, req *api.GetSettingRequest) 
 
 // UpdateSetting 更新脚本设置
 func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingRequest) (*api.UpdateSettingResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckPermission(ctx); err != nil {
-		return nil, err
-	}
-	if err := m.IsArchive(ctx); err != nil {
-		return nil, err
-	}
+	m := s.CtxScript(ctx)
 	m.SyncUrl = req.SyncUrl
 	m.ContentUrl = req.ContentUrl
 	m.SyncMode = req.SyncMode
@@ -730,7 +715,7 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 	if err := script_repo.Script().Update(ctx, m); err != nil {
 		return nil, err
 	}
-	err = s.SyncOnce(ctx, m, true)
+	err := s.SyncOnce(ctx, m, true)
 	if err == nil {
 		return &api.UpdateSettingResponse{
 			Sync: true,
