@@ -39,17 +39,18 @@ func (i *Issue) skipSelf() script_svc.CheckOption {
 
 func (i *Issue) Router(r *mux.Router) {
 	muxutils.BindTree(r, []*muxutils.RouterTree{{
-		Middleware: []gin.HandlerFunc{script_svc.Script().RequireScript()},
+		Middleware: []gin.HandlerFunc{auth_svc.Auth().RequireLogin(false), script_svc.Script().RequireScript()},
 		Handler: []interface{}{
 			// 无需登录
 			i.List,
 			muxutils.Use(issue_svc.Issue().RequireIssue()).Append(i.GetIssue),
-			// 需要登录
-			muxutils.Use(auth_svc.Auth().RequireLogin(true)).Append(i.CreateIssue),
+		}}, {
+		Middleware: []gin.HandlerFunc{auth_svc.Auth().RequireLogin(true), script_svc.Script().RequireScript()},
+		Handler: []interface{}{ // 需要登录
+			i.CreateIssue,
 			// 需要登录且issue存在
 			&muxutils.RouterTree{
 				Middleware: []gin.HandlerFunc{
-					auth_svc.Auth().RequireLogin(true),
 					issue_svc.Issue().RequireIssue(),
 				},
 				Handler: []interface{}{

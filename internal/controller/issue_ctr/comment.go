@@ -31,6 +31,7 @@ func NewComment() *Comment {
 func (c *Comment) Router(r *mux.Router) {
 	muxutils.BindTree(r, []*muxutils.RouterTree{{
 		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(false),
 			script_svc.Script().RequireScript(),
 			issue_svc.Issue().RequireIssue(),
 		},
