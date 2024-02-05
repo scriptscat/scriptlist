@@ -14,6 +14,7 @@ const (
 	IssueCreateTemplate
 	CommentCreateTemplate
 	ScriptScoreTemplate
+	AccessInviteTemplate
 )
 
 type Template struct {
@@ -47,6 +48,12 @@ var templateMap = map[TemplateID]map[sender.Type]Template{
 		sender.MailSender: {
 			Title:    template.ScriptScoreTitle,
 			Template: template.ScriptScoreTemplate,
+		},
+	},
+	AccessInviteTemplate: {
+		sender.MailSender: {
+			Title:    template.AccessInviteTitle,
+			Template: template.AccessInviteTemplate,
 		},
 	},
 }

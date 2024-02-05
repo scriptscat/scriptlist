@@ -7,10 +7,7 @@ import (
 
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/scriptscat/scriptlist/internal/model"
-	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
-	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 )
 
 type IssueLabel struct {
@@ -46,33 +43,13 @@ func (s *ScriptIssue) GetLabels() []string {
 }
 
 // CheckOperate 检查是否可以操作
-func (s *ScriptIssue) CheckOperate(ctx context.Context, script *script_entity.Script) error {
-	if err := script.CheckOperate(ctx); err != nil {
-		return err
-	}
+func (s *ScriptIssue) CheckOperate(ctx context.Context) error {
 	if s == nil {
-		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.IssueNotFound)
-	}
-	// 脚本id不相等
-	if s.ScriptID != script.ID {
 		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.IssueNotFound)
 	}
 	// 非激活状态
 	if s.Status != consts.ACTIVE && s.Status != consts.AUDIT {
 		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.IssueIsDelete)
-	}
-	return nil
-}
-
-// CheckPermission 检查是否有权限
-func (s *ScriptIssue) CheckPermission(ctx context.Context, script *script_entity.Script) error {
-	if err := s.CheckOperate(ctx, script); err != nil {
-		return err
-	}
-	uid := auth_svc.Auth().Get(ctx).UID
-	// 检查uid是否是反馈者或者脚本作者
-	if s.UserID != uid && script.UserID != uid && !auth_svc.Auth().Get(ctx).AdminLevel.IsAdmin(model.SuperModerator) {
-		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserNotPermission)
 	}
 	return nil
 }

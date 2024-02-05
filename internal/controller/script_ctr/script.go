@@ -15,6 +15,8 @@ import (
 	"github.com/codfrm/cago/pkg/limit"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
@@ -38,6 +40,97 @@ func NewScript() *Script {
 			300, 10, redis.Default(), "limit:create:script",
 		),
 	}
+}
+
+func (s *Script) Router(root *mux.Router, r *mux.Router) {
+	// 处理webhook
+	r.Any("/webhook/:uid", s.Webhook)
+	// 处理下载
+	root.GET("/scripts/code/:id/*name",
+		auth_svc.Auth().RequireLogin(false), script_svc.Script().RequireScript(),
+		s.Download(false))
+	root.GET("/scripts/pre/:id/*name",
+		auth_svc.Auth().RequireLogin(false), script_svc.Script().RequireScript(),
+		s.Download(true))
+	root.GET("/lib/:id/:version/*name",
+		auth_svc.Auth().RequireLogin(false),
+		script_svc.Script().RequireScript(), s.DownloadLib())
+	muxutils.BindTree(r, []*muxutils.RouterTree{
+		// 无需鉴权
+		{
+			Handler: []interface{}{
+				s.List,
+				s.LastScore,
+			},
+		},
+		// 需要半鉴权
+		{
+			Middleware: []gin.HandlerFunc{
+				auth_svc.Auth().RequireLogin(false),
+				script_svc.Script().RequireScript()},
+			Handler: []interface{}{
+				s.Info,
+				s.Code,
+				s.VersionList,
+				s.VersionCode,
+				s.State,
+			},
+		},
+		// 需要鉴权
+		{
+			Middleware: []gin.HandlerFunc{auth_svc.Auth().RequireLogin(true)},
+			Handler: []interface{}{
+				s.Create,
+				s.MigrateEs,
+				// 需要检查脚本状态
+				&muxutils.RouterTree{
+					Middleware: []gin.HandlerFunc{script_svc.Script().RequireScript()},
+					Handler: []interface{}{
+						s.Watch,
+						// 需要有权限的
+						&muxutils.RouterTree{
+							Middleware: []gin.HandlerFunc{
+								script_svc.Access().CheckHandler("script", "write"),
+								script_svc.Script().IsArchive(),
+							},
+							Handler: []interface{}{
+								s.UpdateCode,
+							},
+						},
+						&muxutils.RouterTree{
+							Middleware: []gin.HandlerFunc{
+								script_svc.Access().CheckHandler("script", "manage")},
+							Handler: []interface{}{
+								s.GetSetting,
+								// 归档了无法操作
+								&muxutils.RouterTree{
+									Middleware: []gin.HandlerFunc{script_svc.Script().IsArchive()},
+									Handler: []interface{}{
+										s.UpdateSetting,
+										s.UpdateSyncSetting,
+										s.UpdateLibInfo,
+										s.UpdateCodeSetting,
+										s.UpdateScriptPublic,
+										s.UpdateScriptUnwell,
+										s.UpdateScriptGray,
+										s.DeleteCode,
+									},
+								},
+							},
+						},
+						&muxutils.RouterTree{
+							Middleware: []gin.HandlerFunc{
+								script_svc.Access().CheckHandler("script", "delete")},
+							Handler: []interface{}{
+								s.Archive,
+								s.Delete,
+							},
+						},
+					},
+				},
+			},
+		},
+	})
 }
 
 // List 获取脚本列表
@@ -338,10 +431,6 @@ func (s *Script) Delete(ctx context.Context, req *api.DeleteRequest) (*api.Delet
 // UpdateCodeSetting 更新脚本设置
 func (s *Script) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error) {
 	return script_svc.Script().UpdateCodeSetting(ctx, req)
-}
-
-func (s *Script) Middleware() gin.HandlerFunc {
-	return script_svc.Script().Middleware()
 }
 
 // UpdateScriptPublic 更新脚本公开类型

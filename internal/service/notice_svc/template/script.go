@@ -14,3 +14,18 @@ type ScriptUpdate struct {
 	Name    string // 脚本名
 	Version string
 }
+
+const (
+	AccessInviteTitle    = `邀请您加入脚本:{{.Value.Name}}`
+	AccessInviteTemplate = `
+{{.Value.Username}}邀请您加入脚本:{{.Value.Name}}
+<hr/>
+<a href="{{.Config.Url}}/script/invite/?code={{.Value.Code}}">点击此链接加入</a>
+`
+)
+
+type AccessInvite struct {
+	Code     string
+	Name     string // 脚本名
+	Username string // 邀请人
+}

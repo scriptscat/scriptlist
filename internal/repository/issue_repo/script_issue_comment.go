@@ -9,6 +9,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
 )
 
+//go:generate mockgen -source=./script_issue_comment.go -destination=./mock/script_issue_comment.go
 type ScriptIssueCommentRepo interface {
 	Find(ctx context.Context, issueId int64, id int64) (*issue_entity.ScriptIssueComment, error)
 	FindPage(ctx context.Context, issueId int64, page httputils.PageRequest) ([]*issue_entity.ScriptIssueComment, int64, error)

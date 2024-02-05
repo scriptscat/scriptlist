@@ -9,6 +9,7 @@ const (
 	UserNotFollowSelf
 	UserExistFollow
 	UserEmailNotVerified
+	UserNotLogin
 )
 
 // script
@@ -57,4 +58,30 @@ const (
 	StatisticsInfoUninitialized
 	StatisticsWhitelistInvalid
 	StatisticsWhitelistNotFound
+)
+
+// access
+const (
+	AccessAlreadyExist = iota + 10500
+	AccessNotFound
+)
+
+// group
+const (
+	GroupNotFound = iota + 106000
+	GroupMemberNotFound
+	GroupMemberExist
+)
+
+// access invite
+const (
+	AccessInviteNotFound = iota + 107000
+	AccessInviteIsAudit
+	AccessInviteNotAudit
+	AccessInviteNotPending
+	AccessInviteExist
+	AccessInviteExpired
+	AccessInviteUsed
+	AccessInviteInvalid
+	AccessInviteUserError
 )

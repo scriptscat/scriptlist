@@ -14,6 +14,7 @@ var zhCN = map[int]string{
 	UserNotFollowSelf:    "不能关注自己",
 	UserExistFollow:      "已关注",
 	UserEmailNotVerified: "邮箱未验证",
+	UserNotLogin:         "用户未登录",
 
 	ScriptNameIsEmpty:               "脚本名不能为空",
 	ScriptDescIsEmpty:               "脚本描述不能为空",
@@ -50,4 +51,21 @@ var zhCN = map[int]string{
 	StatisticsInfoUninitialized: "统计信息未初始化",
 	StatisticsWhitelistInvalid:  "统计白名单无效,不支持顶级域名: %s",
 	StatisticsWhitelistNotFound: "不在白名单内",
+
+	AccessAlreadyExist: "权限已存在",
+	AccessNotFound:     "权限不存在",
+
+	GroupNotFound:       "群组不存在",
+	GroupMemberNotFound: "群组成员不存在",
+	GroupMemberExist:    "群组成员已存在",
+
+	AccessInviteNotFound:   "邀请不存在",
+	AccessInviteIsAudit:    "邀请已审核",
+	AccessInviteNotAudit:   "邀请未审核",
+	AccessInviteNotPending: "邀请不是待审核状态",
+	AccessInviteExist:      "邀请已存在",
+	AccessInviteExpired:    "邀请已过期",
+	AccessInviteUsed:       "邀请已使用",
+	AccessInviteInvalid:    "邀请无效",
+	AccessInviteUserError:  "邀请用户错误",
 }

@@ -84,9 +84,9 @@ type CreateRequest struct {
 	Description string                      `form:"description" binding:"max=10240" label:"库的描述"`
 	Definition  string                      `form:"definition" binding:"max=10240" label:"库的定义文件"`
 	Version     string                      `form:"version" binding:"max=32" label:"库的版本"`
-	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"` // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
-	Public      script_entity.Public        `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
-	Unwell      script_entity.UnwellContent `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"` // 不适内容: 1 不适 2 适用
+	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
+	Public      script_entity.Public        `form:"public" binding:"required,oneof=1 2 3" label:"公开类型"` // 公开类型：1 公开 2 半公开 3 私有
+	Unwell      script_entity.UnwellContent `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`   // 不适内容: 1 不适 2 适用
 	Changelog   string                      `form:"changelog" binding:"max=102400" label:"更新日志"`
 }
 
@@ -152,7 +152,8 @@ type InfoRequest struct {
 
 type InfoResponse struct {
 	*Script `json:",inline"`
-	Content string `json:"content"`
+	Content string                   `json:"content"`
+	Role    script_entity.AccessRole `json:"role"`
 }
 
 // CodeRequest 获取脚本代码信息
@@ -253,6 +254,7 @@ type UpdateLibInfoResponse struct {
 // UpdateSyncSettingRequest 更新同步配置
 type UpdateSyncSettingRequest struct {
 	mux.Meta      `path:"/scripts/:id/sync" method:"PUT"`
+	ID            int64                  `uri:"id" binding:"required"`
 	SyncUrl       string                 `json:"sync_url" binding:"omitempty,url,max=1024" label:"代码同步url"`
 	ContentUrl    string                 `json:"content_url" binding:"omitempty,url,max=1024" label:"详细描述同步url"`
 	DefinitionUrl string                 `json:"definition_url" binding:"omitempty,url,max=1024" label:"定义文件同步url"`
@@ -299,7 +301,7 @@ type UpdateCodeSettingResponse struct {
 type UpdateScriptPublicRequest struct {
 	mux.Meta `path:"/scripts/:id/public" method:"PUT"`
 	ID       int64                `uri:"id" binding:"required"`
-	Public   script_entity.Public `json:"public" binding:"required,oneof=1 2" label:"公开类型"`
+	Public   script_entity.Public `json:"public" binding:"required,oneof=1 2 3" label:"公开类型"`
 }
 
 type UpdateScriptPublicResponse struct {

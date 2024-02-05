@@ -106,3 +106,13 @@ type UpdateConfigRequest struct {
 
 type UpdateConfigResponse struct {
 }
+
+// SearchRequest 搜索用户
+type SearchRequest struct {
+	mux.Meta `path:"/users/search" method:"GET"`
+	Query    string `form:"query" binding:"required" label:"关键词"`
+}
+
+type SearchResponse struct {
+	Users []*InfoResponse `json:"users"`
+}

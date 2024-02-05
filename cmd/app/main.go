@@ -4,16 +4,15 @@ import (
 	"context"
 	"log"
 
-	"github.com/codfrm/cago/pkg/component"
-
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"
-	"github.com/codfrm/cago/database/clickhouse"
 	"github.com/codfrm/cago/database/db"
+	_ "github.com/codfrm/cago/database/db/clickhouse"
 	"github.com/codfrm/cago/database/elasticsearch"
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/broker"
+	"github.com/codfrm/cago/pkg/component"
 	"github.com/codfrm/cago/server/cron"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
@@ -46,6 +45,10 @@ func main() {
 
 	script_repo.RegisterScriptDateStatistics(script_repo.NewScriptDateStatistics())
 	script_repo.RegisterScriptStatistics(script_repo.NewScriptStatistics())
+	script_repo.RegisterScriptAccess(script_repo.NewScriptAccess())
+	script_repo.RegisterScriptGroup(script_repo.NewScriptGroup())
+	script_repo.RegisterScriptGroupMember(script_repo.NewScriptGroupMember())
+	script_repo.RegisterScriptInvite(script_repo.NewScriptInvite())
 	//注册评分
 	script_repo.RegisterScriptScore(script_repo.NewScriptScore())
 
@@ -66,10 +69,9 @@ func main() {
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).
-		Registry(cago.FuncComponent(db.Database)).
-		Registry(cago.FuncComponent(clickhouse.Clickhouse)).
+		Registry(db.Database()).
 		Registry(cago.FuncComponent(redis.Redis)).
-		Registry(cago.FuncComponent(cache.Cache)).
+		Registry(cache.Cache()).
 		Registry(cago.FuncComponent(elasticsearch.Elasticsearch)).
 		Registry(cago.FuncComponent(broker.Broker)).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {

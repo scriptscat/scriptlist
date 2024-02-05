@@ -4,6 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
+
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/limit"
 	"github.com/gin-gonic/gin"
@@ -24,6 +28,31 @@ func NewComment() *Comment {
 	}
 }
 
+func (c *Comment) Router(r *mux.Router) {
+	muxutils.BindTree(r, []*muxutils.RouterTree{{
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(false),
+			script_svc.Script().RequireScript(),
+			issue_svc.Issue().RequireIssue(),
+		},
+		Handler: []interface{}{
+			c.ListComment,
+		},
+	}, {
+		Middleware: []gin.HandlerFunc{
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
+			issue_svc.Issue().RequireIssue(),
+		},
+		Handler: []interface{}{
+			c.CreateComment,
+			muxutils.Use(script_svc.Access().CheckHandler("issue", "delete")).Append(
+				c.DeleteComment,
+			),
+		},
+	}})
+}
+
 // ListComment 获取反馈评论列表
 func (c *Comment) ListComment(ctx context.Context, req *api.ListCommentRequest) (*api.ListCommentResponse, error) {
 	return issue_svc.Comment().ListComment(ctx, req)
@@ -38,10 +67,6 @@ func (c *Comment) CreateComment(ctx context.Context, req *api.CreateCommentReque
 		return nil, err
 	}
 	return resp.(*api.CreateCommentResponse), nil
-}
-
-func (c *Comment) Middleware() gin.HandlerFunc {
-	return issue_svc.Comment().Middleware()
 }
 
 // DeleteComment 删除反馈评论
