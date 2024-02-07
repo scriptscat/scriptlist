@@ -4,23 +4,25 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	redis2 "github.com/redis/go-redis/v9"
-	"github.com/scriptscat/scriptlist/internal/model/entity"
 )
 
+//go:generate mockgen -source script_score.go -destination mock/script_score.go
 type ScriptScoreRepo interface {
-	Find(ctx context.Context, id int64) (*entity.ScriptScore, error)
-	Create(ctx context.Context, scriptScore *entity.ScriptScore) error
-	Update(ctx context.Context, scriptScore *entity.ScriptScore) error
+	Find(ctx context.Context, id int64) (*script_entity.ScriptScore, error)
+	Create(ctx context.Context, scriptScore *script_entity.ScriptScore) error
+	Update(ctx context.Context, scriptScore *script_entity.ScriptScore) error
 	Delete(ctx context.Context, id int64) error
 	// ScoreList 获取评分列表
-	ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*entity.ScriptScore, int64, error)
+	ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptScore, int64, error)
 	// FindByUser 查询该用户在该脚本下是否有过评分
-	FindByUser(ctx context.Context, uid, scriptId int64) (*entity.ScriptScore, error)
+	FindByUser(ctx context.Context, uid, scriptId int64) (*script_entity.ScriptScore, error)
 	// LastScore 最新的评分
 	LastScore(ctx context.Context, page httputils.PageRequest) ([]int64, error)
 }
@@ -42,9 +44,9 @@ func NewScriptScore() ScriptScoreRepo {
 type scriptScoreRepo struct {
 }
 
-func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*entity.ScriptScore, int64, error) {
-	list := make([]*entity.ScriptScore, 0)
-	find := db.Ctx(ctx).Model(&entity.ScriptScore{}).Where("script_id=? and state=?", scriptId, consts.ACTIVE).Order("createtime desc")
+func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptScore, int64, error) {
+	list := make([]*script_entity.ScriptScore, 0)
+	find := db.Ctx(ctx).Model(&script_entity.ScriptScore{}).Where("script_id=? and state=?", scriptId, consts.ACTIVE).Order("createtime desc")
 	var num int64
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
@@ -55,8 +57,8 @@ func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page ht
 	return list, num, nil
 }
 
-func (u *scriptScoreRepo) FindByUser(ctx context.Context, uid, scriptId int64) (*entity.ScriptScore, error) {
-	ret := &entity.ScriptScore{}
+func (u *scriptScoreRepo) FindByUser(ctx context.Context, uid, scriptId int64) (*script_entity.ScriptScore, error) {
+	ret := &script_entity.ScriptScore{}
 	if err := db.Ctx(ctx).Where("user_id=? and script_id=?", uid, scriptId).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
@@ -66,8 +68,8 @@ func (u *scriptScoreRepo) FindByUser(ctx context.Context, uid, scriptId int64) (
 	return ret, nil
 }
 
-func (u *scriptScoreRepo) Find(ctx context.Context, id int64) (*entity.ScriptScore, error) {
-	ret := &entity.ScriptScore{ID: id}
+func (u *scriptScoreRepo) Find(ctx context.Context, id int64) (*script_entity.ScriptScore, error) {
+	ret := &script_entity.ScriptScore{ID: id}
 	if err := db.Ctx(ctx).Where("state=?", consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
@@ -77,7 +79,7 @@ func (u *scriptScoreRepo) Find(ctx context.Context, id int64) (*entity.ScriptSco
 	return ret, nil
 }
 
-func (u *scriptScoreRepo) Create(ctx context.Context, scriptScore *entity.ScriptScore) error {
+func (u *scriptScoreRepo) Create(ctx context.Context, scriptScore *script_entity.ScriptScore) error {
 	if err := redis.Ctx(ctx).ZAdd("script:score:last", redis2.Z{
 		Score:  float64(scriptScore.Createtime),
 		Member: scriptScore.ScriptID,
@@ -87,18 +89,18 @@ func (u *scriptScoreRepo) Create(ctx context.Context, scriptScore *entity.Script
 	return db.Ctx(ctx).Create(scriptScore).Error
 }
 
-func (u *scriptScoreRepo) Update(ctx context.Context, scriptScore *entity.ScriptScore) error {
+func (u *scriptScoreRepo) Update(ctx context.Context, scriptScore *script_entity.ScriptScore) error {
 	return db.Ctx(ctx).Updates(scriptScore).Error
 }
 
 func (u *scriptScoreRepo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Model(&entity.ScriptScore{ID: id}).Update("state", consts.DELETE).Error
+	return db.Ctx(ctx).Model(&script_entity.ScriptScore{ID: id}).Update("state", consts.DELETE).Error
 }
 
-func (u *scriptScoreRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.ScriptScore, int64, error) {
-	var list []*entity.ScriptScore
+func (u *scriptScoreRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*script_entity.ScriptScore, int64, error) {
+	var list []*script_entity.ScriptScore
 	var count int64
-	find := db.Ctx(ctx).Model(&entity.ScriptScore{}).Where("state=?", consts.ACTIVE)
+	find := db.Ctx(ctx).Model(&script_entity.ScriptScore{}).Where("state=?", consts.ACTIVE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

@@ -2,6 +2,7 @@ package auth_svc
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -28,11 +29,12 @@ const (
 	TokenAutoRegen  = 86400 * 3
 )
 
+//go:generate mockgen -source auth.go -destination mock/auth.go
 type AuthSvc interface {
 	// OAuthCallback 第三方登录
 	OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest) (*api.OAuthCallbackResponse, error)
-	// Middleware 处理鉴权中间件
-	Middleware(force bool) gin.HandlerFunc
+	// RequireLogin 处理鉴权中间件
+	RequireLogin(force bool) gin.HandlerFunc
 	// Get 获取用户鉴权信息
 	Get(ctx context.Context) *model.AuthInfo
 	// Login 登录获取token
@@ -48,7 +50,11 @@ type AuthSvc interface {
 type authSvc struct {
 }
 
-var defaultAuth = &authSvc{}
+var defaultAuth AuthSvc = &authSvc{}
+
+func RegisterAuth(svc AuthSvc) {
+	defaultAuth = svc
+}
 
 func Auth() AuthSvc {
 	return defaultAuth
@@ -77,8 +83,8 @@ func (a *authSvc) OAuthCallback(ctx context.Context, req *api.OAuthCallbackReque
 	}, nil
 }
 
-// Middleware 鉴权中间件
-func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
+// RequireLogin 鉴权中间件
+func (a *authSvc) RequireLogin(force bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		loginId, _ := ctx.Cookie("login_id")
 		token, _ := ctx.Cookie("token")
@@ -91,7 +97,7 @@ func (a *authSvc) Middleware(force bool) gin.HandlerFunc {
 		}
 		m := &model.LoginToken{}
 		if err := cache.Ctx(ctx).Get("user:auth:login:" + loginId).Scan(m); err != nil {
-			if err == cache2.ErrNil {
+			if errors.Is(err, cache2.ErrNil) {
 				// 删除cookie
 				ctx.SetCookie("login_id", "", -1, "/", "", false, true)
 				ctx.SetCookie("token", "", -1, "/", "", false, true)
@@ -144,7 +150,7 @@ func (a *authSvc) SetCtx(ctx context.Context, uid int64) (context.Context, error
 func (a *authSvc) SetCtxUser(ctx context.Context, user *user_entity.User) context.Context {
 	// 设置用户信息,链路追踪和日志也添加上用户信息
 	authInfo := &model.AuthInfo{
-		UID:           user.UID,
+		UID:           user.ID,
 		Username:      user.Username,
 		Email:         user.Email,
 		EmailVerified: !(user.Emailstatus == 0),
@@ -152,12 +158,12 @@ func (a *authSvc) SetCtxUser(ctx context.Context, user *user_entity.User) contex
 	}
 
 	trace.SpanFromContext(ctx).SetAttributes(
-		attribute.Int64("user_id", user.UID),
+		attribute.Int64("user_id", user.ID),
 	)
 
 	return context.WithValue(
 		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
-			With(zap.Int64("user_id", user.UID))),
+			With(zap.Int64("user_id", user.ID))),
 		model.AuthInfo{}, authInfo)
 }
 

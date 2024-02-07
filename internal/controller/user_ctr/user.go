@@ -126,3 +126,8 @@ func (u *User) GetConfig(ctx context.Context, req *api.GetConfigRequest) (*api.G
 func (u *User) UpdateConfig(ctx context.Context, req *api.UpdateConfigRequest) (*api.UpdateConfigResponse, error) {
 	return user_svc.User().UpdateConfig(ctx, req)
 }
+
+// Search 搜索用户
+func (u *User) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
+	return user_svc.User().Search(ctx, req)
+}

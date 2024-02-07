@@ -50,13 +50,13 @@ func (m *mail) Send(ctx context.Context, user *user_entity.User, content string,
 	err := d.DialAndSend(msg)
 	if err != nil {
 		logger.Ctx(ctx).Error("send email failed",
-			zap.Int64("to", user.UID), zap.String("toAddress", user.Email),
+			zap.Int64("to", user.ID), zap.String("toAddress", user.Email),
 			zap.String("from", from),
 			zap.Error(err))
 		return err
 	}
 	logger.Ctx(ctx).Info("send email success",
-		zap.Int64("to", user.UID), zap.String("toAddress", user.Email),
+		zap.Int64("to", user.ID), zap.String("toAddress", user.Email),
 		zap.String("from", from), zap.String("title", options.Title),
 	)
 	return nil

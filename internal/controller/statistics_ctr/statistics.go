@@ -4,8 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 )
 
@@ -14,6 +19,30 @@ type Statistics struct {
 
 func NewStatistics() *Statistics {
 	return &Statistics{}
+}
+
+func (s *Statistics) Router(r *mux.Router) {
+	rg := r.Group("/", cors.Default())
+	rg.OPTIONS("/statistics/collect")
+	rg.OPTIONS("/statistics/collect/whitelist")
+	rg.Bind(
+		s.Collect,
+		s.CollectWhitelist,
+	)
+	muxutils.BindTree(r, []*muxutils.RouterTree{muxutils.
+		Use(
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(script_svc.WithRequireScriptAccess("statistics", "manage")),
+		).Append(
+		s.Script,
+		s.ScriptRealtime,
+		s.AdvancedInfo,
+		s.UserOrigin,
+		s.RealtimeChart,
+		s.VisitList,
+		s.VisitDomain,
+		s.UpdateWhitelist,
+	)})
 }
 
 // Script 脚本统计数据
@@ -42,7 +71,7 @@ func (s *Statistics) RealtimeChart(ctx context.Context, req *api.RealtimeChartRe
 }
 
 // VisitList 访问列表
-func (s *Statistics) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error) {
+func (s *Statistics) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitListResponse, error) {
 	req.PageRequest.Size = 10
 	return statistics_svc.Statistics().VisitList(ctx, req)
 }

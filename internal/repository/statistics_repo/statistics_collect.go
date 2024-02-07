@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/codfrm/cago/database/clickhouse"
+	"github.com/codfrm/cago/database/db"
+
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
@@ -44,7 +45,7 @@ func NewStatisticsCollect() StatisticsCollectRepo {
 }
 
 func (u *statisticsCollectRepo) Create(ctx context.Context, statistic []*statistics_entity.StatisticsCollect) error {
-	return clickhouse.Ctx(ctx).CreateInBatches(statistic, len(statistic)+1).Error
+	return db.CtxWith(ctx, "clickhouse").CreateInBatches(statistic, len(statistic)+1).Error
 }
 
 func (u *statisticsCollectRepo) CheckLimit(ctx context.Context, scriptId int64) (bool, error) {
@@ -75,7 +76,7 @@ type Realtime struct {
 
 func (u *statisticsCollectRepo) RealtimeChart(ctx context.Context, scriptId int64, now time.Time) ([]*Realtime, error) {
 	result := make([]*Realtime, 0)
-	if err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).Select(
+	if err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsCollect{}).Select(
 		"FROM_UNIXTIME(visit_time, '%M') as time, count(*) as num",
 	).Group("FROM_UNIXTIME(visit_time, '%M')").
 		Where("script_id=? and visit_time >= ?", scriptId, now.Add(-time.Minute*15).Unix()).
@@ -88,7 +89,7 @@ func (u *statisticsCollectRepo) RealtimeChart(ctx context.Context, scriptId int6
 
 func (u *statisticsCollectRepo) Pv(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (int64, error) {
 	var num int64
-	err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).
+	err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsCollect{}).
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix()).
 		Count(&num).Error
 	if err != nil {
@@ -99,7 +100,7 @@ func (u *statisticsCollectRepo) Pv(ctx context.Context, scriptId int64, startTim
 
 func (u *statisticsCollectRepo) Uv(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (int64, error) {
 	var num int64
-	err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).
+	err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsCollect{}).
 		Select("count(distinct visitor_id) as num").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix()).
 		Scan(&num).Error
@@ -111,7 +112,7 @@ func (u *statisticsCollectRepo) Uv(ctx context.Context, scriptId int64, startTim
 
 func (u *statisticsCollectRepo) UseTimeAvg(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) (float64, error) {
 	var t float64
-	err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).
+	err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsCollect{}).
 		Select("avg(duration) as t").
 		Where("script_id=? and visit_time >= ? and visit_time <= ? and duration!=0", scriptId, startTime.Unix(), endTime.Unix()).
 		Scan(&t).Error
@@ -124,7 +125,7 @@ func (u *statisticsCollectRepo) UseTimeAvg(ctx context.Context, scriptId int64, 
 func (u *statisticsCollectRepo) OperationHostList(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time, page httputils.PageRequest) ([]*api.PieChart, int64, error) {
 	var total int64
 	result := make([]*api.PieChart, 0)
-	query := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).Select(
+	query := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsCollect{}).Select(
 		"operation_host as key, count(distinct visitor_id) as value",
 	).Group("operation_host").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix())
@@ -141,7 +142,7 @@ func (u *statisticsCollectRepo) OperationHostList(ctx context.Context, scriptId 
 func (u *statisticsCollectRepo) FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*statistics_entity.StatisticsCollect, int64, error) {
 	var list []*statistics_entity.StatisticsCollect
 	var count int64
-	query := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsCollect{}).
+	query := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsCollect{}).
 		Where("script_id=?", scriptId)
 	if err := query.Count(&count).Error; err != nil {
 		return nil, 0, err

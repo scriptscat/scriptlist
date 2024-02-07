@@ -39,7 +39,7 @@ type StatisticsSvc interface {
 	// RealtimeChart 实时统计数据图表
 	RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error)
 	// VisitList 访问列表
-	VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error)
+	VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitListResponse, error)
 	// AdvancedInfo 高级统计信息
 	AdvancedInfo(ctx context.Context, req *api.AdvancedInfoRequest) (*api.AdvancedInfoResponse, error)
 	// UserOrigin 用户来源统计
@@ -298,7 +298,7 @@ func (s *statisticsSvc) RealtimeChart(ctx context.Context, req *api.RealtimeChar
 }
 
 // VisitList 实时统计数据
-func (s *statisticsSvc) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitResponse, error) {
+func (s *statisticsSvc) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitListResponse, error) {
 	list, total, err := statistics_repo.StatisticsCollect().FindPage(ctx, req.ID, req.PageRequest)
 	if err != nil {
 		return nil, err
@@ -313,7 +313,7 @@ func (s *statisticsSvc) VisitList(ctx context.Context, req *api.VisitListRequest
 			ExitTime:      v.ExitTime,
 		}
 	}
-	return &api.VisitResponse{
+	return &api.VisitListResponse{
 		PageResponse: httputils.PageResponse[*api.VisitItem]{
 			List:  result,
 			Total: total,

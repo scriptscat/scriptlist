@@ -3,9 +3,10 @@ package api
 import (
 	"context"
 
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/mux"
-	"github.com/gin-contrib/cors"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
@@ -34,141 +35,53 @@ func Router(ctx context.Context, root *mux.Router) error {
 	// 用户
 	{
 		controller := user_ctr.NewUser()
-		r.Group("/", auth.Middleware(true)).Bind(
+		r.Group("/", auth_svc.Auth().RequireLogin(true)).Bind(
 			controller.CurrentUser, // 获取当前用户信息
 			controller.Follow,
 			controller.GetWebhook,
 			controller.RefreshWebhook,
 			controller.GetConfig,
 			controller.UpdateConfig,
+			controller.Search,
 		)
 		r.GET("/users/:uid/avatar", controller.Avatar())
 		r.Group("/").Bind(
 			controller.Info, // 获取用户信息
 		)
-		r.Group("/", auth.Middleware(false)).Bind(
+		r.Group("/", auth_svc.Auth().RequireLogin(false)).Bind(
 			controller.Script,
 			controller.GetFollow,
 		)
 	}
 	// 脚本
 	scriptCtr := script_ctr.NewScript()
-	{
-		// 需要用户登录的路由组
-		r.Group("/", auth.Middleware(true)).Bind(
-			scriptCtr.Create,
-			scriptCtr.UpdateCode,
-			scriptCtr.MigrateEs,
-			scriptCtr.Watch,
-			scriptCtr.GetSetting,
-			scriptCtr.UpdateSetting,
-		)
-		// 慢慢迁移至中间件处理
-		r.Group("/", auth.Middleware(true), scriptCtr.Middleware()).Bind(
-			scriptCtr.Delete,
-			scriptCtr.UpdateCodeSetting,
-			scriptCtr.UpdateScriptPublic,
-			scriptCtr.UpdateScriptUnwell,
-			scriptCtr.UpdateScriptGray,
-			scriptCtr.Archive,
-			scriptCtr.DeleteCode,
-			scriptCtr.UpdateSyncSetting,
-			scriptCtr.UpdateLibInfo,
-		)
-		// 处理下载
-		root.GET("/scripts/code/:id/*name", auth.Middleware(false), scriptCtr.Download(false))
-		root.GET("/scripts/pre/:id/*name", auth.Middleware(false), scriptCtr.Download(true))
-		root.GET("/lib/:id/:version/*name", auth.Middleware(false), scriptCtr.DownloadLib())
-		// 无需用户登录的路由组
-		r.Group("/").Bind(
-			scriptCtr.List,
-			scriptCtr.LastScore,
-			scriptCtr.Info,
-			scriptCtr.Code,
-			scriptCtr.VersionList,
-			scriptCtr.VersionCode,
-		)
-		r.Any("/webhook/:uid", scriptCtr.Webhook)
-		// 半登录
-		r.Group("/", auth.Middleware(false)).Bind(
-			scriptCtr.State,
-		)
-	}
-	{
-		issueComment := issue_ctr.NewComment()
-		// 脚本反馈
-		{
-			controller := issue_ctr.NewIssue()
-			// 需要登录的路由组
-			r.Group("/", auth.Middleware(true), issueComment.Middleware()).Bind(
-				controller.CreateIssue,
-				controller.Open,
-				controller.Close,
-				controller.Watch,
-				controller.GetWatch,
-				controller.Delete,
-				controller.UpdateLabels,
-			)
-			// 不需要登录
-			r.Group("/", issueComment.Middleware()).Bind(
-				controller.List,
-				controller.GetIssue,
-			)
-		}
-		// 脚本反馈评论
-		{
-			// 需要登录的路由组
-			r.Group("/", auth.Middleware(true), issueComment.Middleware()).Bind(
-				issueComment.CreateComment,
-				issueComment.DeleteComment,
-			)
-			// 不需要登录
-			r.Group("/", issueComment.Middleware()).Bind(
-				issueComment.ListComment,
-			)
-		}
-	}
-	//脚本评分
-	{
-		controller := script_ctr.NewScore()
-		//需要用户登录才能评分的路由组
-		r.Group("/", auth.Middleware(true)).Bind(
-			controller.PutScore,
-			controller.SelfScore,
-			controller.DelScore,
-		)
-		//无需用户登录的路由组
-		r.Group("/").Bind(
-			controller.ScoreList,
-		)
-	}
-	// 统计
-	{
-		controller := statistics_ctr.NewStatistics()
-		r.Group("/", auth.Middleware(true), controller.Middleware()).Bind(
-			controller.Script,
-			controller.ScriptRealtime,
-
-			controller.AdvancedInfo,
-			controller.UserOrigin,
-			controller.RealtimeChart,
-			controller.VisitList,
-			controller.VisitDomain,
-			controller.UpdateWhitelist,
-		)
-		rg := r.Group("/", cors.Default())
-		rg.OPTIONS("/statistics/collect")
-		rg.OPTIONS("/statistics/collect/whitelist")
-		rg.Bind(
-			controller.Collect,
-			controller.CollectWhitelist,
-		)
-	}
+	scriptCtr.Router(root, r)
+	// 脚本评分
+	scoreCtr := script_ctr.NewScore()
+	scoreCtr.Router(r)
+	// 群组管理
+	scriptGroupCtr := script_ctr.NewGroup()
+	scriptGroupCtr.Router(r)
+	// 邀请码
+	scriptInvCtr := script_ctr.NewAccessInvite()
+	scriptInvCtr.Router(r)
+	// 脚本权限
+	scriptAccessCtr := script_ctr.NewAccess()
+	scriptAccessCtr.Router(r)
+	// 脚本反馈
+	issueCtr := issue_ctr.NewIssue()
+	issueCtr.Router(r)
+	// 脚本反馈评论
+	issueCommentCtr := issue_ctr.NewComment()
+	issueCommentCtr.Router(r)
+	// 脚本统计
+	statisticsCtr := statistics_ctr.NewStatistics()
+	statisticsCtr.Router(r)
 	// 资源
 	{
 		controller := resource_ctr.NewResource()
 		// 需要登录的路由组
-		r.Group("/", auth.Middleware(true)).Bind(
+		r.Group("/", auth_svc.Auth().RequireLogin(true)).Bind(
 			controller.UploadImage,
 		)
 		// 不需要登录

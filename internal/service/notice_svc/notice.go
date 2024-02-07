@@ -152,6 +152,7 @@ func (n *noticeSvc) IsNotify(ctx context.Context, userConfig *user_entity.UserCo
 		return *userConfig.Notify.ScriptIssueComment, nil
 	case IssueCreateTemplate:
 		return *userConfig.Notify.ScriptIssue, nil
+	default:
+		return true, nil
 	}
-	return true, nil
 }

@@ -2,40 +2,25 @@ package issue_svc
 
 import (
 	"context"
-	"net/http"
-	"strconv"
 	"time"
 
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
+
 	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
-	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/issue"
 	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
-	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
-	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 )
-
-type ctxScript string
 
 type CommentSvc interface {
 	// ListComment 获取反馈评论列表
 	ListComment(ctx context.Context, req *api.ListCommentRequest) (*api.ListCommentResponse, error)
 	// CreateComment 创建反馈评论
 	CreateComment(ctx context.Context, req *api.CreateCommentRequest) (*api.CreateCommentResponse, error)
-	// Middleware 中间件
-	Middleware() gin.HandlerFunc
-	// CheckOperate 检查脚本和issue状态是否正确
-	CheckOperate(ctx context.Context, scriptId, issueId int64) (*script_entity.Script, *issue_entity.ScriptIssue, error)
-	// CtxScript 获取脚本
-	CtxScript(ctx context.Context) *script_entity.Script
-	// CtxIssue 获取issue
-	CtxIssue(ctx context.Context) *issue_entity.ScriptIssue
 	// ToComment 转换为api.Comment
 	ToComment(ctx context.Context, comment *issue_entity.ScriptIssueComment) (*api.Comment, error)
 	// DeleteComment 删除反馈评论
@@ -87,18 +72,6 @@ func (c *commentSvc) ToComment(ctx context.Context, comment *issue_entity.Script
 	return ret, nil
 }
 
-func (c *commentSvc) CheckOperate(ctx context.Context, scriptId, issueId int64) (*script_entity.Script, *issue_entity.ScriptIssue, error) {
-	script, err := script_repo.Script().Find(ctx, scriptId)
-	if err != nil {
-		return nil, nil, err
-	}
-	issue, err := issue_repo.Issue().Find(ctx, scriptId, issueId)
-	if err != nil {
-		return nil, nil, err
-	}
-	return script, issue, issue.CheckOperate(ctx, script)
-}
-
 // CreateComment 创建反馈评论
 func (c *commentSvc) CreateComment(ctx context.Context, req *api.CreateCommentRequest) (*api.CreateCommentResponse, error) {
 	comment := &issue_entity.ScriptIssueComment{
@@ -114,57 +87,7 @@ func (c *commentSvc) CreateComment(ctx context.Context, req *api.CreateCommentRe
 	}
 	resp := &api.CreateCommentResponse{}
 	resp.Comment, _ = c.ToComment(ctx, comment)
-	return resp, producer.PublishCommentCreate(ctx, c.CtxScript(ctx), c.CtxIssue(ctx), comment)
-}
-
-// Middleware 中间件,检查是否可以访问
-func (c *commentSvc) Middleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var script *script_entity.Script
-		var issue *issue_entity.ScriptIssue
-		var err error
-		id, _ := strconv.ParseInt(ctx.Param("id"), 10, 64)
-		// 非GET请求,需要验证邮箱,判断是否归档
-		if ctx.Request.Method != http.MethodGet {
-			if !auth_svc.Auth().Get(ctx).EmailVerified {
-				httputils.HandleResp(ctx, i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserEmailNotVerified))
-				return
-			}
-			script, err = script_repo.Script().Find(ctx, id)
-			if err != nil {
-				httputils.HandleResp(ctx, err)
-				return
-			}
-			err = script.IsArchive(ctx)
-			if err != nil {
-				httputils.HandleResp(ctx, err)
-				return
-			}
-		}
-		issueId, _ := strconv.ParseInt(ctx.Param("issueId"), 10, 64)
-		if issueId != 0 {
-			script, issue, err = c.CheckOperate(ctx, id, issueId)
-			if err != nil {
-				httputils.HandleResp(ctx, err)
-				return
-			}
-		}
-		ctx.Request = ctx.Request.WithContext(context.WithValue(context.WithValue(
-			ctx.Request.Context(),
-			issue_entity.ScriptIssue{}, issue),
-			ctxScript("ctxScript"), script))
-		ctx.Next()
-	}
-}
-
-// CtxScript 获取脚本
-func (c *commentSvc) CtxScript(ctx context.Context) *script_entity.Script {
-	return ctx.Value(ctxScript("ctxScript")).(*script_entity.Script)
-}
-
-// CtxIssue 获取issue
-func (c *commentSvc) CtxIssue(ctx context.Context) *issue_entity.ScriptIssue {
-	return ctx.Value(issue_entity.ScriptIssue{}).(*issue_entity.ScriptIssue)
+	return resp, producer.PublishCommentCreate(ctx, script_svc.Script().CtxScript(ctx), Issue().CtxIssue(ctx), comment)
 }
 
 // DeleteComment 删除反馈评论
@@ -173,7 +96,7 @@ func (c *commentSvc) DeleteComment(ctx context.Context, req *api.DeleteCommentRe
 	if err != nil {
 		return nil, err
 	}
-	if err := comment.CheckPermission(ctx, c.CtxScript(ctx), c.CtxIssue(ctx)); err != nil {
+	if err := comment.CheckOperate(ctx); err != nil {
 		return nil, err
 	}
 	return &api.DeleteCommentResponse{}, issue_repo.Comment().Delete(ctx, req.CommentID)

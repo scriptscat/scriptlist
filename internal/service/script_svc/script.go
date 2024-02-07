@@ -34,7 +34,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type ctxScript string
+type contextKey int
+
+const (
+	scriptCtxKey contextKey = iota
+	accessCtxKey
+	groupCtxKey
+	memberCtxKey
+	checkAccessCtxKey
+)
 
 type ScriptSvc interface {
 	// List 获取脚本列表
@@ -75,8 +83,6 @@ type ScriptSvc interface {
 	GetCodeByGray(ctx *gin.Context, scriptId int64, isPreUser bool) (*script_entity.Code, error)
 	// UpdateCodeSetting 更新脚本设置
 	UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSettingRequest) (*api.UpdateCodeSettingResponse, error)
-	// Middleware 脚本中间件
-	Middleware() gin.HandlerFunc
 	// CtxScript 获取脚本
 	CtxScript(ctx context.Context) *script_entity.Script
 	// UpdateScriptPublic 更新脚本公开类型
@@ -95,6 +101,26 @@ type ScriptSvc interface {
 	UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoRequest) (*api.UpdateLibInfoResponse, error)
 	// UpdateSyncSetting 更新同步配置
 	UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error)
+	// Access 访问控制
+	Access() gin.HandlerFunc
+	// RequireScript 需要脚本存在
+	RequireScript(opts ...RequireScriptOption) gin.HandlerFunc
+	// IsArchive 检查归档
+	IsArchive() gin.HandlerFunc
+}
+
+type RequireScriptOption func(*RequireScriptOptions)
+
+type RequireScriptOptions struct {
+	Resource string
+	Action   string
+}
+
+func WithRequireScriptAccess(res, act string) RequireScriptOption {
+	return func(options *RequireScriptOptions) {
+		options.Resource = res
+		options.Action = act
+	}
 }
 
 type scriptSvc struct {
@@ -159,7 +185,7 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	// 评分统计信息
 	statistics, err := script_repo.ScriptStatistics().FindByScriptID(ctx, item.ID)
 	if err != nil {
-		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		logger.Ctx(ctx).Warn("获取统计信息失败-评分", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	if statistics != nil {
 		data.Score = statistics.Score
@@ -168,12 +194,12 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	// 从平台统计拿数据,排序从脚本统计里拿数据
 	num, err := statistics_repo.ScriptStatistics().TotalPv(ctx, item.ID, statistics_repo.DownloadScriptStatistics)
 	if err != nil {
-		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		logger.Ctx(ctx).Warn("获取统计信息失败-total-pv", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	data.TotalInstall = num
 	num, err = statistics_repo.ScriptStatistics().DaysUvNum(ctx, item.ID, statistics_repo.DownloadScriptStatistics, 1, time.Now())
 	if err != nil {
-		logger.Ctx(ctx).Error("获取统计信息失败", zap.Error(err), zap.Int64("script_id", item.ID))
+		logger.Ctx(ctx).Warn("获取统计信息失败-day-uv", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
 	data.TodayInstall = num
 	// 脚本代码信息
@@ -538,21 +564,36 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 	if err != nil {
 		return nil, err
 	}
-	return &api.InfoResponse{
+	resp := &api.InfoResponse{
 		Script:  script,
 		Content: m.Content,
-	}, nil
+	}
+	user := auth_svc.Auth().Get(ctx)
+	if user != nil {
+		roles, err := Access().GetRole(ctx, user, m)
+		if err != nil {
+			return nil, err
+		}
+		if len(roles) > 0 {
+			maxRole := roles[0]
+			for _, role := range roles {
+				if role.Compare(maxRole) > 0 {
+					maxRole = role
+				}
+			}
+			resp.Role = maxRole
+		} else {
+			resp.Role = script_entity.AccessRoleGuest
+		}
+	} else {
+		resp.Role = script_entity.AccessRoleGuest
+	}
+	return resp, nil
 }
 
 // Code 获取脚本代码
 func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckOperate(ctx); err != nil {
-		return nil, err
-	}
+	m := s.CtxScript(ctx)
 	script, err := s.ToScript(ctx, m, true, "")
 	if err != nil {
 		return nil, err
@@ -565,13 +606,7 @@ func (s *scriptSvc) Code(ctx context.Context, req *api.CodeRequest) (*api.CodeRe
 
 // VersionList 获取版本列表
 func (s *scriptSvc) VersionList(ctx context.Context, req *api.VersionListRequest) (*api.VersionListResponse, error) {
-	script, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := script.CheckOperate(ctx); err != nil {
-		return nil, err
-	}
+	script := s.CtxScript(ctx)
 	list, total, err := script_repo.ScriptCode().List(ctx, req.ID, req.PageRequest)
 	if err != nil {
 		return nil, err
@@ -648,13 +683,7 @@ func (s *scriptSvc) Watch(ctx context.Context, req *api.WatchRequest) (*api.Watc
 
 // GetSetting 获取脚本设置
 func (s *scriptSvc) GetSetting(ctx context.Context, req *api.GetSettingRequest) (*api.GetSettingResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckPermission(ctx); err != nil {
-		return nil, err
-	}
+	m := s.CtxScript(ctx)
 	resp := &api.GetSettingResponse{
 		SyncUrl:          m.SyncUrl,
 		ContentUrl:       m.ContentUrl,
@@ -670,16 +699,7 @@ func (s *scriptSvc) GetSetting(ctx context.Context, req *api.GetSettingRequest) 
 
 // UpdateSetting 更新脚本设置
 func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingRequest) (*api.UpdateSettingResponse, error) {
-	m, err := script_repo.Script().Find(ctx, req.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := m.CheckPermission(ctx); err != nil {
-		return nil, err
-	}
-	if err := m.IsArchive(ctx); err != nil {
-		return nil, err
-	}
+	m := s.CtxScript(ctx)
 	m.SyncUrl = req.SyncUrl
 	m.ContentUrl = req.ContentUrl
 	m.SyncMode = req.SyncMode
@@ -695,7 +715,7 @@ func (s *scriptSvc) UpdateSetting(ctx context.Context, req *api.UpdateSettingReq
 	if err := script_repo.Script().Update(ctx, m); err != nil {
 		return nil, err
 	}
-	err = s.SyncOnce(ctx, m, true)
+	err := s.SyncOnce(ctx, m, true)
 	if err == nil {
 		return &api.UpdateSettingResponse{
 			Sync: true,
@@ -798,9 +818,6 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 // Archive 归档脚本
 func (s *scriptSvc) Archive(ctx context.Context, req *api.ArchiveRequest) (*api.ArchiveResponse, error) {
 	script := s.CtxScript(ctx)
-	if err := script.CheckPermission(ctx); err != nil {
-		return nil, err
-	}
 	if req.Archive {
 		script.Archive = script_entity.IsArchive
 	} else {
@@ -934,43 +951,67 @@ func (s *scriptSvc) UpdateCodeSetting(ctx context.Context, req *api.UpdateCodeSe
 	return &api.UpdateCodeSettingResponse{}, nil
 }
 
-func (s *scriptSvc) Middleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sid := c.Param("id")
+func (s *scriptSvc) RequireScript(opts ...RequireScriptOption) gin.HandlerFunc {
+	options := &RequireScriptOptions{
+		Resource: "script",
+		Action:   "read:info",
+	}
+	for _, o := range opts {
+		o(options)
+	}
+	accessCheckHandler := Access().CheckHandler(options.Resource, options.Action)
+	return func(ctx *gin.Context) {
+		sid := ctx.Param("id")
 		if sid == "" {
-			httputils.HandleResp(c, httputils.NewError(http.StatusNotFound, -1, "脚本ID不能为空"))
+			httputils.HandleResp(ctx, httputils.NewError(http.StatusNotFound, -1, "脚本ID不能为空"))
 			return
 		}
 		id, err := strconv.ParseInt(sid, 10, 64)
 		if err != nil {
-			httputils.HandleResp(c, err)
+			httputils.HandleResp(ctx, err)
 			return
 		}
-		script, err := script_repo.Script().Find(c, id)
+		script, err := script_repo.Script().Find(ctx, id)
 		if err != nil {
-			httputils.HandleResp(c, err)
+			httputils.HandleResp(ctx, err)
 			return
 		}
-		if c.Request.Method == http.MethodGet {
-			if err := script.CheckOperate(c); err != nil {
-				httputils.HandleResp(c, err)
+		if err := script.CheckOperate(ctx); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
+
+		ctx.Request = ctx.Request.WithContext(context.WithValue(
+			ctx.Request.Context(), scriptCtxKey, script,
+		))
+
+		// 私有, 进行权限检查
+		if script.Public == script_entity.PrivateScript {
+			if auth_svc.Auth().Get(ctx) == nil {
+				httputils.HandleResp(ctx, i18n.NewUnauthorizedError(ctx, code.UserNotLogin))
 				return
 			}
-		} else {
-			if err := script.CheckPermission(c, model.Moderator); err != nil {
-				httputils.HandleResp(c, err)
+			accessCheckHandler(ctx)
+			if ctx.IsAborted() {
 				return
 			}
 		}
-		c.Request = c.Request.WithContext(context.WithValue(
-			c.Request.Context(), ctxScript("ctxScript"), script,
-		))
-		c.Next()
+
+	}
+}
+
+func (s *scriptSvc) IsArchive() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		script := s.CtxScript(ctx)
+		if err := script.IsArchive(ctx); err != nil {
+			httputils.HandleResp(ctx, err)
+			return
+		}
 	}
 }
 
 func (s *scriptSvc) CtxScript(ctx context.Context) *script_entity.Script {
-	return ctx.Value(ctxScript("ctxScript")).(*script_entity.Script)
+	return ctx.Value(scriptCtxKey).(*script_entity.Script)
 }
 
 // UpdateScriptPublic 更新脚本公开类型
@@ -1125,6 +1166,12 @@ func (s *scriptSvc) LastScore(ctx context.Context, req *api.LastScoreRequest) (*
 			Total: int64(len(list)),
 		},
 	}, nil
+}
+
+func (s *scriptSvc) Access() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
 }
 
 // UpdateLibInfo 更新库信息

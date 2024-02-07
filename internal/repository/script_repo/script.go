@@ -32,6 +32,7 @@ type SearchOptions struct {
 	Domain   string
 }
 
+//go:generate mockgen -source=script.go -destination=mock/script.go
 type ScriptRepo interface {
 	Find(ctx context.Context, id int64) (*entity.Script, error)
 	Create(ctx context.Context, script *entity.Script) error

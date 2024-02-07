@@ -4,6 +4,11 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/codfrm/cago/pkg/utils/muxutils"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-gonic/gin"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
+
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/limit"
@@ -15,7 +20,7 @@ import (
 )
 
 type Issue struct {
-	limit *limit.PeriodLimit
+	limit limit.Limit
 }
 
 func NewIssue() *Issue {
@@ -24,6 +29,50 @@ func NewIssue() *Issue {
 			300, 10, redis.Default(), "limit:create:issue",
 		),
 	}
+}
+
+func (i *Issue) skipSelf() script_svc.CheckOption {
+	return script_svc.WithCheckSkip(func(ctx *gin.Context) (bool, error) {
+		return issue_svc.Issue().CtxIssue(ctx).UserID == auth_svc.Auth().Get(ctx).UID, nil
+	})
+}
+
+func (i *Issue) Router(r *mux.Router) {
+	muxutils.BindTree(r, []*muxutils.RouterTree{{
+		Middleware: []gin.HandlerFunc{auth_svc.Auth().RequireLogin(false), script_svc.Script().RequireScript()},
+		Handler: []interface{}{
+			// 无需登录
+			i.List,
+			muxutils.Use(issue_svc.Issue().RequireIssue()).Append(i.GetIssue),
+		}}, {
+		Middleware: []gin.HandlerFunc{auth_svc.Auth().RequireLogin(true), script_svc.Script().RequireScript()},
+		Handler: []interface{}{ // 需要登录
+			i.CreateIssue,
+			// 需要登录且issue存在
+			&muxutils.RouterTree{
+				Middleware: []gin.HandlerFunc{
+					issue_svc.Issue().RequireIssue(),
+				},
+				Handler: []interface{}{
+					i.Watch,
+					// 归档了不允许操作
+					muxutils.Use(script_svc.Script().IsArchive()).Append(
+						i.GetWatch,
+						muxutils.Use(script_svc.Access().
+							CheckHandler("issue", "manage", i.skipSelf())).Append(
+							i.Open,
+							i.Close,
+							i.UpdateLabels,
+						),
+						muxutils.Use(script_svc.Access().
+							CheckHandler("issue", "delete")).Append(
+							i.Delete,
+						),
+					),
+				},
+			},
+		},
+	}})
 }
 
 // List 获取脚本反馈列表

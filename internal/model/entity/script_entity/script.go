@@ -32,15 +32,8 @@ type (
 
 const (
 	PublicScript   Public = iota + 1 // 公开
-	UnPublicScript                   // 不公开, 只是不展示在列表中
-)
-
-const (
-	// UnPrivateScript 不私有
-	UnPrivateScript Private = iota
-	// PrivateScript 私有脚本, 此属性与PublicScript冲突
-	// 当此属性为PrivateScript时, PublicScript必须为UnPublicScript
-	PrivateScript
+	UnPublicScript                   // 半公开, 只是不展示在列表中
+	PrivateScript                    // 私有, 只有自己可以访问
 )
 
 type UnwellContent int

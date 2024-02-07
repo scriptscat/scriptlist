@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/codfrm/cago/database/clickhouse"
+	"github.com/codfrm/cago/database/db"
+
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
@@ -40,12 +41,12 @@ func NewStatisticVistior() StatisticsVisitorRepo {
 }
 
 func (u *statisticsVisitorRepo) Create(ctx context.Context, statistic []*statistics_entity.StatisticsVisitor) error {
-	return clickhouse.Ctx(ctx).CreateInBatches(statistic, len(statistic)+1).Error
+	return db.CtxWith(ctx, "clickhouse").CreateInBatches(statistic, len(statistic)+1).Error
 }
 
 func (u *statisticsVisitorRepo) FirstUserNumber(ctx context.Context, scriptId int64, startTime, endTime time.Time) (int64, error) {
 	var count int64
-	err := clickhouse.Ctx(ctx).
+	err := db.CtxWith(ctx, "clickhouse").
 		Model(&statistics_entity.StatisticsVisitor{}).
 		Where("script_id = ? and first_visit_time >= ? and first_visit_time <= ?", scriptId, startTime, endTime).
 		Count(&count).Error
@@ -57,7 +58,7 @@ func (u *statisticsVisitorRepo) FirstUserNumber(ctx context.Context, scriptId in
 
 func (u *statisticsVisitorRepo) UserNumber(ctx context.Context, scriptId int64, startTime, endTime time.Time) (int64, error) {
 	var count int64
-	err := clickhouse.Ctx(ctx).
+	err := db.CtxWith(ctx, "clickhouse").
 		Model(&statistics_entity.StatisticsVisitor{}).
 		Where("script_id = ? and visit_time >= ? and visit_time <= ?", scriptId, startTime, endTime).
 		Count(&count).Error
@@ -70,7 +71,7 @@ func (u *statisticsVisitorRepo) UserNumber(ctx context.Context, scriptId int64, 
 func (u *statisticsVisitorRepo) OriginList(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time, page httputils.PageRequest) ([]*api.PieChart, int64, error) {
 	var total int64
 	result := make([]*api.PieChart, 0)
-	query := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsVisitor{}).Select(
+	query := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsVisitor{}).Select(
 		"install_page as key, count(*) as value",
 	).Group("install_page").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix())
@@ -86,7 +87,7 @@ func (u *statisticsVisitorRepo) OriginList(ctx context.Context, scriptId int64, 
 
 func (u *statisticsVisitorRepo) VersionPie(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) ([]*api.PieChart, error) {
 	result := make([]*api.PieChart, 0)
-	if err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsVisitor{}).Select(
+	if err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsVisitor{}).Select(
 		"version as key, count(*) as value",
 	).Group("version").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix()).
@@ -99,7 +100,7 @@ func (u *statisticsVisitorRepo) VersionPie(ctx context.Context, scriptId int64, 
 
 func (u *statisticsVisitorRepo) IpNumber(ctx context.Context, id int64, start time.Time, end time.Time) (int64, error) {
 	var count int64
-	err := clickhouse.Ctx(ctx).
+	err := db.CtxWith(ctx, "clickhouse").
 		Model(&statistics_entity.StatisticsVisitor{}).
 		Where("script_id = ? and visit_time >= ? and visit_time <= ?", id, start.Unix(), end.Unix()).
 		Group("ip").
@@ -112,7 +113,7 @@ func (u *statisticsVisitorRepo) IpNumber(ctx context.Context, id int64, start ti
 
 func (u *statisticsVisitorRepo) DriverPie(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) ([]*api.PieChart, error) {
 	result := make([]*api.PieChart, 0)
-	if err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsVisitor{}).Select(
+	if err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsVisitor{}).Select(
 		"device_type as key, count(*) as value",
 	).Group("device_type").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix()).
@@ -125,7 +126,7 @@ func (u *statisticsVisitorRepo) DriverPie(ctx context.Context, scriptId int64, s
 
 func (u *statisticsVisitorRepo) BrowserPie(ctx context.Context, scriptId int64, startTime time.Time, endTime time.Time) ([]*api.PieChart, error) {
 	result := make([]*api.PieChart, 0)
-	if err := clickhouse.Ctx(ctx).Model(&statistics_entity.StatisticsVisitor{}).Select(
+	if err := db.CtxWith(ctx, "clickhouse").Model(&statistics_entity.StatisticsVisitor{}).Select(
 		"browser_type as key, count(*) as value",
 	).Group("browser_type").
 		Where("script_id=? and visit_time >= ? and visit_time <= ?", scriptId, startTime.Unix(), endTime.Unix()).

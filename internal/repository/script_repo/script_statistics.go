@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockgen -source=script_statistics.go -destination=mock/script_statistics.go
 type ScriptStatisticsRepo interface {
 	Find(ctx context.Context, id int64) (*entity.ScriptStatistics, error)
 	Create(ctx context.Context, scriptStatistics *entity.ScriptStatistics) error
