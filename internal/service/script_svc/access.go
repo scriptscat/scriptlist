@@ -187,6 +187,7 @@ func (a *accessSvc) DeleteAccess(ctx context.Context, req *api.DeleteAccessReque
 var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 	"admin": {
 		"script": {
+			"write":        struct{}{},
 			"delete:score": struct{}{},
 			"delete":       struct{}{},
 			"manage":       struct{}{},
@@ -209,6 +210,7 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 	},
 	"owner": {
 		"script": {
+			"write":     struct{}{},
 			"delete":    struct{}{},
 			"manage":    struct{}{},
 			"read:info": struct{}{},
@@ -231,6 +233,7 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 	},
 	"manager": {
 		"script": {
+			"write":     struct{}{},
 			"manage":    struct{}{},
 			"read:info": struct{}{},
 		},
