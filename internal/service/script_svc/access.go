@@ -2,6 +2,7 @@ package script_svc
 
 import (
 	"context"
+	"errors"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -267,6 +268,8 @@ func (a *accessSvc) RoleToAccess(roles []script_entity.AccessRole) map[string]ma
 	return ret
 }
 
+var ErrRoleIsNil = errors.New("role is nil")
+
 func (a *accessSvc) GetUserAccess(ctx context.Context, scriptId, userId int64) ([]script_entity.AccessRole, error) {
 	// 先在列表中查询
 	list, err := script_repo.ScriptAccess().FindByLinkID(ctx, scriptId, userId, script_entity.AccessTypeUser)
@@ -301,7 +304,7 @@ func (a *accessSvc) GetUserAccess(ctx context.Context, scriptId, userId int64) (
 		}
 	}
 	if len(roles) == 0 {
-		return nil, i18n.NewForbiddenError(ctx, code.UserNotPermission)
+		return nil, ErrRoleIsNil
 	}
 	return roles, nil
 }
@@ -327,6 +330,9 @@ func (a *accessSvc) Check(ctx context.Context, res, act string) (*CheckAccess, e
 	user := auth_svc.Auth().Get(ctx)
 	roles, err := a.GetRole(ctx, user, script)
 	if err != nil {
+		if errors.Is(err, ErrRoleIsNil) {
+			return nil, i18n.NewForbiddenError(ctx, code.UserNotPermission)
+		}
 		return nil, err
 	}
 	accessMap := a.RoleToAccess(roles)

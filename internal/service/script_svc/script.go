@@ -572,7 +572,9 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 	if user != nil {
 		roles, err := Access().GetRole(ctx, user, m)
 		if err != nil {
-			return nil, err
+			if !errors.Is(err, ErrRoleIsNil) {
+				return nil, err
+			}
 		}
 		if len(roles) > 0 {
 			maxRole := roles[0]
