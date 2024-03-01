@@ -1,7 +1,10 @@
 package configs
 
-import "github.com/codfrm/cago/configs"
+import (
+	"context"
+	"github.com/codfrm/cago/configs"
+)
 
 func Url() string {
-	return configs.Default().String("website.url")
+	return configs.Default().String(context.Background(), "website.url")
 }

@@ -27,7 +27,7 @@ func NewMail() Sender {
 
 func (m *mail) Send(ctx context.Context, user *user_entity.User, content string, options *SendOptions) error {
 	config := &mailConfig{}
-	if err := configs.Default().Scan("mail", config); err != nil {
+	if err := configs.Default().Scan(context.Background(), "mail", config); err != nil {
 		return err
 	}
 	d := gomail.NewDialer(config.SMTP, config.Port, config.User, config.Password)

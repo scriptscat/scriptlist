@@ -19,6 +19,9 @@ spec:
       {{- end }}
       labels:
         {{- include "cago.selectorLabels" . | nindent 8 }}
+        app.cago.io/name: {{ .Values.appConfig.name | quote }}
+        app.cago.io/version: {{ .Values.appConfig.version | quote }}
+        app.cago.io/environment: {{ .Values.appConfig.env | quote }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -38,11 +41,19 @@ spec:
               containerPort: 80
               protocol: TCP
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

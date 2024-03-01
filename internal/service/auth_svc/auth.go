@@ -64,7 +64,7 @@ func Auth() AuthSvc {
 func (a *authSvc) OAuthCallback(ctx context.Context, req *api.OAuthCallbackRequest) (*api.OAuthCallbackResponse, error) {
 	// 请求论坛接口,进行登录
 	config := &oauth.Config{}
-	if err := configs.Default().Scan("oauth.bbs", &config); err != nil {
+	if err := configs.Default().Scan(ctx, "oauth.bbs", &config); err != nil {
 		return nil, err
 	}
 	client := oauth.NewClient(config)

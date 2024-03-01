@@ -62,7 +62,7 @@ func (u *User) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRespons
 // Avatar 获取用户头像
 func (u *User) Avatar() gin.HandlerFunc {
 	config := &oauth.Config{}
-	if err := configs.Default().Scan("oauth.bbs", &config); err != nil {
+	if err := configs.Default().Scan(context.Background(), "oauth.bbs", &config); err != nil {
 		config.ServerUrl = "https://bbs.tampermonkey.net.cn"
 	}
 	// https://bbs.tampermonkey.net.cn/uc_server/avatar.php?uid=13895&size=middle

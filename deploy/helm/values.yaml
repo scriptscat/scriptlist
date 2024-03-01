@@ -11,7 +11,9 @@ image:
   tag: ""
 
 appConfig:
-  env: prod # test | pre | prod
+  name: scriptlist
+  version: 1.0.0
+  env: prod
   debug: false
 
 etcdConfig:

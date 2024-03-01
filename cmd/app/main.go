@@ -78,7 +78,8 @@ func main() {
 			return migrations.RunMigrations(db.Default())
 		})).
 		Registry(cago.FuncComponent(consumer.Consumer)).
-		Registry(cron.Cron(crontab.Crontab)).
+		Registry(cron.Cron()).
+		Registry(cago.FuncComponent(crontab.Crontab)).
 		RegistryCancel(mux.HTTP(api.Router)).
 		Start()
 	if err != nil {
