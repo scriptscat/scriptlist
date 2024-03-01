@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/codfrm/cago v1.0.2-0.20240229131905-d6766b60f0f8
+	github.com/codfrm/cago v1.0.2-0.20240301063942-730aadd8e320
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-gormigrate/gormigrate/v2 v2.1.1
