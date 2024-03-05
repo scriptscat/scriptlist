@@ -772,6 +772,7 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 						zap.String("content_url", script.ContentUrl), zap.Error(err))
 					return nil
 				}
+				logger.Info("更新content成功", zap.String("content_url", script.ContentUrl))
 			}
 		}
 		return nil
@@ -1199,9 +1200,6 @@ func (s *scriptSvc) UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoReq
 // UpdateSyncSetting 更新同步配置
 func (s *scriptSvc) UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error) {
 	script := s.CtxScript(ctx)
-	if err := script.IsArchive(ctx); err != nil {
-		return nil, err
-	}
 	if err := script.IsArchive(ctx); err != nil {
 		return nil, err
 	}
