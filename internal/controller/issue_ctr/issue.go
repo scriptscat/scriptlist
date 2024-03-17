@@ -47,7 +47,7 @@ func (i *Issue) Router(r *mux.Router) {
 		}}, {
 		Middleware: []gin.HandlerFunc{auth_svc.Auth().RequireLogin(true), script_svc.Script().RequireScript()},
 		Handler: []interface{}{ // 需要登录
-			i.CreateIssue,
+			muxutils.Use(script_svc.Script().IsArchive()).Append(i.CreateIssue),
 			// 需要登录且issue存在
 			&muxutils.RouterTree{
 				Middleware: []gin.HandlerFunc{
@@ -55,19 +55,17 @@ func (i *Issue) Router(r *mux.Router) {
 				},
 				Handler: []interface{}{
 					i.Watch,
+					i.GetWatch,
 					// 归档了不允许操作
-					muxutils.Use(script_svc.Script().IsArchive()).Append(
-						i.GetWatch,
-						muxutils.Use(script_svc.Access().
-							CheckHandler("issue", "manage", i.skipSelf())).Append(
-							i.Open,
-							i.Close,
-							i.UpdateLabels,
-						),
-						muxutils.Use(script_svc.Access().
-							CheckHandler("issue", "delete")).Append(
-							i.Delete,
-						),
+					muxutils.Use(script_svc.Script().IsArchive(), script_svc.Access().
+						CheckHandler("issue", "manage", i.skipSelf())).Append(
+						i.Open,
+						i.Close,
+						i.UpdateLabels,
+					),
+					muxutils.Use(script_svc.Access().
+						CheckHandler("issue", "delete")).Append(
+						i.Delete,
 					),
 				},
 			},

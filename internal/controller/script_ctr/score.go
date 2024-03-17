@@ -31,7 +31,9 @@ func (s *Score) Router(r *mux.Router) {
 			service.Script().RequireScript(),
 		},
 		Handler: []interface{}{
-			s.PutScore,
+			muxutils.Use(service.Script().IsArchive()).Append(
+				s.PutScore,
+			),
 			s.SelfScore,
 			// 只有管理员才能删除评分
 			&muxutils.RouterTree{
