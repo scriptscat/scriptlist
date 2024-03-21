@@ -11,7 +11,6 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/configs/memory"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
@@ -24,29 +23,18 @@ type cacheItem struct {
 }
 
 var (
-	proxyURL = "http://43.155.80.229"
+	proxyURL = "http://127.0.0.1"
 	cacheMap = make(map[string]*cacheItem)
 	mu       sync.RWMutex
 )
 
 // http://127.0.0.1:8080/scripts/code/367/OCS%20%E7%BD%91%E8%AF%BE%E5%8A%A9%E6%89%8B.user.js
 func main() {
-	cfg, err := configs.NewConfig("cache_proxy", configs.WithSource(
-		memory.NewSource(map[string]interface{}{
-			"http": &mux.Config{Address: []string{":8080"}},
-			"logger": &logger.Config{
-				Level: "info",
-				LogFile: logger.LogFileConfig{
-					Enable:        true,
-					Filename:      "./runtime/logs/proxy.log",
-					ErrorFilename: "./runtime/logs/proxy.err.log",
-				},
-			},
-		}),
-	))
+	cfg, err := configs.NewConfig("cache_proxy")
 	if err != nil {
 		log.Fatalf("new config err: %v", err)
 	}
+	proxyURL = cfg.String(context.Background(), "proxy_url")
 	if err := cago.New(context.Background(), cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
 		RegistryCancel(mux.HTTP(func(ctx context.Context, r *mux.Router) error {
