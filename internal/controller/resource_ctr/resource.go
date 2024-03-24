@@ -55,6 +55,8 @@ func (r *Resource) ViewImage() gin.HandlerFunc {
 			return
 		}
 		ctx.Writer.Header().Set("Content-Type", res.ContentType)
+		// 缓存
+		ctx.Writer.Header().Set("Cache-Control", "max-age=86400")
 		_, _ = ctx.Writer.Write(b)
 	}
 }
