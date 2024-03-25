@@ -57,15 +57,21 @@ func (i *Issue) Router(r *mux.Router) {
 					i.Watch,
 					i.GetWatch,
 					// 归档了不允许操作
-					muxutils.Use(script_svc.Script().IsArchive(), script_svc.Access().
-						CheckHandler("issue", "manage", i.skipSelf())).Append(
-						i.Open,
-						i.Close,
-						i.UpdateLabels,
-					),
-					muxutils.Use(script_svc.Access().
-						CheckHandler("issue", "delete")).Append(
-						i.Delete,
+					muxutils.Use(script_svc.Script().IsArchive()).Append(
+						muxutils.Use(
+							script_svc.Access().
+								CheckHandler("issue", "manage", i.skipSelf()),
+						).Append(
+							i.Open,
+							i.Close,
+							i.UpdateLabels,
+						),
+						muxutils.Use(
+							script_svc.Access().
+								CheckHandler("issue", "delete"),
+						).Append(
+							i.Delete,
+						),
 					),
 				},
 			},
