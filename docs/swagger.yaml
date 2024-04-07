@@ -19,12 +19,18 @@ definitions:
     type: object
   httputils.PageRequest:
     properties:
+      order:
+        description: Deprecated 请使用方法GetOrder
+        type: string
       page:
         description: Deprecated 请使用方法GetPage
         type: integer
       size:
         description: Deprecated 请使用方法GetSize
         type: integer
+      sort:
+        description: Deprecated 请使用方法GetSort
+        type: string
     type: object
   httputils.PageResponse:
     properties:

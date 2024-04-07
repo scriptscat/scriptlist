@@ -1,12 +1,12 @@
 
 check-cago:
 ifneq ($(which cago),)
-	go install github.com/codfrm/cago/cmd/cago@latest
+	go install github.com/codfrm/cago
 endif
 
 check-mockgen:
 ifneq ($(which mockgen),)
-	go install go.uber.org/mock/mockgen@latest
+	go install github.com/golang/mock/mockgen
 endif
 
 check-golangci-lint:
@@ -37,8 +37,21 @@ html-cover: coverage.out
 generate: check-mockgen swagger
 	go generate ./... -x
 
+GOOS=linux
+GOARCH=amd64
+APP_NAME=scriptlist
+APP_VERSION=1.0.0
+
+SUFFIX=
+ifeq ($(GOOS),windows)
+	SUFFIX=.exe
+endif
+
+build:
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) ./cmd/app
+
 cache_proxy:
-	GOOS=linux GOARCH=amd64 go build -o bin/cache_proxy cmd/cache_proxy/main.go
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/cache_proxy$(SUFFIX) cmd/cache_proxy/main.go
 
 goconvey:
 	goconvey

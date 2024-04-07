@@ -141,11 +141,12 @@ func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, sta
 	if op == UpdateScriptStatistics {
 		if err := redis.Ctx(ctx).Set(
 			"statistics:script:update:"+fmt.Sprintf("%d", scriptId)+":"+ip, "1",
-			time.Minute*10).Err(); err != nil {
+			time.Minute*60).Err(); err != nil {
 			logger.Ctx(ctx).Error("更新统计保存失败", zap.Error(err))
 		}
 	} else if op == DownloadScriptStatistics {
-		e, err := redis.Ctx(ctx).Exists("statistics:script:update:" + fmt.Sprintf("%d", scriptId) + ":" + ip).Result()
+		e, err := redis.Ctx(ctx).Exists("statistics:script:update:" +
+			fmt.Sprintf("%d", scriptId) + ":" + ip).Result()
 		if err != nil {
 			logger.Ctx(ctx).Error("更新统计查询失败", zap.Error(err))
 		} else if e == 1 {
@@ -166,7 +167,7 @@ func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, sta
 	redis.Ctx(ctx).Incr(key + ":realtime:" + t)
 	redis.Ctx(ctx).Expire(key+":realtime:"+t, time.Hour)
 	// 判断ip是否操作过了
-	result, err := redis.Ctx(ctx).SetNX(key+":ip:exist:day:"+date+":"+ip, "1", time.Hour*24).Result()
+	result, err := redis.Ctx(ctx).SetNX(key+":ip:exist:day:"+date+":"+ip, "1", time.Hour*16).Result()
 	if err != nil {
 		return false, err
 	}

@@ -1,11 +1,9 @@
 .docker
 .idea
-./runtime
-*.log
+.vscode
+/runtime
+/configs/config.yaml
 
-config.yaml
-scriptlist
+/resource
 
-resource
-
-bin/
+/bin
