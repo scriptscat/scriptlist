@@ -12,7 +12,7 @@ func T20230228() *gormigrate.Migration {
 		ID: "20230228",
 		Migrate: func(tx *gorm.DB) error {
 
-			if err := db.With("clickhouse").
+			if err := db.Use("clickhouse").
 				Set("gorm:table_options",
 					"ENGINE=ReplacingMergeTree() PARTITION BY script_id "+
 						"ORDER BY visitor_id",
@@ -20,17 +20,17 @@ func T20230228() *gormigrate.Migration {
 				AutoMigrate(&statistics_entity.StatisticsVisitor{}); err != nil {
 				return err
 			}
-			return db.With("clickhouse").
+			return db.Use("clickhouse").
 				Set("gorm:table_options",
 					"ENGINE=ReplacingMergeTree() PARTITION BY script_id "+
 						"ORDER BY session_id",
 				).AutoMigrate(&statistics_entity.StatisticsCollect{})
 		},
 		Rollback: func(tx *gorm.DB) error {
-			if err := db.With("clickhouse").Migrator().DropTable(&statistics_entity.StatisticsVisitor{}); err != nil {
+			if err := db.Use("clickhouse").Migrator().DropTable(&statistics_entity.StatisticsVisitor{}); err != nil {
 				return err
 			}
-			return db.With("clickhouse").Migrator().DropTable(&statistics_entity.StatisticsCollect{})
+			return db.Use("clickhouse").Migrator().DropTable(&statistics_entity.StatisticsCollect{})
 		},
 	}
 }

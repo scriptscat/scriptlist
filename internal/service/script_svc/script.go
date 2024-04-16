@@ -515,7 +515,7 @@ func (s *scriptSvc) MigrateEs() {
 				span.End()
 				start += 20
 			}()
-			ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(trace.LoggerLabel(ctx)...))
+			ctx = logger.WithContextLogger(ctx, logger.Ctx(ctx).With(trace.LoggerLabel(ctx)...))
 			list, err := script_repo.Migrate().List(ctx, start, 20)
 			if err != nil {
 				logger.Ctx(ctx).Error("获取迁移数据失败", zap.Error(err))

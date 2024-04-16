@@ -1,21 +1,24 @@
 
 check-cago:
 ifneq ($(which cago),)
-	go install github.com/codfrm/cago
+	go install github.com/codfrm/cago/cmd/cago@latest
 endif
 
 check-mockgen:
 ifneq ($(which mockgen),)
-	go install github.com/golang/mock/mockgen
+	go install go.uber.org/mock/mockgen@latest
 endif
 
 check-golangci-lint:
 ifneq ($(which golangci-lint),)
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 endif
 
-swagger: check-cago
-	cago gen swag
+check-goconvey:
+ifneq ($(which goconvey),)
+	go install github.com/smartystreets/goconvey@latest
+endif
+
 
 lint: check-golangci-lint
 	golangci-lint run
@@ -23,7 +26,7 @@ lint: check-golangci-lint
 lint-fix: check-golangci-lint
 	golangci-lint run --fix
 
-test: lint
+test: lint-fix
 	go test -v ./...
 
 coverage.out cover:
@@ -34,8 +37,12 @@ html-cover: coverage.out
 	go tool cover -html=coverage.out
 	go tool cover -func=coverage.out
 
-generate: check-mockgen swagger
-	go generate ./... -x
+generate: check-mockgen check-cago
+	go generate ./...
+	cago genx
+
+goconvey: check-goconvey
+	goconvey
 
 GOOS=linux
 GOARCH=amd64
@@ -53,5 +60,3 @@ build:
 cache_proxy:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/cache_proxy$(SUFFIX) cmd/cache_proxy/main.go
 
-goconvey:
-	goconvey

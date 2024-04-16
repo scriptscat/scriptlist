@@ -131,7 +131,7 @@ func (a *accessInviteSvc) createInviteCode(ctx context.Context, count int32, ent
 	}
 	codes := make([]string, 0)
 	if err := db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
-		ctx = db.ContextWithDB(ctx, tx)
+		ctx = db.WithContextDB(ctx, tx)
 		for i := 0; i < int(count); i++ {
 			invite := &script_entity.ScriptInvite{
 				ScriptID:     entity.ScriptID,
@@ -207,7 +207,7 @@ func (a *accessInviteSvc) AuditInviteCode(ctx context.Context, req *api.AuditInv
 	}
 	err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
 		// 加入access
-		ctx = db.ContextWithDB(ctx, tx)
+		ctx = db.WithContextDB(ctx, tx)
 		switch invite.InviteStatus {
 		case script_entity.InviteStatusPending:
 			if req.Status == 1 {
@@ -269,7 +269,7 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 	if invite.CodeType == script_entity.InviteCodeTypeLink {
 		// 邀请链接
 		err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
-			ctx = db.ContextWithDB(ctx, tx)
+			ctx = db.WithContextDB(ctx, tx)
 			switch invite.Type {
 			case script_entity.InviteTypeAccess:
 				// 加入access
@@ -342,7 +342,7 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 		return nil, i18n.NewNotFoundError(ctx, code.AccessInviteInvalid)
 	}
 	err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
-		ctx = db.ContextWithDB(ctx, tx)
+		ctx = db.WithContextDB(ctx, tx)
 		// 判断是否还要审核
 		if invite.IsAudit == consts.YES {
 			// 修改状态为等待审核

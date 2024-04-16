@@ -162,7 +162,7 @@ func (a *authSvc) SetCtxUser(ctx context.Context, user *user_entity.User) contex
 	)
 
 	return context.WithValue(
-		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
+		logger.WithContextLogger(ctx, logger.Ctx(ctx).
 			With(zap.Int64("user_id", user.ID))),
 		model.AuthInfo{}, authInfo)
 }
