@@ -13,7 +13,7 @@ var zhCN = map[int]string{
 	UserNotFollow:        "用户未关注",
 	UserNotFollowSelf:    "不能关注自己",
 	UserExistFollow:      "已关注",
-	UserEmailNotVerified: "邮箱未验证",
+	UserEmailNotVerified: "邮箱未验证，请查看邮箱邮件",
 	UserNotLogin:         "用户未登录",
 	UserWaitVerify:       "用户待验证，请查看邮箱邮件",
 
