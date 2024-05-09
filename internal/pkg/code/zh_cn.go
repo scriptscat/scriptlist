@@ -15,6 +15,7 @@ var zhCN = map[int]string{
 	UserExistFollow:      "已关注",
 	UserEmailNotVerified: "邮箱未验证",
 	UserNotLogin:         "用户未登录",
+	UserWaitVerify:       "用户待验证，请查看邮箱邮件",
 
 	ScriptNameIsEmpty:               "脚本名不能为空",
 	ScriptDescIsEmpty:               "脚本描述不能为空",

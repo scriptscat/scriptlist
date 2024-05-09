@@ -50,8 +50,8 @@ func (u *User) IsBanned(ctx context.Context) error {
 	if u == nil {
 		return i18n.NewError(ctx, code.UserNotFound)
 	}
-	if (u.Groupid >= 4 && u.Groupid <= 9) || u.Groupid == 20 || u.Freeze == 1 {
-		// 禁止访问 禁止发言 等待验证会员 封禁用户组
+	if (u.Groupid >= 4 && u.Groupid <= 7) || u.Groupid == 9 || u.Groupid == 20 || u.Freeze == 1 {
+		// 禁止访问 禁止发言 封禁用户组
 		return i18n.NewErrorWithStatus(ctx, http.StatusForbidden, code.UserIsBanned)
 	}
 	return nil

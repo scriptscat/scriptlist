@@ -3,6 +3,8 @@ package auth_svc
 import (
 	"context"
 	"errors"
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"net/http"
 	"strconv"
 	"time"
@@ -127,6 +129,10 @@ func (a *authSvc) RequireLogin(force bool) gin.HandlerFunc {
 		c, err := a.SetCtx(ctx.Request.Context(), m.UID)
 		if err != nil {
 			httputils.HandleResp(ctx, err)
+			return
+		}
+		if ctx.Request.Method != http.MethodGet && !a.Get(c).EmailVerified {
+			httputils.HandleResp(ctx, i18n.NewError(c, code.UserEmailNotVerified))
 			return
 		}
 		ctx.Request = ctx.Request.WithContext(c)

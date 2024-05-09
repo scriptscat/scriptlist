@@ -57,10 +57,6 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 	uid := auth_svc.Auth().Get(ctx).UID
 	scriptId := req.ID
 
-	if !auth_svc.Auth().Get(ctx).EmailVerified {
-		return nil, i18n.NewError(ctx, code.UserEmailNotVerified)
-	}
-
 	//判断脚本的状态，可用后下一步
 	script, err2 := script_repo.Script().Find(ctx, scriptId)
 	if err2 != nil {

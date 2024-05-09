@@ -10,6 +10,7 @@ const (
 	UserExistFollow
 	UserEmailNotVerified
 	UserNotLogin
+	UserWaitVerify
 )
 
 // script
