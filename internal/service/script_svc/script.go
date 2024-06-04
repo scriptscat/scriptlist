@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/codfrm/cago/database/db"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"strings"
@@ -289,62 +291,69 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 		Updatetime:   0,
 	}
 	var definition *script_entity.LibDefinition
-	if req.Type == script_entity.LibraryType {
-		// 脚本引用库
-		script.Name = req.Name
-		script.Description = req.Description
-		scriptCode.Code = req.Code
-		scriptCode.Version = req.Version
-		// 脚本定义
-		if req.Definition != "" {
-			definition = &script_entity.LibDefinition{
-				UserID:     auth_svc.Auth().Get(ctx).UID,
-				Definition: req.Definition,
-				Createtime: time.Now().Unix(),
+	err := db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = db.WithContextDB(ctx, tx)
+		if req.Type == script_entity.LibraryType {
+			// 脚本引用库
+			script.Name = req.Name
+			script.Description = req.Description
+			scriptCode.Code = req.Code
+			scriptCode.Version = req.Version
+			// 脚本定义
+			if req.Definition != "" {
+				definition = &script_entity.LibDefinition{
+					UserID:     auth_svc.Auth().Get(ctx).UID,
+					Definition: req.Definition,
+					Createtime: time.Now().Unix(),
+				}
 			}
+		} else {
+			metaJson, err := scriptCode.UpdateCode(ctx, req.Code)
+			if err != nil {
+				return err
+			}
+			script.Name = metaJson["name"][0]
+			script.Description = metaJson["description"][0]
 		}
-	} else {
-		metaJson, err := scriptCode.UpdateCode(ctx, req.Code)
-		if err != nil {
-			return nil, err
-		}
-		script.Name = metaJson["name"][0]
-		script.Description = metaJson["description"][0]
-	}
 
-	// 保存数据库并发送消息
-	if err := script_repo.Script().Create(ctx, script); err != nil {
-		logger.Ctx(ctx).Error("scriptSvc create failed", zap.Error(err))
-		return nil, i18n.NewInternalError(
-			ctx,
-			code.ScriptCreateFailed,
-		)
-	}
-	// 保存脚本代码
-	scriptCode.ScriptID = script.ID
-	if err := script_repo.ScriptCode().Create(ctx, scriptCode); err != nil {
-		logger.Ctx(ctx).Error("scriptSvc code create failed", zap.Int64("script_id", script.ID), zap.Error(err))
-		return nil, i18n.NewInternalError(
-			ctx,
-			code.ScriptCreateFailed,
-		)
-	}
-	// 保存定义
-	if definition != nil {
-		definition.ScriptID = script.ID
-		definition.CodeID = scriptCode.ID
-		if err := script_repo.LibDefinition().Create(ctx, definition); err != nil {
-			logger.Ctx(ctx).Error("scriptSvc definition create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
-			return nil, i18n.NewInternalError(
+		// 保存数据库并发送消息
+		if err := script_repo.Script().Create(ctx, script); err != nil {
+			logger.Ctx(ctx).Error("scriptSvc create failed", zap.Error(err))
+			return i18n.NewInternalError(
 				ctx,
 				code.ScriptCreateFailed,
 			)
 		}
-	}
+		// 保存脚本代码
+		scriptCode.ScriptID = script.ID
+		if err := script_repo.ScriptCode().Create(ctx, scriptCode); err != nil {
+			logger.Ctx(ctx).Error("scriptSvc code create failed", zap.Int64("script_id", script.ID), zap.Error(err))
+			return i18n.NewInternalError(
+				ctx,
+				code.ScriptCreateFailed,
+			)
+		}
+		// 保存定义
+		if definition != nil {
+			definition.ScriptID = script.ID
+			definition.CodeID = scriptCode.ID
+			if err := script_repo.LibDefinition().Create(ctx, definition); err != nil {
+				logger.Ctx(ctx).Error("scriptSvc definition create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
+				return i18n.NewInternalError(
+					ctx,
+					code.ScriptCreateFailed,
+				)
+			}
+		}
 
-	if err := producer.PublishScriptCreate(ctx, script, scriptCode); err != nil {
-		logger.Ctx(ctx).Error("publish scriptSvc create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
-		return nil, i18n.NewInternalError(ctx, code.ScriptCreateFailed)
+		if err := producer.PublishScriptCreate(ctx, script, scriptCode); err != nil {
+			logger.Ctx(ctx).Error("publish scriptSvc create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
+			return i18n.NewInternalError(ctx, code.ScriptCreateFailed)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 	return &api.CreateResponse{ID: script.ID}, nil
 }
