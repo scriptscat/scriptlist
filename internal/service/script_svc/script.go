@@ -345,15 +345,14 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 				)
 			}
 		}
-
-		if err := producer.PublishScriptCreate(ctx, script, scriptCode); err != nil {
-			logger.Ctx(ctx).Error("publish scriptSvc create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
-			return i18n.NewInternalError(ctx, code.ScriptCreateFailed)
-		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
+	}
+	if err := producer.PublishScriptCreate(ctx, script, scriptCode); err != nil {
+		logger.Ctx(ctx).Error("publish scriptSvc create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
+		return nil, i18n.NewInternalError(ctx, code.ScriptCreateFailed)
 	}
 	return &api.CreateResponse{ID: script.ID}, nil
 }
