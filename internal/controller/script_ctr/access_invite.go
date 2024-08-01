@@ -2,6 +2,7 @@ package script_ctr
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/utils/muxutils"
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
@@ -15,6 +16,7 @@ type AccessInvite struct {
 }
 
 func NewAccessInvite() *AccessInvite {
+	script_svc.SetDefaultAccessInvite()
 	return &AccessInvite{}
 }
 
