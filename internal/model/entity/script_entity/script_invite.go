@@ -2,9 +2,10 @@ package script_entity
 
 import (
 	"context"
+	"time"
+
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
-	"time"
 )
 
 type InviteCodeType int32
@@ -42,9 +43,9 @@ type ScriptInvite struct {
 	IsAudit  int32          `gorm:"column:is_audit;type:tinyint(4);not null"`  // 是否需要审核 1=是 2=否
 	// 等待审核->已使用 等待审核->拒绝
 	// 未使用->已使用 未使用->等待审核
-	InviteStatus InviteStatus `gorm:"column:invite_status;type:tinyint(4);not null"` // 邀请码状态 1=未使用 2=已使用 3=已过期 4=等待审核 5=拒绝
+	InviteStatus InviteStatus `gorm:"column:invite_status;type:tinyint(4);not null;index:invite_status"` // 邀请码状态 1=未使用 2=已使用 3=已过期 4=等待审核 5=拒绝
 	Status       int32        `gorm:"column:status;type:tinyint(4);not null"`
-	Expiretime   int64        `gorm:"column:expiretime;type:bigint(20);not null"`
+	Expiretime   int64        `gorm:"column:expiretime;type:bigint(20);not null;index:expiretime"`
 	Createtime   int64        `gorm:"column:createtime;type:bigint(20);not null"`
 	Updatetime   int64        `gorm:"column:updatetime;type:bigint(20);not null"`
 }
