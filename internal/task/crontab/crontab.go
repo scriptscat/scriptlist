@@ -2,6 +2,7 @@ package crontab
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/cron"
 	"github.com/scriptscat/scriptlist/internal/task/crontab/handler"
@@ -17,7 +18,7 @@ func Crontab(ctx context.Context, cfg *configs.Config) error {
 	if configs.Default().Env == configs.PRE {
 		return nil
 	}
-	crontab := []Cron{&handler.Statistics{}, &handler.Script{}}
+	crontab := []Cron{&handler.Statistics{}, &handler.Script{}, &handler.Invite{}}
 	for _, v := range crontab {
 		if err := v.Crontab(cron.Default()); err != nil {
 			return err

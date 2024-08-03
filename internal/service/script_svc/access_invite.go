@@ -114,9 +114,9 @@ func (a *accessInviteSvc) toInviteCode(ctx context.Context, invite *script_entit
 		ret.UserID = user.ID
 		ret.Username = user.Username
 	}
-	if ret.InviteStatus == script_entity.InviteStatusUnused && ret.Expiretime > 0 && ret.Expiretime < time.Now().Unix() {
-		ret.InviteStatus = script_entity.InviteStatusExpired
-	}
+	// if ret.InviteStatus == script_entity.InviteStatusUnused && ret.Expiretime > 0 && ret.Expiretime < time.Now().Unix() {
+	// 	ret.InviteStatus = script_entity.InviteStatusExpired
+	// }
 
 	return ret, nil
 }
