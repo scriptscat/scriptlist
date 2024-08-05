@@ -136,11 +136,11 @@ func (o *Open) crxDetail(ctx context.Context, id string) (*detail, error) {
 		if err != nil {
 			return nil, err
 		}
-		version := regexp.MustCompile(`<meta\s*itemprop="version"\s*content="(.*?)"\s*/>`).FindStringSubmatch(string(body))
+		version := regexp.MustCompile(`\\"version\\":\\"(.*?)\\"`).FindStringSubmatch(string(body))
 		if len(version) > 0 {
 			ret.Version = version[1]
 		}
-		name := regexp.MustCompile(`<meta\s*itemprop="name"\s*content="(.*?)"\s*/>`).FindStringSubmatch(string(body))
+		name := regexp.MustCompile(`<meta\s*property="og:url" content="https://chromewebstore.google.com/detail/(.*?)/` + id).FindStringSubmatch(string(body))
 		if len(name) > 0 {
 			ret.Name = name[1]
 		}
