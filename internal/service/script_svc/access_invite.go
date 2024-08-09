@@ -2,7 +2,7 @@ package script_svc
 
 import (
 	"context"
-	"strconv"
+	"errors"
 	"time"
 
 	"github.com/codfrm/cago/database/db"
@@ -48,7 +48,7 @@ type accessInviteSvc struct {
 	locker sync.Locker
 }
 
-func NewAccessInviteSvc() *accessInviteSvc {
+func NewAccessInviteSvc() AccessInviteSvc {
 	return &accessInviteSvc{
 		locker: sync.NewLocker("accessInviteSvc"),
 	}
@@ -114,9 +114,9 @@ func (a *accessInviteSvc) toInviteCode(ctx context.Context, invite *script_entit
 		ret.UserID = user.ID
 		ret.Username = user.Username
 	}
-	// if ret.InviteStatus == script_entity.InviteStatusUnused && ret.Expiretime > 0 && ret.Expiretime < time.Now().Unix() {
-	// 	ret.InviteStatus = script_entity.InviteStatusExpired
-	// }
+	if ret.InviteStatus == script_entity.InviteStatusUnused && ret.Expiretime > 0 && ret.Expiretime < time.Now().Unix() {
+		ret.InviteStatus = script_entity.InviteStatusExpired
+	}
 
 	return ret, nil
 }
@@ -276,6 +276,20 @@ func (a *accessInviteSvc) AuditInviteCode(ctx context.Context, req *api.AuditInv
 // AcceptInvite 接受邀请
 func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInviteRequest) (*api.AcceptInviteResponse, error) {
 	user := auth_svc.Auth().Get(ctx)
+	var keyName = req.Code
+	if keyName == "" {
+		return nil, errors.New("keyName is empty")
+	}
+
+	err := a.locker.LockKey(ctx, keyName)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(locker sync.Locker, ctx context.Context, key string) {
+		_ = locker.UnlockKey(ctx, key)
+	}(a.locker, ctx, keyName)
+
 	invite, err := script_repo.ScriptInvite().FindByCode(ctx, req.Code)
 	if err != nil {
 		return nil, err
@@ -283,10 +297,7 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 	if err := invite.Check(ctx); err != nil {
 		return nil, err
 	}
-	var keyName string = strconv.FormatInt(invite.ScriptID, 10) + "_" + req.Code
 
-	a.locker.LockKey(ctx, keyName)
-	defer a.locker.UnlockKey(ctx, keyName)
 	if invite.CodeType == script_entity.InviteCodeTypeLink {
 		// 邀请链接
 		err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {

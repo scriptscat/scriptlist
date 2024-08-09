@@ -34,7 +34,7 @@ const (
 
 type ScriptInvite struct {
 	ID       int64          `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	ScriptID int64          `gorm:"column:script_id;type:bigint(20);not null;index:script_id"`
+	ScriptID int64          `gorm:"column:script_id;type:bigint(20);not null;index:script_id;index:idx_default_query,priority:1;index:idx_condition_query,priority:1"`
 	Code     string         `gorm:"column:code;type:varchar(128);not null;index:code,unique"`
 	CodeType InviteCodeType `gorm:"column:code_type;type:tinyint(4);not null"` // 邀请码类型 1=邀请码 2=邀请链接
 	GroupID  int64          `gorm:"column:group_id;type:bigint(20)"`           // 群组id
@@ -43,9 +43,9 @@ type ScriptInvite struct {
 	IsAudit  int32          `gorm:"column:is_audit;type:tinyint(4);not null"`  // 是否需要审核 1=是 2=否
 	// 等待审核->已使用 等待审核->拒绝
 	// 未使用->已使用 未使用->等待审核
-	InviteStatus InviteStatus `gorm:"column:invite_status;type:tinyint(4);not null;index:invite_status"` // 邀请码状态 1=未使用 2=已使用 3=已过期 4=等待审核 5=拒绝
+	InviteStatus InviteStatus `gorm:"column:invite_status;type:tinyint(4);not null;index:idx_default_query,priority:2;"` // 邀请码状态 1=未使用 2=已使用 3=已过期 4=等待审核 5=拒绝
 	Status       int32        `gorm:"column:status;type:tinyint(4);not null"`
-	Expiretime   int64        `gorm:"column:expiretime;type:bigint(20);not null;index:expiretime"`
+	Expiretime   int64        `gorm:"column:expiretime;type:bigint(20);not null;index:idx_default_query,priority:3;index:idx_condition_query,priority:2;"`
 	Createtime   int64        `gorm:"column:createtime;type:bigint(20);not null"`
 	Updatetime   int64        `gorm:"column:updatetime;type:bigint(20);not null"`
 }

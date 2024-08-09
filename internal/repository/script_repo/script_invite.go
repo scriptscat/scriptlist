@@ -81,19 +81,17 @@ func (u *scriptInviteRepo) FindAccessPage(ctx context.Context, scriptId int64, p
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	orderQuery := u.getInviteListOrdder(page.GetSort(), page.GetOrder())
+	orderQuery := u.getInviteListOrder(page.GetSort(), page.GetOrder())
 	if err := find.Order(orderQuery).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil
 }
-func (u *scriptInviteRepo) getInviteListOrdder(sort string, order string) string {
+func (u *scriptInviteRepo) getInviteListOrder(sort string, order string) string {
 	var sortQuery string
 	switch sort {
-	case "invite_status":
-		sortQuery = "invite_status"
-	case "expiretime":
-		sortQuery = "expiretime"
+	case "invite_status", "expiretime":
+		sortQuery = sort
 	default:
 		sortQuery = "createtime"
 	}
@@ -102,7 +100,7 @@ func (u *scriptInviteRepo) getInviteListOrdder(sort string, order string) string
 	case "ascend":
 		orderQuery = "asc"
 	case "descend":
-		orderQuery = "desc"
+		fallthrough
 	default:
 		orderQuery = "desc"
 	}
@@ -121,7 +119,7 @@ func (u *scriptInviteRepo) FindGroupPage(ctx context.Context, scriptId int64, gr
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	orderQuery := u.getInviteListOrdder(page.GetSort(), page.GetOrder())
+	orderQuery := u.getInviteListOrder(page.GetSort(), page.GetOrder())
 	if err := find.Order(orderQuery).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
