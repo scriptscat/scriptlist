@@ -2,7 +2,6 @@ package script_svc
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/codfrm/cago/database/db"
@@ -277,19 +276,13 @@ func (a *accessInviteSvc) AuditInviteCode(ctx context.Context, req *api.AuditInv
 func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInviteRequest) (*api.AcceptInviteResponse, error) {
 	user := auth_svc.Auth().Get(ctx)
 	var keyName = req.Code
-	if keyName == "" {
-		return nil, errors.New("keyName is empty")
-	}
-
 	err := a.locker.LockKey(ctx, keyName)
 	if err != nil {
 		return nil, err
 	}
-
 	defer func(locker sync.Locker, ctx context.Context, key string) {
 		_ = locker.UnlockKey(ctx, key)
 	}(a.locker, ctx, keyName)
-
 	invite, err := script_repo.ScriptInvite().FindByCode(ctx, req.Code)
 	if err != nil {
 		return nil, err
