@@ -2,10 +2,13 @@ package script_svc
 
 import (
 	"context"
+	"time"
+
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/pkg/sync"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
@@ -15,7 +18,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 )
@@ -42,9 +44,23 @@ type AccessInviteSvc interface {
 }
 
 type accessInviteSvc struct {
+	locker sync.Locker
 }
 
-var defaultAccessInvite = &accessInviteSvc{}
+func NewAccessInviteSvc() AccessInviteSvc {
+	return &accessInviteSvc{
+		locker: sync.NewLocker("accessInviteSvc"),
+	}
+}
+
+var defaultAccessInvite AccessInviteSvc
+
+func SetDefaultAccessInvite() {
+	if defaultAccessInvite == nil {
+		// 接口为空
+		defaultAccessInvite = NewAccessInviteSvc()
+	}
+}
 
 func AccessInvite() AccessInviteSvc {
 	return defaultAccessInvite
@@ -259,6 +275,14 @@ func (a *accessInviteSvc) AuditInviteCode(ctx context.Context, req *api.AuditInv
 // AcceptInvite 接受邀请
 func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInviteRequest) (*api.AcceptInviteResponse, error) {
 	user := auth_svc.Auth().Get(ctx)
+	var keyName = req.Code
+	err := a.locker.LockKey(ctx, keyName)
+	if err != nil {
+		return nil, err
+	}
+	defer func(locker sync.Locker, ctx context.Context, key string) {
+		_ = locker.UnlockKey(ctx, key)
+	}(a.locker, ctx, keyName)
 	invite, err := script_repo.ScriptInvite().FindByCode(ctx, req.Code)
 	if err != nil {
 		return nil, err
@@ -266,6 +290,7 @@ func (a *accessInviteSvc) AcceptInvite(ctx context.Context, req *api.AcceptInvit
 	if err := invite.Check(ctx); err != nil {
 		return nil, err
 	}
+
 	if invite.CodeType == script_entity.InviteCodeTypeLink {
 		// 邀请链接
 		err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
