@@ -3,6 +3,9 @@ package script_svc
 import (
 	"context"
 	"errors"
+	"strconv"
+	"time"
+
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -15,8 +18,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
-	"strconv"
-	"time"
 )
 
 type AccessSvc interface {

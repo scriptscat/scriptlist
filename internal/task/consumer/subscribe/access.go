@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"

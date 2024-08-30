@@ -3,11 +3,12 @@ package auth_svc
 import (
 	"context"
 	"errors"
-	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"
