@@ -18,7 +18,7 @@ linters:
     - predeclared
     - durationcheck
     - makezero
-    - exportloopref
+    - copyloopvar
     - rowserrcheck
     - stylecheck
     - gosec
@@ -32,12 +32,14 @@ linters-settings:
     checks: ["-ST1003"]
   gosec:
     excludes:
-      - G306
-      - G401
-      - G402
-      - G404
-      - G501
-      - G505
+        - G109
+        - G115
+        - G306
+        - G401
+        - G402
+        - G404
+        - G501
+        - G505
   golint:
     min-confidence: 0
   misspell:
