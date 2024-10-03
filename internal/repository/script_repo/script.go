@@ -207,21 +207,71 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 			},
 		})
 	}
+	functionSearch := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": must,
+			},
+		},
+	}
+	switch options.Sort {
+	case "today_download":
+		functionSearch["script_score"] = map[string]interface{}{
+			"script": map[string]interface{}{
+				"source": "Math.sqrt(10 + doc['today_download'].value)",
+			},
+		}
+	case "score":
+		functionSearch["script_score"] = map[string]interface{}{
+			"script": map[string]interface{}{
+				"source": "(doc['score'].value+10)/1.5",
+			},
+		}
+	case "createtime":
+		functionSearch["functions"] = []interface{}{
+			map[string]interface{}{
+				"gauss": map[string]interface{}{
+					"createtime": map[string]interface{}{
+						"origin": time.Now().Unix(),
+						"offset": 1209600,
+						"scale":  38880000,
+						"decay":  0.33,
+					},
+				},
+				"weight": 10,
+			},
+		}
+	case "updatetime":
+		functionSearch["functions"] = []interface{}{
+			map[string]interface{}{
+				"gauss": map[string]interface{}{
+					"updatetime": map[string]interface{}{
+						"origin": time.Now().Unix(),
+						"offset": 1209600,
+						"scale":  38880000,
+						"decay":  0.33,
+					},
+				},
+				"weight": 10,
+			},
+		}
+	case "total_download":
+		functionSearch["script_score"] = map[string]interface{}{
+			"script": map[string]interface{}{
+				"source": "_score * 200 + doc['today_download'].value",
+			},
+		}
+	default:
+		functionSearch["script_score"] = map[string]interface{}{
+			"script": map[string]interface{}{
+				"source": "_score * 200 + doc['today_download'].value",
+			},
+		}
+
+	}
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"function_score": map[string]interface{}{
-				"query": map[string]interface{}{
-					"bool": map[string]interface{}{
-						"must": must,
-					},
-				},
-				"script_score": map[string]interface{}{
-					"script": map[string]interface{}{
-						// 相似度分数*100 + 下载量
-						"source": "_score * 200 + doc['today_download'].value",
-					},
-				},
-			},
+			"function_score": functionSearch,
 		},
 		"size": page.GetLimit(),
 		"from": page.GetOffset(),
