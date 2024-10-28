@@ -848,6 +848,24 @@ func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.De
 		return nil, err
 	}
 	script.Status = consts.DELETE
+	// 判断是否有正式版本
+	oldCode, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	if oldCode == nil {
+		return nil, i18n.NewError(ctx, code.ScriptDeleteReleaseNotLatest)
+	}
+	if oldCode.ID == req.ID {
+		// 最新版本和要删除的版本相同, 再判断一下是否有下一个版本
+		oldCode, err = script_repo.ScriptCode().FindLatest(ctx, script.ID, 1, false)
+		if err != nil {
+			return nil, err
+		}
+		if oldCode == nil {
+			return nil, i18n.NewError(ctx, code.ScriptDeleteReleaseNotLatest)
+		}
+	}
 	if err := script_repo.Script().Update(ctx, script); err != nil {
 		return nil, err
 	}
