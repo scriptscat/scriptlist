@@ -54,6 +54,25 @@ func (u *User) CurrentUser(ctx *gin.Context, req *api.CurrentUserRequest) (*api.
 	return &api.CurrentUserResponse{InfoResponse: resp}, nil
 }
 
+// LogOut 登出当前用户
+func (u *User) LogOut(ctx *gin.Context, req *api.LogOutRequest) (*api.LogOutResponse, error) {
+	loginId, err := ctx.Cookie("login_id")
+	if err != nil {
+		return nil, err
+	}
+	token, err := ctx.Cookie("token")
+	if err != nil {
+		return nil, err
+	}
+	_, err = auth_svc.Auth().GetLogoutStruct(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
+	if err != nil {
+		return nil, err
+	}
+	ctx.SetCookie("login_id", "", -1, "/", "", false, true)
+	ctx.SetCookie("token", "", -1, "/", "", false, true)
+	return &api.LogOutResponse{}, nil
+}
+
 // Info 获取指定用户信息
 func (u *User) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoResponse, error) {
 	return user_svc.User().UserInfo(ctx, req.UID)
