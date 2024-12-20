@@ -365,7 +365,7 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 	if err != nil {
 		return nil, err
 	}
-	if err := script.CheckPermission(ctx); err != nil {
+	if err := script.CheckPermission(ctx, model.SuperModerator); err != nil {
 		return nil, err
 	}
 	if err := script.IsArchive(ctx); err != nil {
@@ -765,7 +765,8 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 	if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
 		return err
 	} else if old != nil {
-		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
+		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl),
+			zap.String("version", code.Version), zap.String("old_version", old.Version))
 		// 强制同步一次markdown
 		if forceSyncMarkdown {
 			if script.ContentUrl != "" {
