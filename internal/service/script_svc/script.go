@@ -1140,6 +1140,7 @@ func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body [
 		if data.Repository.FullName == "" {
 			return nil, i18n.NewError(ctx, code.WebhookRepositoryNotFound)
 		}
+		logger.Ctx(ctx).Info("处理github webhook请求", zap.Any("data", data))
 		list, err := script_repo.Script().FindSyncPrefix(ctx, req.UID, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 		if err != nil {
 			return nil, err
