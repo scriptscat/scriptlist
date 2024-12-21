@@ -72,21 +72,6 @@ func (mr *MockAuthSvcMockRecorder) GetLoginToken(ctx, uid, loginId, token any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoginToken", reflect.TypeOf((*MockAuthSvc)(nil).GetLoginToken), ctx, uid, loginId, token)
 }
 
-// GetLogoutStruct mocks base method.
-func (m *MockAuthSvc) GetLogoutStruct(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLogoutStruct", ctx, uid, loginId, token)
-	ret0, _ := ret[0].(*model.LoginToken)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetLogoutStruct indicates an expected call of GetLogoutStruct.
-func (mr *MockAuthSvcMockRecorder) GetLogoutStruct(ctx, uid, loginId, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogoutStruct", reflect.TypeOf((*MockAuthSvc)(nil).GetLogoutStruct), ctx, uid, loginId, token)
-}
-
 // Login mocks base method.
 func (m *MockAuthSvc) Login(ctx context.Context, uid int64) (*model.LoginToken, error) {
 	m.ctrl.T.Helper()
@@ -100,6 +85,21 @@ func (m *MockAuthSvc) Login(ctx context.Context, uid int64) (*model.LoginToken, 
 func (mr *MockAuthSvcMockRecorder) Login(ctx, uid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAuthSvc)(nil).Login), ctx, uid)
+}
+
+// Logout mocks base method.
+func (m *MockAuthSvc) Logout(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logout", ctx, uid, loginId, token)
+	ret0, _ := ret[0].(*model.LoginToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Logout indicates an expected call of Logout.
+func (mr *MockAuthSvcMockRecorder) Logout(ctx, uid, loginId, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockAuthSvc)(nil).Logout), ctx, uid, loginId, token)
 }
 
 // OAuthCallback mocks base method.

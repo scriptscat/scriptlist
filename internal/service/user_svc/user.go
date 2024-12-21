@@ -281,7 +281,7 @@ func (u *userSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutR
 	if err != nil {
 		return nil, err
 	}
-	_, err = auth_svc.Auth().GetLogoutStruct(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
+	_, err = auth_svc.Auth().Logout(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
 	if err != nil {
 		return nil, err
 	}

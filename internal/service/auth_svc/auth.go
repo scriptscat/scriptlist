@@ -48,7 +48,7 @@ type AuthSvc interface {
 	GetLoginToken(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
 	// SetCtx 设置用户信息到上下文
 	SetCtx(ctx context.Context, uid int64) (context.Context, error)
-	GetLogoutStruct(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
+	Logout(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
 }
 
 type authSvc struct {
@@ -242,7 +242,7 @@ func (a *authSvc) GetLoginToken(ctx context.Context, uid int64, loginId, token s
 	}
 	return m, nil
 }
-func (a *authSvc) GetLogoutStruct(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error) {
+func (a *authSvc) Logout(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error) {
 	m := &model.LoginToken{}
 	if err := cache.Ctx(ctx).Get("user:auth:login:" + loginId).Scan(m); err != nil {
 		return nil, err
