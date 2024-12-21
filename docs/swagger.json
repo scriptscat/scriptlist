@@ -57,6 +57,43 @@
                 }
             }
         },
+        "/logout": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.LogoutResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/open/crx-download/{id}": {
             "get": {
                 "description": "谷歌crx下载服务",
@@ -402,57 +439,9 @@
                 }
             }
         },
-      "/scripts/:id/lib-info": {
-        "put": {
-          "description": "更新库信息",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "更新库信息",
-          "parameters": [
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UpdateLibInfoRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UpdateLibInfoResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-                        }
-                    }
-                }
-            }
-        },
-      "/scripts/invite/{code}": {
-        "get": {
-          "description": "邀请码信息",
+        "/scripts/:id/lib-info": {
+            "put": {
+                "description": "更新库信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -460,15 +449,16 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script"
                 ],
-          "summary": "邀请码信息",
+                "summary": "更新库信息",
                 "parameters": [
                     {
-                        "type": "string",
-                        "name": "code",
-                        "in": "path",
-                        "required": true
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateLibInfoRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -480,7 +470,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                  "$ref": "#/definitions/script.InviteCodeInfoResponse"
+                                    "$ref": "#/definitions/script.UpdateLibInfoResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -497,9 +487,9 @@
                 }
             }
         },
-      "/scripts/invite/{code}/accept": {
-            "put": {
-              "description": "接受邀请",
+        "/scripts/invite/{code}": {
+            "get": {
+                "description": "邀请码信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -507,9 +497,56 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
-              "summary": "接受邀请",
+                "summary": "邀请码信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.InviteCodeInfoResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/invite/{code}/accept": {
+            "put": {
+                "description": "接受邀请",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/access_invite"
+                ],
+                "summary": "接受邀请",
                 "parameters": [
                     {
                         "type": "string",
@@ -521,7 +558,7 @@
                         "name": "body",
                         "in": "body",
                         "schema": {
-                          "$ref": "#/definitions/script.AcceptInviteRequest"
+                            "$ref": "#/definitions/script.AcceptInviteRequest"
                         }
                     }
                 ],
@@ -534,7 +571,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                  "$ref": "#/definitions/script.AcceptInviteResponse"
+                                    "$ref": "#/definitions/script.AcceptInviteResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -747,7 +784,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access"
+                    "script/access"
                 ],
                 "summary": "访问控制列表",
                 "parameters": [
@@ -794,7 +831,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access"
+                    "script/access"
                 ],
                 "summary": "添加组权限",
                 "parameters": [
@@ -848,7 +885,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access"
+                    "script/access"
                 ],
                 "summary": "添加用户权限, 通过用户名进行邀请",
                 "parameters": [
@@ -902,7 +939,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access"
+                    "script/access"
                 ],
                 "summary": "更新访问控制",
                 "parameters": [
@@ -960,7 +997,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access"
+                    "script/access"
                 ],
                 "summary": "删除访问控制",
                 "parameters": [
@@ -1291,7 +1328,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "群组列表",
                 "parameters": [
@@ -1301,10 +1338,10 @@
                         "in": "path",
                         "required": true
                     },
-                  {
-                    "type": "string",
-                    "name": "query",
-                    "in": "query"
+                    {
+                        "type": "string",
+                        "name": "query",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1341,7 +1378,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "创建群组",
                 "parameters": [
@@ -1395,7 +1432,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "更新群组",
                 "parameters": [
@@ -1453,7 +1490,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "删除群组",
                 "parameters": [
@@ -1513,7 +1550,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "群组成员列表",
                 "parameters": [
@@ -1564,7 +1601,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "添加成员",
                 "parameters": [
@@ -1624,7 +1661,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "更新成员",
                 "parameters": [
@@ -1688,7 +1725,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/group"
+                    "script/group"
                 ],
                 "summary": "移除成员",
                 "parameters": [
@@ -1754,7 +1791,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
                 "summary": "邀请码列表",
                 "parameters": [
@@ -1799,7 +1836,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
                 "summary": "创建邀请码",
                 "parameters": [
@@ -1853,7 +1890,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
                 "summary": "删除邀请码",
                 "parameters": [
@@ -1913,7 +1950,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
                 "summary": "审核邀请码",
                 "parameters": [
@@ -1973,7 +2010,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
                 "summary": "群组邀请码列表",
                 "parameters": [
@@ -1999,7 +2036,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                  "$ref": "#/definitions/script.GroupInviteCodeListResponse"
+                                    "$ref": "#/definitions/script.GroupInviteCodeListResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -2024,7 +2061,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/access_invite"
+                    "script/access_invite"
                 ],
                 "summary": "创建群组邀请码",
                 "parameters": [
@@ -2354,7 +2391,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "issue/comment"
+                    "issue/comment"
                 ],
                 "summary": "获取反馈评论列表",
                 "parameters": [
@@ -2405,7 +2442,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "issue/comment"
+                    "issue/comment"
                 ],
                 "summary": "创建反馈评论",
                 "parameters": [
@@ -2465,7 +2502,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "issue/comment"
+                    "issue/comment"
                 ],
                 "summary": "删除反馈评论",
                 "parameters": [
@@ -2816,7 +2853,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script/score"
                 ],
                 "summary": "获取脚本评分列表",
                 "parameters": [
@@ -2861,7 +2898,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script/score"
                 ],
                 "summary": "脚本评分",
                 "parameters": [
@@ -2915,7 +2952,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script/score"
                 ],
                 "summary": "用于获取自己对脚本的评价",
                 "parameters": [
@@ -2962,7 +2999,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "script/score"
+                    "script/score"
                 ],
                 "summary": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
                 "parameters": [
@@ -3143,60 +3180,60 @@
                                 "data": {
                                     "$ref": "#/definitions/script.StateResponse"
                                 },
-                              "msg": {
-                                "type": "string"
-                              }
+                                "msg": {
+                                    "type": "string"
+                                }
                             }
                         }
                     },
-                  "400": {
-                    "description": "Bad Request",
-                    "schema": {
-                      "$ref": "#/definitions/BadRequest"
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
                     }
-                  }
                 }
             }
         },
-      "/scripts/{id}/sync": {
-        "put": {
-          "description": "更新同步配置",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "更新同步配置",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UpdateSyncSettingRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UpdateSyncSettingResponse"
-                  },
+        "/scripts/{id}/sync": {
+            "put": {
+                "description": "更新同步配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "更新同步配置",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UpdateSyncSettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UpdateSyncSettingResponse"
+                                },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -4349,10 +4386,10 @@
         "httputils.PageRequest": {
             "type": "object",
             "properties": {
-              "order": {
-                "description": "Deprecated 请使用方法GetOrder",
-                "type": "string"
-              },
+                "order": {
+                    "description": "Deprecated 请使用方法GetOrder",
+                    "type": "string"
+                },
                 "page": {
                     "description": "Deprecated 请使用方法GetPage",
                     "type": "integer"
@@ -4361,9 +4398,9 @@
                     "description": "Deprecated 请使用方法GetSize",
                     "type": "integer"
                 },
-              "sort": {
-                "description": "Deprecated 请使用方法GetSort",
-                "type": "string"
+                "sort": {
+                    "description": "Deprecated 请使用方法GetSort",
+                    "type": "string"
                 }
             }
         },
@@ -4373,7 +4410,7 @@
                 "list": {
                     "type": "array",
                     "items": {
-                      "type": "any"
+                        "type": "any"
                     }
                 },
                 "total": {
@@ -4382,10 +4419,10 @@
             }
         },
         "issue.CloseRequest": {
-          "type": "object"
+            "type": "object"
         },
         "issue.CloseResponse": {
-          "type": "object"
+            "type": "object"
         },
         "issue.Comment": {
             "type": "object",
@@ -4422,7 +4459,7 @@
             }
         },
         "issue.CreateCommentResponse": {
-          "type": "object"
+            "type": "object"
         },
         "issue.CreateIssueRequest": {
             "type": "object",
@@ -4450,13 +4487,13 @@
             }
         },
         "issue.DeleteCommentRequest": {
-          "type": "object"
+            "type": "object"
         },
         "issue.DeleteCommentResponse": {
             "type": "object"
         },
         "issue.DeleteRequest": {
-          "type": "object"
+            "type": "object"
         },
         "issue.DeleteResponse": {
             "type": "object"
@@ -4507,40 +4544,40 @@
             }
         },
         "issue.ListCommentResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/issue.Comment"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Comment"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "issue.ListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/issue.Issue"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/issue.Issue"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "issue.OpenRequest": {
-          "type": "object"
+            "type": "object"
         },
         "issue.OpenResponse": {
-          "type": "object"
+            "type": "object"
         },
         "issue.UpdateLabelsRequest": {
             "type": "object",
@@ -4554,7 +4591,7 @@
             }
         },
         "issue.UpdateLabelsResponse": {
-          "type": "object"
+            "type": "object"
         },
         "issue.WatchRequest": {
             "type": "object",
@@ -4626,13 +4663,13 @@
             }
         },
         "script.AcceptInviteRequest": {
-          "type": "object",
-          "properties": {
-            "accept": {
-              "description": "邀请码类型不能拒绝",
-              "type": "boolean"
+            "type": "object",
+            "properties": {
+                "accept": {
+                    "description": "邀请码类型不能拒绝",
+                    "type": "boolean"
+                }
             }
-          }
         },
         "script.AcceptInviteResponse": {
             "type": "object"
@@ -4652,7 +4689,7 @@
                 "id": {
                     "type": "integer"
                 },
-              "invite_status": {
+                "invite_status": {
                     "description": "邀请状态 1=已接受 2=已拒绝 3=待接受",
                     "$ref": "#/definitions/script_entity.AccessInviteStatus"
                 },
@@ -4676,19 +4713,19 @@
             }
         },
         "script.AccessListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Access"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Access"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.AddGroupAccessRequest": {
             "type": "object",
@@ -4841,25 +4878,25 @@
                 "audit": {
                     "type": "boolean"
                 },
-              "count": {
+                "count": {
                     "type": "integer"
                 },
-              "days": {
+                "days": {
                     "description": "0 为永久",
                     "type": "integer"
                 }
             }
         },
         "script.CreateGroupInviteCodeResponse": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             }
-          }
         },
         "script.CreateGroupRequest": {
             "type": "object",
@@ -4881,25 +4918,25 @@
                 "audit": {
                     "type": "boolean"
                 },
-              "count": {
+                "count": {
                     "type": "integer"
                 },
-              "days": {
+                "days": {
                     "description": "0 为永久",
                     "type": "integer"
                 }
             }
         },
         "script.CreateInviteCodeResponse": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             }
-          }
         },
         "script.CreateRequest": {
             "type": "object",
@@ -4923,7 +4960,7 @@
                     "type": "string"
                 },
                 "public": {
-                  "description": "公开类型：1 公开 2 半公开 3 私有",
+                    "description": "公开类型：1 公开 2 半公开 3 私有",
                     "$ref": "#/definitions/script_entity.Public"
                 },
                 "type": {
@@ -4948,37 +4985,37 @@
             }
         },
         "script.DelScoreRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.DelScoreResponse": {
             "type": "object"
         },
         "script.DeleteAccessRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.DeleteAccessResponse": {
             "type": "object"
         },
         "script.DeleteCodeRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.DeleteCodeResponse": {
             "type": "object"
         },
         "script.DeleteGroupRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.DeleteGroupResponse": {
             "type": "object"
         },
         "script.DeleteInviteCodeRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.DeleteInviteCodeResponse": {
             "type": "object"
         },
         "script.DeleteRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.DeleteResponse": {
             "type": "object"
@@ -5035,35 +5072,35 @@
                 }
             }
         },
-      "script.GroupInviteCodeListResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "$ref": "#/definitions/script.InviteCode"
+        "script.GroupInviteCodeListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.InviteCode"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          },
-          "total": {
-            "type": "integer"
-          }
-        }
         },
         "script.GroupListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Group"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Group"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.GroupMember": {
             "type": "object",
@@ -5095,19 +5132,19 @@
             }
         },
         "script.GroupMemberListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.GroupMember"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.GroupMember"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.InfoResponse": {
             "type": "object",
@@ -5115,8 +5152,8 @@
                 "content": {
                     "type": "string"
                 },
-              "role": {
-                "$ref": "#/definitions/script_entity.AccessRole"
+                "role": {
+                    "$ref": "#/definitions/script_entity.AccessRole"
                 }
             }
         },
@@ -5137,7 +5174,7 @@
                 "id": {
                     "type": "integer"
                 },
-              "invite_status": {
+                "invite_status": {
                     "$ref": "#/definitions/script_entity.InviteStatus"
                 },
                 "is_audit": {
@@ -5154,102 +5191,102 @@
                 }
             }
         },
-      "script.InviteCodeInfoAccess": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "description": "访问权限 guest=访客 manager=管理员",
-            "$ref": "#/definitions/script_entity.AccessRole"
-          }
-        }
-      },
-      "script.InviteCodeInfoGroup": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
+        "script.InviteCodeInfoAccess": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "description": "访问权限 guest=访客 manager=管理员",
+                    "$ref": "#/definitions/script_entity.AccessRole"
                 }
             }
         },
-      "script.InviteCodeInfoResponse": {
-        "type": "object",
-        "properties": {
-          "access,omitempty": {
-            "description": "如果type=1, 则返回权限信息",
-            "$ref": "#/definitions/script.InviteCodeInfoAccess"
-          },
-          "code_type": {
-            "description": "邀请码类型 1=邀请码 2=邀请链接",
-            "$ref": "#/definitions/script_entity.InviteCodeType"
-          },
-          "group,omitempty": {
-            "description": "如果type=2, 则返回群组信息",
-            "$ref": "#/definitions/script.InviteCodeInfoGroup"
-          },
-          "invite_status": {
-            "description": "使用状态",
-            "$ref": "#/definitions/script_entity.InviteStatus"
-          },
-          "is_audit": {
-            "description": "是否需要审核 邀请码类型为邀请链接时，该字段固定为false",
-            "type": "boolean"
-          },
-          "script": {
-            "$ref": "#/definitions/script.Script"
-          },
-          "type": {
-            "description": "邀请类型 1=权限邀请码 2=群组邀请码",
-            "$ref": "#/definitions/script_entity.InviteType"
-          }
-        }
-      },
-        "script.InviteCodeListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.InviteCode"
-              }
-            },
-            "total": {
-              "type": "integer"
+        "script.InviteCodeInfoGroup": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
             }
-          }
+        },
+        "script.InviteCodeInfoResponse": {
+            "type": "object",
+            "properties": {
+                "access,omitempty": {
+                    "description": "如果type=1, 则返回权限信息",
+                    "$ref": "#/definitions/script.InviteCodeInfoAccess"
+                },
+                "code_type": {
+                    "description": "邀请码类型 1=邀请码 2=邀请链接",
+                    "$ref": "#/definitions/script_entity.InviteCodeType"
+                },
+                "group,omitempty": {
+                    "description": "如果type=2, 则返回群组信息",
+                    "$ref": "#/definitions/script.InviteCodeInfoGroup"
+                },
+                "invite_status": {
+                    "description": "使用状态",
+                    "$ref": "#/definitions/script_entity.InviteStatus"
+                },
+                "is_audit": {
+                    "description": "是否需要审核 邀请码类型为邀请链接时，该字段固定为false",
+                    "type": "boolean"
+                },
+                "script": {
+                    "$ref": "#/definitions/script.Script"
+                },
+                "type": {
+                    "description": "邀请类型 1=权限邀请码 2=群组邀请码",
+                    "$ref": "#/definitions/script_entity.InviteType"
+                }
+            }
+        },
+        "script.InviteCodeListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.InviteCode"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
         },
         "script.LastScoreResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Script"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Script"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.ListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Script"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Script"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.MigrateEsRequest": {
             "type": "object"
@@ -5272,7 +5309,7 @@
             "type": "object"
         },
         "script.RemoveMemberRequest": {
-          "type": "object"
+            "type": "object"
         },
         "script.RemoveMemberResponse": {
             "type": "object"
@@ -5304,19 +5341,19 @@
             }
         },
         "script.ScoreListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Score"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Score"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.Script": {
             "type": "object",
@@ -5384,7 +5421,7 @@
             }
         },
         "script.SelfScoreResponse": {
-          "type": "object"
+            "type": "object"
         },
         "script.StateResponse": {
             "type": "object",
@@ -5465,19 +5502,19 @@
         "script.UpdateGroupResponse": {
             "type": "object"
         },
-      "script.UpdateLibInfoRequest": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "script.UpdateLibInfoResponse": {
-        "type": "object"
+        "script.UpdateLibInfoRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.UpdateLibInfoResponse": {
+            "type": "object"
         },
         "script.UpdateMemberRequest": {
             "type": "object",
@@ -5555,43 +5592,43 @@
         "script.UpdateSettingResponse": {
             "type": "object"
         },
-      "script.UpdateSyncSettingRequest": {
-        "type": "object",
-        "properties": {
-          "content_url": {
-            "type": "string"
-          },
-          "definition_url": {
-            "type": "string"
-          },
-          "sync_mode": {
-            "$ref": "#/definitions/script_entity.SyncMode"
-          },
-          "sync_url": {
-            "type": "string"
-          }
-        }
-      },
-      "script.UpdateSyncSettingResponse": {
-        "type": "object"
+        "script.UpdateSyncSettingRequest": {
+            "type": "object",
+            "properties": {
+                "content_url": {
+                    "type": "string"
+                },
+                "definition_url": {
+                    "type": "string"
+                },
+                "sync_mode": {
+                    "$ref": "#/definitions/script_entity.SyncMode"
+                },
+                "sync_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.UpdateSyncSettingResponse": {
+            "type": "object"
         },
         "script.VersionCodeResponse": {
-          "type": "object"
+            "type": "object"
         },
         "script.VersionListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Code"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Code"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "script.WatchRequest": {
             "type": "object",
@@ -5700,14 +5737,14 @@
                 "pre-release"
             ]
         },
-      "script_entity.InviteCodeType": {
-        "description": "InviteCodeType enum type:\n- InviteCodeTypeCode: 1\n- InviteCodeTypeLink: 2",
-        "type": "integer",
-        "enum": [
-          1,
-          2
-        ]
-      },
+        "script_entity.InviteCodeType": {
+            "description": "InviteCodeType enum type:\n- InviteCodeTypeCode: 1\n- InviteCodeTypeLink: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ]
+        },
         "script_entity.InviteStatus": {
             "description": "InviteStatus enum type:\n- InviteStatusUnused: 1\n- InviteStatusUsed: 2\n- InviteStatusExpired: 3\n- InviteStatusPending: 4\n- InviteStatusReject: 5",
             "type": "integer",
@@ -5719,12 +5756,12 @@
                 5
             ]
         },
-      "script_entity.InviteType": {
-        "description": "InviteType enum type:\n- InviteTypeAccess: 1\n- InviteTypeGroup: 2",
-        "type": "integer",
-        "enum": [
-          1,
-          2
+        "script_entity.InviteType": {
+            "description": "InviteType enum type:\n- InviteTypeAccess: 1\n- InviteTypeGroup: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
             ]
         },
         "script_entity.Public": {
@@ -6027,34 +6064,34 @@
             }
         },
         "statistics.UserOriginResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/statistics.PieChart"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/statistics.PieChart"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "statistics.VisitDomainResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/statistics.PieChart"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/statistics.PieChart"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "statistics.VisitItem": {
             "type": "object",
@@ -6079,22 +6116,22 @@
             }
         },
         "statistics.VisitListResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/statistics.VisitItem"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/statistics.VisitItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "user.CurrentUserResponse": {
-          "type": "object"
+            "type": "object"
         },
         "user.FollowRequest": {
             "type": "object",
@@ -6161,6 +6198,9 @@
                 }
             }
         },
+        "user.LogOutResponse": {
+            "type": "object"
+        },
         "user.RefreshWebhookRequest": {
             "type": "object"
         },
@@ -6173,19 +6213,19 @@
             }
         },
         "user.ScriptResponse": {
-          "type": "object",
-          "properties": {
-            "list": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "$ref": "#/definitions/script.Script"
-              }
-            },
-            "total": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Script"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
             }
-          }
         },
         "user.SearchResponse": {
             "type": "object",

@@ -23,11 +23,11 @@ type InfoRequest struct {
 	UID      int64 `uri:"uid" binding:"required"`
 }
 
-type LogOutRequest struct {
+type LogoutRequest struct {
 	mux.Meta `path:"/logout" method:"GET"`
 }
 
-type LogOutResponse struct{}
+type LogoutResponse struct{}
 
 type InfoResponse struct {
 	UserID      int64            `json:"user_id"`
