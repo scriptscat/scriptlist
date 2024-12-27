@@ -131,3 +131,8 @@ func (u *User) UpdateConfig(ctx context.Context, req *api.UpdateConfigRequest) (
 func (u *User) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error) {
 	return user_svc.User().Search(ctx, req)
 }
+
+// Logout 登出账户
+func (u *User) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
+	return user_svc.User().Logout(ctx, req)
+}

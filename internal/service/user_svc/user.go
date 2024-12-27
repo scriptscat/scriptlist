@@ -6,6 +6,7 @@ import (
 
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/api/script"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
 	"github.com/scriptscat/scriptlist/internal/model"
@@ -36,6 +37,8 @@ type UserSvc interface {
 	UpdateConfig(ctx context.Context, req *api.UpdateConfigRequest) (*api.UpdateConfigResponse, error)
 	// Search 搜索用户
 	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+	// Logout TODO
+	Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error)
 }
 
 type userSvc struct {
@@ -267,4 +270,22 @@ func (u *userSvc) Search(ctx context.Context, req *api.SearchRequest) (*api.Sear
 	return &api.SearchResponse{
 		Users: ret,
 	}, nil
+}
+
+func (u *userSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
+	loginId, err := ctx.Cookie("login_id")
+	if err != nil {
+		return nil, err
+	}
+	token, err := ctx.Cookie("token")
+	if err != nil {
+		return nil, err
+	}
+	_, err = auth_svc.Auth().Logout(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
+	if err != nil {
+		return nil, err
+	}
+	ctx.SetCookie("login_id", "", -1, "/", "", false, true)
+	ctx.SetCookie("token", "", -1, "/", "", false, true)
+	return &api.LogoutResponse{}, nil
 }

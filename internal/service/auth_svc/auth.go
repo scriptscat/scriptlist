@@ -48,6 +48,7 @@ type AuthSvc interface {
 	GetLoginToken(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
 	// SetCtx 设置用户信息到上下文
 	SetCtx(ctx context.Context, uid int64) (context.Context, error)
+	Logout(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error)
 }
 
 type authSvc struct {
@@ -238,6 +239,23 @@ func (a *authSvc) GetLoginToken(ctx context.Context, uid int64, loginId, token s
 	}
 	if m.Expired(TokenAuthMaxAge) {
 		return nil, httputils.NewError(http.StatusUnauthorized, -1, "token已过期")
+	}
+	return m, nil
+}
+func (a *authSvc) Logout(ctx context.Context, uid int64, loginId, token string) (*model.LoginToken, error) {
+	m := &model.LoginToken{}
+	if err := cache.Ctx(ctx).Get("user:auth:login:" + loginId).Scan(m); err != nil {
+		return nil, err
+	}
+	if m.UID != uid {
+		return nil, httputils.NewError(http.StatusUnauthorized, -1, "token不匹配")
+	}
+	if m.Token != token {
+		return nil, httputils.NewError(http.StatusUnauthorized, -1, "无效的token")
+	}
+	err := cache.Ctx(ctx).Del("user:auth:login:" + m.ID)
+	if err != nil {
+		return nil, httputils.NewError(http.StatusUnauthorized, -1, "信息清除失败")
 	}
 	return m, nil
 }

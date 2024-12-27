@@ -43,6 +43,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 			controller.GetConfig,
 			controller.UpdateConfig,
 			controller.Search,
+			controller.Logout,
 		)
 		r.GET("/users/:uid/avatar", controller.Avatar())
 		r.Group("/").Bind(
