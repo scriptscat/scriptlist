@@ -194,6 +194,7 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 			"delete":       struct{}{},
 			"manage":       struct{}{},
 			"read:info":    struct{}{},
+			"reply:score":  struct{}{},
 		},
 		"group": {
 			"read":   struct{}{},
@@ -212,10 +213,11 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 	},
 	"owner": {
 		"script": {
-			"write":     struct{}{},
-			"delete":    struct{}{},
-			"manage":    struct{}{},
-			"read:info": struct{}{},
+			"write":       struct{}{},
+			"delete":      struct{}{},
+			"manage":      struct{}{},
+			"read:info":   struct{}{},
+			"reply:score": struct{}{},
 		},
 		"group": {
 			"read":   struct{}{},

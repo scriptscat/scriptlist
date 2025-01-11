@@ -30,9 +30,66 @@ type ScoreSvc interface {
 	SelfScore(ctx context.Context, req *api.SelfScoreRequest) (*api.SelfScoreResponse, error)
 	// DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
 	DelScore(ctx context.Context, req *api.DelScoreRequest) (*api.DelScoreResponse, error)
+	ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (*api.ReplyScoreResponse, error)
 }
 
 type scoreSvc struct {
+}
+
+func (s *scoreSvc) ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (*api.ReplyScoreResponse, error) {
+	commentID := req.CommentID //被评论的评分
+	scriptId := req.ScriptId   //脚本id
+	//判断脚本的状态，可用后下一步
+	script, err2 := script_repo.Script().Find(ctx, scriptId)
+	if err2 != nil {
+		return nil, err2
+	}
+	if err := script.CheckOperate(ctx); err != nil {
+		return nil, err
+	}
+	//判断评论的状态，可用后下一步
+	score, err := script_repo.ScriptScore().Find(ctx, commentID)
+	if err != nil {
+		return nil, err
+	}
+	if score == nil {
+		return nil, httputils.NewError(http.StatusNotFound, -1, "无法找到评分信息")
+	}
+	reply, err := script_repo.ScriptScore().FindReplayByComment(ctx, commentID, scriptId)
+	if err != nil {
+		return nil, err
+	}
+	if reply == nil {
+		//不存在记录，创建一条记录
+		err := script_repo.ScriptScore().CreateReplayByComment(ctx, &script_entity.ScriptScoreReply{
+			CommentID:  commentID,
+			ScriptID:   scriptId,
+			Message:    req.Message,
+			Createtime: time.Now().Unix(),
+			Updatetime: time.Now().Unix(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		//给用户发一个信息
+		if err := notice_svc.Notice().Send(ctx, score.UserID, notice_svc.ScriptScoreReplyTemplate,
+			notice_svc.WithFrom(script.UserID), notice_svc.WithParams(&template.ScriptReplyScore{
+				ScriptID: scriptId,
+				Name:     script.Name,
+				Content:  req.Message,
+			})); err != nil {
+			// 发送失败不影响主要流程, 只记录错误
+			logger.Ctx(ctx).Error("作者回复通知失败", zap.Int64("script", scriptId), zap.Int64("commentID", commentID), zap.Error(err))
+		}
+		return &api.ReplyScoreResponse{}, nil
+	}
+	reply.Message = req.Message
+	reply.Updatetime = time.Now().Unix()
+	err = script_repo.ScriptScore().UpdateReplayByComment(ctx, reply)
+	if err != nil {
+		return nil, err
+	}
+	return &api.ReplyScoreResponse{}, nil
 }
 
 var defaultScore = &scoreSvc{}
@@ -166,15 +223,24 @@ func (s *scoreSvc) ToScore(ctx context.Context, score *script_entity.ScriptScore
 	if err != nil {
 		return nil, err
 	}
+	var message string
+	comment, err := script_repo.ScriptScore().FindReplayByComment(ctx, score.ID, score.ScriptID)
+	if err != nil {
+		return nil, err
+	}
+	if comment != nil {
+		message = comment.Message
+	}
 	return &api.Score{
-		UserInfo:   user.UserInfo(),
-		ID:         score.ID,
-		ScriptID:   score.ScriptID,
-		Score:      score.Score,
-		Message:    score.Message,
-		Createtime: score.Createtime,
-		Updatetime: score.Updatetime,
-		State:      score.State,
+		UserInfo:      user.UserInfo(),
+		ID:            score.ID,
+		ScriptID:      score.ScriptID,
+		Score:         score.Score,
+		Message:       score.Message,
+		Createtime:    score.Createtime,
+		Updatetime:    score.Updatetime,
+		AuthorMessage: message,
+		State:         score.State,
 	}, nil
 }
 

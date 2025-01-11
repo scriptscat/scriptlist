@@ -23,6 +23,9 @@ type ScriptScoreRepo interface {
 	ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptScore, int64, error)
 	// FindByUser 查询该用户在该脚本下是否有过评分
 	FindByUser(ctx context.Context, uid, scriptId int64) (*script_entity.ScriptScore, error)
+	FindReplayByComment(ctx context.Context, commentId, scriptId int64) (*script_entity.ScriptScoreReply, error)
+	CreateReplayByComment(ctx context.Context, scoreReply *script_entity.ScriptScoreReply) error
+	UpdateReplayByComment(ctx context.Context, scoreReply *script_entity.ScriptScoreReply) error
 	// LastScore 最新的评分
 	LastScore(ctx context.Context, page httputils.PageRequest) ([]int64, error)
 }
@@ -68,6 +71,17 @@ func (u *scriptScoreRepo) FindByUser(ctx context.Context, uid, scriptId int64) (
 	return ret, nil
 }
 
+func (u *scriptScoreRepo) FindReplayByComment(ctx context.Context, commentId, scriptId int64) (*script_entity.ScriptScoreReply, error) {
+	ret := &script_entity.ScriptScoreReply{}
+	if err := db.Ctx(ctx).Where("comment_id=? and script_id=?", commentId, scriptId).First(ret).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}
+
 func (u *scriptScoreRepo) Find(ctx context.Context, id int64) (*script_entity.ScriptScore, error) {
 	ret := &script_entity.ScriptScore{ID: id}
 	if err := db.Ctx(ctx).Where("state=?", consts.ACTIVE).First(ret).Error; err != nil {
@@ -87,6 +101,13 @@ func (u *scriptScoreRepo) Create(ctx context.Context, scriptScore *script_entity
 		return err
 	}
 	return db.Ctx(ctx).Create(scriptScore).Error
+}
+func (u *scriptScoreRepo) CreateReplayByComment(ctx context.Context, scoreReply *script_entity.ScriptScoreReply) error {
+	return db.Ctx(ctx).Create(scoreReply).Error
+}
+
+func (u *scriptScoreRepo) UpdateReplayByComment(ctx context.Context, scoreReply *script_entity.ScriptScoreReply) error {
+	return db.Ctx(ctx).Updates(scoreReply).Error
 }
 
 func (u *scriptScoreRepo) Update(ctx context.Context, scriptScore *script_entity.ScriptScore) error {

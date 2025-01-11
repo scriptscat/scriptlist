@@ -42,6 +42,13 @@ func (s *Score) Router(r *mux.Router) {
 				},
 				Handler: []interface{}{s.DelScore},
 			},
+			//管理员和作者才可以回复评分
+			&muxutils.RouterTree{
+				Middleware: []gin.HandlerFunc{
+					service.Access().CheckHandler("script", "reply:score"),
+				},
+				Handler: []interface{}{s.ReplyScore},
+			},
 		},
 	}})
 }
@@ -64,4 +71,9 @@ func (s *Score) SelfScore(ctx context.Context, req *api.SelfScoreRequest) (*api.
 // DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
 func (s *Score) DelScore(ctx context.Context, req *api.DelScoreRequest) (*api.DelScoreResponse, error) {
 	return service.Score().DelScore(ctx, req)
+}
+
+// ReplyScore 对用户评分进行回复，只有管理员和作者才可以进行回复
+func (s *Score) ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (*api.ReplyScoreResponse, error) {
+	return service.Score().ReplyScore(ctx, req)
 }
