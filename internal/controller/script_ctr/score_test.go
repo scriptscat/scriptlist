@@ -3,10 +3,11 @@ package script_ctr
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-	"testing"
 
 	"github.com/codfrm/cago/server/mux/muxtest"
 	"github.com/scriptscat/scriptlist/internal/api/script"
