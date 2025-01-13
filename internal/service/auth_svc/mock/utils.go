@@ -47,5 +47,4 @@ func (u *AuthUtil) Get(uids ...int64) *gomock.Call {
 	return u.m.EXPECT().Get(gomock.Any()).Return(&model.AuthInfo{
 		UID: uid,
 	})
-
 }

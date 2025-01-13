@@ -8,13 +8,14 @@ import (
 
 type Score struct {
 	user_entity.UserInfo
-	ID         int64  `json:"id"`
-	ScriptID   int64  `json:"script_id"`
-	Score      int64  `json:"score"`
-	Message    string `json:"message"`
-	Createtime int64  `json:"createtime"`
-	Updatetime int64  `json:"updatetime"`
-	State      int64  `json:"state"`
+	ID            int64  `json:"id"`
+	ScriptID      int64  `json:"script_id"`
+	Score         int64  `json:"score"`
+	Message       string `json:"message"`
+	AuthorMessage string `json:"author_message"`
+	Createtime    int64  `json:"createtime"`
+	Updatetime    int64  `json:"updatetime"`
+	State         int64  `json:"state"`
 }
 
 // PutScoreRequest 脚本评分
@@ -55,5 +56,13 @@ type DelScoreRequest struct {
 	ScoreId  int64 `uri:"scoreId" binding:"required"`
 }
 
+type ReplyScoreRequest struct {
+	mux.Meta  `path:"/scripts/:id/commentReply" method:"PUT"`
+	ScriptId  int64  `uri:"id" binding:"required"`
+	Message   string `json:"message" binding:"required"`
+	CommentID int64  `json:"commentID" binding:"required"`
+}
+type ReplyScoreResponse struct {
+}
 type DelScoreResponse struct {
 }

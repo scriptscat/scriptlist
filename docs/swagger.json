@@ -1318,6 +1318,58 @@
                 }
             }
         },
+        "/scripts/{id}/commentReply": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/score"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.ReplyScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.ReplyScoreResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/{id}/group": {
             "get": {
                 "description": "群组列表",
@@ -5314,9 +5366,26 @@
         "script.RemoveMemberResponse": {
             "type": "object"
         },
+        "script.ReplyScoreRequest": {
+            "type": "object",
+            "properties": {
+                "commentID": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "script.ReplyScoreResponse": {
+            "type": "object"
+        },
         "script.Score": {
             "type": "object",
             "properties": {
+                "author_message": {
+                    "type": "string"
+                },
                 "createtime": {
                     "type": "integer"
                 },
@@ -6198,7 +6267,7 @@
                 }
             }
         },
-        "user.LogOutResponse": {
+        "user.LogoutResponse": {
             "type": "object"
         },
         "user.RefreshWebhookRequest": {

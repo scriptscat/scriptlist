@@ -2,13 +2,15 @@ package script_ctr
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/server/mux/muxtest"
-	"github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+
+	"github.com/codfrm/cago/server/mux/muxtest"
+	"github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	mock_script_repo "github.com/scriptscat/scriptlist/internal/repository/script_repo/mock"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -36,6 +38,10 @@ func TestScore_Router(t *testing.T) {
 	ctx := context.Background()
 	mockScore := mock_script_repo.NewMockScriptScoreRepo(mockCtrl)
 	script_repo.RegisterScriptScore(mockScore)
+	mockAccess := mock_script_repo.NewMockScriptAccessRepo(mockCtrl)
+	script_repo.RegisterScriptAccess(mockAccess)
+	mockGroupMember := mock_script_repo.NewMockScriptGroupMemberRepo(mockCtrl)
+	script_repo.RegisterScriptGroupMember(mockGroupMember)
 	convey.Convey("删除评分", t, func() {
 		convey.Convey("未登录", func() {
 			mockAuth.U().NoLogin()
@@ -71,4 +77,69 @@ func TestScore_Router(t *testing.T) {
 			})
 		})
 	})
+	convey.Convey("回复评分", t, func() {
+		convey.Convey("未登录", func() {
+			mockAuth.U().NoLogin()
+			err := testMux.Do(ctx, &script.ReplyScoreRequest{}, &script.ReplyScoreResponse{})
+			convey.So(err, convey.ShouldBeError, "未登录")
+		})
+		convey.Convey("非作者回复", func() {
+			mockAuth.U().Get().Times(2) //登录检测查一次，权限查一次
+			mockAccess.EXPECT().FindByLinkID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return([]*script_entity.ScriptAccess{}, nil)
+			mockScriptRepo.EXPECT().Find(gomock.Any(), int64(1)).Return(&script_entity.Script{
+				ID:     1,
+				UserID: 2,
+				Status: consts.ACTIVE,
+			}, nil)
+			mockGroupMember.EXPECT().FindByUserId(gomock.Any(), gomock.Any(), gomock.Any()).Return([]*script_entity.ScriptGroupMember{}, nil)
+			err := testMux.Do(ctx, &script.ReplyScoreRequest{ScriptId: 1, CommentID: 1, Message: "测试"}, &script.ReplyScoreResponse{})
+			convey.So(err, convey.ShouldBeError, "用户不允许操作")
+		})
+		convey.Convey("作者回复", func() {
+			//登录检测查一次，权限查一次
+			mockAuth.U().Get().Times(2).Return(&model.AuthInfo{
+				UID: 2,
+			})
+			mockScriptRepo.EXPECT().Find(gomock.Any(), int64(66)).Return(&script_entity.Script{
+				ID:     1,
+				UserID: 2,
+				Status: consts.ACTIVE,
+			}, nil).Times(2)
+			mockScore.EXPECT().Find(gomock.Any(), int64(21)).Return(&script_entity.ScriptScore{
+				ID:     21,
+				UserID: 1,
+			}, nil)
+			convey.Convey("作者创建回复信息", func() {
+				mockScore.EXPECT().FindReplayByComment(gomock.Any(), int64(21), int64(66)).Return(nil, nil)
+				mockScore.EXPECT().CreateReplayByComment(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, scoreReply *script_entity.ScriptScoreReply) error {
+					if scoreReply.Message == "测试" && scoreReply.ScriptID == 66 && scoreReply.CommentID == 21 {
+						return nil
+					}
+					return errors.New("数据不匹配")
+				})
+				mockUserRepo.EXPECT().Find(gomock.Any(), int64(2)).Return(nil, errors.New("发信用户搜索错误"))
+
+				err := testMux.Do(ctx, &script.ReplyScoreRequest{ScriptId: 66, CommentID: 21, Message: "测试"}, &script.ReplyScoreResponse{})
+				convey.So(err, convey.ShouldBeNil)
+			})
+			convey.Convey("作者修改回复信息", func() {
+				mockScore.EXPECT().FindReplayByComment(gomock.Any(), int64(21), int64(66)).Return(&script_entity.ScriptScoreReply{
+					ID:        12,
+					CommentID: 21,
+					ScriptID:  66,
+					Message:   "初始化",
+				}, nil)
+				mockScore.EXPECT().UpdateReplayByComment(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, reply *script_entity.ScriptScoreReply) error {
+					if reply.Message == "测试" {
+						return nil
+					}
+					return errors.New("数据不匹配")
+				})
+				err := testMux.Do(ctx, &script.ReplyScoreRequest{ScriptId: 66, CommentID: 21, Message: "测试"}, &script.ReplyScoreResponse{})
+				convey.So(err, convey.ShouldBeNil)
+			})
+		})
+
+	})
+
 }

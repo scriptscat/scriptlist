@@ -10,3 +10,13 @@ type ScriptScore struct {
 	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`
 	State      int64  `gorm:"column:state;type:int(10);default:1"`
 }
+
+type ScriptScoreReply struct {
+	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	CommentID  int64  `gorm:"column:comment_id;type:bigint(20);uniqueIndex:idx_comment_script,priority:1"`
+	ScriptID   int64  `gorm:"column:script_id;type:bigint(20);uniqueIndex:idx_comment_script,priority:2"`
+	Message    string `gorm:"column:message;type:longtext"`
+	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
+	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`
+	State      int64  `gorm:"column:state;type:int(10);default:1"`
+}
