@@ -130,14 +130,15 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 	}
 	if score == nil {
 		//不存在记录，创建一条记录
-		err := script_repo.ScriptScore().Create(ctx, &script_entity.ScriptScore{
+		var InsertScore = &script_entity.ScriptScore{
 			UserID:     uid,
 			ScriptID:   scriptId,
 			Score:      req.Score,
 			Message:    req.Message,
 			Createtime: time.Now().Unix(),
 			Updatetime: time.Now().Unix(),
-		})
+		}
+		err := script_repo.ScriptScore().Create(ctx, InsertScore)
 		if err != nil {
 			return nil, err
 		}
@@ -156,7 +157,7 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 		if err := script_repo.ScriptStatistics().IncrScore(ctx, scriptId, req.Score, 1); err != nil {
 			logger.Ctx(ctx).Error("评分统计失败", zap.Int64("script", scriptId), zap.Int64("user", uid), zap.Error(err))
 		}
-		return &api.PutScoreResponse{}, nil
+		return &api.PutScoreResponse{ID: InsertScore.ID}, nil
 	}
 	// 存在记录,但是状态不是激活状态,可能已经被管理员删除了,禁止再次评论
 	if score.State != consts.ACTIVE {
@@ -176,7 +177,7 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 	if err := script_repo.ScriptStatistics().IncrScore(ctx, scriptId, req.Score-oldScore, 0); err != nil {
 		logger.Ctx(ctx).Error("评分统计失败", zap.Int64("script", scriptId), zap.Int64("user", uid), zap.Error(err))
 	}
-	return nil, nil
+	return &api.PutScoreResponse{ID: score.ID}, nil
 }
 
 // ScoreList 获取脚本评分列表

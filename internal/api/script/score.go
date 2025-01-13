@@ -27,6 +27,7 @@ type PutScoreRequest struct {
 }
 
 type PutScoreResponse struct {
+	ID int64 `json:"id"`
 }
 
 // ScoreListRequest 获取脚本评分列表
