@@ -56,8 +56,11 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 		auth_svc.Auth().RequireLogin(false),
 		script_svc.Script().RequireScript(), s.DownloadLib())
 	muxutils.BindTree(r, []*muxutils.RouterTree{
-		// 无需鉴权
+		// 需要半鉴权
 		{
+			Middleware: []gin.HandlerFunc{
+				auth_svc.Auth().RequireLogin(false),
+			},
 			Handler: []interface{}{
 				s.List,
 				s.LastScore,
@@ -67,7 +70,8 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 		{
 			Middleware: []gin.HandlerFunc{
 				auth_svc.Auth().RequireLogin(false),
-				script_svc.Script().RequireScript()},
+				script_svc.Script().RequireScript(),
+			},
 			Handler: []interface{}{
 				s.Info,
 				s.Code,
