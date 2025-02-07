@@ -33,8 +33,9 @@ var zhCN = map[int]string{
 	ScriptChangePreReleaseNotLatest: "修改预发布版本失败,没有新的正式版本了",
 	ScriptMustHaveVersion:           "脚本必须有有一个版本",
 
-	WebhookSecretError:        "Webhook Secret 错误",
-	WebhookRepositoryNotFound: "仓库不存在",
+	WebhookSecretError:           "Webhook Secret 错误",
+	WebhookRepositoryNotFound:    "仓库不存在",
+	ScriptDeleteReleaseNotLatest: "删除发布版本失败,没有新的正式版本了",
 
 	IssueLabelNotExist:   "标签不存在",
 	IssueNotFound:        "反馈不存在",

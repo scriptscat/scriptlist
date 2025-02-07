@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/scriptscat/scriptlist/internal/model"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+
 	"github.com/codfrm/cago/database/cache"
 	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/db"
@@ -103,7 +106,10 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 	scriptTbName := (&entity.Script{}).TableName()
 	find := db.Ctx(ctx).Model(&entity.Script{}).Where(scriptTbName+".status=?", consts.ACTIVE)
 	if !options.Self {
-		find.Where("public=? and unwell=?", entity.PublicScript, entity.Well)
+		user := auth_svc.Auth().Get(ctx)
+		if user == nil || !user.AdminLevel.IsAdmin(model.Admin) {
+			find = find.Where("public=? and unwell=?", entity.PublicScript, entity.Well)
+		}
 	}
 	switch options.Type {
 	case 1: // 用户脚本
@@ -190,15 +196,18 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 		},
 	}
 	if !options.Self {
-		must = append(must, map[string]interface{}{
-			"match": map[string]interface{}{
-				"public": entity.PublicScript,
-			},
-		}, map[string]interface{}{
-			"match": map[string]interface{}{
-				"unwell": entity.Well,
-			},
-		})
+		user := auth_svc.Auth().Get(ctx)
+		if user == nil || !user.AdminLevel.IsAdmin(model.Admin) {
+			must = append(must, map[string]interface{}{
+				"match": map[string]interface{}{
+					"public": entity.PublicScript,
+				},
+			}, map[string]interface{}{
+				"match": map[string]interface{}{
+					"unwell": entity.Well,
+				},
+			})
+		}
 	}
 	if options.UserID != 0 {
 		must = append(must, map[string]interface{}{
@@ -337,8 +346,8 @@ func (u *scriptRepo) FindSyncScript(ctx context.Context, page httputils.PageRequ
 func (u *scriptRepo) FindSyncPrefix(ctx context.Context, uid int64, prefix string) ([]*entity.Script, error) {
 	var list []*entity.Script
 	if err := db.Ctx(ctx).Where(
-		"user_id=? and sync_mode=? and status=? and sync_url like ?",
-		uid, entity.SyncModeAuto, consts.ACTIVE, prefix+"%",
+		"user_id=? and status=? and sync_url like ?",
+		uid, consts.ACTIVE, prefix+"%",
 	).Find(&list).Error; err != nil {
 		return nil, err
 	}

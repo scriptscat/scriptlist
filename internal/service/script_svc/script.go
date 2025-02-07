@@ -365,7 +365,7 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 	if err != nil {
 		return nil, err
 	}
-	if err := script.CheckPermission(ctx); err != nil {
+	if err := script.CheckPermission(ctx, model.SuperModerator); err != nil {
 		return nil, err
 	}
 	if err := script.IsArchive(ctx); err != nil {
@@ -765,7 +765,8 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 	if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
 		return err
 	} else if old != nil {
-		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl))
+		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl),
+			zap.String("version", code.Version), zap.String("old_version", old.Version))
 		// 强制同步一次markdown
 		if forceSyncMarkdown {
 			if script.ContentUrl != "" {
@@ -848,6 +849,24 @@ func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.De
 		return nil, err
 	}
 	script.Status = consts.DELETE
+	// 判断是否有正式版本
+	oldCode, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	if oldCode == nil {
+		return nil, i18n.NewError(ctx, code.ScriptDeleteReleaseNotLatest)
+	}
+	if oldCode.ID == req.ID {
+		// 最新版本和要删除的版本相同, 再判断一下是否有下一个版本
+		oldCode, err = script_repo.ScriptCode().FindLatest(ctx, script.ID, 1, false)
+		if err != nil {
+			return nil, err
+		}
+		if oldCode == nil {
+			return nil, i18n.NewError(ctx, code.ScriptDeleteReleaseNotLatest)
+		}
+	}
 	if err := script_repo.Script().Update(ctx, script); err != nil {
 		return nil, err
 	}
@@ -1121,6 +1140,7 @@ func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body [
 		if data.Repository.FullName == "" {
 			return nil, i18n.NewError(ctx, code.WebhookRepositoryNotFound)
 		}
+		logger.Ctx(ctx).Info("处理github webhook请求", zap.Any("data", data))
 		list, err := script_repo.Script().FindSyncPrefix(ctx, req.UID, "https://raw.githubusercontent.com/"+data.Repository.FullName)
 		if err != nil {
 			return nil, err

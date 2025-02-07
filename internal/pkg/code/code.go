@@ -33,6 +33,8 @@ const (
 
 	WebhookSecretError
 	WebhookRepositoryNotFound
+
+	ScriptDeleteReleaseNotLatest
 )
 
 // issue
