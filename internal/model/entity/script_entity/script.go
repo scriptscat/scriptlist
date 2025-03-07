@@ -244,7 +244,7 @@ func (s *Code) CheckOperate(ctx context.Context, script *Script) error {
 
 // 解析脚本的元数据
 func parseCodeMeta(ctx context.Context, scriptCode string) (string, string, error) {
-	reg := regexp.MustCompile(`\/\/\s*==UserScript==([\s\S]+?)\/\/\s*==\/UserScript==`)
+	reg := regexp.MustCompile(`\/\/\s*==(UserScript|UserSubscribe)==([\s\S]+?)\/\/\s*==\/(UserScript|UserSubscribe)==`)
 	ret := reg.FindString(scriptCode)
 	if ret == "" {
 		return "", "", i18n.NewError(ctx, code.ScriptParseFailed)
