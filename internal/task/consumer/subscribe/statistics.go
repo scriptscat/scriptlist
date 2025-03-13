@@ -35,8 +35,8 @@ func (s *Statistics) Subscribe(ctx context.Context) error {
 	return nil
 }
 
-func (s *Statistics) statisticSyncKey(scriptId int64) string {
-	return fmt.Sprintf("script:statistic:sync:statistic:%d", scriptId)
+func (s *Statistics) statisticSyncKey(scriptId int64, key string) string {
+	return fmt.Sprintf("script:statistic:sync:statistic:%d:%s", scriptId, key)
 }
 
 func SyncIncr(ctx context.Context, key, field string, update func(ctx context.Context, num int64) error) error {
@@ -82,14 +82,18 @@ func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 			return err
 		} else if ok {
 			// 统计总量
-			if err := script_repo.ScriptStatistics().IncrDownload(ctx, msg.ScriptID); err != nil {
-				logger.Ctx(ctx).Error("统计总下载量失败", zap.Error(err))
-				return err
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID, "download"), "total",
+				func(ctx context.Context, num int64) error {
+					return script_repo.ScriptStatistics().IncrDownload(ctx, msg.ScriptID, num)
+				}); err != nil {
+				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
 			}
 			// 统计当日
-			if err := script_repo.ScriptDateStatistics().IncrDownload(ctx, msg.ScriptID, msg.Time); err != nil {
-				logger.Ctx(ctx).Error("统计当日下载量失败", zap.Error(err))
-				return err
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID, "download"), msg.Time.Format("2006-01-02"),
+				func(ctx context.Context, num int64) error {
+					return script_repo.ScriptDateStatistics().IncrDownload(ctx, msg.ScriptID, msg.Time, num)
+				}); err != nil {
+				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
 			}
 		}
 	case statistics_repo.UpdateScriptStatistics:
@@ -97,14 +101,15 @@ func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 			logger.Ctx(ctx).Error("统计更新量失败", zap.Error(err))
 			return err
 		} else if ok {
-			// 统计当日
-			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID), "total",
+			// 统计总量
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID, "update"), "total",
 				func(ctx context.Context, num int64) error {
 					return script_repo.ScriptStatistics().IncrUpdate(ctx, msg.ScriptID, num)
 				}); err != nil {
 				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
 			}
-			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID), msg.Time.Format("2006-01-02"),
+			// 统计当日
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID, "update"), msg.Time.Format("2006-01-02"),
 				func(ctx context.Context, num int64) error {
 					return script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time, num)
 				}); err != nil {
