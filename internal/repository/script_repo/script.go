@@ -83,7 +83,7 @@ func (u *scriptRepo) Find(ctx context.Context, id int64) (*entity.Script, error)
 			return nil, err
 		}
 		return ret, nil
-	}, cache.WithDepend(u.KeyDepend(id))).Scan(ret)
+	}, cache.WithDepend(u.KeyDepend(id)), cache.Expiration(time.Hour)).Scan(ret)
 	if err != nil {
 		return nil, err
 	}
