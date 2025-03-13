@@ -22,7 +22,7 @@ type ScriptStatisticsRepo interface {
 	FindByScriptID(ctx context.Context, scriptId int64) (*entity.ScriptStatistics, error)
 	// IncrDownload 增加下载量,不会去重
 	IncrDownload(ctx context.Context, scriptId int64) error
-	IncrUpdate(ctx context.Context, scriptId int64) error
+	IncrUpdate(ctx context.Context, scriptId int64, num int64) error
 	// IncrScore 分数统计,当用户分数变更时可以使用之前的分数和之后的分数进行计算,num为0
 	IncrScore(ctx context.Context, scriptId, score int64, num int) error
 }
@@ -98,9 +98,9 @@ func (u *scriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64)
 	return nil
 }
 
-func (u *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64) error {
+func (u *scriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64, num int64) error {
 	if db.Ctx(ctx).Model(&entity.ScriptStatistics{}).Where("script_id=?", scriptId).
-		Update("update", gorm.Expr("`update`+1")).RowsAffected == 0 {
+		Update("update", gorm.Expr("`update`+?", num)).RowsAffected == 0 {
 		return db.Ctx(ctx).Save(&entity.ScriptStatistics{
 			ScriptID: scriptId,
 			Update:   1,

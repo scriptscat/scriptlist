@@ -34,6 +34,14 @@ func (s *Statistics) Subscribe(ctx context.Context) error {
 	return nil
 }
 
+func (s *Statistics) statisticSyncKey(scriptId int64) string {
+	return fmt.Sprintf("script:statistic:sync:statistic:%d", scriptId)
+}
+
+func (s *Statistics) statisticSyncDateKey(scriptId int64, date time.Time) string {
+	return fmt.Sprintf("script:statistic:sync:statistic:%d:%s", scriptId, date.Format("2006-01-02"))
+}
+
 func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptStatisticsMsg) error {
 	switch msg.Download {
 	case statistics_repo.DownloadScriptStatistics:
@@ -57,13 +65,46 @@ func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 			logger.Ctx(ctx).Error("统计更新量失败", zap.Error(err))
 			return err
 		} else if ok {
+			num, err := redis.Ctx(ctx).HIncrBy(s.statisticSyncKey(msg.ScriptID), "num", 1).Result()
+			if err != nil {
+				return err
+			}
+			// 当囤了100条记录或者时间超过了5分钟,同步到es
+			if num < 100 {
+				t, err := redis.Ctx(ctx).HGet(s.statisticSyncKey(msg.ScriptID), "time").Int64()
+				if err != nil {
+					if !redis.Nil(err) {
+						return err
+					}
+				}
+				if time.Now().Unix()-t < 300 {
+					return nil
+				}
+			}
 			// 统计总量
-			if err := script_repo.ScriptStatistics().IncrUpdate(ctx, msg.ScriptID); err != nil {
+			if err := script_repo.ScriptStatistics().IncrUpdate(ctx, msg.ScriptID, num); err != nil {
 				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
 				return err
 			}
+
 			// 统计当日
-			if err := script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time); err != nil {
+			num, err = redis.Ctx(ctx).HIncrBy(s.statisticSyncDateKey(msg.ScriptID, msg.Time), "num", 1).Result()
+			if err != nil {
+				return err
+			}
+			// 当囤了100条记录或者时间超过了5分钟,同步到es
+			if num < 100 {
+				t, err := redis.Ctx(ctx).HGet(s.statisticSyncDateKey(msg.ScriptID, msg.Time), "time").Int64()
+				if err != nil {
+					if !redis.Nil(err) {
+						return err
+					}
+				}
+				if time.Now().Unix()-t < 300 {
+					return nil
+				}
+			}
+			if err := script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time, num); err != nil {
 				logger.Ctx(ctx).Error("统计当日更新量失败", zap.Error(err))
 				return err
 			}

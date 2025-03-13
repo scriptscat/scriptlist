@@ -20,7 +20,7 @@ type ScriptDateStatisticsRepo interface {
 
 	FindByScriptID(ctx context.Context, scriptId int64, t time.Time) (*entity.ScriptDateStatistics, error)
 	IncrDownload(ctx context.Context, scriptId int64, t time.Time) error
-	IncrUpdate(ctx context.Context, scriptId int64, t time.Time) error
+	IncrUpdate(ctx context.Context, scriptId int64, t time.Time, num int64) error
 }
 
 var defaultScriptDateStatistics ScriptDateStatisticsRepo
@@ -99,10 +99,10 @@ func (u *scriptDateStatisticsRepo) IncrDownload(ctx context.Context, scriptId in
 	return nil
 }
 
-func (u *scriptDateStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64, t time.Time) error {
+func (u *scriptDateStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64, t time.Time, num int64) error {
 	date := t.Format("2006-01-02")
 	if db.Ctx(ctx).Model(&entity.ScriptDateStatistics{}).Where("script_id=? and date=?", scriptId, date).
-		Update("update", gorm.Expr("`update`+1")).RowsAffected == 0 {
+		Update("update", gorm.Expr("`update`+?", num)).RowsAffected == 0 {
 		if err := db.Ctx(ctx).Save(&entity.ScriptDateStatistics{
 			ScriptID: scriptId,
 			Date:     date,
