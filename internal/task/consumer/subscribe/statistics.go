@@ -31,6 +31,7 @@ func (s *Statistics) Subscribe(ctx context.Context) error {
 	if err := producer.SubscribeStatisticsCollect(ctx, s.collect); err != nil {
 		return err
 	}
+	// TODO: 每天扫描并同步一次数据
 	return nil
 }
 
@@ -58,6 +59,11 @@ func SyncIncr(ctx context.Context, key, field string, update func(ctx context.Co
 	// 统计总量
 	if err := update(ctx, num); err != nil {
 		logger.Ctx(ctx).Error("更新失败", zap.Error(err))
+		return err
+	}
+	// 设置时间
+	if err := redis.Ctx(ctx).HSet(key, field+"_time", time.Now().Unix()).Err(); err != nil {
+		logger.Ctx(ctx).Error("设置时间失败", zap.Error(err))
 		return err
 	}
 	return nil
@@ -93,10 +99,10 @@ func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 				}); err != nil {
 				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
 			}
-			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID), msg.Time.Format("2006-01-0"+
-				"2"), func(ctx context.Context, num int64) error {
-				return script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time, num)
-			}); err != nil {
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID), msg.Time.Format("2006-01-02"),
+				func(ctx context.Context, num int64) error {
+					return script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time, num)
+				}); err != nil {
 				logger.Ctx(ctx).Error("统计当日更新量失败", zap.Error(err))
 			}
 		}
