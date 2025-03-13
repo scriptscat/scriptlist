@@ -99,17 +99,17 @@ func (mr *MockScriptStatisticsRepoMockRecorder) FindByScriptID(ctx, scriptId any
 }
 
 // IncrDownload mocks base method.
-func (m *MockScriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId int64) error {
+func (m *MockScriptStatisticsRepo) IncrDownload(ctx context.Context, scriptId, num int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IncrDownload", ctx, scriptId)
+	ret := m.ctrl.Call(m, "IncrDownload", ctx, scriptId, num)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // IncrDownload indicates an expected call of IncrDownload.
-func (mr *MockScriptStatisticsRepoMockRecorder) IncrDownload(ctx, scriptId any) *gomock.Call {
+func (mr *MockScriptStatisticsRepoMockRecorder) IncrDownload(ctx, scriptId, num any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrDownload", reflect.TypeOf((*MockScriptStatisticsRepo)(nil).IncrDownload), ctx, scriptId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrDownload", reflect.TypeOf((*MockScriptStatisticsRepo)(nil).IncrDownload), ctx, scriptId, num)
 }
 
 // IncrScore mocks base method.
@@ -127,17 +127,17 @@ func (mr *MockScriptStatisticsRepoMockRecorder) IncrScore(ctx, scriptId, score, 
 }
 
 // IncrUpdate mocks base method.
-func (m *MockScriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId int64) error {
+func (m *MockScriptStatisticsRepo) IncrUpdate(ctx context.Context, scriptId, num int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IncrUpdate", ctx, scriptId)
+	ret := m.ctrl.Call(m, "IncrUpdate", ctx, scriptId, num)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // IncrUpdate indicates an expected call of IncrUpdate.
-func (mr *MockScriptStatisticsRepoMockRecorder) IncrUpdate(ctx, scriptId any) *gomock.Call {
+func (mr *MockScriptStatisticsRepoMockRecorder) IncrUpdate(ctx, scriptId, num any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrUpdate", reflect.TypeOf((*MockScriptStatisticsRepo)(nil).IncrUpdate), ctx, scriptId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrUpdate", reflect.TypeOf((*MockScriptStatisticsRepo)(nil).IncrUpdate), ctx, scriptId, num)
 }
 
 // Update mocks base method.

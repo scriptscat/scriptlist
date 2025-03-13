@@ -39,7 +39,7 @@ html-cover: coverage.out
 
 generate: check-mockgen check-cago
 	go generate ./...
-	cago genx
+	cago gen
 
 goconvey: check-goconvey
 	goconvey

@@ -644,6 +644,9 @@ definitions:
         type: integer
     type: object
   script.PutScoreResponse:
+    properties:
+      id:
+        type: integer
     type: object
   script.RemoveMemberRequest:
     type: object

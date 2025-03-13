@@ -102,7 +102,7 @@ func (mr *MockScriptIssueCommentRepoMockRecorder) FindAll(ctx, issueId any) *gom
 // FindPage mocks base method.
 func (m *MockScriptIssueCommentRepo) FindPage(ctx context.Context, issueId int64, page httputils.PageRequest) ([]*issue_entity.ScriptIssueComment, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindAccessPage", ctx, issueId, page)
+	ret := m.ctrl.Call(m, "FindPage", ctx, issueId, page)
 	ret0, _ := ret[0].([]*issue_entity.ScriptIssueComment)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -112,7 +112,7 @@ func (m *MockScriptIssueCommentRepo) FindPage(ctx context.Context, issueId int64
 // FindPage indicates an expected call of FindPage.
 func (mr *MockScriptIssueCommentRepoMockRecorder) FindPage(ctx, issueId, page any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAccessPage", reflect.TypeOf((*MockScriptIssueCommentRepo)(nil).FindPage), ctx, issueId, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPage", reflect.TypeOf((*MockScriptIssueCommentRepo)(nil).FindPage), ctx, issueId, page)
 }
 
 // Update mocks base method.

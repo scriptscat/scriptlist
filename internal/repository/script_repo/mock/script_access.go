@@ -102,7 +102,7 @@ func (mr *MockScriptAccessRepoMockRecorder) FindByLinkID(ctx, scriptId, linkId, 
 // FindPage mocks base method.
 func (m *MockScriptAccessRepo) FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptAccess, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindAccessPage", ctx, scriptId, page)
+	ret := m.ctrl.Call(m, "FindPage", ctx, scriptId, page)
 	ret0, _ := ret[0].([]*script_entity.ScriptAccess)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -112,7 +112,7 @@ func (m *MockScriptAccessRepo) FindPage(ctx context.Context, scriptId int64, pag
 // FindPage indicates an expected call of FindPage.
 func (mr *MockScriptAccessRepoMockRecorder) FindPage(ctx, scriptId, page any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAccessPage", reflect.TypeOf((*MockScriptAccessRepo)(nil).FindPage), ctx, scriptId, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPage", reflect.TypeOf((*MockScriptAccessRepo)(nil).FindPage), ctx, scriptId, page)
 }
 
 // Update mocks base method.
