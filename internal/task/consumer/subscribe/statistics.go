@@ -44,7 +44,7 @@ func SyncIncr(ctx context.Context, key, field string, update func(ctx context.Co
 	if err != nil {
 		return err
 	}
-	// 当囤了1000条记录或者时间超过了5分钟,同步到es
+	// 当囤了1000条记录或者时间超过了5分钟, 进行更新
 	if num < 1000 {
 		t, err := redis.Ctx(ctx).HGet(key, field+"_time").Int64()
 		if err != nil {
