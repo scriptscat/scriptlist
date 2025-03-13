@@ -66,6 +66,11 @@ func SyncIncr(ctx context.Context, key, field string, update func(ctx context.Co
 		logger.Ctx(ctx).Error("设置时间失败", zap.Error(err))
 		return err
 	}
+	// 重置数量
+	if err := redis.Ctx(ctx).HSet(key, field+"_num", 0).Err(); err != nil {
+		logger.Ctx(ctx).Error("重置数量失败", zap.Error(err))
+		return err
+	}
 	return nil
 }
 
