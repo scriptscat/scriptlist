@@ -69,8 +69,8 @@ func (e *EsSync) scriptStatistic(ctx context.Context, msg *producer.ScriptStatis
 	if err != nil {
 		return err
 	}
-	// 当囤了100条记录或者时间超过了5分钟,同步到es
-	if num < 100 {
+	// 当囤了1000条记录或者时间超过了5分钟,同步到es
+	if num < 1000 {
 		t, err := redis.Ctx(ctx).HGet(e.statisticSyncKey(msg.ScriptID), "time").Int64()
 		if err != nil {
 			if !redis.Nil(err) {

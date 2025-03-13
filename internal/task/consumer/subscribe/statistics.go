@@ -38,8 +38,29 @@ func (s *Statistics) statisticSyncKey(scriptId int64) string {
 	return fmt.Sprintf("script:statistic:sync:statistic:%d", scriptId)
 }
 
-func (s *Statistics) statisticSyncDateKey(scriptId int64, date time.Time) string {
-	return fmt.Sprintf("script:statistic:sync:statistic:%d:%s", scriptId, date.Format("2006-01-02"))
+func SyncIncr(ctx context.Context, key, field string, update func(ctx context.Context, num int64) error) error {
+	num, err := redis.Ctx(ctx).HIncrBy(key, field+"_num", 1).Result()
+	if err != nil {
+		return err
+	}
+	// 当囤了1000条记录或者时间超过了5分钟,同步到es
+	if num < 1000 {
+		t, err := redis.Ctx(ctx).HGet(key, field+"_time").Int64()
+		if err != nil {
+			if !redis.Nil(err) {
+				return err
+			}
+		}
+		if time.Now().Unix()-t < 300 {
+			return nil
+		}
+	}
+	// 统计总量
+	if err := update(ctx, num); err != nil {
+		logger.Ctx(ctx).Error("更新失败", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptStatisticsMsg) error {
@@ -65,48 +86,18 @@ func (s *Statistics) scriptStatistics(ctx context.Context, msg *producer.ScriptS
 			logger.Ctx(ctx).Error("统计更新量失败", zap.Error(err))
 			return err
 		} else if ok {
-			num, err := redis.Ctx(ctx).HIncrBy(s.statisticSyncKey(msg.ScriptID), "num", 1).Result()
-			if err != nil {
-				return err
-			}
-			// 当囤了100条记录或者时间超过了5分钟,同步到es
-			if num < 100 {
-				t, err := redis.Ctx(ctx).HGet(s.statisticSyncKey(msg.ScriptID), "time").Int64()
-				if err != nil {
-					if !redis.Nil(err) {
-						return err
-					}
-				}
-				if time.Now().Unix()-t < 300 {
-					return nil
-				}
-			}
-			// 统计总量
-			if err := script_repo.ScriptStatistics().IncrUpdate(ctx, msg.ScriptID, num); err != nil {
-				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
-				return err
-			}
-
 			// 统计当日
-			num, err = redis.Ctx(ctx).HIncrBy(s.statisticSyncDateKey(msg.ScriptID, msg.Time), "num", 1).Result()
-			if err != nil {
-				return err
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID), "total",
+				func(ctx context.Context, num int64) error {
+					return script_repo.ScriptStatistics().IncrUpdate(ctx, msg.ScriptID, num)
+				}); err != nil {
+				logger.Ctx(ctx).Error("统计总更新量失败", zap.Error(err))
 			}
-			// 当囤了100条记录或者时间超过了5分钟,同步到es
-			if num < 100 {
-				t, err := redis.Ctx(ctx).HGet(s.statisticSyncDateKey(msg.ScriptID, msg.Time), "time").Int64()
-				if err != nil {
-					if !redis.Nil(err) {
-						return err
-					}
-				}
-				if time.Now().Unix()-t < 300 {
-					return nil
-				}
-			}
-			if err := script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time, num); err != nil {
+			if err := SyncIncr(ctx, s.statisticSyncKey(msg.ScriptID), msg.Time.Format("2006-01-0"+
+				"2"), func(ctx context.Context, num int64) error {
+				return script_repo.ScriptDateStatistics().IncrUpdate(ctx, msg.ScriptID, msg.Time, num)
+			}); err != nil {
 				logger.Ctx(ctx).Error("统计当日更新量失败", zap.Error(err))
-				return err
 			}
 		}
 	case statistics_repo.ViewScriptStatistics:
