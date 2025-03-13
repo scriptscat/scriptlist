@@ -75,25 +75,42 @@ func (u *scriptRepo) KeyDepend(id int64) *cache2.KeyDepend {
 
 func (u *scriptRepo) Find(ctx context.Context, id int64) (*entity.Script, error) {
 	ret := &entity.Script{}
-	if err := db.Ctx(ctx).Where("id=?", id).First(ret).Error; err != nil {
-		if db.RecordNotFound(err) {
-			return nil, nil
+	err := cache.Ctx(ctx).GetOrSet(u.key(id), func() (interface{}, error) {
+		if err := db.Ctx(ctx).Where("id=?", id).First(ret).Error; err != nil {
+			if db.RecordNotFound(err) {
+				return nil, nil
+			}
+			return nil, err
 		}
+		return ret, nil
+	}, cache.WithDepend(u.KeyDepend(id))).Scan(ret)
+	if err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
 func (u *scriptRepo) Create(ctx context.Context, script *entity.Script) error {
-	return db.Ctx(ctx).Create(script).Error
+	// 失效key
+	if err := db.Ctx(ctx).Create(script).Error; err != nil {
+		return err
+	}
+	return u.KeyDepend(script.ID).InvalidKey(ctx)
 }
 
 func (u *scriptRepo) Update(ctx context.Context, script *entity.Script) error {
-	return db.Ctx(ctx).Updates(script).Error
+	if err := db.Ctx(ctx).Updates(script).Error; err != nil {
+		return err
+	}
+	return u.KeyDepend(script.ID).InvalidKey(ctx)
 }
 
 func (u *scriptRepo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Model(&entity.Script{}).Where("id=?", id).Update("status", consts.DELETE).Error
+	if err := db.Ctx(ctx).Model(&entity.Script{}).
+		Where("id=?", id).Update("status", consts.DELETE).Error; err != nil {
+		return err
+	}
+	return u.KeyDepend(id).InvalidKey(ctx)
 }
 
 func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
