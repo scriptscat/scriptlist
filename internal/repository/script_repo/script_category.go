@@ -95,7 +95,7 @@ func (s *scriptCategoryRepo) List(ctx context.Context, script int64) ([]*entity.
 			return nil, err
 		}
 		return ret, nil
-	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), s.key(script))).Scan(&ret); err != nil {
+	}, cache2.Expiration(time.Hour), cache2.WithKeyDepend(cache.Default(), s.key(script)+":dep")).Scan(&ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
