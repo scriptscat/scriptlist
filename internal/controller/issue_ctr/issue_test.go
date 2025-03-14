@@ -29,7 +29,7 @@ import (
 
 func TestIssue_Router(t *testing.T) {
 	// 初始化路由
-	testMux := muxtest.NewTestMux()
+	testMux := muxtest.NewTestMux(muxtest.WithBaseUrl(""))
 	ctr := NewIssue()
 	ctr.limit = limit.NewEmpty()
 	mockCtrl := gomock.NewController(t)

@@ -36,9 +36,9 @@ jobs:
       with:
         args: --timeout=30m
 
-#     - name: Tests
-#       run: |
-#         go test $(go list ./...)
+    - name: Tests
+      run: |
+        go test $(go list ./...)
 
     - name: Build binary file
       run: |

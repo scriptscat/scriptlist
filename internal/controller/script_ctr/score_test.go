@@ -23,7 +23,7 @@ import (
 
 func TestScore_Router(t *testing.T) {
 	// 初始化路由
-	testMux := muxtest.NewTestMux()
+	testMux := muxtest.NewTestMux(muxtest.WithBaseUrl(""))
 	ctr := NewScore()
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
