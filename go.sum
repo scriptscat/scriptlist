@@ -40,10 +40,10 @@ github.com/cloudwego/base64x v0.1.4 h1:jwCgWpFanWmN8xoIUHa2rtzmkd5J2plF/dnLS6Xd/
 github.com/cloudwego/base64x v0.1.4/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
-github.com/codfrm/cago v0.0.0-20250313150437-24b1a747c304 h1:uvBFoLZXCDcqUk0lR8DRifcFa/Gw7vuybTWm75IzWVQ=
-github.com/codfrm/cago v0.0.0-20250313150437-24b1a747c304/go.mod h1:C7OgfRrlLiHq6HFFG1jgn/+WKS8LUhNdKnZHMMxF+Zc=
-github.com/codfrm/cago v0.0.0-20250314023254-bf338e4f3e0b h1:hfQ9z8ZG+mdwJtdmerzVvTFXNrrdJ5dikgRZzsN9328=
-github.com/codfrm/cago v0.0.0-20250314023254-bf338e4f3e0b/go.mod h1:C7OgfRrlLiHq6HFFG1jgn/+WKS8LUhNdKnZHMMxF+Zc=
+github.com/codfrm/cago v0.0.0-20250314055425-855aea5bb5df h1:0SDYJex58ml+zd3nz2nHFEzchPX0XGrrHwGWEyANqxo=
+github.com/codfrm/cago v0.0.0-20250314055425-855aea5bb5df/go.mod h1:C7OgfRrlLiHq6HFFG1jgn/+WKS8LUhNdKnZHMMxF+Zc=
+github.com/codfrm/cago v0.0.0-20250314063055-e0d8015c7f1b h1:T0Ewu0tB0kd3maIosacrYiqCs1v0Ecvy3MsxXjIItBg=
+github.com/codfrm/cago v0.0.0-20250314063055-e0d8015c7f1b/go.mod h1:C7OgfRrlLiHq6HFFG1jgn/+WKS8LUhNdKnZHMMxF+Zc=
 github.com/coreos/go-semver v0.3.1 h1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=
 github.com/coreos/go-semver v0.3.1/go.mod h1:irMmmIw/7yzSRPWryHsK7EYSg09caPQL03VsM8rvUec=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=
