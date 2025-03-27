@@ -299,6 +299,10 @@ func (s *Script) getScriptMeta(ctx *gin.Context, version string, pre bool) {
 		httputils.HandleResp(ctx, err)
 		return
 	}
+	if code == nil {
+		ctx.String(http.StatusNotFound, "脚本未找到")
+		return
+	}
 	record := &producer.ScriptStatisticsMsg{
 		ScriptID:        code.ScriptID,
 		ScriptCodeID:    code.ID,
