@@ -3,6 +3,7 @@ package script_repo
 import (
 	"context"
 	"fmt"
+	"github.com/codfrm/cago/database/cache/memory"
 	"strconv"
 	"time"
 
@@ -42,10 +43,14 @@ func RegisterScriptCode(i ScriptCodeRepo) {
 }
 
 type scriptCodeRepo struct {
+	memoryCache cache2.Cache
 }
 
 func NewScriptCodeRepo() ScriptCodeRepo {
-	return &scriptCodeRepo{}
+	c, _ := memory.NewMemoryCache()
+	return &scriptCodeRepo{
+		memoryCache: c,
+	}
 }
 
 func (u *scriptCodeRepo) key(id int64) string {
@@ -91,7 +96,7 @@ func (u *scriptCodeRepo) Delete(ctx context.Context, scriptCode *entity.Code) er
 
 func (u *scriptCodeRepo) FindByVersion(ctx context.Context, scriptId int64, version string, withcode bool) (*entity.Code, error) {
 	ret := &entity.Code{}
-	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId)+fmt.Sprintf(":%s:%v", version, withcode), func() (interface{}, error) {
+	if err := u.memoryCache.GetOrSet(ctx, u.key(scriptId)+fmt.Sprintf(":%s:%v", version, withcode), func() (interface{}, error) {
 		q := db.Ctx(ctx)
 		// 由于code过大,使用此方法不返回code
 		if !withcode {
@@ -152,7 +157,7 @@ func (u *scriptCodeRepo) FindByVersionAll(ctx context.Context, scriptId int64, v
 
 func (u *scriptCodeRepo) FindLatest(ctx context.Context, scriptId int64, offset int, withcode bool) (*entity.Code, error) {
 	ret := &entity.Code{}
-	if err := cache.Ctx(ctx).GetOrSet(u.key(scriptId)+fmt.Sprintf(":%d:%v", offset, withcode), func() (interface{}, error) {
+	if err := u.memoryCache.GetOrSet(ctx, u.key(scriptId)+fmt.Sprintf(":%d:%v", offset, withcode), func() (interface{}, error) {
 		q := db.Ctx(ctx)
 		if !withcode {
 			q = q.Select(ret.Fields())
