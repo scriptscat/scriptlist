@@ -31,14 +31,16 @@ import (
 )
 
 type Script struct {
-	limit *limit.PeriodLimit
+	limit limit.Limit
 }
 
 func NewScript() *Script {
 	return &Script{
-		limit: limit.NewPeriodLimit(
-			300, 10, redis.Default(), "limit:create:script",
-		),
+		limit: limit.NewCombinationLimit(limit.NewPeriodLimit(
+			300, 2, redis.Default(), "limit:create:script:minute",
+		), limit.NewPeriodLimit(
+			3600, 5, redis.Default(), "limit:create:script:hour",
+		)),
 	}
 }
 

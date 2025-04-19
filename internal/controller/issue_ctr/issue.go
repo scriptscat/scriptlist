@@ -26,7 +26,7 @@ type Issue struct {
 func NewIssue() *Issue {
 	return &Issue{
 		limit: limit.NewPeriodLimit(
-			300, 10, redis.Default(), "limit:create:issue",
+			300, 5, redis.Default(), "limit:create:issue",
 		),
 	}
 }

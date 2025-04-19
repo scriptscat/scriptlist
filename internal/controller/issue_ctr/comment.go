@@ -23,7 +23,7 @@ type Comment struct {
 func NewComment() *Comment {
 	return &Comment{
 		limit: limit.NewPeriodLimit(
-			300, 10, redis.Default(), "limit:create:issue",
+			300, 5, redis.Default(), "limit:create:issue",
 		),
 	}
 }
