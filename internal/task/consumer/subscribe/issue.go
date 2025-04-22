@@ -78,7 +78,7 @@ func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script,
 		for _, v := range list {
 			uids = append(uids, v.UserID)
 		}
-		return notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.CommentCreateTemplate,
+		if err := notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.CommentCreateTemplate,
 			notice_svc.WithParams(&template.IssueComment{
 				ScriptID:  script.ID,
 				IssueID:   issue.ID,
@@ -87,7 +87,19 @@ func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script,
 				Title:     issue.Title,
 				Content:   comment.Content,
 				Type:      comment.Type,
-			}), notice_svc.WithFrom(comment.UserID))
+			}), notice_svc.WithFrom(comment.UserID)); err != nil {
+			logger.Ctx(ctx).Error("发送反馈评论通知错误", zap.Int64("issue", issue.ID), zap.Error(err))
+		}
+	}
+	// 更新issue更新时间
+	issue, err = issue_repo.Issue().Find(ctx, script.ID, issue.ID)
+	if err != nil {
+		logger.Ctx(ctx).Error("获取反馈错误", zap.Error(err))
+	} else {
+		issue.Updatetime = comment.Createtime
+		if err := issue_repo.Issue().Update(ctx, issue); err != nil {
+			logger.Ctx(ctx).Error("更新反馈错误", zap.Int64("issue", issue.ID), zap.Error(err))
+		}
 	}
 	return nil
 }
