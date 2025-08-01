@@ -36,7 +36,8 @@ func Router(ctx context.Context, root *mux.Router) error {
 	{
 		controller := user_ctr.NewUser()
 		r.Group("/", auth_svc.Auth().RequireLogin(true)).Bind(
-			controller.CurrentUser, // 获取当前用户信息
+			controller.CurrentUser,  // 获取当前用户信息
+			controller.RefreshToken, // 刷新用户token
 			controller.Follow,
 			controller.GetWebhook,
 			controller.RefreshWebhook,

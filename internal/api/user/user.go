@@ -122,3 +122,11 @@ type SearchRequest struct {
 type SearchResponse struct {
 	Users []*InfoResponse `json:"users"`
 }
+
+// RefreshTokenRequest 刷新用户token
+type RefreshTokenRequest struct {
+	mux.Meta `path:"/users/refresh-token" method:"POST"`
+}
+
+type RefreshTokenResponse struct {
+}

@@ -469,6 +469,13 @@ definitions:
       sync_url:
         type: string
     type: object
+  script.GetStatisticsTokenRequest:
+    type: object
+  script.GetStatisticsTokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
   script.Group:
     properties:
       createtime:
@@ -647,6 +654,13 @@ definitions:
     properties:
       id:
         type: integer
+    type: object
+  script.RecordVisitRequest:
+    properties:
+      statistics_token:
+        type: string
+    type: object
+  script.RecordVisitResponse:
     type: object
   script.RemoveMemberRequest:
     type: object
@@ -1311,6 +1325,10 @@ definitions:
         type: string
     type: object
   user.LogoutResponse:
+    type: object
+  user.RefreshTokenRequest:
+    type: object
+  user.RefreshTokenResponse:
     type: object
   user.RefreshWebhookRequest:
     type: object
@@ -3449,6 +3467,40 @@ paths:
       summary: 获取指定版本代码
       tags:
       - script
+  /scripts/{id}/visit:
+    post:
+      consumes:
+      - application/json
+      description: 记录脚本访问统计
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.RecordVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.RecordVisitResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 记录脚本访问统计
+      tags:
+      - script
   /scripts/{id}/watch:
     post:
       consumes:
@@ -3600,6 +3652,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 全量迁移数据到es
+      tags:
+      - script
+  /scripts/statistics-token:
+    post:
+      consumes:
+      - application/json
+      description: 获取统计token
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.GetStatisticsTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.GetStatisticsTokenResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取统计token
       tags:
       - script
   /statistics/{id}/advanced:
@@ -4052,6 +4134,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新用户配置
+      tags:
+      - user
+  /users/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: 刷新用户token
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.RefreshTokenResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 刷新用户token
       tags:
       - user
   /users/search:

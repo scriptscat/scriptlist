@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 	"net/http"
 	"strconv"
 	"strings"
@@ -104,6 +105,8 @@ type ScriptSvc interface {
 	UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoRequest) (*api.UpdateLibInfoResponse, error)
 	// UpdateSyncSetting 更新同步配置
 	UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error)
+	// RecordVisit 记录脚本访问统计
+	RecordVisit(ctx *gin.Context, req *api.RecordVisitRequest) (*api.RecordVisitResponse, error)
 	// Access 访问控制
 	Access() gin.HandlerFunc
 	// RequireScript 需要脚本存在
@@ -1248,4 +1251,35 @@ func (s *scriptSvc) UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSe
 		Sync:      false,
 		SyncError: err.Error(),
 	}, nil
+}
+
+// RecordVisit 记录脚本访问统计
+func (s *scriptSvc) RecordVisit(ctx *gin.Context, req *api.RecordVisitRequest) (*api.RecordVisitResponse, error) {
+	ua := ctx.GetHeader("User-Agent")
+	if ua == "" {
+		return nil, errors.New("ua is empty")
+	}
+
+	record := &producer.ScriptStatisticsMsg{
+		ScriptID:        req.ID,
+		ScriptCodeID:    0,
+		UserID:          0,
+		IP:              ctx.ClientIP(),
+		UA:              ua,
+		StatisticsToken: statistics_svc.Statistics().GetStatisticsToken(ctx),
+		Download:        statistics_repo.ViewScriptStatistics,
+		Time:            time.Now(),
+	}
+
+	user := auth_svc.Auth().Get(ctx)
+	if user != nil {
+		record.UserID = user.UID
+	}
+
+	err := statistics_svc.Statistics().ScriptRecord(ctx, record)
+	if err != nil {
+		logger.Ctx(ctx).Error("脚本访问统计记录失败", zap.Any("record", record), zap.Error(err))
+	}
+
+	return &api.RecordVisitResponse{}, nil
 }

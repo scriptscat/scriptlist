@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/codfrm/cago/configs"
 	"github.com/gin-gonic/gin"
@@ -28,30 +27,12 @@ func (u *User) CurrentUser(ctx *gin.Context, req *api.CurrentUserRequest) (*api.
 	if err != nil {
 		return nil, err
 	}
-	loginId, err := ctx.Cookie("login_id")
-	if err != nil {
-		return nil, err
-	}
-	token, err := ctx.Cookie("token")
-	if err != nil {
-		return nil, err
-	}
-	// 获取token信息, 判断是否需要刷新
-	m, err := auth_svc.Auth().GetLoginToken(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
-	if err != nil {
-		return nil, err
-	}
-	if m.Updatetime+auth_svc.TokenAutoRegen < time.Now().Unix() {
-		// 刷新token
-		m, err = auth_svc.Auth().Refresh(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
-		if err != nil {
-			return nil, err
-		}
-		// 设置cookie
-		ctx.SetCookie("login_id", m.ID, auth_svc.TokenAuthMaxAge, "/", "", false, true)
-		ctx.SetCookie("token", m.Token, auth_svc.TokenAuthMaxAge, "/", "", false, true)
-	}
 	return &api.CurrentUserResponse{InfoResponse: resp}, nil
+}
+
+// RefreshToken 刷新用户token
+func (u *User) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) (*api.RefreshTokenResponse, error) {
+	return user_svc.User().RefreshToken(ctx, req)
 }
 
 // Info 获取指定用户信息

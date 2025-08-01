@@ -347,3 +347,12 @@ type LastScoreRequest struct {
 type LastScoreResponse struct {
 	httputils.PageResponse[*Script] `json:",inline"`
 }
+
+// RecordVisitRequest 记录脚本访问统计
+type RecordVisitRequest struct {
+	mux.Meta `path:"/scripts/:id/visit" method:"POST"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type RecordVisitResponse struct {
+}

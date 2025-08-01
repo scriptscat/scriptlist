@@ -37,6 +37,8 @@ type UserSvc interface {
 	UpdateConfig(ctx context.Context, req *api.UpdateConfigRequest) (*api.UpdateConfigResponse, error)
 	// Search 搜索用户
 	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
+	// RefreshToken 刷新用户token
+	RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) (*api.RefreshTokenResponse, error)
 	// Logout TODO
 	Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error)
 }
@@ -288,4 +290,35 @@ func (u *userSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutR
 	ctx.SetCookie("login_id", "", -1, "/", "", false, true)
 	ctx.SetCookie("token", "", -1, "/", "", false, true)
 	return &api.LogoutResponse{}, nil
+}
+
+// RefreshToken 刷新用户token
+func (u *userSvc) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) (*api.RefreshTokenResponse, error) {
+	loginId, err := ctx.Cookie("login_id")
+	if err != nil {
+		return nil, err
+	}
+	token, err := ctx.Cookie("token")
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取token信息, 判断是否需要刷新
+	m, err := auth_svc.Auth().GetLoginToken(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
+	if err != nil {
+		return nil, err
+	}
+
+	if m.Updatetime+auth_svc.TokenAutoRegen < time.Now().Unix() {
+		// 刷新token
+		m, err = auth_svc.Auth().Refresh(ctx, auth_svc.Auth().Get(ctx).UID, loginId, token)
+		if err != nil {
+			return nil, err
+		}
+		// 设置cookie
+		ctx.SetCookie("login_id", m.ID, auth_svc.TokenAuthMaxAge, "/", "", false, true)
+		ctx.SetCookie("token", m.Token, auth_svc.TokenAuthMaxAge, "/", "", false, true)
+	}
+
+	return &api.RefreshTokenResponse{}, nil
 }
