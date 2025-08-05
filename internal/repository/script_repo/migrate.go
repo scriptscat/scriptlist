@@ -158,7 +158,7 @@ func (m *migrateRepo) Convert(ctx context.Context, e *entity.Script) (*entity.Sc
 	if dateStatistics != nil {
 		ret.TodayDownload = dateStatistics.Download
 	}
-	list, err := ScriptCategory().List(ctx, e.ID)
+	list, err := ScriptCategory().FindByScriptId(ctx, e.ID)
 	if err != nil {
 		return nil, err
 	}

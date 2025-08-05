@@ -229,18 +229,18 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	}
 	data.Script = s.scriptCode(ctx, item, scriptCode)
 	// 脚本分类信息
-	list, err := script_repo.ScriptCategory().List(ctx, item.ID)
+	list, err := script_repo.ScriptCategory().FindByScriptId(ctx, item.ID)
 	if err != nil {
 		logger.Ctx(ctx).Error("获取脚本分类失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
-	data.Category = make([]*api.CategoryList, 0)
+	data.Category = make([]*api.CategoryListItem, 0)
 	for _, v := range list {
 		category, err := script_repo.ScriptCategoryList().Find(ctx, v.CategoryID)
 		if err != nil {
 			logger.Ctx(ctx).Error("获取分类信息失败", zap.Error(err), zap.Int64("category_id", v.CategoryID))
 		}
 		if category != nil {
-			data.Category = append(data.Category, &api.CategoryList{
+			data.Category = append(data.Category, &api.CategoryListItem{
 				ID:   category.ID,
 				Name: category.Name,
 			})
@@ -297,6 +297,7 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 	var definition *script_entity.LibDefinition
 	err := db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
 		ctx = db.WithContextDB(ctx, tx)
+		var tags []string
 		if req.Type == script_entity.LibraryType {
 			// 脚本引用库
 			script.Name = req.Name
@@ -312,12 +313,28 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 				}
 			}
 		} else {
-			metaJson, err := scriptCode.UpdateCode(ctx, req.Code)
+			metaJson, err := scriptCode.ParseMetaAndUpdateCode(ctx, req.Code)
 			if err != nil {
 				return err
 			}
 			script.Name = metaJson["name"][0]
 			script.Description = metaJson["description"][0]
+			// 处理tag关联
+			tags = make([]string, 0)
+			for _, v := range metaJson["tag"] {
+				if v == "" {
+					continue
+				}
+				// 使用,空格分隔
+				split := strings.Split(v, ", ")
+				for _, tag := range split {
+					tag = strings.TrimSpace(tag)
+					if tag == "" {
+						continue
+					}
+					tags = append(tags, tag)
+				}
+			}
 		}
 
 		// 保存数据库并发送消息
@@ -336,6 +353,22 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 				ctx,
 				code.ScriptCreateFailed,
 			)
+		}
+		// 处理分类关联
+		if req.CategoryID > 0 {
+			if err := Category().LinkScriptCategory(ctx, script.ID, req.CategoryID); err != nil {
+				return err
+			}
+		}
+		// 处理tag关联
+		if len(tags) > 0 {
+			if err := Category().LinkScriptTag(ctx, script.ID, tags); err != nil {
+				logger.Ctx(ctx).Error("scriptSvc tag link failed", zap.Int64("script_id", script.ID), zap.Error(err))
+				return i18n.NewInternalError(
+					ctx,
+					code.ScriptCreateFailed,
+				)
+			}
 		}
 		// 保存定义
 		if definition != nil {
@@ -410,7 +443,7 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 			}
 		}
 	} else {
-		metaJson, err := scriptCode.UpdateCode(ctx, req.Code)
+		metaJson, err := scriptCode.ParseMetaAndUpdateCode(ctx, req.Code)
 		if err != nil {
 			return nil, err
 		}
@@ -761,7 +794,7 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 		return err
 	}
 	code := &script_entity.Code{}
-	if _, err := code.UpdateCode(ctx, codeContent); err != nil {
+	if _, err := code.ParseMetaAndUpdateCode(ctx, codeContent); err != nil {
 		logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 		return err
 	}

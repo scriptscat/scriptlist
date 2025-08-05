@@ -36,6 +36,7 @@ var zhCN = map[int]string{
 	WebhookSecretError:           "Webhook Secret 错误",
 	WebhookRepositoryNotFound:    "仓库不存在",
 	ScriptDeleteReleaseNotLatest: "删除发布版本失败,没有新的正式版本了",
+	ScriptCategoryNotFound:       "脚本分类不存在",
 
 	IssueLabelNotExist:   "标签不存在",
 	IssueNotFound:        "反馈不存在",

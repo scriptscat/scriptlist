@@ -16,7 +16,8 @@ type ScriptCategoryListRepo interface {
 	Update(ctx context.Context, scriptCategoryList *entity.ScriptCategoryList) error
 	Delete(ctx context.Context, id int64) error
 
-	FindByName(ctx context.Context, name string) (*entity.ScriptCategoryList, error)
+	FindByNameAndType(ctx context.Context, name string, categoryType entity.ScriptCategoryType) (*entity.ScriptCategoryList, error)
+	FindByNamePrefixAndType(ctx context.Context, namePrefix string, categoryType entity.ScriptCategoryType) ([]*entity.ScriptCategoryList, error)
 }
 
 var defaultScriptCategoryList ScriptCategoryListRepo
@@ -56,9 +57,20 @@ func (s *scriptCategoryListRepo) Find(ctx context.Context, id int64) (*entity.Sc
 	return ret, nil
 }
 
-func (s *scriptCategoryListRepo) FindByName(ctx context.Context, name string) (*entity.ScriptCategoryList, error) {
+func (s *scriptCategoryListRepo) FindByNameAndType(ctx context.Context, name string, categoryType entity.ScriptCategoryType) (*entity.ScriptCategoryList, error) {
 	ret := &entity.ScriptCategoryList{}
-	if err := db.Ctx(ctx).First(ret, "name=?", name).Error; err != nil {
+	if err := db.Ctx(ctx).First(ret, "name=? and type=?", name, categoryType).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (s *scriptCategoryListRepo) FindByNamePrefixAndType(ctx context.Context, namePrefix string, categoryType entity.ScriptCategoryType) ([]*entity.ScriptCategoryList, error) {
+	var ret []*entity.ScriptCategoryList
+	if err := db.Ctx(ctx).Where("name LIKE ? AND type = ?", namePrefix+"%", categoryType).Find(&ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}

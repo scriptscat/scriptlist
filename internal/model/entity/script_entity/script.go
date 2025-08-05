@@ -196,7 +196,7 @@ func (s *Code) TableName() string {
 	return "cdb_tampermonkey_script_code"
 }
 
-func (s *Code) UpdateCode(ctx context.Context, scriptCode string) (map[string][]string, error) {
+func (s *Code) ParseMetaAndUpdateCode(ctx context.Context, scriptCode string) (map[string][]string, error) {
 	// 解析脚本的元数据
 	scriptCodeStr, meta, err := parseCodeMeta(ctx, scriptCode)
 	if err != nil {

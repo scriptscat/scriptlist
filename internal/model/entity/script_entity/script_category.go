@@ -8,11 +8,19 @@ type ScriptCategory struct {
 	Updatetime int64 `gorm:"column:updatetime;type:bigint(20)"`
 }
 
+type ScriptCategoryType int
+
+const (
+	ScriptCategoryTypeCategory ScriptCategoryType = iota + 1 // 分类
+	ScriptCategoryTypeTag                                    // 标签
+)
+
 type ScriptCategoryList struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	Name       string `gorm:"column:name;type:varchar(255)"`
-	Num        int64  `gorm:"column:num;type:bigint(20)"`
-	Sort       int64  `gorm:"column:sort;type:int(10);index:category_sort"`
-	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
-	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`
+	ID         int64              `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	Name       string             `gorm:"column:name;type:varchar(255);not null;index:category_name_type,unique"`
+	Num        int64              `gorm:"column:num;type:bigint(20)"`
+	Sort       int64              `gorm:"column:sort;type:int(10);index:category_sort"`
+	Type       ScriptCategoryType `gorm:"column:type;type:int(10);index:category_name_type,unique;default:1"` // 1:分类, 2:标签
+	Createtime int64              `gorm:"column:createtime;type:bigint(20)"`
+	Updatetime int64              `gorm:"column:updatetime;type:bigint(20)"`
 }

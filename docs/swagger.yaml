@@ -321,8 +321,19 @@ definitions:
         type: integer
       sort:
         type: integer
+      type:
+        description: 1:脚本分类 2:脚本标签
+        type: integer
       updatetime:
         type: integer
+    type: object
+  script.CategoryListResponse:
+    properties:
+      categories:
+        description: 分类列表
+        items:
+          type: string
+        type: array
     type: object
   script.Code:
     properties:
@@ -353,6 +364,18 @@ definitions:
     properties:
       content:
         type: string
+    type: object
+  script.CreateFolderRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  script.CreateFolderResponse:
+    properties:
+      id:
+        type: integer
     type: object
   script.CreateGroupInviteCodeRequest:
     properties:
@@ -399,6 +422,9 @@ definitions:
     type: object
   script.CreateRequest:
     properties:
+      category:
+        description: 分类ID
+        type: integer
       changelog:
         type: string
       code:
@@ -440,6 +466,10 @@ definitions:
     type: object
   script.DeleteCodeResponse:
     type: object
+  script.DeleteFolderRequest:
+    type: object
+  script.DeleteFolderResponse:
+    type: object
   script.DeleteGroupRequest:
     type: object
   script.DeleteGroupResponse:
@@ -451,6 +481,37 @@ definitions:
   script.DeleteRequest:
     type: object
   script.DeleteResponse:
+    type: object
+  script.FavoriteFolderItem:
+    properties:
+      count:
+        description: 收藏夹中脚本数量
+        type: integer
+      description:
+        description: 收藏夹描述
+        type: string
+      favorited:
+        description: 如果传了script_id，表示该脚本是否在此收藏夹中
+        type: boolean
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  script.FavoriteFolderListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.FavoriteFolderItem'
+        type: array
+    type: object
+  script.FavoriteScriptRequest:
+    properties:
+      folder_id:
+        description: 一次只能收藏到一个收藏夹
+        type: integer
+    type: object
+  script.FavoriteScriptResponse:
     type: object
   script.GetSettingResponse:
     properties:
@@ -467,13 +528,6 @@ definitions:
       sync_mode:
         $ref: '#/definitions/script_entity.SyncMode'
       sync_url:
-        type: string
-    type: object
-  script.GetStatisticsTokenRequest:
-    type: object
-  script.GetStatisticsTokenResponse:
-    properties:
-      token:
         type: string
     type: object
   script.Group:
@@ -656,9 +710,6 @@ definitions:
         type: integer
     type: object
   script.RecordVisitRequest:
-    properties:
-      statistics_token:
-        type: string
     type: object
   script.RecordVisitResponse:
     type: object
@@ -754,6 +805,14 @@ definitions:
       watch:
         $ref: '#/definitions/script_entity.ScriptWatchLevel'
     type: object
+  script.UnfavoriteScriptRequest:
+    properties:
+      folder_id:
+        description: 一次只能从一个收藏夹移除
+        type: integer
+    type: object
+  script.UnfavoriteScriptResponse:
+    type: object
   script.UpdateAccessRequest:
     properties:
       expiretime,default=0:
@@ -767,6 +826,9 @@ definitions:
     type: object
   script.UpdateCodeRequest:
     properties:
+      category:
+        description: 分类ID
+        type: integer
       changelog:
         type: string
       code:
@@ -1021,6 +1083,15 @@ definitions:
     - 1
     - 2
     - 3
+    type: integer
+  script_entity.ScriptCategoryType:
+    description: |-
+      ScriptCategoryType enum type:
+      - ScriptCategoryTypeCategory: 1
+      - ScriptCategoryTypeTag: 2
+    enum:
+    - 1
+    - 2
     type: integer
   script_entity.ScriptWatchLevel:
     description: |-
@@ -1397,6 +1468,99 @@ info:
   title: 脚本站 API 文档
   version: 2.0.0
 paths:
+  /favorites/folders:
+    get:
+      consumes:
+      - application/json
+      description: 收藏夹列表
+      parameters:
+      - description: 可选，用于检查指定脚本是否在收藏夹中
+        in: query
+        name: script_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.FavoriteFolderListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 收藏夹列表
+      tags:
+      - script/favorite
+    post:
+      consumes:
+      - application/json
+      description: 创建收藏夹
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.CreateFolderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CreateFolderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建收藏夹
+      tags:
+      - script/favorite
+  /favorites/folders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除收藏夹
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.DeleteFolderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.DeleteFolderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除收藏夹
+      tags:
+      - script/favorite
   /login/oauth:
     get:
       consumes:
@@ -1572,6 +1736,45 @@ paths:
       summary: 脚本实时统计数据
       tags:
       - statistics
+  /script/category:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 前缀
+        in: query
+        name: Prefix
+        type: string
+      - description: |-
+          分类类型
+          ScriptCategoryType enum type:
+          - ScriptCategoryTypeCategory: 1
+          - ScriptCategoryTypeTag: 2
+        enum:
+        - 1
+        - 2
+        in: query
+        name: Type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CategoryListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      tags:
+      - script/category
   /scripts:
     get:
       consumes:
@@ -2140,6 +2343,40 @@ paths:
             $ref: '#/definitions/BadRequest'
       tags:
       - script/score
+  /scripts/{id}/favorite:
+    post:
+      consumes:
+      - application/json
+      description: 收藏脚本
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.FavoriteScriptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.FavoriteScriptResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 收藏脚本
+      tags:
+      - script/favorite
   /scripts/{id}/group:
     get:
       consumes:
@@ -3369,6 +3606,40 @@ paths:
       summary: 更新同步配置
       tags:
       - script
+  /scripts/{id}/unfavorite:
+    post:
+      consumes:
+      - application/json
+      description: 取消收藏脚本
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UnfavoriteScriptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UnfavoriteScriptResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 取消收藏脚本
+      tags:
+      - script/favorite
   /scripts/{id}/unwell:
     put:
       consumes:
@@ -3652,36 +3923,6 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 全量迁移数据到es
-      tags:
-      - script
-  /scripts/statistics-token:
-    post:
-      consumes:
-      - application/json
-      description: 获取统计token
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.GetStatisticsTokenRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.GetStatisticsTokenResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 获取统计token
       tags:
       - script
   /statistics/{id}/advanced:

@@ -162,7 +162,7 @@ func (mr *MockScriptCodeRepoMockRecorder) FindPreLatest(ctx, scriptId, offset, w
 // List mocks base method.
 func (m *MockScriptCodeRepo) List(ctx context.Context, id int64, request httputils.PageRequest) ([]*script_entity.Code, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, id, request)
+	ret := m.ctrl.Call(m, "FindByScriptId", ctx, id, request)
 	ret0, _ := ret[0].([]*script_entity.Code)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -172,7 +172,7 @@ func (m *MockScriptCodeRepo) List(ctx context.Context, id int64, request httputi
 // List indicates an expected call of List.
 func (mr *MockScriptCodeRepoMockRecorder) List(ctx, id, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockScriptCodeRepo)(nil).List), ctx, id, request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByScriptId", reflect.TypeOf((*MockScriptCodeRepo)(nil).List), ctx, id, request)
 }
 
 // Update mocks base method.

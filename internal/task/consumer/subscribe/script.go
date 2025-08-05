@@ -27,26 +27,28 @@ type Script struct {
 
 func (s *Script) Subscribe(ctx context.Context) error {
 	var err error
-	s.bgCategory, err = script_repo.ScriptCategoryList().FindByName(ctx, "后台脚本")
+	s.bgCategory, err = script_repo.ScriptCategoryList().FindByNameAndType(ctx, "后台脚本")
 	if err != nil {
 		return err
 	}
 	if s.bgCategory == nil {
 		s.bgCategory = &script_entity.ScriptCategoryList{
 			Name:       "后台脚本",
+			Type:       script_entity.ScriptCategoryTypeCategory,
 			Createtime: time.Now().Unix(),
 		}
 		if err := script_repo.ScriptCategoryList().Create(ctx, s.bgCategory); err != nil {
 			return err
 		}
 	}
-	s.cronCategory, err = script_repo.ScriptCategoryList().FindByName(ctx, "定时脚本")
+	s.cronCategory, err = script_repo.ScriptCategoryList().FindByNameAndType(ctx, "定时脚本")
 	if err != nil {
 		return err
 	}
 	if s.cronCategory == nil {
 		s.cronCategory = &script_entity.ScriptCategoryList{
 			Name:       "定时脚本",
+			Type:       script_entity.ScriptCategoryTypeCategory,
 			Createtime: time.Now().Unix(),
 		}
 		if err := script_repo.ScriptCategoryList().Create(ctx, s.cronCategory); err != nil {

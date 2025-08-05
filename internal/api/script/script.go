@@ -19,7 +19,7 @@ type Script struct {
 	PostID               int64                          `json:"post_id"`
 	Name                 string                         `json:"name"`
 	Description          string                         `json:"description"`
-	Category             []*CategoryList                `json:"category"`
+	Category             []*CategoryListItem            `json:"category"`
 	Status               int64                          `json:"status"`
 	Score                int64                          `json:"score"`
 	ScoreNum             int64                          `json:"score_num"`
@@ -35,15 +35,16 @@ type Script struct {
 	Updatetime           int64                          `json:"updatetime"`
 }
 
-// CategoryList 拥有的分类列表
-type CategoryList struct {
+// CategoryListItem 拥有的分类列表
+type CategoryListItem struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 	// 本分类下脚本数量
-	Num        int64 `json:"num"`
-	Sort       int32 `json:"sort"`
-	Createtime int64 `json:"createtime"`
-	Updatetime int64 `json:"updatetime"`
+	Num        int64                            `json:"num"`
+	Sort       int64                            `json:"sort"`
+	Type       script_entity.ScriptCategoryType `json:"type"` // 1:脚本分类 2:脚本标签
+	Createtime int64                            `json:"createtime"`
+	Updatetime int64                            `json:"updatetime"`
 }
 
 type Code struct {
@@ -84,6 +85,7 @@ type CreateRequest struct {
 	Description string                      `form:"description" binding:"max=10240" label:"库的描述"`
 	Definition  string                      `form:"definition" binding:"max=10240" label:"库的定义文件"`
 	Version     string                      `form:"version" binding:"max=32" label:"库的版本"`
+	CategoryID  int64                       `form:"category" binding:"omitempty,numeric" label:"分类ID"`  // 分类ID
 	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
 	Public      script_entity.Public        `form:"public" binding:"required,oneof=1 2 3" label:"公开类型"` // 公开类型：1 公开 2 半公开 3 私有
 	Unwell      script_entity.UnwellContent `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`   // 不适内容: 1 不适 2 适用
@@ -119,6 +121,7 @@ type UpdateCodeRequest struct {
 	Definition   string                         `binding:"max=102400" form:"definition" label:"库的定义文件"`
 	Changelog    string                         `binding:"max=102400" form:"changelog" label:"更新日志"`
 	IsPreRelease script_entity.EnablePreRelease `form:"is_pre_release" json:"is_pre_release" binding:"omitempty,oneof=0 1 2" label:"是否预发布"`
+	CategoryID   int                            `form:"category" binding:"omitempty,numeric" label:"分类ID"` // 分类ID
 	//Public       script_entity.Public           `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
 	//Unwell       script_entity.UnwellContent    `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`
 }
