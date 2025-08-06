@@ -7,9 +7,9 @@ import (
 
 // CategoryListRequest 脚本分类列表
 type CategoryListRequest struct {
-	mux.Meta `path:"/script/category" method:"GET"`
-	Prefix   string                           `query:"prefix"` // 前缀
-	Type     script_entity.ScriptCategoryType `query:"type"`   // 分类类型
+	mux.Meta `path:"/scripts/category" method:"GET"`
+	Prefix   string                           `form:"prefix"`                            // 前缀
+	Type     script_entity.ScriptCategoryType `form:"type" binding:"required,oneof=1 2"` // 分类类型: 1: 脚本分类, 2: Tag
 }
 
 type CategoryListResponse struct {

@@ -124,7 +124,7 @@ type UpdateCodeRequest struct {
 	Definition   string                         `binding:"max=102400" form:"definition" label:"库的定义文件"`
 	Changelog    string                         `binding:"max=102400" form:"changelog" label:"更新日志"`
 	IsPreRelease script_entity.EnablePreRelease `form:"is_pre_release" json:"is_pre_release" binding:"omitempty,oneof=0 1 2" label:"是否预发布"`
-	CategoryID   int64                          `form:"category" binding:"omitempty,numeric" label:"分类ID"` // 分类ID
+	CategoryID   int64                          `json:"category_id" form:"category_id" binding:"omitempty,numeric" label:"分类ID"` // 分类ID
 	//Public       script_entity.Public           `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
 	//Unwell       script_entity.UnwellContent    `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`
 }

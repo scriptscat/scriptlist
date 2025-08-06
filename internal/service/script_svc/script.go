@@ -244,6 +244,23 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 			Name: category.Name,
 		}
 	}
+	// tag
+	tags, err := script_repo.ScriptCategory().FindByScriptId(ctx, item.ID, script_entity.ScriptCategoryTypeTag)
+	if err != nil {
+		logger.Ctx(ctx).Error("获取脚本标签失败", zap.Error(err), zap.Int64("script_id", item.ID))
+	}
+	data.Tags = make([]*api.CategoryListItem, 0, len(tags))
+	for _, tag := range tags {
+		category, err := script_repo.ScriptCategoryList().Find(ctx, tag.CategoryID)
+		if err != nil {
+			logger.Ctx(ctx).Error("获取脚本标签失败", zap.Error(err), zap.Int64("script_id", item.ID), zap.Int64("tag_id", tag.CategoryID))
+			continue
+		}
+		data.Tags = append(data.Tags, &api.CategoryListItem{
+			ID:   category.ID,
+			Name: category.Name,
+		})
+	}
 	return data, nil
 }
 

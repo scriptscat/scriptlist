@@ -78,7 +78,12 @@ func (s *scriptCategoryRepo) key(script int64) string {
 func (s *scriptCategoryRepo) FindByScriptId(ctx context.Context, script int64, scriptCategory entity.ScriptCategoryType) ([]*entity.ScriptCategory, error) {
 	var ret []*entity.ScriptCategory
 	if err := cache.Ctx(ctx).GetOrSet(s.key(script)+":"+strconv.Itoa(int(scriptCategory)), func() (interface{}, error) {
-		if err := db.Ctx(ctx).Find(&ret, "script_id=? and type = ?", script, scriptCategory).Error; err != nil {
+		scriptCategoryTable := db.Default().NamingStrategy.TableName("script_category")
+		scriptCategoryListTable := db.Default().NamingStrategy.TableName("script_category_list")
+		if err := db.Ctx(ctx).
+			Joins("LEFT JOIN "+scriptCategoryListTable+" ON "+scriptCategoryTable+".category_id = "+scriptCategoryListTable+".id").
+			Where(scriptCategoryTable+".script_id = ? AND "+scriptCategoryListTable+".type = ?", script, scriptCategory).
+			Find(&ret).Error; err != nil {
 			return nil, err
 		}
 		return ret, nil

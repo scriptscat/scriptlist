@@ -55,6 +55,11 @@ func Router(ctx context.Context, root *mux.Router) error {
 			controller.GetFollow,
 		)
 	}
+	// 脚本分类
+	{
+		controller := script_ctr.NewCategory()
+		r.Bind(controller.CategoryList)
+	}
 	// 脚本
 	scriptCtr := script_ctr.NewScript()
 	scriptCtr.Router(root, r)
