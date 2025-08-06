@@ -89,7 +89,9 @@ func handleRequest(c *gin.Context) {
 		http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	if resp.StatusCode == http.StatusNotModified && exists {
 		for k, v := range resp.Header {
 			for _, vv := range v {

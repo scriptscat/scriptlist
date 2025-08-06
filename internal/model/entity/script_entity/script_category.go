@@ -20,7 +20,7 @@ type ScriptCategoryList struct {
 	Name       string             `gorm:"column:name;type:varchar(255);not null;index:category_name_type,unique"`
 	Num        int64              `gorm:"column:num;type:bigint(20)"`
 	Sort       int64              `gorm:"column:sort;type:int(10);index:category_sort"`
-	Type       ScriptCategoryType `gorm:"column:type;type:int(10);index:category_name_type,unique;default:1"` // 1:分类, 2:标签
+	Type       ScriptCategoryType `gorm:"column:type;type:int(10);index:category_name_type,unique;default:2"` // 1:分类, 2:标签
 	Createtime int64              `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime int64              `gorm:"column:updatetime;type:bigint(20)"`
 }

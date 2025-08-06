@@ -62,7 +62,9 @@ func (m *migrateRepo) Save(ctx context.Context, s *entity.ScriptSearch) error {
 		logger.Error("insert error", zap.Error(err))
 		return err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 	if resp.StatusCode != http.StatusCreated {
 		if resp.StatusCode == http.StatusConflict {
 			// 更新
@@ -92,7 +94,9 @@ func (m *migrateRepo) Update(ctx context.Context, s *entity.ScriptSearch) error 
 		logger.Error("update error", zap.Error(err))
 		return err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
 		logger.Error("update error", zap.ByteString("body", b), zap.Int("status", resp.StatusCode))
@@ -158,7 +162,7 @@ func (m *migrateRepo) Convert(ctx context.Context, e *entity.Script) (*entity.Sc
 	if dateStatistics != nil {
 		ret.TodayDownload = dateStatistics.Download
 	}
-	list, err := ScriptCategory().FindByScriptId(ctx, e.ID)
+	list, err := ScriptCategory().FindByScriptId(ctx, e.ID, entity.ScriptCategoryTypeCategory)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +191,9 @@ func (m *migrateRepo) Delete(ctx context.Context, id int64) error {
 		logger.Error("delete error", zap.Error(err))
 		return err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
 		logger.Error("delete error", zap.ByteString("body", b), zap.Int("status", resp.StatusCode))

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -34,20 +35,23 @@ func (o *Open) CrxDownload() func(ctx *gin.Context) {
 			})
 			return
 		}
-		filepath := "./resource/open/crx/" + info.Name + "_" + id + "_" + info.Version + ".crx"
+		path := filepath.Join("./resource/open/crx/", filepath.Clean(info.Name+"_"+id+"_"+info.Version+".crx"))
 		filename := info.Name + "_" + id + "_" + info.Version + ".crx"
 		if version != "" && version != info.Version {
 			// 从仓库中查询历史版本
-			filepath = "./resource/open/crx/" + info.Name + "_" + id + "_" + version + ".crx"
+			//filepath = "./resource/open/crx/" + info.Name + "_" + id + "_" + version + ".crx"
 			filename = info.Name + "_" + id + "_" + version + ".crx"
-			f, err := os.Open(filepath)
+			f, err := os.Open(filepath.Join("./resource/open/crx/",
+				filepath.Clean(info.Name+"_"+id+"_"+version+".crx")))
 			if err != nil {
 				ctx.JSON(http.StatusNotFound, gin.H{
 					"message": "未找到该版本",
 				})
 				return
 			}
-			defer f.Close()
+			defer func() {
+				_ = f.Close()
+			}()
 			ctx.Writer.Header().
 				Set("Content-Disposition", `attachment; filename="`+
 					url.PathEscape(filename)+`"`)
@@ -60,14 +64,14 @@ func (o *Open) CrxDownload() func(ctx *gin.Context) {
 		}
 		var r io.Reader
 		// 判断是否有文件缓存,有则直接返回,没有则下载
-		_, err = os.Stat(filepath)
+		_, err = os.Stat(path)
 		if err != nil {
 			if !os.IsNotExist(err) {
 				httputils.HandleResp(ctx, err)
 				return
 			}
 			// 下载crx文件
-			if err := os.MkdirAll("./resource/open/crx/", 0755); err != nil {
+			if err := os.MkdirAll("./resource/open/crx/", 0750); err != nil {
 				httputils.HandleResp(ctx, err)
 				return
 			}
@@ -79,20 +83,24 @@ func (o *Open) CrxDownload() func(ctx *gin.Context) {
 			defer func() {
 				_ = resp.Body.Close()
 			}()
-			f, err := os.Create(filepath)
+			f, err := os.Create(path) //nolint:gosec
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
 			}
-			defer f.Close()
+			defer func(f *os.File) {
+				_ = f.Close()
+			}(f)
 			r = io.TeeReader(resp.Body, f)
 		} else {
-			f, err := os.Open(filepath)
+			f, err := os.Open(path) //nolint:gosec
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
 			}
-			defer f.Close()
+			defer func(f *os.File) {
+				_ = f.Close()
+			}(f)
 			r = f
 		}
 		ctx.Writer.Header().

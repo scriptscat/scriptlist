@@ -2,6 +2,7 @@ package script_svc
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/codfrm/cago/pkg/i18n"
@@ -56,6 +57,16 @@ func (c *categorySvc) CategoryList(ctx context.Context, req *api.CategoryListReq
 // LinkScriptCategory 关联脚本分类
 func (c *categorySvc) LinkScriptCategory(ctx context.Context, scriptId, categoryId int64) error {
 	if categoryId == 0 {
+		// 删除原来的分类
+		list, err := script_repo.NewScriptCategoryRepo().FindByScriptId(ctx, scriptId, script_entity.ScriptCategoryTypeCategory)
+		if err != nil {
+			return err
+		}
+		for _, item := range list {
+			if err := script_repo.NewScriptCategoryRepo().Delete(ctx, item); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 	// 检查分类是否存在
@@ -94,7 +105,32 @@ func (c *categorySvc) LinkScriptCategory(ctx context.Context, scriptId, category
 // LinkScriptTag 关联脚本标签
 func (c *categorySvc) LinkScriptTag(ctx context.Context, scriptId int64, tags []string) error {
 	if len(tags) == 0 {
+		// 删除原来的标签
+		list, err := script_repo.NewScriptCategoryRepo().FindByScriptId(ctx, scriptId, script_entity.ScriptCategoryTypeTag)
+		if err != nil {
+			return err
+		}
+		for _, item := range list {
+			if err := script_repo.NewScriptCategoryRepo().Delete(ctx, item); err != nil {
+				return err
+			}
+		}
 		return nil
+	}
+	// 重新处理tag，根据,空格分隔并去重
+	tagsMap := make(map[string]struct{}, len(tags))
+	for _, tag := range tags {
+		tagSplit := strings.Split(tag, ", ")
+		for _, t := range tagSplit {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				tagsMap[t] = struct{}{}
+			}
+		}
+	}
+	tags = make([]string, 0, len(tagsMap))
+	for tag := range tagsMap {
+		tags = append(tags, tag)
 	}
 	// 检查标签是否存在
 	categoryList := make([]*script_entity.ScriptCategoryList, 0)

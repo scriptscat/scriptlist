@@ -19,7 +19,8 @@ type Script struct {
 	PostID               int64                          `json:"post_id"`
 	Name                 string                         `json:"name"`
 	Description          string                         `json:"description"`
-	Category             []*CategoryListItem            `json:"category"`
+	Category             *CategoryListItem              `json:"category"`
+	Tags                 []*CategoryListItem            `json:"tags"`
 	Status               int64                          `json:"status"`
 	Score                int64                          `json:"score"`
 	ScoreNum             int64                          `json:"score_num"`
@@ -85,6 +86,7 @@ type CreateRequest struct {
 	Description string                      `form:"description" binding:"max=10240" label:"库的描述"`
 	Definition  string                      `form:"definition" binding:"max=10240" label:"库的定义文件"`
 	Version     string                      `form:"version" binding:"max=32" label:"库的版本"`
+	Tags        []string                    `form:"tags" binding:"omitempty,max=64" label:"标签"`         // 标签，只有脚本类型为库时才有意义
 	CategoryID  int64                       `form:"category" binding:"omitempty,numeric" label:"分类ID"`  // 分类ID
 	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
 	Public      script_entity.Public        `form:"public" binding:"required,oneof=1 2 3" label:"公开类型"` // 公开类型：1 公开 2 半公开 3 私有
@@ -116,12 +118,13 @@ type UpdateCodeRequest struct {
 	//Name string `form:"name" binding:"max=128" label:"库的名字"`
 	//Description string `form:"description" binding:"max=102400" label:"库的描述"`
 	Version      string                         `binding:"required,max=128" form:"version" label:"库的版本号"`
+	Tags         []string                       `form:"tags" binding:"omitempty,max=64" label:"标签"` // 标签，只有脚本类型为库时才有意义
 	Content      string                         `binding:"required,max=102400" form:"content" label:"脚本详细描述"`
 	Code         string                         `binding:"required,max=10485760" form:"code" label:"脚本代码"`
 	Definition   string                         `binding:"max=102400" form:"definition" label:"库的定义文件"`
 	Changelog    string                         `binding:"max=102400" form:"changelog" label:"更新日志"`
 	IsPreRelease script_entity.EnablePreRelease `form:"is_pre_release" json:"is_pre_release" binding:"omitempty,oneof=0 1 2" label:"是否预发布"`
-	CategoryID   int                            `form:"category" binding:"omitempty,numeric" label:"分类ID"` // 分类ID
+	CategoryID   int64                          `form:"category" binding:"omitempty,numeric" label:"分类ID"` // 分类ID
 	//Public       script_entity.Public           `form:"public" binding:"required,oneof=1 2" label:"公开类型"` // 公开类型：1 公开 2 半公开
 	//Unwell       script_entity.UnwellContent    `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`
 }

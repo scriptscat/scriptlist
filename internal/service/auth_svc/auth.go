@@ -161,7 +161,7 @@ func (a *authSvc) SetCtxUser(ctx context.Context, user *user_entity.User) contex
 		UID:           user.ID,
 		Username:      user.Username,
 		Email:         user.Email,
-		EmailVerified: !(user.Emailstatus == 0),
+		EmailVerified: user.Emailstatus != 0,
 		AdminLevel:    model.AdminLevel(user.Adminid),
 	}
 

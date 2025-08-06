@@ -42,14 +42,16 @@ func Resource() ResourceSvc {
 // UploadImage 上传图片
 func (r *resourceSvc) UploadImage(ctx context.Context, image *multipart.FileHeader, req *api.UploadImageRequest) (*api.UploadImageResponse, error) {
 	base := path.Join(r.dir, "images", time.Now().Format("2006/0102"))
-	if err := os.MkdirAll(base, 0755); err != nil {
+	if err := os.MkdirAll(base, 0750); err != nil {
 		return nil, err
 	}
 	f, err := image.Open()
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func(f multipart.File) {
+		_ = f.Close()
+	}(f)
 	bImage := make([]byte, image.Size)
 	if _, err := f.Read(bImage); err != nil {
 		return nil, err

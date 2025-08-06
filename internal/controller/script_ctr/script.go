@@ -467,7 +467,9 @@ func (s *Script) Webhook(ctx *gin.Context) {
 		httputils.HandleResp(ctx, err)
 		return
 	}
-	defer ctx.Request.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(ctx.Request.Body)
 	resp, err := script_svc.Script().Webhook(ctx, req, body)
 	if err != nil {
 		httputils.HandleResp(ctx, err)

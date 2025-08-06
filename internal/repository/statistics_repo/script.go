@@ -138,13 +138,14 @@ func (s *scriptStatisticsRepo) save(ctx context.Context, scriptId int64, ip, sta
 	date := time.Now().Format("2006/01/02")
 	ok := true
 	// 有更新的不再统计下载
-	if op == UpdateScriptStatistics {
+	switch op {
+	case UpdateScriptStatistics:
 		if err := redis.Ctx(ctx).Set(
 			"statistics:script:update:"+fmt.Sprintf("%d", scriptId)+":"+ip, "1",
 			time.Minute*60).Err(); err != nil {
 			logger.Ctx(ctx).Error("更新统计保存失败", zap.Error(err))
 		}
-	} else if op == DownloadScriptStatistics {
+	case DownloadScriptStatistics:
 		e, err := redis.Ctx(ctx).Exists("statistics:script:update:" +
 			fmt.Sprintf("%d", scriptId) + ":" + ip).Result()
 		if err != nil {

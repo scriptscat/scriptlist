@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 
 	"github.com/codfrm/cago/database/db"
 	"gorm.io/gorm"
@@ -229,21 +230,18 @@ func (s *scriptSvc) ToScript(ctx context.Context, item *script_entity.Script, wi
 	}
 	data.Script = s.scriptCode(ctx, item, scriptCode)
 	// 脚本分类信息
-	list, err := script_repo.ScriptCategory().FindByScriptId(ctx, item.ID)
+	list, err := script_repo.ScriptCategory().FindByScriptId(ctx, item.ID, script_entity.ScriptCategoryTypeCategory)
 	if err != nil {
 		logger.Ctx(ctx).Error("获取脚本分类失败", zap.Error(err), zap.Int64("script_id", item.ID))
 	}
-	data.Category = make([]*api.CategoryListItem, 0)
-	for _, v := range list {
-		category, err := script_repo.ScriptCategoryList().Find(ctx, v.CategoryID)
+	if len(list) > 0 {
+		category, err := script_repo.ScriptCategoryList().Find(ctx, list[0].CategoryID)
 		if err != nil {
-			logger.Ctx(ctx).Error("获取分类信息失败", zap.Error(err), zap.Int64("category_id", v.CategoryID))
+			return nil, err
 		}
-		if category != nil {
-			data.Category = append(data.Category, &api.CategoryListItem{
-				ID:   category.ID,
-				Name: category.Name,
-			})
+		data.Category = &api.CategoryListItem{
+			ID:   category.ID,
+			Name: category.Name,
 		}
 	}
 	return data, nil
@@ -312,6 +310,7 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 					Createtime: time.Now().Unix(),
 				}
 			}
+			tags = req.Tags
 		} else {
 			metaJson, err := scriptCode.ParseMetaAndUpdateCode(ctx, req.Code)
 			if err != nil {
@@ -320,20 +319,12 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 			script.Name = metaJson["name"][0]
 			script.Description = metaJson["description"][0]
 			// 处理tag关联
-			tags = make([]string, 0)
-			for _, v := range metaJson["tag"] {
-				if v == "" {
-					continue
-				}
-				// 使用,空格分隔
-				split := strings.Split(v, ", ")
-				for _, tag := range split {
-					tag = strings.TrimSpace(tag)
-					if tag == "" {
-						continue
-					}
-					tags = append(tags, tag)
-				}
+			tags = metaJson["tags"]
+			if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
+				tags = append(tags, "后台脚本")
+			}
+			if len(metaJson["crontab"]) > 0 {
+				tags = append(tags, "定时脚本")
 			}
 		}
 
@@ -355,20 +346,16 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 			)
 		}
 		// 处理分类关联
-		if req.CategoryID > 0 {
-			if err := Category().LinkScriptCategory(ctx, script.ID, req.CategoryID); err != nil {
-				return err
-			}
+		if err := Category().LinkScriptCategory(ctx, script.ID, req.CategoryID); err != nil {
+			return err
 		}
 		// 处理tag关联
-		if len(tags) > 0 {
-			if err := Category().LinkScriptTag(ctx, script.ID, tags); err != nil {
-				logger.Ctx(ctx).Error("scriptSvc tag link failed", zap.Int64("script_id", script.ID), zap.Error(err))
-				return i18n.NewInternalError(
-					ctx,
-					code.ScriptCreateFailed,
-				)
-			}
+		if err := Category().LinkScriptTag(ctx, script.ID, tags); err != nil {
+			logger.Ctx(ctx).Error("scriptSvc tag link failed", zap.Int64("script_id", script.ID), zap.Error(err))
+			return i18n.NewInternalError(
+				ctx,
+				code.ScriptCreateFailed,
+			)
 		}
 		// 保存定义
 		if definition != nil {
@@ -415,6 +402,7 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 		Status:       consts.ACTIVE,
 	}
 	var definition *script_entity.LibDefinition
+	var tags []string
 	if script.Type == script_entity.LibraryType {
 		scriptCode.Code = req.Code
 		oldVersion, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, req.Version, true)
@@ -442,6 +430,7 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 				Createtime: time.Now().Unix(),
 			}
 		}
+		tags = req.Tags
 	} else {
 		metaJson, err := scriptCode.ParseMetaAndUpdateCode(ctx, req.Code)
 		if err != nil {
@@ -475,7 +464,15 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 		// 更新名字和描述
 		script.Name = metaJson["name"][0]
 		script.Description = metaJson["description"][0]
+		tags = req.Tags
+		if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
+			tags = append(tags, "后台脚本")
+		}
+		if len(metaJson["crontab"]) > 0 {
+			tags = append(tags, "定时脚本")
+		}
 	}
+
 	if scriptCode.IsPreRelease == 0 {
 		scriptCode.IsPreRelease = script_entity.DisablePreReleaseScript
 	}
@@ -485,6 +482,22 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 	// 保存数据库并发送消息
 	if err := script_repo.Script().Update(ctx, script); err != nil {
 		logger.Ctx(ctx).Error("scriptSvc update failed", zap.Error(err))
+		return nil, i18n.NewInternalError(
+			ctx,
+			code.ScriptUpdateFailed,
+		)
+	}
+	// 更新脚本分类
+	if err := Category().LinkScriptCategory(ctx, script.ID, req.CategoryID); err != nil {
+		logger.Ctx(ctx).Error("scriptSvc category link failed", zap.Int64("script_id", script.ID), zap.Error(err))
+		return nil, i18n.NewInternalError(
+			ctx,
+			code.ScriptUpdateFailed,
+		)
+	}
+	// 更新脚本标签
+	if err := Category().LinkScriptTag(ctx, script.ID, tags); err != nil {
+		logger.Ctx(ctx).Error("scriptSvc tag link failed", zap.Int64("script_id", script.ID), zap.Error(err))
 		return nil, i18n.NewInternalError(
 			ctx,
 			code.ScriptUpdateFailed,
@@ -833,6 +846,15 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 		IsPreRelease: 0,
 		//Public:     script.Public,
 		//Unwell:     script.Unwell,
+	}
+	// 获取脚本分类
+	categories, err := script_repo.ScriptCategory().FindByScriptId(ctx, script.ID, script_entity.ScriptCategoryTypeCategory)
+	if err != nil {
+		logger.Error("获取脚本分类失败", zap.Error(err), zap.Int64("scriptID", script.ID))
+		return err
+	}
+	if len(categories) > 0 {
+		req.CategoryID = categories[0].CategoryID
 	}
 	// 读取content
 	if script.ContentUrl != "" {

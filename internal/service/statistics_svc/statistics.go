@@ -465,7 +465,7 @@ func (s *statisticsSvc) IgnoreErrorUseTimeAvg(ctx context.Context, id int64, sta
 
 // UserOrigin 用户安装来源统计
 func (s *statisticsSvc) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
-	if req.PageRequest.GetPage()*req.PageRequest.GetSize() > 100 {
+	if req.GetPage()*req.GetSize() > 100 {
 		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
 	}
 	now, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02")+" 23:59:59")
@@ -484,7 +484,7 @@ func (s *statisticsSvc) UserOrigin(ctx context.Context, req *api.UserOriginReque
 
 // VisitDomain 访问域名统计
 func (s *statisticsSvc) VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error) {
-	if req.PageRequest.GetPage()*req.PageRequest.GetSize() > 100 {
+	if req.GetPage()*req.GetSize() > 100 {
 		return nil, i18n.NewError(ctx, code.StatisticsLimitExceeded)
 	}
 	now, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02")+" 23:59:59")

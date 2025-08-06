@@ -17,7 +17,6 @@ type ScriptCategoryRepo interface {
 	Create(ctx context.Context, scriptCategory *entity.ScriptCategory) error
 	Delete(ctx context.Context, scriptCategory *entity.ScriptCategory) error
 
-	LinkCategory(ctx context.Context, script, category int64) error
 	FindByScriptId(ctx context.Context, scriptId int64, categoryType entity.ScriptCategoryType) ([]*entity.ScriptCategory, error)
 	DeleteByScriptId(ctx context.Context, id int64) error
 }
@@ -74,28 +73,6 @@ func (s *scriptCategoryRepo) Delete(ctx context.Context, scriptCategory *entity.
 
 func (s *scriptCategoryRepo) key(script int64) string {
 	return "script:category:" + strconv.FormatInt(script, 10)
-}
-
-func (s *scriptCategoryRepo) LinkCategory(ctx context.Context, script, category int64) error {
-	model := &entity.ScriptCategory{}
-	if err := db.Ctx(ctx).Where("script_id=? and category_id=?", script, category).First(model).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			if err := db.Ctx(ctx).Model(&entity.ScriptCategoryList{ID: category}).Update("num", gorm.Expr("num+1")).Error; err != nil {
-				return err
-			}
-			if err := db.Ctx(ctx).Save(&entity.ScriptCategory{
-				CategoryID: category,
-				ScriptID:   script,
-				Createtime: time.Now().Unix(),
-				Updatetime: 0,
-			}).Error; err != nil {
-				return err
-			}
-			return cache2.NewKeyDepend(cache.Default(), s.key(script)+":dep").InvalidKey(ctx)
-		}
-		return err
-	}
-	return nil
 }
 
 func (s *scriptCategoryRepo) FindByScriptId(ctx context.Context, script int64, scriptCategory entity.ScriptCategoryType) ([]*entity.ScriptCategory, error) {

@@ -20,41 +20,9 @@ import (
 )
 
 type Script struct {
-	// 分类id
-	bgCategory   *script_entity.ScriptCategoryList
-	cronCategory *script_entity.ScriptCategoryList
 }
 
 func (s *Script) Subscribe(ctx context.Context) error {
-	var err error
-	s.bgCategory, err = script_repo.ScriptCategoryList().FindByNameAndType(ctx, "后台脚本")
-	if err != nil {
-		return err
-	}
-	if s.bgCategory == nil {
-		s.bgCategory = &script_entity.ScriptCategoryList{
-			Name:       "后台脚本",
-			Type:       script_entity.ScriptCategoryTypeCategory,
-			Createtime: time.Now().Unix(),
-		}
-		if err := script_repo.ScriptCategoryList().Create(ctx, s.bgCategory); err != nil {
-			return err
-		}
-	}
-	s.cronCategory, err = script_repo.ScriptCategoryList().FindByNameAndType(ctx, "定时脚本")
-	if err != nil {
-		return err
-	}
-	if s.cronCategory == nil {
-		s.cronCategory = &script_entity.ScriptCategoryList{
-			Name:       "定时脚本",
-			Type:       script_entity.ScriptCategoryTypeCategory,
-			Createtime: time.Now().Unix(),
-		}
-		if err := script_repo.ScriptCategoryList().Create(ctx, s.cronCategory); err != nil {
-			return err
-		}
-	}
 	if err := producer.SubscribeScriptCreate(ctx, s.scriptCreate); err != nil {
 		return err
 	}
@@ -87,21 +55,6 @@ func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script,
 		if err := s.saveDomain(ctx, script.ID, code.ID, metaJson); err != nil {
 			logger.Error("saveDomain", zap.Error(err))
 			return err
-		}
-
-		if len(metaJson["background"]) > 0 || len(metaJson["crontab"]) > 0 {
-			// 后台脚本
-			if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.bgCategory.ID); err != nil {
-				logger.Error("LinkCategory", zap.Error(err))
-				return err
-			}
-		}
-		if len(metaJson["crontab"]) > 0 {
-			// 定时脚本
-			if err := script_repo.ScriptCategory().LinkCategory(ctx, script.ID, s.cronCategory.ID); err != nil {
-				logger.Error("LinkCategory", zap.Error(err))
-				return err
-			}
 		}
 	}
 
