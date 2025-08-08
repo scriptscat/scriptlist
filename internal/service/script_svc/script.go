@@ -728,19 +728,23 @@ func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.Stat
 		return nil, err
 	}
 	user := auth_svc.Auth().Get(ctx)
-	var level script_entity.ScriptWatchLevel
+	resp := &api.StateResponse{
+		Watch:         0,
+		FavoriteIds:   nil,
+		WatchCount:    0,
+		FavoriteCount: 0,
+	}
 	if user != nil {
 		watch, err := script_repo.ScriptWatch().FindByUser(ctx, req.ID, user.UID)
 		if err != nil {
 			return nil, err
 		}
 		if watch != nil {
-			level = watch.Level
+			resp.Watch = watch.Level
 		}
 	}
-	return &api.StateResponse{
-		Watch: level,
-	}, nil
+
+	return resp, nil
 }
 
 // Watch 关注脚本

@@ -308,7 +308,7 @@ definitions:
     type: object
   script.AuditInviteCodeResponse:
     type: object
-  script.CategoryList:
+  script.CategoryListItem:
     properties:
       createtime:
         type: integer
@@ -322,8 +322,8 @@ definitions:
       sort:
         type: integer
       type:
+        $ref: '#/definitions/script_entity.ScriptCategoryType'
         description: 1:脚本分类 2:脚本标签
-        type: integer
       updatetime:
         type: integer
     type: object
@@ -332,7 +332,7 @@ definitions:
       categories:
         description: 分类列表
         items:
-          type: string
+          $ref: '#/definitions/script.CategoryListItem'
         type: array
     type: object
   script.Code:
@@ -371,6 +371,9 @@ definitions:
         type: string
       name:
         type: string
+      private:
+        description: 0公开1私密
+        type: integer
     type: object
   script.CreateFolderResponse:
     properties:
@@ -440,6 +443,11 @@ definitions:
       public:
         $ref: '#/definitions/script_entity.Public'
         description: 公开类型：1 公开 2 半公开 3 私有
+      tags:
+        description: 标签，只有脚本类型为库时才有意义
+        items:
+          type: string
+        type: array
       type:
         $ref: '#/definitions/script_entity.Type'
         description: 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
@@ -490,9 +498,6 @@ definitions:
       description:
         description: 收藏夹描述
         type: string
-      favorited:
-        description: 如果传了script_id，表示该脚本是否在此收藏夹中
-        type: boolean
       id:
         type: integer
       name:
@@ -503,7 +508,20 @@ definitions:
       list:
         items:
           $ref: '#/definitions/script.FavoriteFolderItem'
+          type: object
         type: array
+      total:
+        type: integer
+    type: object
+  script.FavoriteScriptListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/script.Script'
+          type: object
+        type: array
+      total:
+        type: integer
     type: object
   script.FavoriteScriptRequest:
     properties:
@@ -760,9 +778,7 @@ definitions:
       archive:
         type: integer
       category:
-        items:
-          $ref: '#/definitions/script.CategoryList'
-        type: array
+        $ref: '#/definitions/script.CategoryListItem'
       createtime:
         type: integer
       danger:
@@ -787,6 +803,10 @@ definitions:
         $ref: '#/definitions/script.Code'
       status:
         type: integer
+      tags:
+        items:
+          $ref: '#/definitions/script.CategoryListItem'
+        type: array
       today_install:
         type: integer
       total_install:
@@ -802,8 +822,19 @@ definitions:
     type: object
   script.StateResponse:
     properties:
+      favorite_count:
+        description: 收藏人数
+        type: integer
+      favorite_ids:
+        description: 收藏夹
+        items:
+          type: integer
+        type: array
       watch:
         $ref: '#/definitions/script_entity.ScriptWatchLevel'
+      watch_count:
+        description: 关注人数
+        type: integer
     type: object
   script.UnfavoriteScriptRequest:
     properties:
@@ -826,7 +857,7 @@ definitions:
     type: object
   script.UpdateCodeRequest:
     properties:
-      category:
+      category_id:
         description: 分类ID
         type: integer
       changelog:
@@ -839,6 +870,11 @@ definitions:
         type: string
       is_pre_release:
         $ref: '#/definitions/script_entity.EnablePreRelease'
+      tags:
+        description: 标签，只有脚本类型为库时才有意义
+        items:
+          type: string
+        type: array
       version:
         description: |-
           Name string `form:"name" binding:"max=128" label:"库的名字"`
@@ -1474,9 +1510,9 @@ paths:
       - application/json
       description: 收藏夹列表
       parameters:
-      - description: 可选，用于检查指定脚本是否在收藏夹中
+      - description: 用户ID，0表示当前登录用户
         in: query
-        name: script_id
+        name: user_id
         type: integer
       produces:
       - application/json
@@ -1559,6 +1595,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 删除收藏夹
+      tags:
+      - script/favorite
+  /favorites/folders/{id}/scripts:
+    get:
+      consumes:
+      - application/json
+      description: 获取收藏夹脚本列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.FavoriteScriptListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取收藏夹脚本列表
       tags:
       - script/favorite
   /login/oauth:
@@ -1736,45 +1802,6 @@ paths:
       summary: 脚本实时统计数据
       tags:
       - statistics
-  /script/category:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: 前缀
-        in: query
-        name: Prefix
-        type: string
-      - description: |-
-          分类类型
-          ScriptCategoryType enum type:
-          - ScriptCategoryTypeCategory: 1
-          - ScriptCategoryTypeTag: 2
-        enum:
-        - 1
-        - 2
-        in: query
-        name: Type
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.CategoryListResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      tags:
-      - script/category
   /scripts:
     get:
       consumes:
@@ -2892,6 +2919,13 @@ paths:
         name: id
         required: true
         type: integer
+      - in: query
+        name: keyword
+        type: string
+      - description: 0:全部 1:待解决 3:已关闭
+        in: query
+        name: status,default=0
+        type: integer
       produces:
       - application/json
       responses:
@@ -3806,6 +3840,47 @@ paths:
       summary: 关注脚本
       tags:
       - script
+  /scripts/category:
+    get:
+      consumes:
+      - application/json
+      description: 脚本分类列表
+      parameters:
+      - description: 前缀
+        in: query
+        name: prefix
+        type: string
+      - description: |-
+          分类类型: 1: 脚本分类, 2: Tag
+          ScriptCategoryType enum type:
+          - ScriptCategoryTypeCategory: 1
+          - ScriptCategoryTypeTag: 2
+        enum:
+        - 1
+        - 2
+        in: query
+        name: type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.CategoryListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 脚本分类列表
+      tags:
+      - script/category
   /scripts/invite/{code}:
     get:
       consumes:

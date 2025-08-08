@@ -2,6 +2,7 @@ package issue_repo
 
 import (
 	"context"
+	api "github.com/scriptscat/scriptlist/internal/api/issue"
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
@@ -12,7 +13,7 @@ import (
 //go:generate mockgen -source=./script_issue.go -destination=./mock/script_issue.go
 type ScriptIssueRepo interface {
 	Find(ctx context.Context, scriptId int64, id int64) (*issue_entity.ScriptIssue, error)
-	FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*issue_entity.ScriptIssue, int64, error)
+	FindPage(ctx context.Context, req *api.ListRequest, page httputils.PageRequest) ([]*issue_entity.ScriptIssue, int64, error)
 	Create(ctx context.Context, scriptIssue *issue_entity.ScriptIssue) error
 	Update(ctx context.Context, scriptIssue *issue_entity.ScriptIssue) error
 	Delete(ctx context.Context, scriptId int64, id int64) error
@@ -60,14 +61,21 @@ func (u *scriptIssueRepo) Delete(ctx context.Context, scriptId int64, id int64) 
 		Where("id=? and script_id=?", id, scriptId).Update("status", consts.DELETE).Error
 }
 
-func (u *scriptIssueRepo) FindPage(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*issue_entity.ScriptIssue, int64, error) {
+func (u *scriptIssueRepo) FindPage(ctx context.Context, req *api.ListRequest, page httputils.PageRequest) ([]*issue_entity.ScriptIssue, int64, error) {
 	var list []*issue_entity.ScriptIssue
 	var count int64
-	if err := db.Ctx(ctx).Model(&issue_entity.ScriptIssue{}).Where("script_id=? and status!=?", scriptId, consts.DELETE).
-		Count(&count).Error; err != nil {
+	db := db.Ctx(ctx).Model(&issue_entity.ScriptIssue{}).
+		Where("script_id=? and status!=?", req.ScriptID, consts.DELETE)
+	if req.Status > 0 {
+		db = db.Where("status=?", req.Status)
+	}
+	if req.Keyword != "" {
+		db = db.Where("title like ?", "%"+req.Keyword+"%")
+	}
+	if err := db.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Ctx(ctx).Where("script_id=? and status!=?", scriptId, consts.DELETE).Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := db.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil

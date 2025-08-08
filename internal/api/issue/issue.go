@@ -21,7 +21,9 @@ type Issue struct {
 type ListRequest struct {
 	mux.Meta              `path:"/scripts/:id/issues" method:"GET"`
 	httputils.PageRequest `form:",inline"`
-	ScriptID              int64 `uri:"id" binding:"required"`
+	ScriptID              int64  `uri:"id" binding:"required"`
+	Keyword               string `form:"keyword"`
+	Status                int32  `form:"status,default=0" binding:"oneof=0 1 3"` // 0:全部 1:待解决 3:已关闭
 }
 
 type ListResponse struct {

@@ -6,153 +6,200 @@
     },
     "basePath": "/api/v2",
     "paths": {
-      "/favorites/folders": {
-        "get": {
-          "description": "收藏夹列表",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/favorite"
-          ],
-          "summary": "收藏夹列表",
-          "parameters": [
-            {
-              "type": "integer",
-              "description": "可选，用于检查指定脚本是否在收藏夹中",
-              "name": "script_id",
-              "in": "query"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.FavoriteFolderListResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/favorites/folders": {
+            "get": {
+                "description": "收藏夹列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "收藏夹列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "用户ID，0表示当前登录用户",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.FavoriteFolderListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
             },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
+            "post": {
+                "description": "创建收藏夹",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "创建收藏夹",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.CreateFolderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CreateFolderResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
             }
-          }
         },
-        "post": {
-          "description": "创建收藏夹",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/favorite"
-          ],
-          "summary": "创建收藏夹",
-          "parameters": [
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.CreateFolderRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.CreateFolderResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/favorites/folders/{id}": {
+            "delete": {
+                "description": "删除收藏夹",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "删除收藏夹",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.DeleteFolderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.DeleteFolderResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
-      "/favorites/folders/{id}": {
-        "delete": {
-          "description": "删除收藏夹",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/favorite"
-          ],
-          "summary": "删除收藏夹",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.DeleteFolderRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.DeleteFolderResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        },
+        "/favorites/folders/{id}/scripts": {
+            "get": {
+                "description": "获取收藏夹脚本列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "获取收藏夹脚本列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.FavoriteScriptListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
+        },
         "/login/oauth": {
             "get": {
                 "description": "第三方登录",
@@ -321,61 +368,6 @@
                                 "data": {
                                     "$ref": "#/definitions/resource.UploadImageResponse"
                                 },
-                              "msg": {
-                                "type": "string"
-                              }
-                            }
-                        }
-                    },
-                  "400": {
-                    "description": "Bad Request",
-                    "schema": {
-                      "$ref": "#/definitions/BadRequest"
-                    }
-                  }
-                }
-            }
-        },
-      "/script/category": {
-        "get": {
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/category"
-          ],
-          "parameters": [
-            {
-              "type": "string",
-              "description": "前缀",
-              "name": "Prefix",
-              "in": "query"
-            },
-            {
-              "enum": [
-                1,
-                2
-              ],
-              "type": "integer",
-              "description": "分类类型\nScriptCategoryType enum type:\n- ScriptCategoryTypeCategory: 1\n- ScriptCategoryTypeTag: 2",
-              "name": "Type",
-              "in": "query"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.CategoryListResponse"
-                  },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -673,6 +665,63 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.UpdateLibInfoResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/category": {
+            "get": {
+                "description": "脚本分类列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/category"
+                ],
+                "summary": "脚本分类列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "前缀",
+                        "name": "prefix",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "description": "分类类型: 1: 脚本分类, 2: Tag\nScriptCategoryType enum type:\n- ScriptCategoryTypeCategory: 1\n- ScriptCategoryTypeTag: 2",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.CategoryListResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -1557,60 +1606,60 @@
                                 "data": {
                                     "$ref": "#/definitions/script.ReplyScoreResponse"
                                 },
-                              "msg": {
-                                "type": "string"
-                              }
+                                "msg": {
+                                    "type": "string"
+                                }
                             }
                         }
                     },
-                  "400": {
-                    "description": "Bad Request",
-                    "schema": {
-                      "$ref": "#/definitions/BadRequest"
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
                     }
-                  }
                 }
             }
         },
-      "/scripts/{id}/favorite": {
-        "post": {
-          "description": "收藏脚本",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/favorite"
-          ],
-          "summary": "收藏脚本",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.FavoriteScriptRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.FavoriteScriptResponse"
-                  },
+        "/scripts/{id}/favorite": {
+            "post": {
+                "description": "收藏脚本",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "收藏脚本",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.FavoriteScriptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.FavoriteScriptResponse"
+                                },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -2438,6 +2487,17 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0:全部 1:待解决 3:已关闭",
+                        "name": "status,default=0",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -3557,60 +3617,60 @@
                 }
             }
         },
-      "/scripts/{id}/unfavorite": {
-        "post": {
-          "description": "取消收藏脚本",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script/favorite"
-          ],
-          "summary": "取消收藏脚本",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.UnfavoriteScriptRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.UnfavoriteScriptResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/scripts/{id}/unfavorite": {
+            "post": {
+                "description": "取消收藏脚本",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "取消收藏脚本",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.UnfavoriteScriptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.UnfavoriteScriptResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
+        },
         "/scripts/{id}/unwell": {
             "put": {
                 "description": "更新脚本不适内容",
@@ -3750,60 +3810,60 @@
                                 "data": {
                                     "$ref": "#/definitions/script.VersionCodeResponse"
                                 },
-                              "msg": {
-                                "type": "string"
-                              }
+                                "msg": {
+                                    "type": "string"
+                                }
                             }
                         }
                     },
-                  "400": {
-                    "description": "Bad Request",
-                    "schema": {
-                      "$ref": "#/definitions/BadRequest"
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
                     }
-                  }
                 }
             }
         },
-      "/scripts/{id}/visit": {
-        "post": {
-          "description": "记录脚本访问统计",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "script"
-          ],
-          "summary": "记录脚本访问统计",
-          "parameters": [
-            {
-              "type": "integer",
-              "name": "id",
-              "in": "path",
-              "required": true
-            },
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/script.RecordVisitRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/script.RecordVisitResponse"
-                  },
+        "/scripts/{id}/visit": {
+            "post": {
+                "description": "记录脚本访问统计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "记录脚本访问统计",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.RecordVisitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.RecordVisitResponse"
+                                },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -4378,54 +4438,54 @@
                 }
             }
         },
-      "/users/refresh-token": {
-        "post": {
-          "description": "刷新用户token",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "user"
-          ],
-          "summary": "刷新用户token",
-          "parameters": [
-            {
-              "name": "body",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/user.RefreshTokenRequest"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/user.RefreshTokenResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
+        "/users/refresh-token": {
+            "post": {
+                "description": "刷新用户token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "刷新用户token",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.RefreshTokenResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
                 }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
-              }
             }
-          }
-        }
-      },
+        },
         "/users/search": {
             "get": {
                 "description": "搜索用户",
@@ -5266,7 +5326,7 @@
         "script.AuditInviteCodeResponse": {
             "type": "object"
         },
-        "script.CategoryList": {
+        "script.CategoryListItem": {
             "type": "object",
             "properties": {
                 "createtime": {
@@ -5285,27 +5345,27 @@
                 "sort": {
                     "type": "integer"
                 },
-              "type": {
-                "description": "1:脚本分类 2:脚本标签",
-                "type": "integer"
+                "type": {
+                    "description": "1:脚本分类 2:脚本标签",
+                    "$ref": "#/definitions/script_entity.ScriptCategoryType"
                 },
                 "updatetime": {
                     "type": "integer"
                 }
             }
         },
-      "script.CategoryListResponse": {
-        "type": "object",
-        "properties": {
-          "categories": {
-            "description": "分类列表",
-            "type": "array",
-            "items": {
-              "type": "string"
+        "script.CategoryListResponse": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "description": "分类列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.CategoryListItem"
+                    }
+                }
             }
-          }
-        }
-      },
+        },
         "script.Code": {
             "type": "object",
             "properties": {
@@ -5352,25 +5412,29 @@
                 }
             }
         },
-      "script.CreateFolderRequest": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "script.CreateFolderResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          }
-        }
-      },
+        "script.CreateFolderRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "private": {
+                    "description": "0公开1私密",
+                    "type": "integer"
+                }
+            }
+        },
+        "script.CreateFolderResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "script.CreateGroupInviteCodeRequest": {
             "type": "object",
             "properties": {
@@ -5440,10 +5504,10 @@
         "script.CreateRequest": {
             "type": "object",
             "properties": {
-              "category": {
-                "description": "分类ID",
-                "type": "integer"
-              },
+                "category": {
+                    "description": "分类ID",
+                    "type": "integer"
+                },
                 "changelog": {
                     "type": "string"
                 },
@@ -5465,6 +5529,13 @@
                 "public": {
                     "description": "公开类型：1 公开 2 半公开 3 私有",
                     "$ref": "#/definitions/script_entity.Public"
+                },
+                "tags": {
+                    "description": "标签，只有脚本类型为库时才有意义",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "type": {
                     "description": "脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)",
@@ -5505,12 +5576,12 @@
         "script.DeleteCodeResponse": {
             "type": "object"
         },
-      "script.DeleteFolderRequest": {
-        "type": "object"
-      },
-      "script.DeleteFolderResponse": {
-        "type": "object"
-      },
+        "script.DeleteFolderRequest": {
+            "type": "object"
+        },
+        "script.DeleteFolderResponse": {
+            "type": "object"
+        },
         "script.DeleteGroupRequest": {
             "type": "object"
         },
@@ -5529,52 +5600,67 @@
         "script.DeleteResponse": {
             "type": "object"
         },
-      "script.FavoriteFolderItem": {
-        "type": "object",
-        "properties": {
-          "count": {
-            "description": "收藏夹中脚本数量",
-            "type": "integer"
-          },
-          "description": {
-            "description": "收藏夹描述",
-            "type": "string"
-          },
-          "favorited": {
-            "description": "如果传了script_id，表示该脚本是否在此收藏夹中",
-            "type": "boolean"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "script.FavoriteFolderListResponse": {
-        "type": "object",
-        "properties": {
-          "list": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/script.FavoriteFolderItem"
+        "script.FavoriteFolderItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "收藏夹中脚本数量",
+                    "type": "integer"
+                },
+                "description": {
+                    "description": "收藏夹描述",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
             }
-          }
-        }
-      },
-      "script.FavoriteScriptRequest": {
-        "type": "object",
-        "properties": {
-          "folder_id": {
-            "description": "一次只能收藏到一个收藏夹",
-            "type": "integer"
-          }
-        }
-      },
-      "script.FavoriteScriptResponse": {
-        "type": "object"
-      },
+        },
+        "script.FavoriteFolderListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.FavoriteFolderItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.FavoriteScriptListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/script.Script"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.FavoriteScriptRequest": {
+            "type": "object",
+            "properties": {
+                "folder_id": {
+                    "description": "一次只能收藏到一个收藏夹",
+                    "type": "integer"
+                }
+            }
+        },
+        "script.FavoriteScriptResponse": {
+            "type": "object"
+        },
         "script.GetSettingResponse": {
             "type": "object",
             "properties": {
@@ -5861,19 +5947,19 @@
             }
         },
         "script.PutScoreResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "integer"
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
             }
-          }
         },
-      "script.RecordVisitRequest": {
-        "type": "object"
-      },
-      "script.RecordVisitResponse": {
-        "type": "object"
-      },
+        "script.RecordVisitRequest": {
+            "type": "object"
+        },
+        "script.RecordVisitResponse": {
+            "type": "object"
+        },
         "script.RemoveMemberRequest": {
             "type": "object"
         },
@@ -5945,10 +6031,7 @@
                     "type": "integer"
                 },
                 "category": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/script.CategoryList"
-                    }
+                    "$ref": "#/definitions/script.CategoryListItem"
                 },
                 "createtime": {
                     "type": "integer"
@@ -5986,6 +6069,12 @@
                 "status": {
                     "type": "integer"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/script.CategoryListItem"
+                    }
+                },
                 "today_install": {
                     "type": "integer"
                 },
@@ -6009,23 +6098,38 @@
         "script.StateResponse": {
             "type": "object",
             "properties": {
+                "favorite_count": {
+                    "description": "收藏人数",
+                    "type": "integer"
+                },
+                "favorite_ids": {
+                    "description": "收藏夹",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "watch": {
                     "$ref": "#/definitions/script_entity.ScriptWatchLevel"
+                },
+                "watch_count": {
+                    "description": "关注人数",
+                    "type": "integer"
                 }
             }
         },
-      "script.UnfavoriteScriptRequest": {
-        "type": "object",
-        "properties": {
-          "folder_id": {
-            "description": "一次只能从一个收藏夹移除",
-            "type": "integer"
-          }
-        }
-      },
-      "script.UnfavoriteScriptResponse": {
-        "type": "object"
-      },
+        "script.UnfavoriteScriptRequest": {
+            "type": "object",
+            "properties": {
+                "folder_id": {
+                    "description": "一次只能从一个收藏夹移除",
+                    "type": "integer"
+                }
+            }
+        },
+        "script.UnfavoriteScriptResponse": {
+            "type": "object"
+        },
         "script.UpdateAccessRequest": {
             "type": "object",
             "properties": {
@@ -6045,10 +6149,10 @@
         "script.UpdateCodeRequest": {
             "type": "object",
             "properties": {
-              "category": {
-                "description": "分类ID",
-                "type": "integer"
-              },
+                "category_id": {
+                    "description": "分类ID",
+                    "type": "integer"
+                },
                 "changelog": {
                     "type": "string"
                 },
@@ -6063,6 +6167,13 @@
                 },
                 "is_pre_release": {
                     "$ref": "#/definitions/script_entity.EnablePreRelease"
+                },
+                "tags": {
+                    "description": "标签，只有脚本类型为库时才有意义",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "version": {
                     "description": "Name string `form:\"name\" binding:\"max=128\" label:\"库的名字\"`\nDescription string `form:\"description\" binding:\"max=102400\" label:\"库的描述\"`",
@@ -6372,12 +6483,12 @@
                 3
             ]
         },
-      "script_entity.ScriptCategoryType": {
-        "description": "ScriptCategoryType enum type:\n- ScriptCategoryTypeCategory: 1\n- ScriptCategoryTypeTag: 2",
-        "type": "integer",
-        "enum": [
-          1,
-          2
+        "script_entity.ScriptCategoryType": {
+            "description": "ScriptCategoryType enum type:\n- ScriptCategoryTypeCategory: 1\n- ScriptCategoryTypeTag: 2",
+            "type": "integer",
+            "enum": [
+                1,
+                2
             ]
         },
         "script_entity.ScriptWatchLevel": {
@@ -6808,11 +6919,11 @@
         "user.LogoutResponse": {
             "type": "object"
         },
-      "user.RefreshTokenRequest": {
-        "type": "object"
-      },
-      "user.RefreshTokenResponse": {
-        "type": "object"
+        "user.RefreshTokenRequest": {
+            "type": "object"
+        },
+        "user.RefreshTokenResponse": {
+            "type": "object"
         },
         "user.RefreshWebhookRequest": {
             "type": "object"

@@ -89,3 +89,13 @@ const (
 	AccessInviteInvalid
 	AccessInviteUserError
 )
+
+// script favorite
+const (
+	ScriptFavoriteFolderNotFound = iota + 108000
+	ScriptFavoriteMustUserID
+	ScriptFavoriteFolderLimitExceeded
+	ScriptFavoriteExist
+	ScriptFavoriteNotFound
+	ScriptFavoriteLimitExceeded = 108005
+)

@@ -60,6 +60,21 @@ func Router(ctx context.Context, root *mux.Router) error {
 		controller := script_ctr.NewCategory()
 		r.Bind(controller.CategoryList)
 	}
+	//脚本收藏
+	{
+		controller := script_ctr.NewFavorite()
+		r.Group("/", auth_svc.Auth().RequireLogin(true)).Bind(
+			controller.CreateFolder,
+			controller.DeleteFolder,
+			controller.FavoriteScript,
+			controller.UnfavoriteScript,
+		)
+		r.Group("/", auth_svc.Auth().RequireLogin(false)).Bind(
+			controller.FavoriteFolderList,
+			controller.FavoriteScriptList,
+		)
+	}
+
 	// 脚本
 	scriptCtr := script_ctr.NewScript()
 	scriptCtr.Router(root, r)

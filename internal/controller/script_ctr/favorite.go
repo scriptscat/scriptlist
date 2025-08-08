@@ -2,21 +2,38 @@ package script_ctr
 
 import (
 	"context"
+	"github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/limit"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"strconv"
 
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 )
 
 type Favorite struct {
+	limit limit.Limit
 }
 
 func NewFavorite() *Favorite {
-	return &Favorite{}
+	return &Favorite{
+		limit: limit.NewCombinationLimit(limit.NewPeriodLimit(
+			300, 2, redis.Default(), "limit:create:favorite:minute",
+		), limit.NewPeriodLimit(
+			3600, 5, redis.Default(), "limit:create:favorite:hour",
+		)),
+	}
 }
 
 // CreateFolder 创建收藏夹
 func (f *Favorite) CreateFolder(ctx context.Context, req *api.CreateFolderRequest) (*api.CreateFolderResponse, error) {
-	return script_svc.Favorite().CreateFolder(ctx, req)
+	resp, err := f.limit.FuncTake(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10), func() (interface{}, error) {
+		return script_svc.Favorite().CreateFolder(ctx, req)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*api.CreateFolderResponse), nil
 }
 
 // DeleteFolder 删除收藏夹
@@ -37,4 +54,9 @@ func (f *Favorite) FavoriteScript(ctx context.Context, req *api.FavoriteScriptRe
 // UnfavoriteScript 取消收藏脚本
 func (f *Favorite) UnfavoriteScript(ctx context.Context, req *api.UnfavoriteScriptRequest) (*api.UnfavoriteScriptResponse, error) {
 	return script_svc.Favorite().UnfavoriteScript(ctx, req)
+}
+
+// FavoriteScriptList 获取收藏夹脚本列表
+func (f *Favorite) FavoriteScriptList(ctx context.Context, req *api.FavoriteScriptListRequest) (*api.FavoriteScriptListResponse, error) {
+	return script_svc.Favorite().FavoriteScriptList(ctx, req)
 }

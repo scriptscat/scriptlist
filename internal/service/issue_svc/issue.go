@@ -66,7 +66,7 @@ func Issue() IssueSvc {
 
 // List 获取脚本反馈列表
 func (i *issueSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
-	list, total, err := issue_repo.Issue().FindPage(ctx, req.ScriptID, req.PageRequest)
+	list, total, err := issue_repo.Issue().FindPage(ctx, req, req.PageRequest)
 	if err != nil {
 		return nil, err
 	}

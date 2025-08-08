@@ -71,4 +71,11 @@ var zhCN = map[int]string{
 	AccessInviteUsed:       "邀请已使用",
 	AccessInviteInvalid:    "邀请无效",
 	AccessInviteUserError:  "邀请用户错误",
+
+	ScriptFavoriteFolderNotFound:      "收藏夹不存在",
+	ScriptFavoriteMustUserID:          "收藏夹必须指定用户ID",
+	ScriptFavoriteFolderLimitExceeded: "收藏夹数量超过限制,最多10个收藏夹",
+	ScriptFavoriteExist:               "脚本已收藏",
+	ScriptFavoriteNotFound:            "脚本未收藏",
+	ScriptFavoriteLimitExceeded:       "收藏夹脚本数量超过限制,最多100个脚本",
 }

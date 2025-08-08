@@ -203,6 +203,12 @@ type StateRequest struct {
 
 type StateResponse struct {
 	Watch script_entity.ScriptWatchLevel `json:"watch"`
+	// 收藏夹
+	FavoriteIds []int64 `json:"favorite_ids"`
+	// 关注人数
+	WatchCount int64 `json:"watch_count"`
+	// 收藏人数
+	FavoriteCount int64 `json:"favorite_count"`
 }
 
 // WatchRequest 关注脚本

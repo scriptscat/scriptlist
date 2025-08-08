@@ -12,6 +12,8 @@ func T20250810() *gormigrate.Migration {
 		Migrate: func(tx *gorm.DB) error {
 			if err := tx.AutoMigrate(
 				&script_entity.ScriptCategoryList{},
+				&script_entity.ScriptFavorite{},
+				&script_entity.ScriptFavoriteFolder{},
 			); err != nil {
 				return err
 			}
@@ -21,6 +23,8 @@ func T20250810() *gormigrate.Migration {
 		Rollback: func(tx *gorm.DB) error {
 			return tx.Migrator().DropTable(
 				&script_entity.ScriptCategoryList{},
+				&script_entity.ScriptFavorite{},
+				&script_entity.ScriptFavoriteFolder{},
 			)
 		},
 	}
