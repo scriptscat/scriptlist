@@ -51,6 +51,9 @@ func main() {
 	script_repo.RegisterScriptInvite(script_repo.NewScriptInvite())
 	//注册评分
 	script_repo.RegisterScriptScore(script_repo.NewScriptScore())
+	// 收藏夹
+	script_repo.RegisterScriptFavorite(script_repo.NewScriptFavorite())
+	script_repo.RegisterScriptFavoriteFolder(script_repo.NewScriptFavoriteFolder())
 
 	statistics_repo.RegisterScriptStatistics(statistics_repo.NewScriptStatistics())
 	statistics_repo.RegisterStatisticsVisitorRepo(statistics_repo.NewStatisticVistior())

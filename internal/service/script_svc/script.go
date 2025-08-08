@@ -742,6 +742,24 @@ func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.Stat
 		if watch != nil {
 			resp.Watch = watch.Level
 		}
+		list, err := script_repo.ScriptFavorite().FindByUserIDAndScriptID(ctx, user.UID, req.ID)
+		if err != nil {
+			return nil, err
+		}
+		resp.FavoriteIds = make([]int64, 0, len(list))
+		for _, item := range list {
+			resp.FavoriteIds = append(resp.FavoriteIds, item.ID)
+		}
+	}
+
+	resp.FavoriteCount, err = script_repo.ScriptFavorite().CountUniqueUsersByScriptID(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.WatchCount, err = script_repo.ScriptWatch().CountByScript(ctx, req.ID)
+	if err != nil {
+		return nil, err
 	}
 
 	return resp, nil

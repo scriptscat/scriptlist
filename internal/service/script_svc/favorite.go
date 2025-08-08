@@ -46,6 +46,10 @@ func (f *favoriteSvc) CreateFolder(ctx context.Context, req *api.CreateFolderReq
 	if list.Total >= 10 {
 		return nil, i18n.NewError(ctx, code.ScriptFavoriteFolderLimitExceeded)
 	}
+	return f.createFolder(ctx, req)
+}
+
+func (f *favoriteSvc) createFolder(ctx context.Context, req *api.CreateFolderRequest) (*api.CreateFolderResponse, error) {
 	user := auth_svc.Auth().Get(ctx)
 	m := &script_entity.ScriptFavoriteFolder{
 		ID:          0,
@@ -57,7 +61,7 @@ func (f *favoriteSvc) CreateFolder(ctx context.Context, req *api.CreateFolderReq
 		Status:      consts.ACTIVE,
 		Createtime:  time.Now().Unix(),
 	}
-	err = script_repo.ScriptFavoriteFolder().Create(ctx, m)
+	err := script_repo.ScriptFavoriteFolder().Create(ctx, m)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +101,7 @@ func (f *favoriteSvc) FavoriteFolderList(ctx context.Context, req *api.FavoriteF
 			Name:        "默认收藏夹",
 			Description: "这是一个默认的收藏夹",
 		}
-		resp, err := f.CreateFolder(ctx, createReq)
+		resp, err := f.createFolder(ctx, createReq)
 		if err != nil {
 			return nil, err
 		}

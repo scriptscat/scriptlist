@@ -18,6 +18,7 @@ type ScriptWatchRepo interface {
 	FindAll(ctx context.Context, script int64, level script_entity.ScriptWatchLevel) ([]*script_entity.ScriptWatch, error)
 	FindByUser(ctx context.Context, script, user int64) (*script_entity.ScriptWatch, error)
 	Watch(ctx context.Context, script, user int64, level script_entity.ScriptWatchLevel) error
+	CountByScript(ctx context.Context, script int64) (int64, error)
 }
 
 var defaultScriptWatch ScriptWatchRepo
@@ -98,4 +99,12 @@ func (s *scriptWatchRepo) FindByUser(ctx context.Context, script, user int64) (*
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (s *scriptWatchRepo) CountByScript(ctx context.Context, script int64) (int64, error) {
+	var count int64
+	if err := db.Ctx(ctx).Model(&script_entity.ScriptWatch{}).Where("script_id=? and level>0", script).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

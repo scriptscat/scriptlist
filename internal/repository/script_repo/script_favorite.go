@@ -18,6 +18,8 @@ type ScriptFavoriteRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	FindByFavoriteAndScriptID(ctx context.Context, userId, folderID, scriptID int64) (*entity.ScriptFavorite, error)
+	FindByUserIDAndScriptID(ctx context.Context, userId, scriptID int64) ([]*entity.ScriptFavorite, error)
+	CountUniqueUsersByScriptID(ctx context.Context, scriptId int64) (int64, error)
 }
 
 var defaultScriptFavorite ScriptFavoriteRepo
@@ -85,11 +87,30 @@ func (u *scriptFavoriteRepo) FindPage(ctx context.Context, page httputils.PageRe
 
 func (u *scriptFavoriteRepo) FindByFavoriteAndScriptID(ctx context.Context, userId, folderID, scriptID int64) (*entity.ScriptFavorite, error) {
 	ret := &entity.ScriptFavorite{}
-	if err := db.Ctx(ctx).Where("user_id=? and folder_id=? and script_id=?", userId, folderID, scriptID).First(ret).Error; err != nil {
+	if err := db.Ctx(ctx).Where("user_id=? and favorite_folder_id=? and script_id=?", userId, folderID, scriptID).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (u *scriptFavoriteRepo) FindByUserIDAndScriptID(ctx context.Context, userId, scriptID int64) ([]*entity.ScriptFavorite, error) {
+	ret := make([]*entity.ScriptFavorite, 0)
+	if err := db.Ctx(ctx).Where("user_id=? and script_id=? and status=?", userId, scriptID, consts.ACTIVE).Find(&ret).Error; err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *scriptFavoriteRepo) CountUniqueUsersByScriptID(ctx context.Context, scriptId int64) (int64, error) {
+	var count int64
+	if err := db.Ctx(ctx).Model(&entity.ScriptFavorite{}).
+		Select("COUNT(DISTINCT user_id)").
+		Where("script_id=? and status=?", scriptId, consts.ACTIVE).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
