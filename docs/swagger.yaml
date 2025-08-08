@@ -372,7 +372,7 @@ definitions:
       name:
         type: string
       private:
-        description: 0公开1私密
+        description: 1私密 2公开
         type: integer
     type: object
   script.CreateFolderResponse:
@@ -525,8 +525,7 @@ definitions:
     type: object
   script.FavoriteScriptRequest:
     properties:
-      folder_id:
-        description: 一次只能收藏到一个收藏夹
+      script_id:
         type: integer
     type: object
   script.FavoriteScriptResponse:
@@ -838,8 +837,7 @@ definitions:
     type: object
   script.UnfavoriteScriptRequest:
     properties:
-      folder_id:
-        description: 一次只能从一个收藏夹移除
+      script_id:
         type: integer
     type: object
   script.UnfavoriteScriptResponse:
@@ -1595,6 +1593,75 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 删除收藏夹
+      tags:
+      - script/favorite
+  /favorites/folders/{id}/favorite:
+    delete:
+      consumes:
+      - application/json
+      description: 取消收藏脚本
+      parameters:
+      - description: 一次只能从一个收藏夹移除
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.UnfavoriteScriptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.UnfavoriteScriptResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 取消收藏脚本
+      tags:
+      - script/favorite
+    post:
+      consumes:
+      - application/json
+      description: 收藏脚本
+      parameters:
+      - description: 一次只能收藏到一个收藏夹
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.FavoriteScriptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.FavoriteScriptResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 收藏脚本
       tags:
       - script/favorite
   /favorites/folders/{id}/scripts:
@@ -2370,40 +2437,6 @@ paths:
             $ref: '#/definitions/BadRequest'
       tags:
       - script/score
-  /scripts/{id}/favorite:
-    post:
-      consumes:
-      - application/json
-      description: 收藏脚本
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.FavoriteScriptRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.FavoriteScriptResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 收藏脚本
-      tags:
-      - script/favorite
   /scripts/{id}/group:
     get:
       consumes:
@@ -3640,40 +3673,6 @@ paths:
       summary: 更新同步配置
       tags:
       - script
-  /scripts/{id}/unfavorite:
-    post:
-      consumes:
-      - application/json
-      description: 取消收藏脚本
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/script.UnfavoriteScriptRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/script.UnfavoriteScriptResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 取消收藏脚本
-      tags:
-      - script/favorite
   /scripts/{id}/unwell:
     put:
       consumes:

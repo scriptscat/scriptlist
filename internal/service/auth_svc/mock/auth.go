@@ -23,6 +23,7 @@ import (
 type MockAuthSvc struct {
 	ctrl     *gomock.Controller
 	recorder *MockAuthSvcMockRecorder
+	isgomock struct{}
 }
 
 // MockAuthSvcMockRecorder is the mock recorder for MockAuthSvc.
