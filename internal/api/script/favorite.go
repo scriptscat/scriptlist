@@ -54,8 +54,8 @@ type FavoriteScriptResponse struct{}
 // UnfavoriteScriptRequest 取消收藏脚本
 type UnfavoriteScriptRequest struct {
 	mux.Meta `path:"/favorites/folders/:id/favorite" method:"DELETE"`
-	ScriptID int64 `json:"script_id" binding:"required"`
-	FolderID int64 `form:"id" binding:"required" label:"收藏夹ID"` // 一次只能从一个收藏夹移除
+	ScriptID int64 `form:"script_id" binding:"required"`
+	FolderID int64 `uri:"id" binding:"required" label:"收藏夹ID"` // 一次只能从一个收藏夹移除
 }
 
 type UnfavoriteScriptResponse struct{}

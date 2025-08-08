@@ -2,6 +2,8 @@ package script_svc
 
 import (
 	"context"
+	"time"
+
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -10,7 +12,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
-	"time"
 )
 
 type FavoriteSvc interface {

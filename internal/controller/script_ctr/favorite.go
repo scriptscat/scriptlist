@@ -2,10 +2,11 @@ package script_ctr
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/limit"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
-	"strconv"
 
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
