@@ -1,6 +1,7 @@
 package resource_ctr
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/cago-frame/cago/database/redis"
@@ -21,7 +22,7 @@ type Resource struct {
 func NewResource() *Resource {
 	return &Resource{
 		limit: limit.NewPeriodLimit(
-			300, 20, redis.Default(), "limit:resource",
+			300, 10, redis.Default(), "limit:resource",
 		),
 	}
 }
@@ -32,6 +33,15 @@ func (r *Resource) UploadImage(gCtx *gin.Context, req *api.UploadImageRequest) (
 	img, err := gCtx.FormFile("image")
 	if err != nil {
 		return nil, err
+	}
+	switch req.Comment {
+	case "create-script":
+	case "update-script", "comment", "avatar", "create-issue":
+		if req.LinkID == 0 {
+			return nil, errors.New("link id is required")
+		}
+	default:
+		return nil, errors.New("invalid comment")
 	}
 	// 1M限制
 	if img.Size > 1024*1024*5 {

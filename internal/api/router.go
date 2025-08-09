@@ -53,6 +53,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 		r.Group("/", auth_svc.Auth().RequireLogin(false)).Bind(
 			controller.Script,
 			controller.GetFollow,
+			controller.GetUserDetail, // 获取用户详细信息
 		)
 	}
 	// 脚本分类

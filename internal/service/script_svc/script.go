@@ -143,11 +143,18 @@ func Script() ScriptSvc {
 
 // List 获取脚本列表
 func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
+	self := false
+	user := auth_svc.Auth().Get(ctx)
+	if user != nil && req.UserID > 0 {
+		self = user.UID == req.UserID
+	}
 	resp, total, err := script_repo.Script().Search(ctx, &script_repo.SearchOptions{
 		Keyword:  req.Keyword,
 		Domain:   req.Domain,
+		UserID:   req.UserID,
 		Type:     req.ScriptType,
 		Sort:     req.Sort,
+		Self:     self,
 		Category: make([]int64, 0),
 	}, req.PageRequest)
 	if err != nil {

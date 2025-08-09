@@ -611,6 +611,12 @@
                     },
                     {
                         "type": "integer",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "description": "0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本",
                         "name": "script_type,default=0",
                         "in": "query"
@@ -4447,6 +4453,54 @@
                 }
             }
         },
+        "/users/avatar": {
+            "put": {
+                "description": "更新用户头像",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "更新用户头像",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateUserAvatarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.UpdateUserAvatarResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/users/config": {
             "get": {
                 "description": "获取用户配置",
@@ -4516,6 +4570,54 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/user.UpdateConfigResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/detail": {
+            "put": {
+                "description": "更新用户信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "更新用户信息",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateUserDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.UpdateUserDetailResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -4695,6 +4797,53 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/user.RefreshWebhookResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{uid}/detail": {
+            "get": {
+                "description": "获取用户详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "获取用户详细信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.GetUserDetailResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -6972,6 +7121,17 @@
                 }
             }
         },
+        "user.BadgeItem": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "user.CurrentUserResponse": {
             "type": "object"
         },
@@ -7009,6 +7169,46 @@
                 "is_follow": {
                     "description": "是否关注",
                     "type": "boolean"
+                }
+            }
+        },
+        "user.GetUserDetailResponse": {
+            "type": "object",
+            "properties": {
+                "badge": {
+                    "description": "成就徽章",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/user.BadgeItem"
+                    }
+                },
+                "description": {
+                    "description": "个人简介",
+                    "type": "string"
+                },
+                "followers": {
+                    "description": "粉丝",
+                    "type": "integer"
+                },
+                "following": {
+                    "description": "关注",
+                    "type": "integer"
+                },
+                "is_follow": {
+                    "description": "是否关注",
+                    "type": "boolean"
+                },
+                "join_time": {
+                    "description": "加入时间",
+                    "type": "integer"
+                },
+                "last_active": {
+                    "description": "最后活跃",
+                    "type": "integer"
+                },
+                "location": {
+                    "description": "位置",
+                    "type": "string"
                 }
             }
         },
@@ -7095,6 +7295,41 @@
             }
         },
         "user.UpdateConfigResponse": {
+            "type": "object"
+        },
+        "user.UpdateUserAvatarRequest": {
+            "type": "object"
+        },
+        "user.UpdateUserAvatarResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.UpdateUserDetailRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "个人简介",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "位置",
+                    "type": "string"
+                },
+                "website": {
+                    "description": "个人网站",
+                    "type": "string"
+                }
+            }
+        },
+        "user.UpdateUserDetailResponse": {
             "type": "object"
         },
         "user_entity.Notify": {

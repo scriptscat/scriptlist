@@ -119,3 +119,18 @@ func (u *User) Search(ctx context.Context, req *api.SearchRequest) (*api.SearchR
 func (u *User) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
 	return user_svc.User().Logout(ctx, req)
 }
+
+// GetUserDetail 获取用户详细信息
+func (u *User) GetUserDetail(ctx context.Context, req *api.GetUserDetailRequest) (*api.GetUserDetailResponse, error) {
+	return user_svc.User().GetUserDetail(ctx, req)
+}
+
+// UpdateUserDetail 更新用户信息
+func (u *User) UpdateUserDetail(ctx context.Context, req *api.UpdateUserDetailRequest) (*api.UpdateUserDetailResponse, error) {
+	return user_svc.User().UpdateUserDetail(ctx, req)
+}
+
+// UpdateUserAvatar 更新用户头像
+func (u *User) UpdateUserAvatar(ctx context.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error) {
+	return user_svc.User().UpdateUserAvatar(ctx, req)
+}

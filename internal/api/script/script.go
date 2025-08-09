@@ -69,6 +69,7 @@ type ListRequest struct {
 	httputils.PageRequest `form:",inline"`
 	Keyword               string `form:"keyword"`
 	Domain                string `form:"domain"`
+	UserID                int64  `form:"user_id"`                                         // 用户ID
 	ScriptType            int    `form:"script_type,default=0" binding:"oneof=0 1 2 3 4"` // 0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
 	Sort                  string `form:"sort,default=today_download" binding:"oneof=today_download total_download score createtime updatetime"`
 }

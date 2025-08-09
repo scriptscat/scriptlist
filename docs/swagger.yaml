@@ -1406,6 +1406,13 @@ definitions:
       total:
         type: integer
     type: object
+  user.BadgeItem:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
   user.CurrentUserResponse:
     type: object
   user.FollowRequest:
@@ -1432,6 +1439,35 @@ definitions:
       is_follow:
         description: 是否关注
         type: boolean
+    type: object
+  user.GetUserDetailResponse:
+    properties:
+      badge:
+        description: 成就徽章
+        items:
+          $ref: '#/definitions/user.BadgeItem'
+        type: array
+      description:
+        description: 个人简介
+        type: string
+      followers:
+        description: 粉丝
+        type: integer
+      following:
+        description: 关注
+        type: integer
+      is_follow:
+        description: 是否关注
+        type: boolean
+      join_time:
+        description: 加入时间
+        type: integer
+      last_active:
+        description: 最后活跃
+        type: integer
+      location:
+        description: 位置
+        type: string
     type: object
   user.GetWebhookResponse:
     properties:
@@ -1487,6 +1523,30 @@ definitions:
         $ref: '#/definitions/user_entity.Notify'
     type: object
   user.UpdateConfigResponse:
+    type: object
+  user.UpdateUserAvatarRequest:
+    type: object
+  user.UpdateUserAvatarResponse:
+    properties:
+      avatar:
+        type: string
+    type: object
+  user.UpdateUserDetailRequest:
+    properties:
+      description:
+        description: 个人简介
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      location:
+        description: 位置
+        type: string
+      website:
+        description: 个人网站
+        type: string
+    type: object
+  user.UpdateUserDetailResponse:
     type: object
   user_entity.Notify:
     properties:
@@ -1903,6 +1963,10 @@ paths:
       - in: query
         name: domain
         type: string
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: integer
       - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
         name: script_type,default=0
@@ -4346,6 +4410,36 @@ paths:
       summary: 获取当前登录的用户信息
       tags:
       - user
+  /users/{uid}/detail:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户详细信息
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.GetUserDetailResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取用户详细信息
+      tags:
+      - user
   /users/{uid}/follow:
     get:
       consumes:
@@ -4479,6 +4573,36 @@ paths:
       summary: 用户脚本列表
       tags:
       - user
+  /users/avatar:
+    put:
+      consumes:
+      - application/json
+      description: 更新用户头像
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.UpdateUserAvatarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.UpdateUserAvatarResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新用户头像
+      tags:
+      - user
   /users/config:
     get:
       consumes:
@@ -4531,6 +4655,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新用户配置
+      tags:
+      - user
+  /users/detail:
+    put:
+      consumes:
+      - application/json
+      description: 更新用户信息
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.UpdateUserDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.UpdateUserDetailResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新用户信息
       tags:
       - user
   /users/refresh-token:

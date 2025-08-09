@@ -23,12 +23,6 @@ type InfoRequest struct {
 	UID      int64 `uri:"uid" binding:"required"`
 }
 
-type LogoutRequest struct {
-	mux.Meta `path:"/logout" method:"GET"`
-}
-
-type LogoutResponse struct{}
-
 type InfoResponse struct {
 	UserID      int64            `json:"user_id"`
 	Username    string           `json:"username"`
@@ -36,6 +30,68 @@ type InfoResponse struct {
 	IsAdmin     model.AdminLevel `json:"is_admin"`
 	EmailStatus int64            `json:"email_status"`
 }
+
+// GetUserDetailRequest 获取用户详细信息
+type GetUserDetailRequest struct {
+	mux.Meta `path:"/users/:uid/detail" method:"GET"`
+	UID      int64 `uri:"uid" binding:"required"`
+}
+
+type BadgeItem struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type GetUserDetailResponse struct {
+	*InfoResponse `json:",inline"`
+	// 成就徽章
+	Badge []*BadgeItem `json:"badge"`
+	// 个人简介
+	Description string `json:"description"`
+	// 加入时间
+	JoinTime int64 `json:"join_time"`
+	// 最后活跃
+	LastActive int64 `json:"last_active"`
+	// 位置
+	Location string `json:"location"`
+	// 是否关注
+	IsFollow bool `json:"is_follow"`
+	// 粉丝
+	Followers int64 `json:"followers"`
+	// 关注
+	Following int64 `json:"following"`
+}
+
+// UpdateUserDetailRequest 更新用户信息
+type UpdateUserDetailRequest struct {
+	mux.Meta `path:"/users/detail" method:"PUT"`
+	// 个人简介
+	Description string `json:"description"`
+	// 位置
+	Location string `json:"location"`
+	// 个人网站
+	Website string `json:"website"`
+	// 邮箱
+	Email string `json:"email" binding:"email"`
+}
+
+type UpdateUserDetailResponse struct {
+}
+
+// UpdateUserAvatarRequest 更新用户头像
+type UpdateUserAvatarRequest struct {
+	mux.Meta `path:"/users/avatar" method:"PUT"`
+}
+
+type UpdateUserAvatarResponse struct {
+	Avatar string `json:"avatar"`
+}
+
+type LogoutRequest struct {
+	mux.Meta `path:"/logout" method:"GET"`
+}
+
+type LogoutResponse struct{}
 
 // ScriptRequest 用户脚本列表
 type ScriptRequest struct {

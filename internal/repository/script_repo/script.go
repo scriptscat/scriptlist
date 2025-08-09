@@ -124,7 +124,7 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 	find := db.Ctx(ctx).Model(&entity.Script{}).Where(scriptTbName+".status=?", consts.ACTIVE)
 	if !options.Self {
 		user := auth_svc.Auth().Get(ctx)
-		if user == nil || !user.AdminLevel.IsAdmin(model.Admin) {
+		if user == nil || !user.AdminLevel.IsAdmin(model.Moderator) {
 			find = find.Where("public=? and unwell=?", entity.PublicScript, entity.Well)
 		}
 	}

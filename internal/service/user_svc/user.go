@@ -39,8 +39,14 @@ type UserSvc interface {
 	Search(ctx context.Context, req *api.SearchRequest) (*api.SearchResponse, error)
 	// RefreshToken 刷新用户token
 	RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) (*api.RefreshTokenResponse, error)
-	// Logout TODO
+	// Logout 退出登录
 	Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error)
+	// GetUserDetail 获取用户详细信息
+	GetUserDetail(ctx context.Context, req *api.GetUserDetailRequest) (*api.GetUserDetailResponse, error)
+	// UpdateUserDetail 更新用户信息
+	UpdateUserDetail(ctx context.Context, req *api.UpdateUserDetailRequest) (*api.UpdateUserDetailResponse, error)
+	// UpdateUserAvatar 更新用户头像
+	UpdateUserAvatar(ctx context.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error)
 }
 
 type userSvc struct {
@@ -321,4 +327,27 @@ func (u *userSvc) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) (
 	}
 
 	return &api.RefreshTokenResponse{}, nil
+}
+
+// GetUserDetail 获取用户详细信息
+func (u *userSvc) GetUserDetail(ctx context.Context, req *api.GetUserDetailRequest) (*api.GetUserDetailResponse, error) {
+	resp := &api.GetUserDetailResponse{
+		Badge: make([]*api.BadgeItem, 0),
+	}
+	var err error
+	resp.InfoResponse, err = u.UserInfo(ctx, req.UID)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// UpdateUserDetail 更新用户信息
+func (u *userSvc) UpdateUserDetail(ctx context.Context, req *api.UpdateUserDetailRequest) (*api.UpdateUserDetailResponse, error) {
+	return nil, nil
+}
+
+// UpdateUserAvatar 更新用户头像
+func (u *userSvc) UpdateUserAvatar(ctx context.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error) {
+	return nil, nil
 }
