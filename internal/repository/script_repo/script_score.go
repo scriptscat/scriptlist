@@ -13,6 +13,11 @@ import (
 	redis2 "github.com/redis/go-redis/v9"
 )
 
+type ScoreGroup struct {
+	Score int64 `json:"score"`
+	Count int64 `json:"count"`
+}
+
 //go:generate mockgen -source script_score.go -destination mock/script_score.go
 type ScriptScoreRepo interface {
 	Find(ctx context.Context, id int64) (*script_entity.ScriptScore, error)
@@ -28,6 +33,8 @@ type ScriptScoreRepo interface {
 	UpdateReplayByComment(ctx context.Context, scoreReply *script_entity.ScriptScoreReply) error
 	// LastScore 最新的评分
 	LastScore(ctx context.Context, page httputils.PageRequest) ([]int64, error)
+	// GroupByScore 根据分数分组
+	GroupByScore(ctx context.Context, scriptId int64) ([]*ScoreGroup, error)
 }
 
 var defaultScriptScore ScriptScoreRepo
@@ -49,10 +56,17 @@ type scriptScoreRepo struct {
 
 func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page httputils.PageRequest) ([]*script_entity.ScriptScore, int64, error) {
 	list := make([]*script_entity.ScriptScore, 0)
-	find := db.Ctx(ctx).Model(&script_entity.ScriptScore{}).Where("script_id=? and state=?", scriptId, consts.ACTIVE).Order("createtime desc")
+	find := db.Ctx(ctx).Model(&script_entity.ScriptScore{}).Where("script_id=? and state=?", scriptId, consts.ACTIVE)
 	var num int64
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
+	}
+	switch page.GetOrder() {
+	case "asc", "desc":
+		switch page.GetSort() {
+		case "createtime", "score":
+			find = find.Order(page.Order + " " + page.Sort)
+		}
 	}
 	if err := find.Limit(page.GetLimit()).Offset(page.GetOffset()).Scan(&list).Error; err != nil {
 		return nil, 0, err
@@ -145,6 +159,15 @@ func (u *scriptScoreRepo) LastScore(ctx context.Context, page httputils.PageRequ
 	for _, v := range result {
 		n, _ := strconv.ParseInt(v, 10, 64)
 		list = append(list, n)
+	}
+	return list, nil
+}
+
+func (u *scriptScoreRepo) GroupByScore(ctx context.Context, scriptId int64) ([]*ScoreGroup, error) {
+	var list []*ScoreGroup
+	if err := db.Ctx(ctx).Model(&script_entity.ScriptScore{}).
+		Select("score, count(*) as count").Where("script_id=? and state=?", scriptId, consts.ACTIVE).Group("score").Scan(&list).Error; err != nil {
+		return nil, err
 	}
 	return list, nil
 }

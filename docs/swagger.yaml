@@ -747,6 +747,8 @@ definitions:
     properties:
       author_message:
         type: string
+      author_message_createtime:
+        type: integer
       createtime:
         type: integer
       id:
@@ -770,6 +772,17 @@ definitions:
           type: object
         type: array
       total:
+        type: integer
+    type: object
+  script.ScoreStateResponse:
+    properties:
+      score_group:
+        additionalProperties:
+          type: integer
+        description: 每个评分的数量
+        type: object
+      score_user_count:
+        description: 评分人数
         type: integer
     type: object
   script.Script:
@@ -980,6 +993,15 @@ definitions:
           type: object
         type: array
       total:
+        type: integer
+    type: object
+  script.VersionStatResponse:
+    properties:
+      pre_release_num:
+        description: 预发布版本数量
+        type: integer
+      release_num:
+        description: 正式版本数量
         type: integer
     type: object
   script.WatchRequest:
@@ -3546,6 +3568,36 @@ paths:
       summary: 用于获取自己对脚本的评价
       tags:
       - script/score
+  /scripts/{id}/score/state:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本评分状态
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.ScoreStateResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本评分状态
+      tags:
+      - script/score
   /scripts/{id}/setting:
     get:
       consumes:
@@ -3769,6 +3821,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取指定版本代码
+      tags:
+      - script
+  /scripts/{id}/versions/stat:
+    get:
+      consumes:
+      - application/json
+      description: 获取脚本版本统计信息
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.VersionStatResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取脚本版本统计信息
       tags:
       - script
   /scripts/{id}/visit:

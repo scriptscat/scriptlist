@@ -23,6 +23,7 @@ func (s *Score) Router(r *mux.Router) {
 		// 无需登录
 		Handler: []interface{}{
 			s.ScoreList,
+			s.ScoreState,
 		},
 	}, {
 		// 需要登录
@@ -76,4 +77,9 @@ func (s *Score) DelScore(ctx context.Context, req *api.DelScoreRequest) (*api.De
 // ReplyScore 对用户评分进行回复，只有管理员和作者才可以进行回复
 func (s *Score) ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (*api.ReplyScoreResponse, error) {
 	return service.Score().ReplyScore(ctx, req)
+}
+
+// ScoreState 获取脚本评分状态
+func (s *Score) ScoreState(ctx context.Context, req *api.ScoreStateRequest) (*api.ScoreStateResponse, error) {
+	return service.Score().ScoreState(ctx, req)
 }

@@ -42,6 +42,21 @@ func (m *MockScriptCodeRepo) EXPECT() *MockScriptCodeRepoMockRecorder {
 	return m.recorder
 }
 
+// CountByPreRelease mocks base method.
+func (m *MockScriptCodeRepo) CountByPreRelease(ctx context.Context, id int64, script script_entity.EnablePreRelease) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByPreRelease", ctx, id, script)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByPreRelease indicates an expected call of CountByPreRelease.
+func (mr *MockScriptCodeRepoMockRecorder) CountByPreRelease(ctx, id, script any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByPreRelease", reflect.TypeOf((*MockScriptCodeRepo)(nil).CountByPreRelease), ctx, id, script)
+}
+
 // Create mocks base method.
 func (m *MockScriptCodeRepo) Create(ctx context.Context, scriptCode *script_entity.Code) error {
 	m.ctrl.T.Helper()

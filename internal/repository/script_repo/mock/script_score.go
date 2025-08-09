@@ -15,6 +15,7 @@ import (
 
 	httputils "github.com/cago-frame/cago/pkg/utils/httputils"
 	script_entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	script_repo "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -127,6 +128,21 @@ func (m *MockScriptScoreRepo) FindReplayByComment(ctx context.Context, commentId
 func (mr *MockScriptScoreRepoMockRecorder) FindReplayByComment(ctx, commentId, scriptId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReplayByComment", reflect.TypeOf((*MockScriptScoreRepo)(nil).FindReplayByComment), ctx, commentId, scriptId)
+}
+
+// GroupByScore mocks base method.
+func (m *MockScriptScoreRepo) GroupByScore(ctx context.Context, scriptId int64) ([]*script_repo.ScoreGroup, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupByScore", ctx, scriptId)
+	ret0, _ := ret[0].([]*script_repo.ScoreGroup)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupByScore indicates an expected call of GroupByScore.
+func (mr *MockScriptScoreRepoMockRecorder) GroupByScore(ctx, scriptId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupByScore", reflect.TypeOf((*MockScriptScoreRepo)(nil).GroupByScore), ctx, scriptId)
 }
 
 // LastScore mocks base method.

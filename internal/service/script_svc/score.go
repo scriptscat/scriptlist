@@ -31,6 +31,8 @@ type ScoreSvc interface {
 	// DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
 	DelScore(ctx context.Context, req *api.DelScoreRequest) (*api.DelScoreResponse, error)
 	ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (*api.ReplyScoreResponse, error)
+	// ScoreState 获取脚本评分状态
+	ScoreState(ctx context.Context, req *api.ScoreStateRequest) (*api.ScoreStateResponse, error)
 }
 
 type scoreSvc struct {
@@ -224,25 +226,27 @@ func (s *scoreSvc) ToScore(ctx context.Context, score *script_entity.ScriptScore
 	if err != nil {
 		return nil, err
 	}
-	var message string
+
+	resp := &api.Score{
+		UserInfo:   user.UserInfo(),
+		ID:         score.ID,
+		ScriptID:   score.ScriptID,
+		Score:      score.Score,
+		Message:    score.Message,
+		Createtime: score.Createtime,
+		Updatetime: score.Updatetime,
+		State:      score.State,
+	}
 	comment, err := script_repo.ScriptScore().FindReplayByComment(ctx, score.ID, score.ScriptID)
 	if err != nil {
 		return nil, err
 	}
 	if comment != nil {
-		message = comment.Message
+		resp.AuthorMessage = comment.Message
+		resp.AuthorMessageCreatetime = comment.Createtime
 	}
-	return &api.Score{
-		UserInfo:      user.UserInfo(),
-		ID:            score.ID,
-		ScriptID:      score.ScriptID,
-		Score:         score.Score,
-		Message:       score.Message,
-		Createtime:    score.Createtime,
-		Updatetime:    score.Updatetime,
-		AuthorMessage: message,
-		State:         score.State,
-	}, nil
+
+	return resp, nil
 }
 
 // DelScore 用于删除脚本的评价，注意，只有管理员才有权限删除评价
@@ -263,4 +267,28 @@ func (s *scoreSvc) DelScore(ctx context.Context, req *api.DelScoreRequest) (*api
 		return nil, err
 	}
 	return nil, nil
+}
+
+// ScoreState 获取脚本评分状态
+func (s *scoreSvc) ScoreState(ctx context.Context, req *api.ScoreStateRequest) (*api.ScoreStateResponse, error) {
+	// 根据不同的分数
+	resp := &api.ScoreStateResponse{}
+	// 评分统计信息
+	statistics, err := script_repo.ScriptStatistics().FindByScriptID(ctx, req.ScriptId)
+	if err != nil {
+		logger.Ctx(ctx).Warn("获取统计信息失败-评分", zap.Error(err), zap.Int64("script_id", req.ScriptId))
+	}
+	if statistics != nil {
+		resp.ScoreUserCount = statistics.ScoreCount
+	}
+	scoreGroup, err := script_repo.ScriptScore().GroupByScore(ctx, req.ScriptId)
+	if err != nil {
+		logger.Ctx(ctx).Warn("获取评分分组信息失败", zap.Error(err), zap.Int64("script_id", req.ScriptId))
+		return nil, err
+	}
+	resp.ScoreGroup = make(map[int64]int64)
+	for _, v := range scoreGroup {
+		resp.ScoreGroup[v.Score] = v.Count
+	}
+	return resp, nil
 }

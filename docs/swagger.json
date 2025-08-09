@@ -3411,6 +3411,53 @@
                 }
             }
         },
+        "/scripts/{id}/score/state": {
+            "get": {
+                "description": "获取脚本评分状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/score"
+                ],
+                "summary": "获取脚本评分状态",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.ScoreStateResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/scripts/{id}/score/{scoreId}": {
             "delete": {
                 "description": "用于删除脚本的评价，注意，只有管理员才有权限删除评价",
@@ -3756,6 +3803,53 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.VersionListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/scripts/{id}/versions/stat": {
+            "get": {
+                "description": "获取脚本版本统计信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script"
+                ],
+                "summary": "获取脚本版本统计信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.VersionStatResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -5985,6 +6079,9 @@
                 "author_message": {
                     "type": "string"
                 },
+                "author_message_createtime": {
+                    "type": "integer"
+                },
                 "createtime": {
                     "type": "integer"
                 },
@@ -6019,6 +6116,22 @@
                     }
                 },
                 "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.ScoreStateResponse": {
+            "type": "object",
+            "properties": {
+                "score_group": {
+                    "description": "每个评分的数量",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "score_user_count": {
+                    "description": "评分人数",
                     "type": "integer"
                 }
             }
@@ -6334,6 +6447,19 @@
                     }
                 },
                 "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "script.VersionStatResponse": {
+            "type": "object",
+            "properties": {
+                "pre_release_num": {
+                    "description": "预发布版本数量",
+                    "type": "integer"
+                },
+                "release_num": {
+                    "description": "正式版本数量",
                     "type": "integer"
                 }
             }

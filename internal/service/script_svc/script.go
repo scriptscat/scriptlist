@@ -114,6 +114,8 @@ type ScriptSvc interface {
 	RequireScript(opts ...RequireScriptOption) gin.HandlerFunc
 	// IsArchive 检查归档
 	IsArchive() gin.HandlerFunc
+	// VersionStat 获取脚本版本统计信息
+	VersionStat(ctx context.Context, req *api.VersionStatRequest) (*api.VersionStatResponse, error)
 }
 
 type RequireScriptOption func(*RequireScriptOptions)
@@ -1376,4 +1378,19 @@ func (s *scriptSvc) RecordVisit(ctx *gin.Context, req *api.RecordVisitRequest) (
 	}
 
 	return &api.RecordVisitResponse{}, nil
+}
+
+// VersionStat 获取脚本版本统计信息
+func (s *scriptSvc) VersionStat(ctx context.Context, req *api.VersionStatRequest) (*api.VersionStatResponse, error) {
+	resp := &api.VersionStatResponse{}
+	var err error
+	resp.PreReleaseNum, err = script_repo.ScriptCode().CountByPreRelease(ctx, req.ID, script_entity.EnablePreReleaseScript)
+	if err != nil {
+		return nil, err
+	}
+	resp.ReleaseNum, err = script_repo.ScriptCode().CountByPreRelease(ctx, req.ID, script_entity.DisablePreReleaseScript)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

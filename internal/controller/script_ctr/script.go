@@ -78,6 +78,7 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 				s.Code,
 				s.VersionList,
 				s.VersionCode,
+				s.VersionStat,
 				s.State,
 				s.RecordVisit,
 			},
@@ -491,4 +492,9 @@ func (s *Script) UpdateLibInfo(ctx context.Context, req *api.UpdateLibInfoReques
 // UpdateSyncSetting 更新同步配置
 func (s *Script) UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSettingRequest) (*api.UpdateSyncSettingResponse, error) {
 	return script_svc.Script().UpdateSyncSetting(ctx, req)
+}
+
+// VersionStat 获取脚本版本统计信息
+func (s *Script) VersionStat(ctx context.Context, req *api.VersionStatRequest) (*api.VersionStatResponse, error) {
+	return script_svc.Script().VersionStat(ctx, req)
 }

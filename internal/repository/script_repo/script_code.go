@@ -30,6 +30,7 @@ type ScriptCodeRepo interface {
 	FindPreLatest(ctx context.Context, scriptId int64, offset int, withcode bool) (*entity.Code, error)
 	FindAllLatest(ctx context.Context, scriptId int64, offset int, withcode bool) (*entity.Code, error)
 	List(ctx context.Context, id int64, request httputils.PageRequest) ([]*entity.Code, int64, error)
+	CountByPreRelease(ctx context.Context, id int64, script entity.EnablePreRelease) (int64, error)
 }
 
 var defaultScriptCode ScriptCodeRepo
@@ -232,4 +233,14 @@ func (u *scriptCodeRepo) List(ctx context.Context, id int64, request httputils.P
 		return nil, 0, err
 	}
 	return list, total, nil
+}
+
+func (u *scriptCodeRepo) CountByPreRelease(ctx context.Context, id int64, script entity.EnablePreRelease) (int64, error) {
+	var total int64
+	if err := db.Ctx(ctx).Model(&entity.Code{}).
+		Where("script_id=? and is_pre_release=? and status=?", id, script, consts.ACTIVE).
+		Count(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
 }

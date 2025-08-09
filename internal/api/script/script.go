@@ -184,6 +184,19 @@ type VersionListResponse struct {
 	httputils.PageResponse[*Code] `json:",inline"`
 }
 
+// VersionStatRequest 获取脚本版本统计信息
+type VersionStatRequest struct {
+	mux.Meta `path:"/scripts/:id/versions/stat" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+type VersionStatResponse struct {
+	// 正式版本数量
+	ReleaseNum int64 `json:"release_num"`
+	// 预发布版本数量
+	PreReleaseNum int64 `json:"pre_release_num"`
+}
+
 // VersionCodeRequest 获取指定版本代码
 type VersionCodeRequest struct {
 	mux.Meta `path:"/scripts/:id/versions/:version/code" method:"GET"`

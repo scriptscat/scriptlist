@@ -8,21 +8,22 @@ import (
 
 type Score struct {
 	user_entity.UserInfo
-	ID            int64  `json:"id"`
-	ScriptID      int64  `json:"script_id"`
-	Score         int64  `json:"score"`
-	Message       string `json:"message"`
-	AuthorMessage string `json:"author_message"`
-	Createtime    int64  `json:"createtime"`
-	Updatetime    int64  `json:"updatetime"`
-	State         int64  `json:"state"`
+	ID                      int64  `json:"id"`
+	ScriptID                int64  `json:"script_id"`
+	Score                   int64  `json:"score"`
+	Message                 string `json:"message"`
+	AuthorMessage           string `json:"author_message"`
+	AuthorMessageCreatetime int64  `json:"author_message_createtime"`
+	Createtime              int64  `json:"createtime"`
+	Updatetime              int64  `json:"updatetime"`
+	State                   int64  `json:"state"`
 }
 
 // PutScoreRequest 脚本评分
 type PutScoreRequest struct {
 	mux.Meta `path:"/scripts/:id/score" method:"PUT"`
 	ID       int64  `uri:"id" binding:"required"`
-	Message  string `json:"message" binding:"required"`
+	Message  string `json:"message"`
 	Score    int64  `json:"score" binding:"required,number,min=0,max=50"`
 }
 
@@ -46,6 +47,7 @@ type SelfScoreRequest struct {
 	mux.Meta `path:"/scripts/:id/score/self" method:"GET"`
 	ScriptId int64 `uri:"id" binding:"required"`
 }
+
 type SelfScoreResponse struct {
 	*Score `json:",inline"`
 }
@@ -66,4 +68,17 @@ type ReplyScoreRequest struct {
 type ReplyScoreResponse struct {
 }
 type DelScoreResponse struct {
+}
+
+// ScoreStateRequest 获取脚本评分状态
+type ScoreStateRequest struct {
+	mux.Meta `path:"/scripts/:id/score/state" method:"GET"`
+	ScriptId int64 `uri:"id" binding:"required"`
+}
+
+type ScoreStateResponse struct {
+	// 每个评分的数量
+	ScoreGroup map[int64]int64 `json:"score_group"`
+	// 评分人数
+	ScoreUserCount int64 `json:"score_user_count"`
 }
