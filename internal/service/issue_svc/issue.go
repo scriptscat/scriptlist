@@ -10,9 +10,9 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/issue"
 	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"

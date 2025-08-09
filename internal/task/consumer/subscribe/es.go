@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/broker/broker"
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/broker/broker"
+	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/task/producer"

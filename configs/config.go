@@ -3,7 +3,7 @@ package configs
 import (
 	"context"
 
-	"github.com/codfrm/cago/configs"
+	"github.com/cago-frame/cago/configs"
 )
 
 func Url() string {

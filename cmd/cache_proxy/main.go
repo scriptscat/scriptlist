@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/codfrm/cago"
-	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/server/mux"
+	"github.com/cago-frame/cago"
+	"github.com/cago-frame/cago/configs"
+	"github.com/cago-frame/cago/pkg/logger"
+	"github.com/cago-frame/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

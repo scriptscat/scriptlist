@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/codfrm/cago/database/cache"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/cache"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 )
 

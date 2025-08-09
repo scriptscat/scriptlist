@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	"github.com/codfrm/cago/database/db"
+	"github.com/cago-frame/cago/database/db"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 	"gorm.io/gorm"

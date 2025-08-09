@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/database/elasticsearch"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/database/elasticsearch"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/logger"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"go.uber.org/zap"
 )

@@ -3,7 +3,7 @@ package consumer
 import (
 	"context"
 
-	"github.com/codfrm/cago/configs"
+	"github.com/cago-frame/cago/configs"
 	"github.com/scriptscat/scriptlist/internal/task/consumer/subscribe"
 )
 

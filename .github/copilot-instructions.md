@@ -2,7 +2,7 @@
 
 ## 项目概览
 
-ScriptList是一个用户脚本分享平台的后端服务，基于Go语言和[CaGo框架](https://github.com/CodFrm/cago)
+ScriptList是一个用户脚本分享平台的后端服务，基于Go语言和[CaGo框架](https://github.com/cago-frame/cago)
 构建。项目采用清洁架构模式，集成了多种中间件和微服务组件。
 
 ## 核心架构模式

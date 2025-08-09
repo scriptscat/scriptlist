@@ -3,8 +3,8 @@ package script_entity
 import (
 	"context"
 
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 )
 

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/codfrm/cago/pkg/utils"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/utils"
 	api "github.com/scriptscat/scriptlist/internal/api/resource"
 	"github.com/scriptscat/scriptlist/internal/model/entity/resource_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"

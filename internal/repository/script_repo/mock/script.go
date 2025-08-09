@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	httputils "github.com/codfrm/cago/pkg/utils/httputils"
+	httputils "github.com/cago-frame/cago/pkg/utils/httputils"
 	script_entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	script_repo "github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	gomock "go.uber.org/mock/gomock"

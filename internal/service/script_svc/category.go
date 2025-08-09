@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"

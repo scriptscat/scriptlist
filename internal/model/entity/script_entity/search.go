@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/codfrm/cago/configs"
+	"github.com/cago-frame/cago/configs"
 )
 
 /*

@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/mileusna/useragent"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"

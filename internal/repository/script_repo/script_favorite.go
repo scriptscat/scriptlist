@@ -6,9 +6,9 @@ import (
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"gorm.io/gorm"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 )
 
 type ScriptFavoriteRepo interface {
@@ -52,10 +52,13 @@ func (u *scriptFavoriteRepo) Find(ctx context.Context, id int64) (*entity.Script
 }
 
 func (u *scriptFavoriteRepo) Create(ctx context.Context, scriptFavorite *entity.ScriptFavorite) error {
+	if err := u.updateFolderCount(ctx, scriptFavorite); err != nil {
+		return err
+	}
 	return db.Ctx(ctx).Create(scriptFavorite).Error
 }
 
-func (u *scriptFavoriteRepo) Update(ctx context.Context, scriptFavorite *entity.ScriptFavorite) error {
+func (u *scriptFavoriteRepo) updateFolderCount(ctx context.Context, scriptFavorite *entity.ScriptFavorite) error {
 	// 根据状态递增或递减收藏夹中的count
 	update := db.Ctx(ctx).Model(&entity.ScriptFavoriteFolder{}).Where("id=?", scriptFavorite.FavoriteFolderID)
 	if scriptFavorite.Status == consts.ACTIVE {
@@ -63,7 +66,11 @@ func (u *scriptFavoriteRepo) Update(ctx context.Context, scriptFavorite *entity.
 	} else {
 		update = update.UpdateColumn("count", gorm.Expr("count - ?", 1))
 	}
-	if err := update.Error; err != nil {
+	return update.Error
+}
+
+func (u *scriptFavoriteRepo) Update(ctx context.Context, scriptFavorite *entity.ScriptFavorite) error {
+	if err := u.updateFolderCount(ctx, scriptFavorite); err != nil {
 		return err
 	}
 	return db.Ctx(ctx).Updates(scriptFavorite).Error

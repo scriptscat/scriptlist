@@ -3,8 +3,8 @@ package script_ctr
 import (
 	"context"
 
-	"github.com/codfrm/cago/pkg/utils/muxutils"
-	"github.com/codfrm/cago/server/mux"
+	"github.com/cago-frame/cago/pkg/utils/muxutils"
+	"github.com/cago-frame/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"

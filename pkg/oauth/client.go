@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/pkg/logger"
 	"go.uber.org/zap"
 )
 

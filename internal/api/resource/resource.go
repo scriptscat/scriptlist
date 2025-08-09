@@ -1,6 +1,6 @@
 package resource
 
-import "github.com/codfrm/cago/server/mux"
+import "github.com/cago-frame/cago/server/mux"
 
 // UploadImageRequest 上传图片
 type UploadImageRequest struct {

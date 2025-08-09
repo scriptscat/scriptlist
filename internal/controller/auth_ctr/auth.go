@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	configs "github.com/scriptscat/scriptlist/configs"
 	api "github.com/scriptscat/scriptlist/internal/api/auth"

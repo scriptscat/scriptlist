@@ -5,9 +5,9 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 )
 
 //go:generate mockgen -source=./script_group_member.go -destination=./mock/script_group_member.go

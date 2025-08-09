@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 )
 

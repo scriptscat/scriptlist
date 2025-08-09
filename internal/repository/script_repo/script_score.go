@@ -6,10 +6,10 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	redis2 "github.com/redis/go-redis/v9"
 )
 

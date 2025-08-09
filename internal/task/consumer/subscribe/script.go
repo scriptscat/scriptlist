@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/utils"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/logger"
+	"github.com/cago-frame/cago/pkg/utils"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc"

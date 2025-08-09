@@ -4,7 +4,7 @@
 
 ## 启动程序
 
-项目依赖很多中间件，推荐使用`docker-compose`启动，更多的一些配置可以参考[cago框架](https://github.com/CodFrm/cago)
+项目依赖很多中间件，推荐使用`docker-compose`启动，更多的一些配置可以参考[cago框架](https://github.com/cago-frame/cago)
 
 ```bash
 docker-compose up -d

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/codfrm/cago/pkg/broker"
-	broker2 "github.com/codfrm/cago/pkg/broker/broker"
+	"github.com/cago-frame/cago/pkg/broker"
+	broker2 "github.com/cago-frame/cago/pkg/broker/broker"
 	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )

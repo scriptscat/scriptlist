@@ -1,8 +1,8 @@
 package script
 
 import (
-	"github.com/codfrm/cago/pkg/utils/httputils"
-	"github.com/codfrm/cago/server/mux"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 

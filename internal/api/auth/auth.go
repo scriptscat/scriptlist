@@ -1,6 +1,6 @@
 package auth
 
-import "github.com/codfrm/cago/server/mux"
+import "github.com/cago-frame/cago/server/mux"
 
 // OAuthCallbackRequest 第三方登录
 type OAuthCallbackRequest struct {

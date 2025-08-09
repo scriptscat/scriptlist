@@ -1,6 +1,6 @@
 package open
 
-import "github.com/codfrm/cago/server/mux"
+import "github.com/cago-frame/cago/server/mux"
 
 // CrxDownloadRequest 谷歌crx下载服务
 type CrxDownloadRequest struct {

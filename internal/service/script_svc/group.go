@@ -5,16 +5,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/i18n"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 
-	"github.com/codfrm/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 

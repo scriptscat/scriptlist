@@ -3,8 +3,8 @@ package crontab
 import (
 	"context"
 
-	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/server/cron"
+	"github.com/cago-frame/cago/configs"
+	"github.com/cago-frame/cago/server/cron"
 	"github.com/scriptscat/scriptlist/internal/task/crontab/handler"
 )
 

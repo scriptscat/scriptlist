@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/server/cron"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/logger"
+	"github.com/cago-frame/cago/server/cron"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"go.uber.org/zap"
 )

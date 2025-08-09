@@ -6,9 +6,8 @@ import (
 	"errors"
 	"html/template"
 
-	"github.com/codfrm/cago/pkg/gogo"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/utils/wrap"
+	"github.com/cago-frame/cago/pkg/gogo"
+	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/configs"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
@@ -80,7 +79,7 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 		}
 	}
 	// 协程去发送邮件
-	return gogo.Go(func(ctx context.Context) error {
+	return gogo.Go(ctx, func(ctx context.Context) error {
 		for _, toUser := range toUsers {
 			to, err := user_repo.User().Find(ctx, toUser)
 			if err != nil {
@@ -127,7 +126,7 @@ func (n *noticeSvc) MultipleSend(ctx context.Context, toUsers []int64, template 
 			}
 		}
 		return nil
-	}, gogo.WithContext(wrap.UnWarContext(ctx)))
+	})
 }
 
 func (n *noticeSvc) parseTpl(tpl string, data interface{}) (string, error) {

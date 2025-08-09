@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/server/mux/muxtest"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/server/mux/muxtest"
 	"github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"

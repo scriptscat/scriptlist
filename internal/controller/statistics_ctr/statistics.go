@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/codfrm/cago/pkg/utils/muxutils"
-	"github.com/codfrm/cago/server/mux"
+	"github.com/cago-frame/cago/pkg/utils/muxutils"
+	"github.com/cago-frame/cago/server/mux"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"

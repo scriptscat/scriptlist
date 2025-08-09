@@ -5,8 +5,8 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 
-	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/server/mux"
+	"github.com/cago-frame/cago/configs"
+	"github.com/cago-frame/cago/server/mux"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"

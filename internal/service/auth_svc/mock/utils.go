@@ -3,7 +3,7 @@ package mock_auth_svc
 import (
 	"net/http"
 
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"go.uber.org/mock/gomock"

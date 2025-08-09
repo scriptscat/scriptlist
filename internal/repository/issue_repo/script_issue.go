@@ -5,9 +5,9 @@ import (
 
 	api "github.com/scriptscat/scriptlist/internal/api/issue"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
 )
 

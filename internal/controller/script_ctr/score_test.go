@@ -5,11 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/codfrm/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/consts"
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 
-	"github.com/codfrm/cago/server/mux/muxtest"
+	"github.com/cago-frame/cago/server/mux/muxtest"
 	"github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	mock_script_repo "github.com/scriptscat/scriptlist/internal/repository/script_repo/mock"

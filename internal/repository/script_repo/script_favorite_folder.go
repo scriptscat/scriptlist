@@ -5,9 +5,9 @@ import (
 
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 )
 
 type ScriptFavoriteFolderRepo interface {
@@ -69,7 +69,7 @@ func (u *scriptFavoriteFolderRepo) FindPage(ctx context.Context, userId int64, p
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := find.Order("createtime asc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil

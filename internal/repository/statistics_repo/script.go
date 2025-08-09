@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/logger"
 	"go.uber.org/zap"
 )
 

@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codfrm/cago/database/cache"
-	cache2 "github.com/codfrm/cago/database/cache/cache"
-	"github.com/codfrm/cago/database/db"
+	"github.com/cago-frame/cago/database/cache"
+	cache2 "github.com/cago-frame/cago/database/cache/cache"
+	"github.com/cago-frame/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity"
 	"gorm.io/gorm"
 )

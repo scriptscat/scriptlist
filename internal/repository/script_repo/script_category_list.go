@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/codfrm/cago/database/cache"
-	"github.com/codfrm/cago/database/db"
+	"github.com/cago-frame/cago/database/cache"
+	"github.com/cago-frame/cago/database/db"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )
 

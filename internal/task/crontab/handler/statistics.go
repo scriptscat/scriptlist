@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/codfrm/cago/server/cron"
+	"github.com/cago-frame/cago/server/cron"
 )
 
 type Statistics struct {

@@ -14,16 +14,16 @@ import (
 
 	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 
-	"github.com/codfrm/cago/database/db"
+	"github.com/cago-frame/cago/database/db"
 	"gorm.io/gorm"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/opentelemetry/trace"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/logger"
+	"github.com/cago-frame/cago/pkg/opentelemetry/trace"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model"

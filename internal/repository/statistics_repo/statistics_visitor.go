@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/codfrm/cago/database/db"
+	"github.com/cago-frame/cago/database/db"
 
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 )

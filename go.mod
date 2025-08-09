@@ -6,7 +6,7 @@ toolchain go1.22.1
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/codfrm/cago v0.0.0-20250314070644-772bb6336fc8
+	github.com/cago-frame/cago v0.0.0-20250809043841-a1b00b186b48
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-gormigrate/gormigrate/v2 v2.1.2

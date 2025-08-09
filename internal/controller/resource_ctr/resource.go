@@ -3,10 +3,10 @@ package resource_ctr
 import (
 	"strconv"
 
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/codfrm/cago/pkg/limit"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/i18n"
+	"github.com/cago-frame/cago/pkg/limit"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/resource"
 	"github.com/scriptscat/scriptlist/internal/pkg/code"

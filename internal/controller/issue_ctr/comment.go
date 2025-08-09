@@ -4,12 +4,12 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/codfrm/cago/pkg/utils/muxutils"
-	"github.com/codfrm/cago/server/mux"
+	"github.com/cago-frame/cago/pkg/utils/muxutils"
+	"github.com/cago-frame/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/limit"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/limit"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/issue"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codfrm/cago/database/redis"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/database/redis"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"

@@ -3,8 +3,8 @@ package script_repo
 import (
 	"context"
 
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/consts"
 	api "github.com/scriptscat/scriptlist/internal/api/script"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 )

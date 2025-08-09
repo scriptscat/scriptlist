@@ -4,8 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 
-	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/logger"
+	"github.com/cago-frame/cago/configs"
+	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"

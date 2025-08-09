@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/codfrm/cago/database/cache"
-	cache2 "github.com/codfrm/cago/database/cache/cache"
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/utils/httputils"
+	"github.com/cago-frame/cago/database/cache"
+	cache2 "github.com/cago-frame/cago/database/cache/cache"
+	"github.com/cago-frame/cago/database/db"
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/scriptscat/scriptlist/internal/model/entity/statistics_entity"
 )
 
