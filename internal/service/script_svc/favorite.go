@@ -315,14 +315,17 @@ func (f *favoriteSvc) EditFolder(ctx context.Context, req *api.EditFolderRequest
 	if folder == nil {
 		return nil, i18n.NewError(ctx, code.ScriptFavoriteFolderNotFound)
 	}
-	// 如果是默认收藏夹，不能编辑
+
+	// 如果是默认收藏夹，不能修改名字
 	if folder.Name == "默认收藏夹" {
+		if req.Name != "默认收藏夹" {
+			return nil, i18n.NewError(ctx, code.ScriptFavoriteFolderCannotEdit)
+		}
+	} else if req.Name == "默认收藏夹" {
+		// 也不能修改名字为默认收藏夹
 		return nil, i18n.NewError(ctx, code.ScriptFavoriteFolderCannotEdit)
 	}
-	// 也不能修改名字为默认收藏夹
-	if req.Name == "默认收藏夹" {
-		return nil, i18n.NewError(ctx, code.ScriptFavoriteFolderCannotEdit)
-	}
+
 	if folder.UserID != auth_svc.Auth().Get(ctx).UID {
 		return nil, i18n.NewForbiddenError(ctx, code.ScriptFavoriteFolderNotFound)
 	}
