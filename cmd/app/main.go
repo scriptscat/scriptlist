@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/scriptscat/scriptlist/internal/repository/user_profile_repo"
+
 	"github.com/cago-frame/cago"
 	"github.com/cago-frame/cago/configs"
 	"github.com/cago-frame/cago/database/cache"
@@ -67,6 +69,7 @@ func main() {
 	user_repo.RegisterUser(user_repo.NewUserRepo())
 	user_repo.RegisterFollow(user_repo.NewFollowRepo())
 	user_repo.RegisterUserConfig(user_repo.NewUserConfig())
+	user_profile_repo.RegisterUserProfile(user_profile_repo.NewUserProfile())
 
 	resource_repo.RegisterResource(resource_repo.NewResource())
 

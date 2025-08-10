@@ -54,6 +54,10 @@ type GetUserDetailResponse struct {
 	LastActive int64 `json:"last_active"`
 	// 位置
 	Location string `json:"location"`
+	// 个人网站
+	Website string `json:"website"`
+	// 邮箱
+	Email string `json:"email"`
 	// 是否关注
 	IsFollow bool `json:"is_follow"`
 	// 粉丝
@@ -84,7 +88,7 @@ type UpdateUserAvatarRequest struct {
 }
 
 type UpdateUserAvatarResponse struct {
-	Avatar string `json:"avatar"`
+	Url string `json:"url"` // 新头像的URL
 }
 
 type LogoutRequest struct {

@@ -97,5 +97,6 @@ const (
 	ScriptFavoriteFolderLimitExceeded
 	ScriptFavoriteExist
 	ScriptFavoriteNotFound
-	ScriptFavoriteLimitExceeded = 108005
+	ScriptFavoriteLimitExceeded
+	ScriptFavoriteFolderCannotEdit
 )

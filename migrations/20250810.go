@@ -3,6 +3,7 @@ package migrations
 import (
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_profile_entity"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +15,7 @@ func T20250810() *gormigrate.Migration {
 				&script_entity.ScriptCategoryList{},
 				&script_entity.ScriptFavorite{},
 				&script_entity.ScriptFavoriteFolder{},
+				&user_profile_entity.UserProfile{},
 			); err != nil {
 				return err
 			}
@@ -25,6 +27,7 @@ func T20250810() *gormigrate.Migration {
 				&script_entity.ScriptCategoryList{},
 				&script_entity.ScriptFavorite{},
 				&script_entity.ScriptFavoriteFolder{},
+				&user_profile_entity.UserProfile{},
 			)
 		},
 	}

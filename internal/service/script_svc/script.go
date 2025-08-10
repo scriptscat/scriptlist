@@ -757,7 +757,7 @@ func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.Stat
 		}
 		resp.FavoriteIds = make([]int64, 0, len(list))
 		for _, item := range list {
-			resp.FavoriteIds = append(resp.FavoriteIds, item.ID)
+			resp.FavoriteIds = append(resp.FavoriteIds, item.FavoriteFolderID)
 		}
 	}
 

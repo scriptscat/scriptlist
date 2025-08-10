@@ -45,6 +45,8 @@ func Router(ctx context.Context, root *mux.Router) error {
 			controller.UpdateConfig,
 			controller.Search,
 			controller.Logout,
+			controller.UpdateUserAvatar,
+			controller.UpdateUserDetail,
 		)
 		r.GET("/users/:uid/avatar", controller.Avatar())
 		r.Group("/").Bind(
@@ -69,10 +71,12 @@ func Router(ctx context.Context, root *mux.Router) error {
 			controller.DeleteFolder,
 			controller.FavoriteScript,
 			controller.UnfavoriteScript,
+			controller.EditFolder,
 		)
 		r.Group("/", auth_svc.Auth().RequireLogin(false)).Bind(
 			controller.FavoriteFolderList,
 			controller.FavoriteScriptList,
+			controller.FavoriteFolderDetail,
 		)
 	}
 

@@ -21,6 +21,8 @@ type ScriptFavoriteRepo interface {
 	FindByFavoriteAndScriptID(ctx context.Context, userId, folderID, scriptID int64) (*entity.ScriptFavorite, error)
 	FindByUserIDAndScriptID(ctx context.Context, userId, scriptID int64) ([]*entity.ScriptFavorite, error)
 	CountUniqueUsersByScriptID(ctx context.Context, scriptId int64) (int64, error)
+	FindByFavoriteFolder(ctx context.Context, folderId int64, page httputils.PageRequest) ([]*entity.ScriptFavorite, int64, error)
+	FindByUserUnique(ctx context.Context, userId int64, self bool, page httputils.PageRequest) ([]*entity.ScriptFavorite, int64, error)
 }
 
 var defaultScriptFavorite ScriptFavoriteRepo
@@ -121,4 +123,38 @@ func (u *scriptFavoriteRepo) CountUniqueUsersByScriptID(ctx context.Context, scr
 		return 0, err
 	}
 	return count, nil
+}
+
+func (u *scriptFavoriteRepo) FindByFavoriteFolder(ctx context.Context, folderId int64, page httputils.PageRequest) ([]*entity.ScriptFavorite, int64, error) {
+	var list []*entity.ScriptFavorite
+	var count int64
+	find := db.Ctx(ctx).Model(&entity.ScriptFavorite{}).Where("favorite_folder_id=? and status=?", folderId, consts.ACTIVE)
+	if err := find.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, count, nil
+}
+
+func (u *scriptFavoriteRepo) FindByUserUnique(ctx context.Context, userId int64, self bool, page httputils.PageRequest) ([]*entity.ScriptFavorite, int64, error) {
+	var list []*entity.ScriptFavorite
+	var count int64
+	find := db.Ctx(ctx).Model(&entity.ScriptFavorite{}).Where("cm_script_favorite.user_id=? and cm_script_favorite.status=?", userId, consts.ACTIVE)
+	// 只返回每个脚本最新的一次收藏记录
+	find = find.Select("script_id").Group("script_id")
+	// 如果不是自己，隐藏非公开的收藏夹的脚本
+	if !self {
+		find = find.Joins("JOIN cm_script_favorite_folder ON cm_script_favorite.favorite_folder_id = cm_script_favorite_folder.id").
+			Where("cm_script_favorite_folder.private = ?", 2)
+	}
+	if err := find.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := find.Order("max(cm_script_favorite.createtime) desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return list, count, nil
 }

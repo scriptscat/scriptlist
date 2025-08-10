@@ -490,6 +490,20 @@ definitions:
     type: object
   script.DeleteResponse:
     type: object
+  script.EditFolderRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      private:
+        description: 1私密 2公开
+        type: integer
+    type: object
+  script.EditFolderResponse:
+    type: object
+  script.FavoriteFolderDetailResponse:
+    type: object
   script.FavoriteFolderItem:
     properties:
       count:
@@ -1450,6 +1464,9 @@ definitions:
       description:
         description: 个人简介
         type: string
+      email:
+        description: 邮箱
+        type: string
       followers:
         description: 粉丝
         type: integer
@@ -1467,6 +1484,9 @@ definitions:
         type: integer
       location:
         description: 位置
+        type: string
+      website:
+        description: 个人网站
         type: string
     type: object
   user.GetWebhookResponse:
@@ -1528,7 +1548,8 @@ definitions:
     type: object
   user.UpdateUserAvatarResponse:
     properties:
-      avatar:
+      url:
+        description: 新头像的URL
         type: string
     type: object
   user.UpdateUserDetailRequest:
@@ -1677,13 +1698,76 @@ paths:
       summary: 删除收藏夹
       tags:
       - script/favorite
+    put:
+      consumes:
+      - application/json
+      description: 编辑收藏夹
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/script.EditFolderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.EditFolderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 编辑收藏夹
+      tags:
+      - script/favorite
+  /favorites/folders/{id}/detail:
+    get:
+      consumes:
+      - application/json
+      description: 收藏夹详情
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/script.FavoriteFolderDetailResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 收藏夹详情
+      tags:
+      - script/favorite
   /favorites/folders/{id}/favorite:
     delete:
       consumes:
       - application/json
       description: 取消收藏脚本
       parameters:
-      - description: 一次只能从一个收藏夹移除
+      - description: 一次只能从一个收藏夹移除，如果为0表示从所有收藏夹移除
         in: path
         name: id
         required: true
@@ -1746,15 +1830,19 @@ paths:
       summary: 收藏脚本
       tags:
       - script/favorite
-  /favorites/folders/{id}/scripts:
+  /favorites/scripts:
     get:
       consumes:
       - application/json
       description: 获取收藏夹脚本列表
       parameters:
-      - in: path
-        name: id
-        required: true
+      - description: 收藏夹ID，0表示所有的收藏
+        in: query
+        name: folder_id
+        type: integer
+      - description: 用户ID，0表示当前登录用户
+        in: query
+        name: user_id
         type: integer
       produces:
       - application/json

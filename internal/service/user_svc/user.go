@@ -2,7 +2,14 @@ package user_svc
 
 import (
 	"context"
+	"mime/multipart"
 	"time"
+
+	"github.com/cago-frame/cago/pkg/consts"
+	"github.com/scriptscat/scriptlist/internal/api/resource"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_profile_entity"
+	"github.com/scriptscat/scriptlist/internal/repository/user_profile_repo"
+	"github.com/scriptscat/scriptlist/internal/service/resource_svc"
 
 	"github.com/cago-frame/cago/pkg/i18n"
 	"github.com/cago-frame/cago/pkg/utils/httputils"
@@ -46,7 +53,7 @@ type UserSvc interface {
 	// UpdateUserDetail 更新用户信息
 	UpdateUserDetail(ctx context.Context, req *api.UpdateUserDetailRequest) (*api.UpdateUserDetailResponse, error)
 	// UpdateUserAvatar 更新用户头像
-	UpdateUserAvatar(ctx context.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error)
+	UpdateUserAvatar(ctx *gin.Context, image *multipart.FileHeader, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error)
 }
 
 type userSvc struct {
@@ -331,23 +338,95 @@ func (u *userSvc) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) (
 
 // GetUserDetail 获取用户详细信息
 func (u *userSvc) GetUserDetail(ctx context.Context, req *api.GetUserDetailRequest) (*api.GetUserDetailResponse, error) {
-	resp := &api.GetUserDetailResponse{
-		Badge: make([]*api.BadgeItem, 0),
-	}
 	var err error
-	resp.InfoResponse, err = u.UserInfo(ctx, req.UID)
+	info, err := u.UserInfo(ctx, req.UID)
 	if err != nil {
 		return nil, err
+	}
+	profile, err := u.getUserProfile(ctx, req.UID)
+	if err != nil {
+		return nil, err
+	}
+	follow, err := u.GetFollow(ctx, &api.GetFollowRequest{UID: req.UID})
+	if err != nil {
+		return nil, err
+	}
+	resp := &api.GetUserDetailResponse{
+		InfoResponse: info,
+		Badge:        make([]*api.BadgeItem, 0),
+		Description:  profile.Description,
+		JoinTime:     profile.Createtime,
+		LastActive:   0,
+		Location:     profile.Location,
+		Website:      profile.Website,
+		Email:        profile.Email,
+		IsFollow:     follow.IsFollow,
+		Followers:    follow.Followers,
+		Following:    follow.Following,
 	}
 	return resp, nil
 }
 
+func (u *userSvc) getUserProfile(ctx context.Context, uid int64) (*user_profile_entity.UserProfile, error) {
+	m, err := user_profile_repo.UserProfile().Find(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+	// 不存在就创建
+	if m == nil {
+		user, err := user_repo.User().Find(ctx, uid)
+		if err != nil {
+			return nil, err
+		}
+		m = &user_profile_entity.UserProfile{
+			ID:         uid,
+			Username:   user.Username,
+			Nickname:   user.Username,
+			Avatar:     user.Avatar(),
+			Status:     consts.ACTIVE,
+			Createtime: user.Regdate,
+			Updatetime: time.Now().Unix(),
+		}
+		if err := user_profile_repo.UserProfile().Create(ctx, m); err != nil {
+			return nil, err
+		}
+	}
+	return m, nil
+}
+
 // UpdateUserDetail 更新用户信息
 func (u *userSvc) UpdateUserDetail(ctx context.Context, req *api.UpdateUserDetailRequest) (*api.UpdateUserDetailResponse, error) {
+	profile, err := u.getUserProfile(ctx, auth_svc.Auth().Get(ctx).UID)
+	if err != nil {
+		return nil, err
+	}
+	profile.Description = req.Description
+	profile.Location = req.Location
+	profile.Website = req.Website
+	profile.Email = req.Email
+	profile.Updatetime = time.Now().Unix()
+	if err := user_profile_repo.UserProfile().Update(ctx, profile); err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
 // UpdateUserAvatar 更新用户头像
-func (u *userSvc) UpdateUserAvatar(ctx context.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error) {
-	return nil, nil
+func (u *userSvc) UpdateUserAvatar(ctx *gin.Context, image *multipart.FileHeader, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error) {
+	profile, err := u.getUserProfile(ctx, auth_svc.Auth().Get(ctx).UID)
+	if err != nil {
+		return nil, err
+	}
+	res, err := resource_svc.Resource().UploadImage(ctx, image, &resource.UploadImageRequest{
+		Comment: "avatar",
+		LinkID:  auth_svc.Auth().Get(ctx).UID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	profile.Avatar = "/api/v2/resource/image/" + res.ID
+	if err := user_profile_repo.UserProfile().Update(ctx, profile); err != nil {
+		return nil, err
+	}
+	return &api.UpdateUserAvatarResponse{Url: profile.Avatar}, nil
 }

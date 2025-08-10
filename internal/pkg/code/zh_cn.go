@@ -78,4 +78,5 @@ var zhCN = map[int]string{
 	ScriptFavoriteExist:               "脚本已收藏",
 	ScriptFavoriteNotFound:            "脚本未收藏",
 	ScriptFavoriteLimitExceeded:       "收藏夹脚本数量超过限制,最多100个脚本",
+	ScriptFavoriteFolderCannotEdit:    "系统默认收藏夹不能编辑",
 }

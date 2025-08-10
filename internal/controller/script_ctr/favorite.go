@@ -61,3 +61,13 @@ func (f *Favorite) UnfavoriteScript(ctx context.Context, req *api.UnfavoriteScri
 func (f *Favorite) FavoriteScriptList(ctx context.Context, req *api.FavoriteScriptListRequest) (*api.FavoriteScriptListResponse, error) {
 	return script_svc.Favorite().FavoriteScriptList(ctx, req)
 }
+
+// FavoriteFolderDetail 收藏夹详情
+func (f *Favorite) FavoriteFolderDetail(ctx context.Context, req *api.FavoriteFolderDetailRequest) (*api.FavoriteFolderDetailResponse, error) {
+	return script_svc.Favorite().FavoriteFolderDetail(ctx, req)
+}
+
+// EditFolder 编辑收藏夹
+func (f *Favorite) EditFolder(ctx context.Context, req *api.EditFolderRequest) (*api.EditFolderResponse, error) {
+	return script_svc.Favorite().EditFolder(ctx, req)
+}

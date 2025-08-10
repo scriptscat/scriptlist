@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/cago-frame/cago/pkg/i18n"
+	"github.com/scriptscat/scriptlist/internal/pkg/code"
+
 	"github.com/cago-frame/cago/configs"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/user"
@@ -131,6 +134,14 @@ func (u *User) UpdateUserDetail(ctx context.Context, req *api.UpdateUserDetailRe
 }
 
 // UpdateUserAvatar 更新用户头像
-func (u *User) UpdateUserAvatar(ctx context.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error) {
-	return user_svc.User().UpdateUserAvatar(ctx, req)
+func (u *User) UpdateUserAvatar(ctx *gin.Context, req *api.UpdateUserAvatarRequest) (*api.UpdateUserAvatarResponse, error) {
+	img, err := ctx.FormFile("image")
+	if err != nil {
+		return nil, err
+	}
+	// 1M限制
+	if img.Size > 1024*1024*5 {
+		return nil, i18n.NewError(ctx, code.ResourceImageTooLarge)
+	}
+	return user_svc.User().UpdateUserAvatar(ctx, img, req)
 }

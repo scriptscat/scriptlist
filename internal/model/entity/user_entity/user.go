@@ -15,6 +15,7 @@ type User struct {
 	Email              string `gorm:"column:email" json:"email" form:"email"`
 	Username           string `gorm:"column:username" json:"username" form:"username"`
 	Password           string `gorm:"column:password" json:"password" form:"password"`
+	ProfileAvatar      string `gorm:"column:profileavatar" json:"profileavatar" form:"profileavatar"`
 	Status             int64  `gorm:"column:status" json:"status" form:"status"`
 	Emailstatus        int64  `gorm:"column:emailstatus" json:"emailstatus" form:"emailstatus"`
 	Avatarstatus       int64  `gorm:"column:avatarstatus" json:"avatarstatus" form:"avatarstatus"`
@@ -58,6 +59,9 @@ func (u *User) IsBanned(ctx context.Context) error {
 }
 
 func (u *User) Avatar() string {
+	if u.ProfileAvatar != "" {
+		return u.ProfileAvatar
+	}
 	return "/api/v2/users/" + strconv.FormatInt(u.ID, 10) + "/avatar"
 }
 

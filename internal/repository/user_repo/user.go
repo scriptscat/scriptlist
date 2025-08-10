@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/scriptscat/scriptlist/internal/repository/user_profile_repo"
+
 	"github.com/cago-frame/cago/database/cache"
 	"github.com/cago-frame/cago/database/db"
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
@@ -50,11 +52,21 @@ func (u *user) Find(ctx context.Context, id int64) (*user_entity.User, error) {
 						return nil, nil
 					}
 					return nil, err
+				} else {
+					return nil, err
 				}
-				ret = (*user_entity.User)(archive)
-				return ret, nil
+
+			} else {
+				return nil, err
 			}
+		}
+		// 从profile中查找信息，后续可能会考虑独立用户系统
+		profile, err := user_profile_repo.UserProfile().Find(ctx, id)
+		if err != nil {
 			return nil, err
+		}
+		if profile != nil {
+			ret.ProfileAvatar = profile.Avatar
 		}
 		return ret, nil
 	}, cache.Expiration(time.Minute)).Scan(&ret); err != nil {

@@ -100,6 +100,58 @@
             }
         },
         "/favorites/folders/{id}": {
+            "put": {
+                "description": "编辑收藏夹",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "编辑收藏夹",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/script.EditFolderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.EditFolderResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "删除收藏夹",
                 "consumes": [
@@ -137,6 +189,53 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/script.DeleteFolderResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/favorites/folders/{id}/detail": {
+            "get": {
+                "description": "收藏夹详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "script/favorite"
+                ],
+                "summary": "收藏夹详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/script.FavoriteFolderDetailResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -222,7 +321,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "一次只能从一个收藏夹移除",
+                        "description": "一次只能从一个收藏夹移除，如果为0表示从所有收藏夹移除",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -261,7 +360,7 @@
                 }
             }
         },
-        "/favorites/folders/{id}/scripts": {
+        "/favorites/scripts": {
             "get": {
                 "description": "获取收藏夹脚本列表",
                 "consumes": [
@@ -277,9 +376,15 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "收藏夹ID，0表示所有的收藏",
+                        "name": "folder_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "用户ID，0表示当前登录用户",
+                        "name": "user_id",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -5843,6 +5948,27 @@
         "script.DeleteResponse": {
             "type": "object"
         },
+        "script.EditFolderRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "private": {
+                    "description": "1私密 2公开",
+                    "type": "integer"
+                }
+            }
+        },
+        "script.EditFolderResponse": {
+            "type": "object"
+        },
+        "script.FavoriteFolderDetailResponse": {
+            "type": "object"
+        },
         "script.FavoriteFolderItem": {
             "type": "object",
             "properties": {
@@ -7186,6 +7312,10 @@
                     "description": "个人简介",
                     "type": "string"
                 },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
                 "followers": {
                     "description": "粉丝",
                     "type": "integer"
@@ -7208,6 +7338,10 @@
                 },
                 "location": {
                     "description": "位置",
+                    "type": "string"
+                },
+                "website": {
+                    "description": "个人网站",
                     "type": "string"
                 }
             }
@@ -7303,7 +7437,8 @@
         "user.UpdateUserAvatarResponse": {
             "type": "object",
             "properties": {
-                "avatar": {
+                "url": {
+                    "description": "新头像的URL",
                     "type": "string"
                 }
             }

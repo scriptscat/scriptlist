@@ -41,6 +41,7 @@ func TestScript_Router(t *testing.T) {
 			convey.Convey("未登录", func() {
 				convey.Convey("无需登录", func() {
 					mockAuth.U().NoLogin()
+					mockAuth.U().NoLogin()
 					mockScriptRepo.EXPECT().Search(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, int64(0), nil).Times(1)
 					err := testMux.Do(ctx, &script.ListRequest{}, &script.ListResponse{})
 					assert.NoError(t, err)
