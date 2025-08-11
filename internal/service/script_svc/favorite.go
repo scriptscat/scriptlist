@@ -234,7 +234,8 @@ func (f *favoriteSvc) FavoriteScriptList(ctx context.Context, req *api.FavoriteS
 		// 获取所有收藏的脚本
 		list, total, err = script_repo.ScriptFavorite().FindByUserUnique(ctx, userId, self, req.PageRequest)
 	} else {
-		folder, err := script_repo.ScriptFavoriteFolder().Find(ctx, req.FolderID)
+		var folder *script_entity.ScriptFavoriteFolder
+		folder, err = script_repo.ScriptFavoriteFolder().Find(ctx, req.FolderID)
 		if err != nil {
 			return nil, err
 		}

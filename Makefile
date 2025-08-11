@@ -11,7 +11,7 @@ endif
 
 check-golangci-lint:
 ifneq ($(which golangci-lint),)
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 endif
 
 check-goconvey:

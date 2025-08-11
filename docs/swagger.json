@@ -5985,6 +5985,14 @@
                 },
                 "name": {
                     "type": "string"
+                },
+              "private": {
+                "description": "收藏夹类型 1私密 2公开",
+                "type": "integer"
+              },
+              "user_id": {
+                "description": "用户ID",
+                "type": "integer"
                 }
             }
         },

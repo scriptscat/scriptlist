@@ -3,6 +3,7 @@ package user_profile_repo
 import (
 	"context"
 	"fmt"
+
 	"github.com/cago-frame/cago/database/cache"
 
 	"github.com/scriptscat/scriptlist/internal/model/entity/user_profile_entity"
