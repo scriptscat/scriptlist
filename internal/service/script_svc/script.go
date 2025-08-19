@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/cago-frame/cago/database/cache"
 	"net/http"
 	"strconv"
 	"strings"
@@ -676,6 +677,21 @@ func (s *scriptSvc) Info(ctx context.Context, req *api.InfoRequest) (*api.InfoRe
 		}
 	} else {
 		resp.Role = script_entity.AccessRoleGuest
+	}
+	// 如果是库，计算一下sri
+	if script.Type == script_entity.LibraryType {
+		// 获取库代码
+		var sri string
+		if err := cache.Ctx(ctx).GetOrSet("script:code:sri:"+strconv.FormatInt(script.ID, 10)+":"+script.Script.Version, func() (any, error) {
+			code, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, script.Script.Version, true)
+			if err != nil {
+				return nil, err
+			}
+			return code.SRI(), nil
+		}).Scan(&sri); err != nil {
+			return nil, err
+		}
+		resp.SRI = sri
 	}
 	return resp, nil
 }

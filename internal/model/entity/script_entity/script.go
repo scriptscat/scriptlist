@@ -2,7 +2,9 @@ package script_entity
 
 import (
 	"context"
+	"crypto/sha512"
 	"database/sql/driver"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -240,6 +242,16 @@ func (s *Code) CheckOperate(ctx context.Context, script *Script) error {
 		return i18n.NewErrorWithStatus(ctx, http.StatusNotFound, code.UserNotPermission)
 	}
 	return nil
+}
+
+func (s *Code) SRI() string {
+	// 计算SRI
+	if s == nil || s.Code == "" {
+		return ""
+	}
+	// 使用SHA-384算法计算SRI
+	hash := sha512.Sum384([]byte(s.Code))
+	return fmt.Sprintf("sha384-%s", base64.StdEncoding.EncodeToString(hash[:]))
 }
 
 // 解析脚本的元数据

@@ -162,6 +162,7 @@ type InfoResponse struct {
 	*Script `json:",inline"`
 	Content string                   `json:"content"`
 	Role    script_entity.AccessRole `json:"role"`
+	SRI     string                   `json:"sri,omitempty"` // 如果是库的话，会返回sha512 sri
 }
 
 // CodeRequest 获取脚本代码信息
