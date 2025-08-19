@@ -2,11 +2,9 @@ package statistics_ctr
 
 import (
 	"context"
-	"errors"
 
 	"github.com/cago-frame/cago/pkg/utils/muxutils"
 	"github.com/cago-frame/cago/server/mux"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	api "github.com/scriptscat/scriptlist/internal/api/statistics"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
@@ -22,13 +20,6 @@ func NewStatistics() *Statistics {
 }
 
 func (s *Statistics) Router(r *mux.Router) {
-	rg := r.Group("/", cors.Default())
-	rg.OPTIONS("/statistics/collect")
-	rg.OPTIONS("/statistics/collect/whitelist")
-	rg.Bind(
-		s.Collect,
-		s.CollectWhitelist,
-	)
 	muxutils.BindTree(r, []*muxutils.RouterTree{muxutils.
 		Use(
 			auth_svc.Auth().RequireLogin(true),
@@ -36,12 +27,6 @@ func (s *Statistics) Router(r *mux.Router) {
 		).Append(
 		s.Script,
 		s.ScriptRealtime,
-		s.AdvancedInfo,
-		s.UserOrigin,
-		s.RealtimeChart,
-		s.VisitList,
-		s.VisitDomain,
-		s.UpdateWhitelist,
 	)})
 }
 
@@ -55,54 +40,6 @@ func (s *Statistics) ScriptRealtime(ctx context.Context, req *api.ScriptRealtime
 	return statistics_svc.Statistics().ScriptRealtime(ctx, req)
 }
 
-// Collect 统计数据收集
-func (s *Statistics) Collect(ctx *gin.Context, req *api.CollectRequest) (*api.CollectResponse, error) {
-	req.UA = ctx.Request.UserAgent()
-	if req.UA == "" {
-		return nil, errors.New("ua is empty")
-	}
-	req.IP = ctx.ClientIP()
-	return statistics_svc.Statistics().Collect(ctx.Request.Context(), req)
-}
-
-// RealtimeChart 实时统计数据图表
-func (s *Statistics) RealtimeChart(ctx context.Context, req *api.RealtimeChartRequest) (*api.RealtimeChartResponse, error) {
-	return statistics_svc.Statistics().RealtimeChart(ctx, req)
-}
-
-// VisitList 访问列表
-func (s *Statistics) VisitList(ctx context.Context, req *api.VisitListRequest) (*api.VisitListResponse, error) {
-	req.Size = 10
-	return statistics_svc.Statistics().VisitList(ctx, req)
-}
-
-// AdvancedInfo 高级统计信息
-func (s *Statistics) AdvancedInfo(ctx context.Context, req *api.AdvancedInfoRequest) (*api.AdvancedInfoResponse, error) {
-	return statistics_svc.Statistics().AdvancedInfo(ctx, req)
-}
-
-// UserOrigin 用户来源统计
-func (s *Statistics) UserOrigin(ctx context.Context, req *api.UserOriginRequest) (*api.UserOriginResponse, error) {
-	req.Size = 10
-	return statistics_svc.Statistics().UserOrigin(ctx, req)
-}
-
 func (s *Statistics) Middleware() gin.HandlerFunc {
 	return statistics_svc.Statistics().Middleware()
-}
-
-// VisitDomain 访问域名统计
-func (s *Statistics) VisitDomain(ctx context.Context, req *api.VisitDomainRequest) (*api.VisitDomainResponse, error) {
-	req.Size = 10
-	return statistics_svc.Statistics().VisitDomain(ctx, req)
-}
-
-// UpdateWhitelist 更新统计白名单
-func (s *Statistics) UpdateWhitelist(ctx context.Context, req *api.UpdateWhitelistRequest) (*api.UpdateWhitelistResponse, error) {
-	return statistics_svc.Statistics().UpdateWhitelist(ctx, req)
-}
-
-// CollectWhitelist 获取统计收集白名单
-func (s *Statistics) CollectWhitelist(ctx context.Context, req *api.CollectWhitelistRequest) (*api.CollectWhitelistResponse, error) {
-	return statistics_svc.Statistics().CollectWhitelist(ctx, req)
 }

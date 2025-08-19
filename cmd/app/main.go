@@ -10,7 +10,6 @@ import (
 	"github.com/cago-frame/cago/configs"
 	"github.com/cago-frame/cago/database/cache"
 	"github.com/cago-frame/cago/database/db"
-	_ "github.com/cago-frame/cago/database/db/clickhouse"
 	"github.com/cago-frame/cago/database/elasticsearch"
 	"github.com/cago-frame/cago/database/redis"
 	"github.com/cago-frame/cago/pkg/broker"
@@ -58,8 +57,6 @@ func main() {
 	script_repo.RegisterScriptFavoriteFolder(script_repo.NewScriptFavoriteFolder())
 
 	statistics_repo.RegisterScriptStatistics(statistics_repo.NewScriptStatistics())
-	statistics_repo.RegisterStatisticsVisitorRepo(statistics_repo.NewStatisticVistior())
-	statistics_repo.RegisterStatisticsCollect(statistics_repo.NewStatisticsCollect())
 	statistics_repo.RegisterStatisticsInfo(statistics_repo.NewStatisticsInfo())
 
 	issue_repo.RegisterScriptIssue(issue_repo.NewScriptIssue())

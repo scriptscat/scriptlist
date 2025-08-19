@@ -2,8 +2,9 @@ package script_svc
 
 import (
 	"context"
-	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"time"
+
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 
 	"github.com/cago-frame/cago/pkg/consts"
 	"github.com/cago-frame/cago/pkg/i18n"

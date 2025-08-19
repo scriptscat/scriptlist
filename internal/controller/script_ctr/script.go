@@ -2,13 +2,14 @@ package script_ctr
 
 import (
 	"context"
-	"github.com/scriptscat/scriptlist/configs"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/scriptscat/scriptlist/configs"
 
 	"github.com/cago-frame/cago/database/redis"
 	"github.com/cago-frame/cago/pkg/i18n"
@@ -315,7 +316,7 @@ func (s *Script) downloadSubscribe(ctx *gin.Context, id int64) {
 	if folder.Description != "" {
 		code += "// @description " + folder.Description + "\n"
 	}
-	code += "// @version " + strconv.FormatInt(folder.Updatetime, 64) + "\n"
+	code += "// @version " + strconv.FormatInt(folder.Updatetime, 10) + "\n"
 	code += "// @author " + folder.Username + "\n"
 	for _, v := range list {
 		code += "// @scriptUrl " + configs.Url() + "/scripts/code/" + strconv.FormatInt(v.ID, 10) + "/" + v.Name + ".user.js\n"
