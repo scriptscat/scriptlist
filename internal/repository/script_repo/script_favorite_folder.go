@@ -64,7 +64,7 @@ func (u *scriptFavoriteFolderRepo) FindPage(ctx context.Context, userId int64, p
 	find := db.Ctx(ctx).Model(&entity.ScriptFavoriteFolder{}).Where("status=?", consts.ACTIVE)
 	find = find.Where("user_id=?", userId)
 	if !private {
-		find = find.Where("private=?", 0)
+		find = find.Where("private=?", 2)
 	}
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
