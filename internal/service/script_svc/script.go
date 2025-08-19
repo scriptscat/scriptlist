@@ -7,18 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cago-frame/cago/database/cache"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
-
-	"github.com/cago-frame/cago/database/db"
-	"gorm.io/gorm"
-
 	"github.com/Masterminds/semver/v3"
+	"github.com/cago-frame/cago/database/cache"
+	"github.com/cago-frame/cago/database/db"
 	"github.com/cago-frame/cago/database/redis"
 	"github.com/cago-frame/cago/pkg/consts"
 	"github.com/cago-frame/cago/pkg/i18n"
@@ -36,8 +32,10 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 	"github.com/scriptscat/scriptlist/internal/service/script_svc/gray_control"
+	"github.com/scriptscat/scriptlist/internal/service/statistics_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type contextKey int
