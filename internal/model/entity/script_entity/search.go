@@ -63,6 +63,9 @@ type ScriptSearch struct {
 }
 
 func (s *ScriptSearch) CollectionName() string {
+	if configs.Default().Env == "pre" {
+		return "pro.script"
+	}
 	return string(configs.Default().Env) + ".script"
 }
 
