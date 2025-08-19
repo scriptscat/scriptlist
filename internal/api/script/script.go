@@ -70,6 +70,7 @@ type ListRequest struct {
 	Keyword               string `form:"keyword"`
 	Domain                string `form:"domain"`
 	UserID                int64  `form:"user_id"`                                         // 用户ID
+	Category              int64  `form:"category"`                                        // 分类ID
 	ScriptType            int    `form:"script_type,default=0" binding:"oneof=0 1 2 3 4"` // 0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本
 	Sort                  string `form:"sort,default=today_download" binding:"oneof=today_download total_download score createtime updatetime"`
 }
@@ -89,7 +90,7 @@ type CreateRequest struct {
 	Version     string                      `form:"version" binding:"max=32" label:"库的版本"`
 	Tags        []string                    `form:"tags" binding:"omitempty,max=64" label:"标签"`         // 标签，只有脚本类型为库时才有意义
 	CategoryID  int64                       `form:"category" binding:"omitempty,numeric" label:"分类ID"`  // 分类ID
-	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
+	Type        script_entity.Type          `form:"type" binding:"required,oneof=1 2 3" label:"脚本类型"`   // 脚本类型：1 用户脚本 2 订阅脚本(不支持) 3 脚本引用库
 	Public      script_entity.Public        `form:"public" binding:"required,oneof=1 2 3" label:"公开类型"` // 公开类型：1 公开 2 半公开 3 私有
 	Unwell      script_entity.UnwellContent `form:"unwell" binding:"required,oneof=1 2" label:"不适内容"`   // 不适内容: 1 不适 2 适用
 	Changelog   string                      `form:"changelog" binding:"max=102400" label:"更新日志"`

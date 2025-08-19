@@ -114,6 +114,9 @@ func (u *scriptRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page httputils.PageRequest) ([]*entity.Script, int64, error) {
+	if options.Category == nil {
+		options.Category = make([]int64, 0)
+	}
 	if options.Keyword != "" {
 		// 暂时不支持排序等
 		return u.SearchByEs(ctx, options, page)

@@ -148,15 +148,18 @@ func (s *scriptSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListRe
 	if user != nil && req.UserID > 0 {
 		self = user.UID == req.UserID
 	}
-	resp, total, err := script_repo.Script().Search(ctx, &script_repo.SearchOptions{
-		Keyword:  req.Keyword,
-		Domain:   req.Domain,
-		UserID:   req.UserID,
-		Type:     req.ScriptType,
-		Sort:     req.Sort,
-		Self:     self,
-		Category: make([]int64, 0),
-	}, req.PageRequest)
+	searchOptions := &script_repo.SearchOptions{
+		Keyword: req.Keyword,
+		Domain:  req.Domain,
+		UserID:  req.UserID,
+		Type:    req.ScriptType,
+		Sort:    req.Sort,
+		Self:    self,
+	}
+	if req.Category > 0 {
+		searchOptions.Category = []int64{req.Category}
+	}
+	resp, total, err := script_repo.Script().Search(ctx, searchOptions, req.PageRequest)
 	if err != nil {
 		return nil, err
 	}

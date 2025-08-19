@@ -92,7 +92,7 @@ type UpdateUserAvatarResponse struct {
 }
 
 type LogoutRequest struct {
-	mux.Meta `path:"/logout" method:"GET"`
+	mux.Meta `path:"/users/logout" method:"GET"`
 }
 
 type LogoutResponse struct{}
