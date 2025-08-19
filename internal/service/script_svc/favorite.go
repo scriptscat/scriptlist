@@ -119,6 +119,7 @@ func (f *favoriteSvc) FavoriteFolderList(ctx context.Context, req *api.FavoriteF
 			Name:        "默认收藏夹",
 			Description: createReq.Description,
 			UserID:      req.UserID,
+			Private:     2,
 		}}
 	}
 	response := &api.FavoriteFolderListResponse{
