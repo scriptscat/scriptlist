@@ -2,6 +2,7 @@ package script_svc
 
 import (
 	"context"
+	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"time"
 
 	"github.com/cago-frame/cago/pkg/consts"
@@ -31,6 +32,8 @@ type FavoriteSvc interface {
 	FavoriteFolderDetail(ctx context.Context, req *api.FavoriteFolderDetailRequest) (*api.FavoriteFolderDetailResponse, error)
 	// EditFolder 编辑收藏夹
 	EditFolder(ctx context.Context, req *api.EditFolderRequest) (*api.EditFolderResponse, error)
+	// FavoriteFolderScripts 获取指定收藏夹的所有脚本
+	FavoriteFolderScripts(ctx context.Context, folderId int64) (*api.FavoriteFolderDetailResponse, []*api.Script, error)
 }
 
 type favoriteSvc struct {
@@ -124,13 +127,18 @@ func (f *favoriteSvc) FavoriteFolderList(ctx context.Context, req *api.FavoriteF
 		},
 	}
 	for _, item := range list {
+		user, err := user_repo.User().Find(ctx, item.UserID)
+		if err != nil {
+			return nil, err
+		}
 		response.List = append(response.List, &api.FavoriteFolderItem{
 			ID:          item.ID,
-			UserID:      item.UserID,
+			UserInfo:    user.UserInfo(),
 			Name:        item.Name,
 			Description: item.Description,
 			Count:       item.Count,
 			Private:     item.Private,
+			Updatetime:  item.Updatetime,
 		})
 	}
 	return response, nil
@@ -295,15 +303,21 @@ func (f *favoriteSvc) FavoriteFolderDetail(ctx context.Context, req *api.Favorit
 			return nil, i18n.NewForbiddenError(ctx, code.ScriptFavoriteFolderNotFound)
 		}
 	}
+	resp := &api.FavoriteFolderItem{
+		ID:          folder.ID,
+		Name:        folder.Name,
+		Description: folder.Description,
+		Count:       folder.Count,
+		Private:     folder.Private,
+		Updatetime:  folder.Updatetime,
+	}
+	user, err := user_repo.User().Find(ctx, folder.UserID)
+	if err != nil {
+		return nil, err
+	}
+	resp.UserInfo = user.UserInfo()
 	return &api.FavoriteFolderDetailResponse{
-		FavoriteFolderItem: &api.FavoriteFolderItem{
-			ID:          folder.ID,
-			UserID:      folder.UserID,
-			Name:        folder.Name,
-			Description: folder.Description,
-			Count:       folder.Count,
-			Private:     folder.Private,
-		},
+		FavoriteFolderItem: resp,
 	}, nil
 }
 
@@ -337,4 +351,41 @@ func (f *favoriteSvc) EditFolder(ctx context.Context, req *api.EditFolderRequest
 		return nil, err
 	}
 	return &api.EditFolderResponse{}, nil
+}
+
+// FavoriteFolderScripts 获取指定收藏夹的所有脚本
+func (f *favoriteSvc) FavoriteFolderScripts(ctx context.Context, folderId int64) (*api.FavoriteFolderDetailResponse, []*api.Script, error) {
+	folder, err := f.FavoriteFolderDetail(ctx, &api.FavoriteFolderDetailRequest{ID: folderId})
+	if err != nil {
+		return nil, nil, err
+	}
+	if folder == nil {
+		return nil, nil, i18n.NewError(ctx, code.ScriptFavoriteFolderNotFound)
+	}
+	if folder.Private == 1 {
+		user := auth_svc.Auth().Get(ctx)
+		if user == nil || user.UID != folder.UserID {
+			return nil, nil, i18n.NewForbiddenError(ctx, code.ScriptFavoriteFolderNotFound)
+		}
+	}
+	list, _, err := script_repo.ScriptFavorite().FindByFavoriteFolder(ctx, folderId, httputils.PageRequest{Size: -1})
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := make([]*api.Script, 0)
+	for _, item := range list {
+		script, err := script_repo.Script().Find(ctx, item.ScriptID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if script == nil {
+			continue // 如果脚本不存在，跳过
+		}
+		scriptItem, err := Script().ToScript(ctx, script, false, "")
+		if err != nil {
+			return nil, nil, err
+		}
+		resp = append(resp, scriptItem)
+	}
+	return folder, resp, nil
 }

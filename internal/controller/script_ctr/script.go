@@ -2,6 +2,7 @@ package script_ctr
 
 import (
 	"context"
+	"github.com/scriptscat/scriptlist/configs"
 	"io"
 	"net/http"
 	"net/url"
@@ -56,6 +57,8 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 	root.GET("/lib/:id/:version/*name",
 		auth_svc.Auth().RequireLogin(false),
 		script_svc.Script().RequireScript(), s.DownloadLib())
+	// 脚本收藏
+	root.GET("/scripts/subscribe/:id/*name", auth_svc.Auth().RequireLogin(false), s.Subscribe())
 	muxutils.BindTree(r, []*muxutils.RouterTree{
 		// 需要半鉴权
 		{
@@ -195,6 +198,21 @@ func (s *Script) Download(pre bool) gin.HandlerFunc {
 	}
 }
 
+func (s *Script) Subscribe() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if strings.HasSuffix(ctx.Request.URL.Path, ".user.sub.js") {
+			id, err := s.getScriptID(ctx)
+			if err != nil {
+				httputils.HandleResp(ctx, err)
+				return
+			}
+			s.downloadSubscribe(ctx, id)
+		} else {
+			ctx.AbortWithStatus(http.StatusNotFound)
+		}
+	}
+}
+
 func (s *Script) DownloadLib() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		version := ctx.Param("version")
@@ -277,6 +295,37 @@ func (s *Script) downloadScript(ctx *gin.Context, id int64, version string, pre 
 		// 设置文件名
 		//ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", script+".user.js"))
 		_, _ = ctx.Writer.WriteString(code.Code)
+	}
+}
+
+func (s *Script) downloadSubscribe(ctx *gin.Context, id int64) {
+	ua := ctx.GetHeader("User-Agent")
+	if id == 0 || ua == "" {
+		ctx.String(http.StatusNotFound, "脚本未找到")
+		return
+	}
+	// 获取完整的收藏夹订阅列表
+	folder, list, err := script_svc.Favorite().FavoriteFolderScripts(ctx, id)
+	if err != nil {
+		httputils.HandleResp(ctx, err)
+		return
+	}
+	code := "// ==UserSubscribe==\n"
+	code += "// @name " + folder.Name + "\n"
+	if folder.Description != "" {
+		code += "// @description " + folder.Description + "\n"
+	}
+	code += "// @version " + strconv.FormatInt(folder.Updatetime, 64) + "\n"
+	code += "// @author " + folder.Username + "\n"
+	for _, v := range list {
+		code += "// @scriptUrl " + configs.Url() + "/scripts/code/" + strconv.FormatInt(v.ID, 10) + "/" + v.Name + ".user.js\n"
+	}
+	code += "// ==/UserSubscribe==\n"
+
+	ctx.Writer.WriteHeader(http.StatusOK)
+
+	if _, err := ctx.Writer.WriteString(code); err != nil {
+		logger.Ctx(ctx).Error("写入订阅脚本失败", zap.Error(err))
 	}
 }
 

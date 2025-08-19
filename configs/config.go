@@ -6,6 +6,15 @@ import (
 	"github.com/cago-frame/cago/configs"
 )
 
+var url string
+
 func Url() string {
-	return configs.Default().String(context.Background(), "website.url")
+	if url != "" {
+		return url
+	}
+	url = configs.Default().String(context.Background(), "website.url")
+	if url == "" {
+		url = "https://scriptcat.org"
+	}
+	return url
 }

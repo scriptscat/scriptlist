@@ -132,8 +132,14 @@ func (u *scriptFavoriteRepo) FindByFavoriteFolder(ctx context.Context, folderId 
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
-		return nil, 0, err
+	if page.Size == -1 {
+		if err := find.Order("createtime desc").Find(&list).Error; err != nil {
+			return nil, 0, err
+		}
+	} else {
+		if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+			return nil, 0, err
+		}
 	}
 	return list, count, nil
 }

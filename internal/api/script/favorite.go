@@ -3,6 +3,7 @@ package script
 import (
 	"github.com/cago-frame/cago/pkg/utils/httputils"
 	"github.com/cago-frame/cago/server/mux"
+	"github.com/scriptscat/scriptlist/internal/model/entity/user_entity"
 )
 
 // CreateFolderRequest 创建收藏夹
@@ -32,12 +33,13 @@ type FavoriteFolderListRequest struct {
 }
 
 type FavoriteFolderItem struct {
-	ID          int64  `json:"id"`
-	UserID      int64  `json:"user_id"` // 用户ID
-	Name        string `json:"name"`
-	Description string `json:"description"` // 收藏夹描述
-	Count       int64  `json:"count"`       // 收藏夹中脚本数量
-	Private     int32  `json:"private"`     // 收藏夹类型 1私密 2公开
+	ID                   int64 `json:"id"`
+	user_entity.UserInfo `json:",inline"`
+	Name                 string `json:"name"`
+	Description          string `json:"description"` // 收藏夹描述
+	Count                int64  `json:"count"`       // 收藏夹中脚本数量
+	Private              int32  `json:"private"`     // 收藏夹类型 1私密 2公开
+	Updatetime           int64  `json:"updatetime"`  // 收藏夹更新时间
 }
 
 type FavoriteFolderListResponse struct {
