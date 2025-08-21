@@ -63,7 +63,11 @@ istio:
     - uri:
         prefix: /api/v2
     - uri:
-        prefix: /scripts
+        prefix: /scripts/code
+    - uri:
+        prefix: /scripts/pre
+    - uri:
+        prefix: /scripts/subscribe
     - uri:
         prefix: /lib
     - uri:
