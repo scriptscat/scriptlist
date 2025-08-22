@@ -115,17 +115,19 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Scr
 func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[string][]string) error {
 	domains := make(map[string]struct{})
 	for _, v := range meta["match"] {
-		domain := s.parseMatchDomain(v)
-		if domain == "" {
+		topDomain, domain := s.parseMatchDomain(v)
+		if topDomain == "" {
 			continue
 		}
+		domains[topDomain] = struct{}{}
 		domains[domain] = struct{}{}
 	}
 	for _, v := range meta["include"] {
-		domain := s.parseMatchDomain(v)
-		if domain == "" {
+		topDomain, domain := s.parseMatchDomain(v)
+		if topDomain == "" {
 			continue
 		}
+		domains[topDomain] = struct{}{}
 		domains[domain] = struct{}{}
 	}
 	list, err := script_repo.Domain().List(ctx, id)
@@ -168,14 +170,16 @@ func (s *Script) saveDomain(ctx context.Context, id, codeID int64, meta map[stri
 	return nil
 }
 
-func (s *Script) parseMatchDomain(meta string) string {
+// 解析meta中的域名信息
+// 返回格式为: 顶级域名, 原始域名
+func (s *Script) parseMatchDomain(meta string) (string, string) {
 	reg := regexp.MustCompile("(.+?://|^)(.+?)(/|$)")
 	ret := reg.FindStringSubmatch(meta)
 	if len(ret) == 0 || ret[2] == "" {
-		return ""
+		return "", ""
 	}
 	if ret[2] == "*" {
-		return "*"
+		return "*", "*"
 	}
 	if ret[2][0] == '*' {
 		ret[2] = ret[2][1:]
@@ -185,10 +189,10 @@ func (s *Script) parseMatchDomain(meta string) string {
 	}
 	domain, err := publicsuffix.Domain(ret[2])
 	if err != nil {
-		return ""
+		return "", ""
 	}
 	if domain[0] == '*' {
-		return "*"
+		return "*", "*"
 	}
-	return domain
+	return domain, ret[2]
 }
