@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/cago-frame/cago/pkg/utils"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"io"
 	"strconv"
 	"strings"
@@ -18,11 +21,8 @@ import (
 	"github.com/cago-frame/cago/database/db"
 	"github.com/cago-frame/cago/database/elasticsearch"
 	"github.com/cago-frame/cago/pkg/consts"
-	"github.com/cago-frame/cago/pkg/utils"
 	"github.com/cago-frame/cago/pkg/utils/httputils"
 	entity "github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type SearchOptions struct {
@@ -152,11 +152,11 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 		tabname := db.Default().NamingStrategy.TableName("script_domain")
 		find = find.Joins("left join "+tabname+" on "+tabname+".script_id="+scriptTbName+".id").
 			Where(tabname+".status=?", consts.ACTIVE)
-		if len(domains) <= 2 {
+		if len(domains) <= 3 {
 			find = find.Where(tabname+".domain=?", options.Domain)
 		} else {
 			exps := make([]clause.Expression, 0)
-			for i := 1; i < len(domains); i++ {
+			for i := 2; i < len(domains); i++ {
 				exps = append(exps, gorm.Expr(tabname+".domain_reverse like ?",
 					strings.Join(domains[:i+1], ".")+"%"))
 			}
