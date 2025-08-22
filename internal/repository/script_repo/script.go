@@ -5,13 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/cago-frame/cago/pkg/utils"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"io"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cago-frame/cago/pkg/utils"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
