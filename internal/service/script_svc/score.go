@@ -266,6 +266,10 @@ func (s *scoreSvc) DelScore(ctx context.Context, req *api.DelScoreRequest) (*api
 	if err != nil {
 		return nil, err
 	}
+	// 删除评分统计
+	if err := script_repo.ScriptStatistics().IncrScore(ctx, score.ScriptID, score.Score, -1); err != nil {
+		logger.Ctx(ctx).Error("评分统计失败", zap.Int64("script", score.ScriptID), zap.Int64("user", score.UserID), zap.Error(err))
+	}
 	return nil, nil
 }
 

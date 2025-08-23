@@ -61,13 +61,19 @@ func (u *scriptScoreRepo) ScoreList(ctx context.Context, scriptId int64, page ht
 	if err := find.Count(&num).Error; err != nil {
 		return nil, 0, err
 	}
-	switch page.GetOrder() {
+	var (
+		sort  = "desc"
+		order = "createtime"
+	)
+	switch page.GetSort() {
 	case "asc", "desc":
-		switch page.GetSort() {
-		case "createtime", "score":
-			find = find.Order(page.Order + " " + page.Sort)
-		}
+		sort = page.GetSort()
 	}
+	switch page.GetOrder() {
+	case "createtime", "score":
+		order = page.GetOrder()
+	}
+	find = find.Order(order + " " + sort)
 	if err := find.Limit(page.GetLimit()).Offset(page.GetOffset()).Scan(&list).Error; err != nil {
 		return nil, 0, err
 	}
