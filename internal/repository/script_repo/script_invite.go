@@ -97,9 +97,9 @@ func (u *scriptInviteRepo) getInviteListOrder(sort string, order string) string 
 	}
 	var orderQuery string
 	switch order {
-	case "ascend":
+	case "ascend", "asc":
 		orderQuery = "asc"
-	case "descend":
+	case "descend", "desc":
 		fallthrough
 	default:
 		orderQuery = "desc"
