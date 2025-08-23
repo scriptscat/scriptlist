@@ -42,6 +42,8 @@ func TestScore_Router(t *testing.T) {
 	script_repo.RegisterScriptAccess(mockAccess)
 	mockGroupMember := mock_script_repo.NewMockScriptGroupMemberRepo(mockCtrl)
 	script_repo.RegisterScriptGroupMember(mockGroupMember)
+	mockStatistics := mock_script_repo.NewMockScriptStatisticsRepo(mockCtrl)
+	script_repo.RegisterScriptStatistics(mockStatistics)
 	convey.Convey("删除评分", t, func() {
 		convey.Convey("未登录", func() {
 			mockAuth.U().NoLogin()
@@ -72,6 +74,7 @@ func TestScore_Router(t *testing.T) {
 					Score:    1,
 				}, nil)
 				mockScore.EXPECT().Delete(gomock.Any(), int64(1)).Return(nil).Times(1)
+				mockStatistics.EXPECT().IncrScore(gomock.Any(), int64(1), int64(1), -1).Return(nil)
 				err := testMux.Do(ctx, &script.DelScoreRequest{ScriptId: 1, ScoreId: 1}, &script.DelScoreResponse{})
 				convey.So(err, convey.ShouldBeNil)
 			})
