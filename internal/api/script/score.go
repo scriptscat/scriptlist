@@ -24,7 +24,7 @@ type PutScoreRequest struct {
 	mux.Meta `path:"/scripts/:id/score" method:"PUT"`
 	ID       int64  `uri:"id" binding:"required"`
 	Message  string `json:"message"`
-	Score    int64  `json:"score" binding:"required,number,in=10,20,30,40,50"`
+	Score    int64  `json:"score" binding:"required,number,oneof=10 20 30 40 50"`
 }
 
 type PutScoreResponse struct {
