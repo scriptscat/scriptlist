@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/scriptscat/scriptlist/internal/repository/feedback_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_profile_repo"
 
 	"github.com/cago-frame/cago"
@@ -67,6 +68,8 @@ func main() {
 	user_repo.RegisterFollow(user_repo.NewFollowRepo())
 	user_repo.RegisterUserConfig(user_repo.NewUserConfig())
 	user_profile_repo.RegisterUserProfile(user_profile_repo.NewUserProfile())
+
+	feedback_repo.RegisterFeedback(feedback_repo.NewFeedback())
 
 	resource_repo.RegisterResource(resource_repo.NewResource())
 

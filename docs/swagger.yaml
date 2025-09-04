@@ -450,7 +450,7 @@ definitions:
         type: array
       type:
         $ref: '#/definitions/script_entity.Type'
-        description: 脚本类型：1 用户脚本 2 脚本引用库 3 订阅脚本(不支持)
+        description: 脚本类型：1 用户脚本 2 订阅脚本(不支持) 3 脚本引用库
       unwell:
         $ref: '#/definitions/script_entity.UnwellContent'
         description: '不适内容: 1 不适 2 适用'
@@ -519,8 +519,8 @@ definitions:
       private:
         description: 收藏夹类型 1私密 2公开
         type: integer
-      user_id:
-        description: 用户ID
+      updatetime:
+        description: 收藏夹更新时间
         type: integer
     type: object
   script.FavoriteFolderListResponse:
@@ -639,6 +639,9 @@ definitions:
         type: string
       role:
         $ref: '#/definitions/script_entity.AccessRole'
+      sri,omitempty:
+        description: 如果是库的话，会返回sha512 sri
+        type: string
     type: object
   script.InviteCode:
     properties:
@@ -1211,41 +1214,6 @@ definitions:
     - 1
     - 2
     type: integer
-  statistics.AdvancedInfoResponse:
-    properties:
-      browser:
-        items:
-          $ref: '#/definitions/statistics.PieChart'
-        type: array
-      ip:
-        $ref: '#/definitions/statistics.Overview'
-      limit:
-        $ref: '#/definitions/statistics.Limit'
-      new_old_user:
-        items:
-          $ref: '#/definitions/statistics.PieChart'
-        type: array
-      pv:
-        $ref: '#/definitions/statistics.Overview'
-      statistics_key:
-        type: string
-      system:
-        items:
-          $ref: '#/definitions/statistics.PieChart'
-        type: array
-      use_time:
-        $ref: '#/definitions/statistics.Overview'
-      uv:
-        $ref: '#/definitions/statistics.Overview'
-      version:
-        items:
-          $ref: '#/definitions/statistics.PieChart'
-        type: array
-      whitelist:
-        items:
-          type: string
-        type: array
-    type: object
   statistics.Chart:
     properties:
       x:
@@ -1257,72 +1225,12 @@ definitions:
           type: integer
         type: array
     type: object
-  statistics.CollectRequest:
-    properties:
-      duration:
-        description: 停留时长(秒)
-        type: integer
-      exit_time:
-        description: 退出时间
-        type: integer
-      iframe:
-        description: 是否在iframe中运行
-        type: boolean
-      install_page:
-        description: 安装页面,从GM_info中提取
-        type: string
-      operation_page:
-        description: 操作页面,当前页面的链接
-        type: string
-      script_id:
-        description: 脚本id,在初始化脚本时设置(例如new ScriptStatistics(1))
-        type: integer
-      session_id:
-        description: 当前会话id,随机生成一串字符,可以是uuid
-        type: string
-      statistics_key:
-        description: 统计key
-        type: string
-      version:
-        description: 版本,从GM_info中提取
-        type: string
-      visit_time:
-        description: 访问时间,脚本执行的时间,unix时间戳(10位)
-        type: integer
-      visitor_id:
-        description: 访客id,从浏览器指纹或者GM_value中获取
-        type: string
-    type: object
-  statistics.CollectResponse:
-    type: object
-  statistics.CollectWhitelistRequest:
-    properties:
-      statistics_key:
-        description: 统计key
-        type: string
-    type: object
-  statistics.CollectWhitelistResponse:
-    properties:
-      whitelist:
-        items:
-          type: string
-        type: array
-    type: object
   statistics.DUChart:
     properties:
       download:
         $ref: '#/definitions/statistics.Chart'
       update:
         $ref: '#/definitions/statistics.Chart'
-    type: object
-  statistics.Limit:
-    properties:
-      quota:
-        description: 限额
-        type: integer
-      usage:
-        description: 用额
-        type: integer
     type: object
   statistics.Overview:
     properties:
@@ -1332,18 +1240,6 @@ definitions:
         type: integer
       yesterday:
         type: integer
-    type: object
-  statistics.PieChart:
-    properties:
-      key:
-        type: string
-      value:
-        type: integer
-    type: object
-  statistics.RealtimeChartResponse:
-    properties:
-      chart:
-        $ref: '#/definitions/statistics.Chart'
     type: object
   statistics.ScriptRealtimeResponse:
     properties:
@@ -1367,64 +1263,16 @@ definitions:
       uv_chart:
         $ref: '#/definitions/statistics.DUChart'
     type: object
-  statistics.UpdateWhitelistRequest:
+  system.FeedbackRequest:
     properties:
-      whitelist:
-        items:
-          type: string
-        type: array
-    type: object
-  statistics.UpdateWhitelistResponse:
-    properties:
-      whitelist:
-        items:
-          type: string
-        type: array
-    type: object
-  statistics.UserOriginResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/statistics.PieChart'
-          type: object
-        type: array
-      total:
-        type: integer
-    type: object
-  statistics.VisitDomainResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/statistics.PieChart'
-          type: object
-        type: array
-      total:
-        type: integer
-    type: object
-  statistics.VisitItem:
-    properties:
-      duration:
-        type: integer
-      exit_time:
-        type: integer
-      operation_page:
-        description: OperationHost string `json:"operation_host"`
+      content:
+        description: 反馈内容
         type: string
-      visit_time:
-        type: integer
-      visitor_id:
-        description: SessionID     string `json:"session_id"`
+      reason:
+        description: 遇到了错误或bug 不再需要脚本猫 缺少我需要的功能 找到了更好的替代品 其他原因
         type: string
     type: object
-  statistics.VisitListResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/statistics.VisitItem'
-          type: object
-        type: array
-      total:
-        type: integer
+  system.FeedbackResponse:
     type: object
   user.BadgeItem:
     properties:
@@ -1870,6 +1718,36 @@ paths:
       summary: 获取收藏夹脚本列表
       tags:
       - script/favorite
+  /feedback:
+    post:
+      consumes:
+      - application/json
+      description: 用户反馈请求
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/system.FeedbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/system.FeedbackResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 用户反馈请求
+      tags:
+      - system
   /login/oauth:
     get:
       consumes:
@@ -1902,29 +1780,6 @@ paths:
       summary: 第三方登录
       tags:
       - auth
-  /logout:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/user.LogoutResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      tags:
-      - user
   /open/crx-download/{id}:
     get:
       consumes:
@@ -2060,6 +1915,10 @@ paths:
       - description: 用户ID
         in: query
         name: user_id
+        type: integer
+      - description: 分类ID
+        in: query
+        name: category
         type: integer
       - description: '0:全部 1: 脚本 2: 库 3: 后台脚本 4: 定时脚本'
         in: query
@@ -4239,246 +4098,6 @@ paths:
       summary: 全量迁移数据到es
       tags:
       - script
-  /statistics/{id}/advanced:
-    get:
-      consumes:
-      - application/json
-      description: 高级统计信息
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.AdvancedInfoResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 高级统计信息
-      tags:
-      - statistics
-  /statistics/{id}/realtime/chart:
-    get:
-      consumes:
-      - application/json
-      description: 实时统计数据图表
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.RealtimeChartResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 实时统计数据图表
-      tags:
-      - statistics
-  /statistics/{id}/user-origin:
-    get:
-      consumes:
-      - application/json
-      description: 用户来源统计
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.UserOriginResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 用户来源统计
-      tags:
-      - statistics
-  /statistics/{id}/visit:
-    get:
-      consumes:
-      - application/json
-      description: 访问列表
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.VisitListResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 访问列表
-      tags:
-      - statistics
-  /statistics/{id}/visit-domain:
-    get:
-      consumes:
-      - application/json
-      description: 访问域名统计
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.VisitDomainResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 访问域名统计
-      tags:
-      - statistics
-  /statistics/{id}/whitelist:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - in: path
-        name: id
-        required: true
-        type: integer
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/statistics.UpdateWhitelistRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.UpdateWhitelistResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      tags:
-      - statistics
-  /statistics/collect:
-    post:
-      consumes:
-      - application/json
-      description: 统计数据收集
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/statistics.CollectRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.CollectResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 统计数据收集
-      tags:
-      - statistics
-  /statistics/collect/whitelist:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/statistics.CollectWhitelistRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/statistics.CollectWhitelistResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      tags:
-      - statistics
   /users:
     get:
       consumes:
@@ -4779,6 +4398,29 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 更新用户信息
+      tags:
+      - user
+  /users/logout:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.LogoutResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
       tags:
       - user
   /users/refresh-token:

@@ -3,10 +3,9 @@ package api
 import (
 	"context"
 
-	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
-
 	"github.com/cago-frame/cago/configs"
 	"github.com/cago-frame/cago/server/mux"
+	"github.com/gin-contrib/cors"
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
@@ -14,7 +13,9 @@ import (
 	"github.com/scriptscat/scriptlist/internal/controller/resource_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/statistics_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/system_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
+	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
 )
 
 // Router 路由表
@@ -113,6 +114,17 @@ func Router(ctx context.Context, root *mux.Router) error {
 		)
 		// 不需要登录
 		r.GET("/resource/image/:id", controller.ViewImage())
+	}
+	// 系统接口
+	{
+		controller := system_ctr.NewSystem()
+		// 允许feedback接口跨域
+		cfg := cors.DefaultConfig()
+		cfg.AllowOrigins = []string{"https://docs.scriptcat.org", "http://localhost:3000"}
+		r.OPTIONS("/feedback", cors.New(cfg))
+		r.Group("/", cors.New(cfg)).Bind(
+			controller.Feedback,
+		)
 	}
 	// 开放接口
 	{
