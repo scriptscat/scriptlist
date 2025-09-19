@@ -6,7 +6,7 @@ import "github.com/cago-frame/cago/server/mux"
 type UploadImageRequest struct {
 	mux.Meta `path:"/resource/image" method:"POST"`
 	Comment  string `form:"comment" binding:"required"`
-	LinkID   int64  `form:"link_id" binding:"required"`
+	LinkID   int64  `form:"link_id"`
 }
 
 type UploadImageResponse struct {
