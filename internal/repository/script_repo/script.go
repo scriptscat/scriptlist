@@ -173,7 +173,7 @@ func (u *scriptRepo) Search(ctx context.Context, options *SearchOptions, page ht
 	case "today_download":
 		tabname := db.Default().NamingStrategy.TableName("script_date_statistics")
 		find = find.Joins(fmt.Sprintf("left join %s on %s.script_id=%s.id and %s.date=?", tabname, tabname, scriptTbName, tabname), time.Now().Format("2006-01-02")).
-			Order(tabname + ".update desc,createtime desc")
+			Order(tabname + ".download desc,createtime desc")
 	case "total_download":
 		tabname := db.Default().NamingStrategy.TableName("script_statistics")
 		find = find.Joins(fmt.Sprintf("left join %s on %s.script_id=%s.id", tabname, tabname, scriptTbName)).
