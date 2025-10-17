@@ -41,9 +41,7 @@ type IssueSvc interface {
 	GetWatch(ctx context.Context, req *api.GetWatchRequest) (*api.GetWatchResponse, error)
 	// Watch 关注issue
 	Watch(ctx context.Context, userId int64, req *api.WatchRequest) (*api.WatchResponse, error)
-	// Close 关闭issue
-	Close(ctx context.Context, req *api.CloseRequest) (*api.CloseResponse, error)
-	// Open 打开issue
+	// Open 打开/关闭issue
 	Open(ctx context.Context, req *api.OpenRequest) (*api.OpenResponse, error)
 	// Delete 删除issue
 	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
@@ -179,44 +177,43 @@ func (i *issueSvc) Watch(ctx context.Context, userId int64, req *api.WatchReques
 	return &api.WatchResponse{}, nil
 }
 
-// Close 关闭issue
-func (i *issueSvc) Close(ctx context.Context, req *api.CloseRequest) (*api.CloseResponse, error) {
-	// 检查是否有权限操作
-	issue := i.CtxIssue(ctx)
-	issue.Status = consts.AUDIT
-	issue.Updatetime = time.Now().Unix()
-	comment := &issue_entity.ScriptIssueComment{
-		IssueID:    req.IssueID,
-		UserID:     auth_svc.Auth().Get(ctx).UID,
-		Content:    "关闭反馈",
-		Type:       issue_entity.CommentTypeClose,
-		Status:     consts.ACTIVE,
-		Createtime: time.Now().Unix(),
-	}
-	if err := issue_repo.Issue().Update(ctx, issue); err != nil {
-		return nil, err
-	}
-	if err := issue_repo.Comment().Create(ctx, comment); err != nil {
-		return nil, err
-	}
-	// 发布消息
-	resp, _ := Comment().ToComment(ctx, comment)
-	return &api.CloseResponse{
-		Comment: resp,
-	}, producer.PublishCommentCreate(ctx, script_svc.Script().CtxScript(ctx), issue, comment)
-}
-
-// Open 打开issue
+// Open 打开/关闭issue
 func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenResponse, error) {
+	comments := make([]*api.Comment, 0)
+	if req.Content != "" {
+		resp, err := Comment().CreateComment(ctx, &api.CreateCommentRequest{
+			IssueID:  req.IssueID,
+			ScriptID: req.ScriptID,
+			Content:  req.Content,
+		})
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, resp.Comment)
+	}
 	// 检查是否有权限操作
 	issue := i.CtxIssue(ctx)
-	issue.Status = consts.ACTIVE
+	var commentType issue_entity.CommentType
+	var commentContent string
+
+	if req.Close {
+		// 关闭issue
+		issue.Status = consts.AUDIT
+		commentContent = "关闭反馈"
+		commentType = issue_entity.CommentTypeClose
+	} else {
+		// 打开issue
+		issue.Status = consts.ACTIVE
+		commentContent = "打开反馈"
+		commentType = issue_entity.CommentTypeOpen
+	}
+
 	issue.Updatetime = time.Now().Unix()
 	comment := &issue_entity.ScriptIssueComment{
 		IssueID:    req.IssueID,
 		UserID:     auth_svc.Auth().Get(ctx).UID,
-		Content:    "打开反馈",
-		Type:       issue_entity.CommentTypeOpen,
+		Content:    commentContent,
+		Type:       commentType,
 		Status:     consts.ACTIVE,
 		Createtime: time.Now().Unix(),
 	}
@@ -228,8 +225,11 @@ func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenRes
 	}
 	// 发布消息
 	resp, _ := Comment().ToComment(ctx, comment)
+	if resp != nil {
+		comments = append(comments, resp)
+	}
 	return &api.OpenResponse{
-		Comment: resp,
+		Comments: comments,
 	}, producer.PublishCommentCreate(ctx, script_svc.Script().CtxScript(ctx), issue, comment)
 }
 

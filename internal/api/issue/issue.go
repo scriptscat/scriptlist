@@ -78,26 +78,17 @@ type WatchRequest struct {
 type WatchResponse struct {
 }
 
-// CloseRequest 关闭issue
-type CloseRequest struct {
-	mux.Meta `path:"/scripts/:id/issues/:issueId/close" method:"PUT"`
-	ScriptID int64 `uri:"id" binding:"required"`
-	IssueID  int64 `uri:"issueId" binding:"required"`
-}
-
-type CloseResponse struct {
-	*Comment `json:",inline"`
-}
-
-// OpenRequest 打开issue
+// OpenRequest 打开/关闭issue
 type OpenRequest struct {
 	mux.Meta `path:"/scripts/:id/issues/:issueId/open" method:"PUT"`
-	ScriptID int64 `uri:"id" binding:"required"`
-	IssueID  int64 `uri:"issueId" binding:"required"`
+	ScriptID int64  `uri:"id" binding:"required"`
+	IssueID  int64  `uri:"issueId" binding:"required"`
+	Content  string `json:"content" binding:"max=10485760" label:"评论内容"`
+	Close    bool   `json:"close" binding:"omitempty" label:"关闭状态"` // true:关闭 false:打开
 }
 
 type OpenResponse struct {
-	*Comment `json:",inline"`
+	Comments []*Comment `json:"comments"`
 }
 
 // DeleteRequest 删除issue

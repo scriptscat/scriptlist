@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/cago-frame/cago/database/cache"

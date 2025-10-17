@@ -63,7 +63,6 @@ func (i *Issue) Router(r *mux.Router) {
 								CheckHandler("issue", "manage", i.skipSelf()),
 						).Append(
 							i.Open,
-							i.Close,
 							i.UpdateLabels,
 						),
 						muxutils.Use(
@@ -122,18 +121,7 @@ func (i *Issue) Watch(ctx context.Context, req *api.WatchRequest) (*api.WatchRes
 	return resp.(*api.WatchResponse), nil
 }
 
-// Close 关闭issue
-func (i *Issue) Close(ctx context.Context, req *api.CloseRequest) (*api.CloseResponse, error) {
-	resp, err := i.limit.FuncTake(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10), func() (interface{}, error) {
-		return issue_svc.Issue().Close(ctx, req)
-	})
-	if err != nil {
-		return nil, err
-	}
-	return resp.(*api.CloseResponse), nil
-}
-
-// Open 打开issue
+// Open 打开/关闭issue
 func (i *Issue) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenResponse, error) {
 	resp, err := i.limit.FuncTake(ctx, strconv.FormatInt(auth_svc.Auth().Get(ctx).UID, 10), func() (interface{}, error) {
 		return issue_svc.Issue().Open(ctx, req)
