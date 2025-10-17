@@ -225,6 +225,8 @@ type StateResponse struct {
 	WatchCount int64 `json:"watch_count"`
 	// 收藏人数
 	FavoriteCount int64 `json:"favorite_count"`
+	// Issue数量
+	IssueCount int64 `json:"issue_count"`
 }
 
 // WatchRequest 关注脚本

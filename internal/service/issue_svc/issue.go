@@ -97,6 +97,11 @@ func (i *issueSvc) ToIssue(ctx context.Context, issue *issue_entity.ScriptIssue)
 		return nil, err
 	}
 	ret.UserInfo = user.UserInfo()
+	commentCount, err := issue_repo.Comment().CountByIssue(ctx, issue.ID)
+	if err != nil {
+		return nil, err
+	}
+	ret.CommentCount = commentCount
 	return ret, nil
 }
 

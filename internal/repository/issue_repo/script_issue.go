@@ -18,6 +18,7 @@ type ScriptIssueRepo interface {
 	Create(ctx context.Context, scriptIssue *issue_entity.ScriptIssue) error
 	Update(ctx context.Context, scriptIssue *issue_entity.ScriptIssue) error
 	Delete(ctx context.Context, scriptId int64, id int64) error
+	CountByScript(ctx context.Context, scriptId int64, status int32) (int64, error)
 }
 
 var defaultScriptIssue ScriptIssueRepo
@@ -80,4 +81,18 @@ func (u *scriptIssueRepo) FindPage(ctx context.Context, req *api.ListRequest, pa
 		return nil, 0, err
 	}
 	return list, count, nil
+}
+
+// CountByScript 统计脚本反馈数量
+func (u *scriptIssueRepo) CountByScript(ctx context.Context, scriptId int64, status int32) (int64, error) {
+	var count int64
+	db := db.Ctx(ctx).Model(&issue_entity.ScriptIssue{}).
+		Where("script_id=? and status!=?", scriptId, consts.DELETE)
+	if status > 0 {
+		db = db.Where("status=?", status)
+	}
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

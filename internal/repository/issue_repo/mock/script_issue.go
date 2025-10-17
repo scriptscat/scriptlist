@@ -43,6 +43,21 @@ func (m *MockScriptIssueRepo) EXPECT() *MockScriptIssueRepoMockRecorder {
 	return m.recorder
 }
 
+// CountByScript mocks base method.
+func (m *MockScriptIssueRepo) CountByScript(ctx context.Context, scriptId int64, status int32) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByScript", ctx, scriptId, status)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByScript indicates an expected call of CountByScript.
+func (mr *MockScriptIssueRepoMockRecorder) CountByScript(ctx, scriptId, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByScript", reflect.TypeOf((*MockScriptIssueRepo)(nil).CountByScript), ctx, scriptId, status)
+}
+
 // Create mocks base method.
 func (m *MockScriptIssueRepo) Create(ctx context.Context, scriptIssue *issue_entity.ScriptIssue) error {
 	m.ctrl.T.Helper()

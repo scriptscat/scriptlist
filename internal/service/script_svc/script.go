@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"net/http"
 	"strconv"
 	"strings"
@@ -784,6 +785,11 @@ func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.Stat
 	}
 
 	resp.WatchCount, err = script_repo.ScriptWatch().CountByScript(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.IssueCount, err = issue_repo.Issue().CountByScript(ctx, req.ID, 1)
 	if err != nil {
 		return nil, err
 	}

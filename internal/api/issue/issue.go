@@ -12,6 +12,7 @@ type Issue struct {
 	ScriptID             int64    `json:"script_id"`
 	Title                string   `json:"title"`
 	Labels               []string `json:"labels"`
+	CommentCount         int64    `json:"comment_count"`
 	Status               int32    `json:"status"`
 	Createtime           int64    `json:"createtime"`
 	Updatetime           int64    `json:"updatetime"`

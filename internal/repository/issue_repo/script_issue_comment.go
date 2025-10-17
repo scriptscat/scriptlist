@@ -18,6 +18,7 @@ type ScriptIssueCommentRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	FindAll(ctx context.Context, issueId int64) ([]*issue_entity.ScriptIssueComment, error)
+	CountByIssue(ctx context.Context, id int64) (int64, error)
 }
 
 var defaultScriptIssueComment ScriptIssueCommentRepo
@@ -78,4 +79,12 @@ func (u *scriptIssueCommentRepo) FindAll(ctx context.Context, issueId int64) ([]
 		return nil, err
 	}
 	return list, nil
+}
+
+func (u *scriptIssueCommentRepo) CountByIssue(ctx context.Context, id int64) (int64, error) {
+	var count int64
+	if err := db.Ctx(ctx).Model(&issue_entity.ScriptIssueComment{}).Where("issue_id=? and status=?", id, consts.ACTIVE).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
