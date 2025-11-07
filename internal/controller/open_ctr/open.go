@@ -83,7 +83,7 @@ func (o *Open) CrxDownload() func(ctx *gin.Context) {
 			defer func() {
 				_ = resp.Body.Close()
 			}()
-			f, err := os.Create(path) //nolint:gosec
+			f, err := os.Create(path)
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
@@ -93,7 +93,7 @@ func (o *Open) CrxDownload() func(ctx *gin.Context) {
 			}(f)
 			r = io.TeeReader(resp.Body, f)
 		} else {
-			f, err := os.Open(path) //nolint:gosec
+			f, err := os.Open(path)
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return
