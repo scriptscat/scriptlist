@@ -19,9 +19,9 @@ type Favorite struct {
 func NewFavorite() *Favorite {
 	return &Favorite{
 		limit: limit.NewCombinationLimit(limit.NewPeriodLimit(
-			300, 2, redis.Default(), "limit:create:favorite:minute",
+			300, 6, redis.Default(), "limit:create:favorite:minute",
 		), limit.NewPeriodLimit(
-			3600, 5, redis.Default(), "limit:create:favorite:hour",
+			3600, 8, redis.Default(), "limit:create:favorite:hour",
 		)),
 	}
 }

@@ -38,9 +38,9 @@ type Script struct {
 func NewScript() *Script {
 	return &Script{
 		limit: limit.NewCombinationLimit(limit.NewPeriodLimit(
-			300, 2, redis.Default(), "limit:create:script:minute",
+			300, 6, redis.Default(), "limit:create:script:minute",
 		), limit.NewPeriodLimit(
-			3600, 5, redis.Default(), "limit:create:script:hour",
+			3600, 8, redis.Default(), "limit:create:script:hour",
 		)),
 	}
 }

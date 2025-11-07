@@ -14,7 +14,7 @@ type System struct {
 
 func NewSystem() *System {
 	return &System{
-		limit: limit.NewPeriodLimit(60, 2, redis.Default(), "system:feedback"),
+		limit: limit.NewPeriodLimit(60, 3, redis.Default(), "system:feedback"),
 	}
 }
 
