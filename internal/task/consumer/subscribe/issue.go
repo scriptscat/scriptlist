@@ -10,8 +10,8 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/service/issue_svc"
-	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
 	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
+	"github.com/scriptscat/scriptlist/internal/service/notification_svc"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
@@ -58,14 +58,14 @@ func (s *Issue) issueCreate(ctx context.Context, script *script_entity.Script, i
 		uids = append(uids, v.UserID)
 	}
 	// 通知关注人
-	return notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.IssueCreateTemplate,
-		notice_svc.WithParams(&template.IssueCreate{
+	return notification_svc.Notification().MultipleSend(ctx, uids, notification_svc.IssueCreateTemplate,
+		notification_svc.WithParams(&template.IssueCreate{
 			ScriptID: script.ID,
 			IssueID:  issue.ID,
 			Name:     script.Name,
 			Title:    issue.Title,
 			Content:  issue.Content,
-		}), notice_svc.WithFrom(issue.UserID))
+		}), notification_svc.WithFrom(issue.UserID))
 }
 
 func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script, issue *issue_entity.ScriptIssue, comment *issue_entity.ScriptIssueComment) error {
@@ -78,8 +78,8 @@ func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script,
 		for _, v := range list {
 			uids = append(uids, v.UserID)
 		}
-		if err := notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.CommentCreateTemplate,
-			notice_svc.WithParams(&template.IssueComment{
+		if err := notification_svc.Notification().MultipleSend(ctx, uids, notification_svc.CommentCreateTemplate,
+			notification_svc.WithParams(&template.IssueComment{
 				ScriptID:  script.ID,
 				IssueID:   issue.ID,
 				CommentID: comment.ID,
@@ -87,7 +87,7 @@ func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script,
 				Title:     issue.Title,
 				Content:   comment.Content,
 				Type:      comment.Type,
-			}), notice_svc.WithFrom(comment.UserID)); err != nil {
+			}), notification_svc.WithFrom(comment.UserID)); err != nil {
 			logger.Ctx(ctx).Error("发送反馈评论通知错误", zap.Int64("issue", issue.ID), zap.Error(err))
 		}
 	}

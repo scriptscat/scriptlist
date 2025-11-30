@@ -19,6 +19,7 @@ import (
 	"github.com/cago-frame/cago/server/mux"
 	"github.com/scriptscat/scriptlist/internal/api"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/notification_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/resource_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
@@ -72,6 +73,8 @@ func main() {
 	feedback_repo.RegisterFeedback(feedback_repo.NewFeedback())
 
 	resource_repo.RegisterResource(resource_repo.NewResource())
+
+	notification_repo.RegisterNotification(notification_repo.NewNotificationRepo())
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).

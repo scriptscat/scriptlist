@@ -9,6 +9,7 @@ import (
 	_ "github.com/scriptscat/scriptlist/docs"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/notification_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/open_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/resource_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
@@ -105,6 +106,9 @@ func Router(ctx context.Context, root *mux.Router) error {
 	// 脚本统计
 	statisticsCtr := statistics_ctr.NewStatistics()
 	statisticsCtr.Router(r)
+	// 通知中心
+	notificationCtr := notification_ctr.NewNotification()
+	notificationCtr.Router(r)
 	// 资源
 	{
 		controller := resource_ctr.NewResource()
