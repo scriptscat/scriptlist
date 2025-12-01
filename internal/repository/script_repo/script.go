@@ -254,7 +254,7 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 	case "today_download":
 		functionSearch["script_score"] = map[string]interface{}{
 			"script": map[string]interface{}{
-				"source": "Math.sqrt(10 + doc['today_download'].value)",
+				"source": "def todayDownload = doc['today_download'].size() > 0 ? doc['today_download'].value : 0; def val = 10 + todayDownload; if (val < 0) { return 0; } else { return Math.sqrt(val); }",
 			},
 		}
 	case "score":
