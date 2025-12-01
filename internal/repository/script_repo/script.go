@@ -254,7 +254,7 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 	case "today_download":
 		functionSearch["script_score"] = map[string]interface{}{
 			"script": map[string]interface{}{
-				"source": "def todayDownload = doc['today_download'].size() > 0 ? doc['today_download'].value : 0; def val = 10 + todayDownload; if (val < 0) { return 0; } else { return Math.sqrt(val); }",
+				"source": "def todayDownload = doc['today_download'].size() > 0 ? doc['today_download'].value : 0; todayDownload = todayDownload < 0 ? 0 : todayDownload; return _score * 200 + todayDownload;",
 			},
 		}
 	case "score":
@@ -294,13 +294,13 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 	case "total_download":
 		functionSearch["script_score"] = map[string]interface{}{
 			"script": map[string]interface{}{
-				"source": "_score * 200 + doc['today_download'].value",
+				"source": "def totalDownload = doc['total_download'].size() > 0 ? doc['total_download'].value : 0; totalDownload = totalDownload < 0 ? 0 : totalDownload; return _score * 200 + totalDownload;",
 			},
 		}
 	default:
 		functionSearch["script_score"] = map[string]interface{}{
 			"script": map[string]interface{}{
-				"source": "_score * 200 + doc['today_download'].value",
+				"source": "def todayDownload = doc['today_download'].size() > 0 ? doc['today_download'].value : 0; todayDownload = todayDownload < 0 ? 0 : todayDownload; return _score * 200 + todayDownload;",
 			},
 		}
 
