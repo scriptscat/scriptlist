@@ -10,7 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/cago-frame/cago/pkg/utils"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -310,13 +312,15 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 		"size": page.GetLimit(),
 		"from": page.GetOffset(),
 	}
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+	var body []byte
+	body, err := json.Marshal(query)
+	if err != nil {
 		return nil, 0, err
 	}
+	buf := bytes.NewReader(body)
 	resp, err := elasticsearch.Ctx(ctx).Search(
 		search.WithIndex(script.CollectionName()),
-		search.WithBody(&buf),
+		search.WithBody(buf),
 		search.WithTrackTotalHits(true),
 		search.WithPretty())
 	if err != nil {
@@ -327,6 +331,7 @@ func (u *scriptRepo) SearchByEs(ctx context.Context, options *SearchOptions, pag
 		return nil, 0, err
 	}
 	if resp.IsError() {
+		logger.Ctx(ctx).Error("elasticsearch search error", zap.Error(err), zap.String("body", string(body)))
 		return nil, 0, fmt.Errorf("elasticsearch error: [%s] %s", resp.Status(), respByte)
 	}
 	m := &elasticsearch.SearchResponse[*entity.ScriptSearch]{}
