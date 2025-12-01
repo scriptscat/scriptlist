@@ -9,7 +9,8 @@ import (
 type Type int
 
 const (
-	MailSender Type = iota + 1
+	MailSender  Type = iota + 1
+	InAppSender      // 应用内通知
 )
 
 type Sender interface {

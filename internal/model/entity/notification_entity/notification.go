@@ -2,8 +2,6 @@ package notification_entity
 
 import (
 	"context"
-	"database/sql/driver"
-	"encoding/json"
 	"net/http"
 
 	"github.com/cago-frame/cago/pkg/consts"
@@ -11,70 +9,39 @@ import (
 	"github.com/scriptscat/scriptlist/internal/pkg/code"
 )
 
-// 通知类型定义
+// Type 通知模板类型
+type Type int
+
 const (
-	TypeScriptUpdate     int32 = 1  // 脚本更新
-	TypeIssueCreate      int32 = 2  // 反馈创建
-	TypeCommentCreate    int32 = 3  // 评论创建
-	TypeScriptScore      int32 = 4  // 脚本评分
-	TypeAccessInvite     int32 = 5  // 协作邀请
-	TypeScriptScoreReply int32 = 6  // 评分回复
-	TypeSystem           int32 = 99 // 系统通知
+	ScriptUpdateTemplate     Type = iota + 100 // 脚本更新
+	IssueCreateTemplate                        // 问题创建
+	CommentCreateTemplate                      // 评论创建
+	ScriptScoreTemplate                        // 脚本评分
+	AccessInviteTemplate                       // 访问邀请
+	ScriptScoreReplyTemplate                   // 脚本评分回复
 )
 
 // 已读状态
 const (
-	StatusUnread int32 = 0 // 未读
-	StatusRead   int32 = 1 // 已读
+	StatusUnread int32 = 1 // 未读
+	StatusRead   int32 = 2 // 已读
 )
-
-// Extra 通知额外数据
-type Extra struct {
-	ScriptID   int64  `json:"script_id,omitempty"`
-	IssueID    int64  `json:"issue_id,omitempty"`
-	CommentID  int64  `json:"comment_id,omitempty"`
-	ScoreID    int64  `json:"score_id,omitempty"`
-	InviteID   int64  `json:"invite_id,omitempty"`
-	CustomData string `json:"custom_data,omitempty"`
-}
-
-func (e *Extra) Scan(value interface{}) error {
-	if value == nil {
-		return nil
-	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return nil
-	}
-	return json.Unmarshal(bytes, e)
-}
-
-func (e *Extra) Value() (driver.Value, error) {
-	if e == nil {
-		return nil, nil
-	}
-	return json.Marshal(e)
-}
 
 // Notification 通知实体
 type Notification struct {
 	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key;autoIncrement"`
 	UserID     int64  `gorm:"column:user_id;type:bigint(20);not null;index:idx_user_id"`
 	FromUserID int64  `gorm:"column:from_user_id;type:bigint(20);default:0"`
-	Type       int32  `gorm:"column:type;type:int(11);not null;index:idx_user_type,priority:2"`
+	Type       Type   `gorm:"column:type;type:int(11);not null;"`
 	Title      string `gorm:"column:title;type:varchar(255);not null"`
 	Content    string `gorm:"column:content;type:text"`
-	Link       string `gorm:"column:link;type:varchar(512);default:''"`
-	ReadStatus int32  `gorm:"column:read_status;type:tinyint(4);default:0;not null;index:idx_user_status,priority:2"`
+	Link       string `gorm:"column:link;type:varchar(512);default:''"` // 关联链接
+	ReadStatus int32  `gorm:"column:read_status;type:tinyint(4);default:1;not null;index:idx_user_status,priority:2"`
 	ReadTime   int64  `gorm:"column:read_time;type:bigint(20);default:0"`
-	Extra      *Extra `gorm:"column:extra;type:json"`
+	Params     string `gorm:"column:params;type:json"` // 额外信息
 	Status     int32  `gorm:"column:status;type:tinyint(4);default:1;not null;index:idx_user_status,priority:1;index:idx_user_type,priority:1"`
 	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`
-}
-
-func (Notification) TableName() string {
-	return "notification"
 }
 
 // CheckOperate 检查是否可以操作
@@ -97,4 +64,10 @@ func (n *Notification) CheckOperate(ctx context.Context, userID int64) error {
 func (n *Notification) MarkRead(readTime int64) {
 	n.ReadStatus = StatusRead
 	n.ReadTime = readTime
+}
+
+// MarkUnread 标记为未读
+func (n *Notification) MarkUnread() {
+	n.ReadStatus = StatusUnread
+	n.ReadTime = 0
 }

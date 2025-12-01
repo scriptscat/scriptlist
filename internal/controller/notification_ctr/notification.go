@@ -52,9 +52,9 @@ func (n *Notification) MarkRead(ctx *gin.Context, req *api.MarkReadRequest) (*ap
 
 // BatchMarkRead 批量标记已读
 func (n *Notification) BatchMarkRead(ctx *gin.Context, req *api.BatchMarkReadRequest) (*api.BatchMarkReadResponse, error) {
-	count, err := notification_svc.Notification().BatchMarkRead(ctx, req)
+	err := notification_svc.Notification().BatchMarkRead(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return &api.BatchMarkReadResponse{Count: count}, nil
+	return &api.BatchMarkReadResponse{}, nil
 }

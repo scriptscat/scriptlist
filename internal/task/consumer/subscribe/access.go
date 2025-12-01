@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/cago-frame/cago/pkg/logger"
+	"github.com/scriptscat/scriptlist/internal/model/entity/notification_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
-	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
 	"github.com/scriptscat/scriptlist/internal/service/notification_svc"
+	"github.com/scriptscat/scriptlist/internal/service/notification_svc/template"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"go.uber.org/zap"
 )
@@ -40,7 +41,7 @@ func (s *Access) Invite(ctx context.Context, userId, inviteUserId int64, invite 
 		logger.Ctx(ctx).Error("用户不存在", zap.Int64("invite", invite.ID), zap.Int64("user", userId))
 		return nil
 	}
-	return notification_svc.Notification().Send(ctx, inviteUserId, notification_svc.AccessInviteTemplate,
+	return notification_svc.Notification().Send(ctx, inviteUserId, notification_entity.AccessInviteTemplate,
 		notification_svc.WithParams(&template.AccessInvite{
 			Code:     invite.Code,
 			Name:     script.Name,

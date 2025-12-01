@@ -1,6 +1,10 @@
 package template
 
-import "github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
+import (
+	"fmt"
+
+	"github.com/scriptscat/scriptlist/internal/model/entity/issue_entity"
+)
 
 const (
 	IssueCommentTitle = `
@@ -12,7 +16,7 @@ const (
     关闭:[{{.Value.Name}}]{{.Value.Title}}
   {{- end -}}
   `
-	IssueCommentTemplate = `
+	IssueCommentContent = `
   {{- if eq .Value.Type 1 -}}
     {{.Value.Content}}
   {{- else if eq .Value.Type 4 -}}
@@ -26,11 +30,16 @@ const (
 )
 
 type IssueComment struct {
-	ScriptID  int64
-	IssueID   int64
-	CommentID int64
-	Name      string                   // 脚本名
-	Title     string                   // 反馈标题
-	Content   string                   // 反馈内容
-	Type      issue_entity.CommentType // 反馈类型
+	ScriptID  int64                    `json:"script_id"`
+	IssueID   int64                    `json:"issue_id"`
+	CommentID int64                    `json:"comment_id"`
+	Name      string                   `json:"name"`    // 脚本名
+	Title     string                   `json:"title"`   // 反馈标题
+	Content   string                   `json:"content"` // 反馈内容
+	Type      issue_entity.CommentType `json:"type"`    // 反馈类型
+}
+
+func (i *IssueComment) Link() string {
+	return fmt.Sprintf("/script-show-page/%d/issue/%d#comment-%d",
+		i.ScriptID, i.IssueID, i.CommentID)
 }

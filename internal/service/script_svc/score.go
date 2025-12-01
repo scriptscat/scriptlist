@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/scriptscat/scriptlist/internal/model/entity/notification_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
+	"github.com/scriptscat/scriptlist/internal/service/notification_svc/template"
 
 	"github.com/cago-frame/cago/pkg/consts"
 	"github.com/cago-frame/cago/pkg/i18n"
@@ -16,7 +18,6 @@ import (
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_repo"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
-	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
 	"github.com/scriptscat/scriptlist/internal/service/notification_svc"
 	"go.uber.org/zap"
 )
@@ -74,7 +75,7 @@ func (s *scoreSvc) ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (
 			return nil, err
 		}
 		//给用户发一个信息
-		if err := notification_svc.Notification().Send(ctx, score.UserID, notification_svc.ScriptScoreReplyTemplate,
+		if err := notification_svc.Notification().Send(ctx, score.UserID, notification_entity.ScriptScoreReplyTemplate,
 			notification_svc.WithFrom(script.UserID), notification_svc.WithParams(&template.ScriptReplyScore{
 				ScriptID: scriptId,
 				Name:     script.Name,
@@ -145,7 +146,7 @@ func (s *scoreSvc) PutScore(ctx context.Context, req *api.PutScoreRequest) (*api
 			return nil, err
 		}
 		//给脚本作者发一个信息
-		if err := notification_svc.Notification().Send(ctx, script.UserID, notification_svc.ScriptScoreTemplate,
+		if err := notification_svc.Notification().Send(ctx, script.UserID, notification_entity.ScriptScoreTemplate,
 			notification_svc.WithFrom(uid), notification_svc.WithParams(&template.ScriptScore{
 				ScriptID: scriptId,
 				Name:     script.Name,
