@@ -12,6 +12,8 @@ type SendOptions struct {
 	Title string
 	// Type 通知类型
 	Type notification_entity.Type
+	// Link 链接
+	Link string
 	// Params 参数
 	Params interface{}
 }

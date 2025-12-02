@@ -26,7 +26,6 @@ import (
 type NotificationSvc interface {
 	List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error)
 	GetUnreadCount(ctx context.Context, req *api.GetUnreadCountRequest) (*api.GetUnreadCountResponse, error)
-	Get(ctx context.Context, req *api.GetRequest) (*api.GetResponse, error)
 	MarkRead(ctx context.Context, req *api.MarkReadRequest) error
 	BatchMarkRead(ctx context.Context, req *api.BatchMarkReadRequest) error
 
@@ -42,7 +41,7 @@ type notificationSvc struct {
 
 var defaultNotification = &notificationSvc{
 	senderMap: map[sender.Type]sender.Sender{
-		sender.InAppSender: sender.NewInApp(),
+		sender.InAppSender: sender.NewApp(),
 		sender.MailSender:  sender.NewMail(),
 	},
 }
@@ -105,38 +104,6 @@ func (n *notificationSvc) GetUnreadCount(ctx context.Context, req *api.GetUnread
 	}, nil
 }
 
-// Get 获取通知详情
-func (n *notificationSvc) Get(ctx context.Context, req *api.GetRequest) (*api.GetResponse, error) {
-	notification, err := notification_repo.Notification().Find(ctx, auth_svc.Auth().Get(ctx).UID, req.NotificationID)
-	if err != nil {
-		return nil, err
-	}
-	if err := notification.CheckOperate(ctx, auth_svc.Auth().Get(ctx).UID); err != nil {
-		return nil, err
-	}
-
-	// 自动标记为已读
-	if notification.ReadStatus == notification_entity.StatusUnread {
-		notification.MarkRead(time.Now().Unix())
-		if err := notification_repo.Notification().Update(ctx, notification); err != nil {
-			logger.Ctx(ctx).Error("mark notification read error", zap.Error(err), zap.Int64("notification_id", notification.ID))
-		}
-	}
-
-	// 获取发起用户信息
-	userMap := make(map[int64]*user_entity.User)
-	if notification.FromUserID > 0 {
-		fromUser, err := user_repo.User().Find(ctx, notification.FromUserID)
-		if err == nil && fromUser != nil {
-			userMap[notification.FromUserID] = fromUser
-		}
-	}
-
-	return &api.GetResponse{
-		Notification: n.toAPINotification(ctx, notification, userMap),
-	}, nil
-}
-
 // MarkRead 标记通知为已读或未读
 func (n *notificationSvc) MarkRead(ctx context.Context, req *api.MarkReadRequest) error {
 	notification, err := notification_repo.Notification().Find(ctx, auth_svc.Auth().Get(ctx).UID, req.NotificationID)
@@ -169,10 +136,14 @@ func (n *notificationSvc) Send(ctx context.Context, toUser int64, notificationTy
 	return n.MultipleSend(ctx, []int64{toUser}, notificationType, options...)
 }
 
+type Link interface {
+	Link() string
+}
+
 // MultipleSend 根据模板id发送通知给多个用户
 func (n *notificationSvc) MultipleSend(ctx context.Context, toUsers []int64, notificationType notification_entity.Type, options ...Option) error {
 	opts := newOptions(options...)
-	tpl, ok := template2.TemplateMap[notificationType]
+	tpl, ok := template2.TplMap[notificationType]
 	if !ok {
 		return errors.New("notificationType not found")
 	}
@@ -204,10 +175,15 @@ func (n *notificationSvc) MultipleSend(ctx context.Context, toUsers []int64, not
 		if err != nil {
 			return err
 		}
-		tplContent[senderType] = template2.Template{
+		t := template2.Template{
 			Title:   title,
 			Content: content,
+			Link:    "",
 		}
+		if link, ok := opts.params.(Link); ok {
+			t.Link = url + link.Link()
+		}
+		tplContent[senderType] = t
 	}
 
 	// 协程去发送邮件和保存通知记录
@@ -256,6 +232,7 @@ func (n *notificationSvc) MultipleSend(ctx context.Context, toUsers []int64, not
 					From:   from,
 					Title:  content.Title,
 					Type:   notificationType,
+					Link:   content.Link,
 					Params: opts.params,
 				}); err != nil {
 					logger.Ctx(ctx).Error("send notification error", zap.Error(err), zap.Int64("user_id", toUser))
@@ -303,6 +280,7 @@ func (n *notificationSvc) toAPINotification(ctx context.Context, entity *notific
 		Type:       entity.Type,
 		Title:      entity.Title,
 		Content:    entity.Content,
+		Link:       entity.Link,
 		ReadStatus: entity.ReadStatus,
 		ReadTime:   entity.ReadTime,
 		Createtime: entity.Createtime,

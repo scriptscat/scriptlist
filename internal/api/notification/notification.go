@@ -15,6 +15,7 @@ type Notification struct {
 	Type       notification_entity.Type `json:"type"`                // 通知类型
 	Title      string                   `json:"title"`               // 通知标题
 	Content    string                   `json:"content"`             // 通知内容
+	Link       string                   `json:"link"`                // 通知链接
 	Params     interface{}              `json:"params,omitempty"`    // 额外参数
 	ReadStatus int32                    `json:"read_status"`         // 0:未读 1:已读
 	ReadTime   int64                    `json:"read_time,omitempty"` // 阅读时间
@@ -40,16 +41,6 @@ type GetUnreadCountRequest struct {
 
 type GetUnreadCountResponse struct {
 	Total int64 `json:"total"` // 总未读数
-}
-
-// GetRequest 获取通知详情
-type GetRequest struct {
-	mux.Meta       `path:"/notifications/:id" method:"GET"`
-	NotificationID int64 `uri:"id" binding:"required"`
-}
-
-type GetResponse struct {
-	*Notification `json:",inline"`
 }
 
 // MarkReadRequest 标记通知为已读

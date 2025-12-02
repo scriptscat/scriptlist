@@ -13,18 +13,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type InApp struct {
+type app struct {
 }
 
-func NewInApp() *InApp {
-	return &InApp{}
+func NewApp() Sender {
+	return &app{}
 }
 
-type Link interface {
-	Link() string
-}
-
-func (s *InApp) Send(ctx context.Context, user *user_entity.User, content string, options *SendOptions) error {
+func (s *app) Send(ctx context.Context, user *user_entity.User, content string, options *SendOptions) error {
 	now := time.Now().Unix()
 	paramsJson, err := json.Marshal(options.Params)
 	if err != nil {
@@ -40,23 +36,21 @@ func (s *InApp) Send(ctx context.Context, user *user_entity.User, content string
 		Content:    content,
 		ReadStatus: 0,
 		ReadTime:   0,
-		Link:       "",
+		Link:       options.Link,
 		Params:     string(paramsJson),
 		Status:     consts.ACTIVE,
 		Createtime: now,
 		Updatetime: now,
 	}
+
+	if options.From != nil {
+		m.FromUserID = user.ID
+	}
+
 	if err := notification_repo.Notification().Create(ctx, m); err != nil {
 		logger.Ctx(ctx).Error("创建应用内通知失败", zap.Error(err))
 		return err
 	}
 
-	if link, ok := options.Params.(Link); ok {
-		m.Link = link.Link()
-	}
-
-	if options.From != nil {
-		m.FromUserID = user.ID
-	}
 	return nil
 }

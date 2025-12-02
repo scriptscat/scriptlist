@@ -22,7 +22,6 @@ func (n *Notification) Router(r *mux.Router) {
 		Handler: []interface{}{
 			n.List,
 			n.GetUnreadCount,
-			n.Get,
 			n.MarkRead,
 			n.BatchMarkRead,
 		},
@@ -37,11 +36,6 @@ func (n *Notification) List(ctx *gin.Context, req *api.ListRequest) (*api.ListRe
 // GetUnreadCount 获取未读通知数量
 func (n *Notification) GetUnreadCount(ctx *gin.Context, req *api.GetUnreadCountRequest) (*api.GetUnreadCountResponse, error) {
 	return notification_svc.Notification().GetUnreadCount(ctx, req)
-}
-
-// Get 获取通知详情
-func (n *Notification) Get(ctx *gin.Context, req *api.GetRequest) (*api.GetResponse, error) {
-	return notification_svc.Notification().Get(ctx, req)
 }
 
 // MarkRead 标记通知为已读

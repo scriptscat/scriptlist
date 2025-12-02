@@ -1,5 +1,7 @@
 package template
 
+import "fmt"
+
 const (
 	ScriptScoreTitle   = `收到评分:[{{.Value.Name}}]`
 	ScriptScoreContent = `
@@ -14,6 +16,10 @@ type ScriptScore struct {
 	Name     string `json:"name"`     // 脚本名
 	Username string `json:"username"` // 评分用户
 	Score    int    `json:"score"`    // 分数
+}
+
+func (s *ScriptScore) Link() string {
+	return fmt.Sprintf("/script-show-page/%d/comment", s.ScriptID)
 }
 
 const (
@@ -31,4 +37,8 @@ type ScriptReplyScore struct {
 	ScriptID int64  `json:"script_id"`
 	Name     string `json:"name"`    // 脚本名
 	Content  string `json:"content"` // 分数
+}
+
+func (s *ScriptReplyScore) Link() string {
+	return fmt.Sprintf("/script-show-page/%d/comment", s.ScriptID)
 }

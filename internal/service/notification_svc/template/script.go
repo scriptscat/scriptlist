@@ -1,5 +1,7 @@
 package template
 
+import "fmt"
+
 const (
 	ScriptUpdateTitle   = "[{{.Value.Name}}]有新的版本:{{.Value.Version}}"
 	ScriptUpdateContent = `
@@ -15,6 +17,10 @@ type ScriptUpdate struct {
 	Version string `json:"version"`
 }
 
+func (s *ScriptUpdate) Link() string {
+	return fmt.Sprintf("/script-show-page/%d", s.ID)
+}
+
 const (
 	AccessInviteTitle   = `邀请您加入脚本:{{.Value.Name}}`
 	AccessInviteContent = `
@@ -28,4 +34,8 @@ type AccessInvite struct {
 	Code     string `json:"code"`
 	Name     string `json:"name"`     // 脚本名
 	Username string `json:"username"` // 邀请人
+}
+
+func (s *AccessInvite) Link() string {
+	return fmt.Sprintf("/script/invite/?code=%s", s.Code)
 }

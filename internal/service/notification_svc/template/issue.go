@@ -1,5 +1,7 @@
 package template
 
+import "fmt"
+
 const (
 	IssueCreateTitle   = "[{{.Value.Name}}]{{.Value.Title}}"
 	IssueCreateContent = `
@@ -15,4 +17,9 @@ type IssueCreate struct {
 	Name     string `json:"name"`    // 脚本名
 	Title    string `json:"title"`   // 反馈标题
 	Content  string `json:"content"` // 反馈内容
+}
+
+func (i *IssueCreate) Link() string {
+	return fmt.Sprintf("/script-show-page/%d/issue/%d",
+		i.ScriptID, i.IssueID)
 }

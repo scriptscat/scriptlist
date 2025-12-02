@@ -75,7 +75,7 @@ func (s *scoreSvc) ReplyScore(ctx context.Context, req *api.ReplyScoreRequest) (
 			return nil, err
 		}
 		//给用户发一个信息
-		if err := notification_svc.Notification().Send(ctx, score.UserID, notification_entity.ScriptScoreReplyTemplate,
+		if err := notification_svc.Notification().Send(context.Background(), score.UserID, notification_entity.ScriptScoreReplyTemplate,
 			notification_svc.WithFrom(script.UserID), notification_svc.WithParams(&template.ScriptReplyScore{
 				ScriptID: scriptId,
 				Name:     script.Name,
