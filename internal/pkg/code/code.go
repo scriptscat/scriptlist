@@ -100,3 +100,9 @@ const (
 	ScriptFavoriteLimitExceeded
 	ScriptFavoriteFolderCannotEdit
 )
+
+// notification
+const (
+	NotificationNotFound = iota + 109000
+	NotificationPermissionDenied
+)

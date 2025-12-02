@@ -10,10 +10,11 @@ import (
 	"github.com/cago-frame/cago/pkg/consts"
 	"github.com/cago-frame/cago/pkg/logger"
 	"github.com/cago-frame/cago/pkg/utils"
+	"github.com/scriptscat/scriptlist/internal/model/entity/notification_entity"
 	"github.com/scriptscat/scriptlist/internal/model/entity/script_entity"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
-	"github.com/scriptscat/scriptlist/internal/service/notice_svc"
-	"github.com/scriptscat/scriptlist/internal/service/notice_svc/template"
+	"github.com/scriptscat/scriptlist/internal/service/notification_svc"
+	"github.com/scriptscat/scriptlist/internal/service/notification_svc/template"
 	"github.com/scriptscat/scriptlist/internal/task/producer"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 	"go.uber.org/zap"
@@ -99,7 +100,7 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Scr
 		for _, v := range list {
 			uids = append(uids, v.UserID)
 		}
-		err := notice_svc.Notice().MultipleSend(ctx, uids, notice_svc.ScriptUpdateTemplate, notice_svc.WithParams(&template.ScriptUpdate{
+		err := notification_svc.Notification().MultipleSend(ctx, uids, notification_entity.ScriptUpdateTemplate, notification_svc.WithParams(&template.ScriptUpdate{
 			ID:      script.ID,
 			Name:    script.Name,
 			Version: code.Version,

@@ -1,4 +1,4 @@
-package notice_svc
+package notification_svc
 
 type options struct {
 	// from 发送者用户id
