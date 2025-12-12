@@ -1,6 +1,7 @@
 package script_entity
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,4 +61,14 @@ console.log('Hello World!');`,
 			}
 		})
 	}
+}
+
+func TestCode_ParseMetaAndUpdateCode(t *testing.T) {
+	content := "// ==UserScript== \r// @name            Script Name \r// @description       Script description \r// @version       1.0.0   \r// ==/UserScript=="
+	code := &Code{}
+	result, err := code.ParseMetaAndUpdateCode(context.Background(), content)
+	assert.Nil(t, err)
+	assert.Equal(t, "Script Name", result["name"][0])
+	assert.Equal(t, "Script description", result["description"][0])
+	assert.Equal(t, "1.0.0", result["version"][0])
 }

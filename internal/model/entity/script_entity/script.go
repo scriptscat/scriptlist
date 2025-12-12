@@ -269,6 +269,11 @@ func parseCodeMeta(ctx context.Context, scriptCode string) (string, string, erro
 }
 
 func parseMetaToJson(meta string) map[string][]string {
+	// 预处理换行符：统一转换为 \n
+	// 先处理 \r\n，避免后续处理 \r 时产生双重换行
+	meta = strings.ReplaceAll(meta, "\r\n", "\n")
+	meta = strings.ReplaceAll(meta, "\r", "\n")
+
 	reg := regexp.MustCompile(`(?im)^//\s*@(.+?)($|\s+(.+?)$)`)
 	list := reg.FindAllStringSubmatch(meta, -1)
 	ret := make(map[string][]string)

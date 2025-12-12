@@ -366,6 +366,7 @@ type WebhookRequest struct {
 }
 
 type WebhookResponse struct {
+	ErrorMessages map[string]string `json:"error_messages"`
 }
 
 // LastScoreRequest 最新评分脚本

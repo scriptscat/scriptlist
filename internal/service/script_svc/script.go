@@ -1280,14 +1280,17 @@ func (s *scriptSvc) Webhook(ctx context.Context, req *api.WebhookRequest, body [
 			return nil, err
 		}
 		list = append(list, listtmp...)
+		resp := &api.WebhookResponse{ErrorMessages: make(map[string]string)}
 		for _, v := range list {
 			if err := s.SyncOnce(ctx, v, false); err != nil {
+				resp.ErrorMessages[v.Name] = err.Error()
 				logger.Ctx(ctx).Error("同步脚本失败", zap.Error(err))
 			} else {
+				resp.ErrorMessages[v.Name] = "success"
 				logger.Ctx(ctx).Info("同步脚本成功", zap.Int64("id", v.ID))
 			}
 		}
-		return &api.WebhookResponse{}, nil
+		return resp, nil
 	}
 	return nil, err
 }
