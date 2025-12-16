@@ -872,6 +872,24 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 		return err
 	}
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID))
+	// 强制同步一次markdown
+	if forceSyncMarkdown {
+		if script.ContentUrl != "" {
+			content, err := requestSyncUrl(ctx, script.ContentUrl)
+			if err != nil {
+				logger.Error("读取content失败",
+					zap.String("content_url", script.ContentUrl), zap.Error(err))
+				return nil
+			}
+			script.Content = content
+			if err := script_repo.Script().Update(ctx, script); err != nil {
+				logger.Error("更新content失败",
+					zap.String("content_url", script.ContentUrl), zap.Error(err))
+				return nil
+			}
+			logger.Info("更新content成功", zap.String("content_url", script.ContentUrl))
+		}
+	}
 	// 读取代码
 	codeContent, err := requestSyncUrl(ctx, script.SyncUrl)
 	if err != nil {
@@ -879,38 +897,45 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 		return err
 	}
 	code := &script_entity.Code{}
-	if _, err := code.ParseMetaAndUpdateCode(ctx, codeContent); err != nil {
-		logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
-		return err
-	}
-	if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
-		return err
-	} else if old != nil {
-		logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl),
-			zap.String("version", code.Version), zap.String("old_version", old.Version))
-		// 强制同步一次markdown
-		if forceSyncMarkdown {
-			if script.ContentUrl != "" {
-				content, err := requestSyncUrl(ctx, script.ContentUrl)
-				if err != nil {
-					logger.Error("读取content失败",
-						zap.String("content_url", script.ContentUrl), zap.Error(err))
-					return nil
-				}
-				script.Content = content
-				if err := script_repo.Script().Update(ctx, script); err != nil {
-					logger.Error("更新content失败",
-						zap.String("content_url", script.ContentUrl), zap.Error(err))
-					return nil
-				}
-				logger.Info("更新content成功", zap.String("content_url", script.ContentUrl))
-			}
+	// 如果是库类型
+	if script.Type == script_entity.LibraryType {
+		// 找到最新版本
+		latest, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, 0, false)
+		if err != nil {
+			logger.Error("获取最新版本失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
+			return err
 		}
-		return nil
+		// 对比内容是否相同
+		code.Code = codeContent
+		if strings.ReplaceAll(latest.Code, "\r\n", "\n") == strings.ReplaceAll(codeContent, "\r\n", "\n") {
+			logger.Info("代码内容相同,略过", zap.String("sync_url", script.SyncUrl),
+				zap.String("version", latest.Version))
+			return nil
+		}
+		// 版本号,最后一位加一
+		end := strings.LastIndex(latest.Version, ".")
+		if end == -1 {
+			code.Version = latest.Version + ".1"
+		} else {
+			ver, _ := strconv.Atoi(latest.Version[end+1:])
+			code.Version = latest.Version[:end] + "." + strconv.Itoa(ver+1)
+		}
+	} else {
+		if _, err := code.ParseMetaAndUpdateCode(ctx, codeContent); err != nil {
+			logger.Error("解析代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
+			return err
+		}
+		if old, err := script_repo.ScriptCode().FindByVersion(ctx, script.ID, code.Version, false); err != nil {
+			return err
+		} else if old != nil {
+			logger.Info("版本相同,略过", zap.String("sync_url", script.SyncUrl),
+				zap.String("version", code.Version), zap.String("old_version", old.Version))
+			return nil
+		}
 	}
 	req := &api.UpdateCodeRequest{
 		ID:           script.ID,
-		Version:      "",
+		Version:      code.Version,
 		Content:      script.Content,
 		Code:         codeContent,
 		Definition:   "",
@@ -937,18 +962,6 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 		} else {
 			req.Content = content
 		}
-	}
-	if script.Type == script_entity.LibraryType {
-		// 版本号,最后一位加一
-		end := strings.LastIndex(code.Version, ".")
-		if end == -1 {
-			code.Version = code.Version + ".1"
-		} else {
-			ver, _ := strconv.Atoi(code.Version[end+1:])
-			code.Version = code.Version[:end] + "." + strconv.Itoa(ver+1)
-		}
-	} else {
-		req.Version = code.Version
 	}
 	if _, err := s.UpdateCode(ctx, req); err != nil {
 		logger.Error("更新代码失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
