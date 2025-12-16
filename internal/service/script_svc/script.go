@@ -900,13 +900,12 @@ func (s *scriptSvc) SyncOnce(ctx context.Context, script *script_entity.Script, 
 	// 如果是库类型
 	if script.Type == script_entity.LibraryType {
 		// 找到最新版本
-		latest, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, 0, false)
+		latest, err := script_repo.ScriptCode().FindLatest(ctx, script.ID, 0, true)
 		if err != nil {
 			logger.Error("获取最新版本失败", zap.String("sync_url", script.SyncUrl), zap.Error(err))
 			return err
 		}
 		// 对比内容是否相同
-		code.Code = codeContent
 		if strings.ReplaceAll(latest.Code, "\r\n", "\n") == strings.ReplaceAll(codeContent, "\r\n", "\n") {
 			logger.Info("代码内容相同,略过", zap.String("sync_url", script.SyncUrl),
 				zap.String("version", latest.Version))
