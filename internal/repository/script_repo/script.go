@@ -105,6 +105,15 @@ func (u *scriptRepo) Update(ctx context.Context, script *entity.Script) error {
 	if err := db.Ctx(ctx).Updates(script).Error; err != nil {
 		return err
 	}
+	// 更新es信息
+	scriptSearch, err := Migrate().Convert(ctx, script)
+	if err != nil {
+		logger.Ctx(ctx).Error("更新es数据转换失败", zap.Error(err), zap.Int64("script_id", script.ID))
+	} else {
+		if err := Migrate().Update(ctx, scriptSearch); err != nil {
+			logger.Ctx(ctx).Error("更新es数据失败", zap.Error(err), zap.Int64("script_id", script.ID))
+		}
+	}
 	return u.KeyDepend(script.ID).InvalidKey(ctx)
 }
 
