@@ -258,7 +258,7 @@ func (i *issueSvc) UpdateLabels(ctx context.Context, req *api.UpdateLabelsReques
 	for _, v := range req.Labels {
 		labelMap[v] = struct{}{}
 	}
-	update := make([]string, 0)
+	update := make([]string, 0, len(req.Labels))
 	add := make([]string, 0)
 	for k := range labelMap {
 		if _, ok := oldLabelMap[k]; !ok {

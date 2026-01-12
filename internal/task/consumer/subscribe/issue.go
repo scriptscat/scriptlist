@@ -75,7 +75,7 @@ func (s *Issue) commentCreate(ctx context.Context, script *script_entity.Script,
 	if err != nil {
 		logger.Ctx(ctx).Error("获取反馈关注人错误", zap.Int64("issue", issue.ID), zap.Error(err))
 	} else {
-		uids := make([]int64, 0)
+		uids := make([]int64, 0, len(list))
 		for _, v := range list {
 			uids = append(uids, v.UserID)
 		}
