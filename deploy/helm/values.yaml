@@ -91,7 +91,11 @@ ingress:
       paths:
         - path: /api
           pathType: ImplementationSpecific
-        - path: /scripts
+        - path: /scripts/code
+          pathType: ImplementationSpecific
+        - path: /scripts/pre
+          pathType: ImplementationSpecific
+        - path: /scripts/subscribe
           pathType: ImplementationSpecific
         - path: /lib
           pathType: ImplementationSpecific
