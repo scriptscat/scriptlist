@@ -159,9 +159,9 @@ func resizeFavicon(data []byte, sz int) ([]byte, error) {
 
 	// 如果原图尺寸已经和目标一致,直接返回原始数据
 	bounds := src.Bounds()
-	if bounds.Dx() == sz && bounds.Dy() == sz {
-		return data, nil
-	}
+	//if bounds.Dx() == sz && bounds.Dy() == sz { // ICO 文件包含多种尺寸，可能会不匹配，去掉这个逻辑
+	//	return data, nil
+	//}
 
 	// 使用高质量缩放(CatmullRom)
 	dst := image.NewRGBA(image.Rect(0, 0, sz, sz))
