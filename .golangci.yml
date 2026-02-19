@@ -26,6 +26,7 @@ linters:
           - G404
           - G501
           - G505
+          - G704  # SSRF: 项目有业务逻辑验证，忽略此告警
     misspell:
       locale: US
 

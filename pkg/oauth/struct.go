@@ -11,7 +11,7 @@ func (e *ErrorRespond) Error() string {
 
 type AccessTokenRespond struct {
 	ErrorRespond
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"access_token"` // #nosec G117 -- 这是响应字段定义，非硬编码token
 }
 
 type UserRespond struct {

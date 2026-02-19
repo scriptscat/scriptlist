@@ -19,7 +19,7 @@ type Client struct {
 type Config struct {
 	ServerUrl    string `yaml:"serverUrl"`
 	ClientID     string `yaml:"clientID"`
-	ClientSecret string `yaml:"clientSecret"`
+	ClientSecret string `yaml:"clientSecret"` // #nosec G117 -- 这是配置字段定义，非硬编码密钥
 }
 
 func NewClient(config *Config) *Client {

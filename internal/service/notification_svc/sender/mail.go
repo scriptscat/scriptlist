@@ -15,7 +15,7 @@ type mailConfig struct {
 	SMTP     string
 	Port     int
 	User     string
-	Password string
+	Password string // #nosec G117 -- 这是配置字段定义，非硬编码密码
 }
 
 type mail struct {

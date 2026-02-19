@@ -14,7 +14,7 @@ type User struct {
 	ID                 int64  `gorm:"column:uid" json:"uid" form:"uid"`
 	Email              string `gorm:"column:email" json:"email" form:"email"`
 	Username           string `gorm:"column:username" json:"username" form:"username"`
-	Password           string `gorm:"column:password" json:"password" form:"password"`
+	Password           string `gorm:"column:password" json:"password" form:"password"` // #nosec G117 -- 这是字段定义，非硬编码密码
 	ProfileAvatar      string `gorm:"column:profileavatar" json:"profileavatar" form:"profileavatar"`
 	Status             int64  `gorm:"column:status" json:"status" form:"status"`
 	Emailstatus        int64  `gorm:"column:emailstatus" json:"emailstatus" form:"emailstatus"`
