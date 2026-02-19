@@ -7,3 +7,5 @@
 /resource
 
 /bin
+
+.claude/settings.local.json

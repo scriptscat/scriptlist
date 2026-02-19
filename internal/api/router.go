@@ -135,6 +135,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 		controller := open_ctr.NewOpen()
 		rg := r.Group("/")
 		rg.GET("/open/crx-download/:id", controller.CrxDownload())
+		rg.GET("/open/favicons", controller.Favicon())
 	}
 	return nil
 }
