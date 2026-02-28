@@ -2,6 +2,7 @@ package script_ctr
 
 import (
 	"context"
+	"encoding/base64"
 	"io"
 	"net/http"
 	"net/url"
@@ -60,6 +61,8 @@ func (s *Script) Router(root *mux.Router, r *mux.Router) {
 		script_svc.Script().RequireScript(), s.DownloadLib())
 	// 脚本收藏
 	root.GET("/scripts/subscribe/:id/*name", auth_svc.Auth().RequireLogin(false), s.Subscribe())
+	// 脚本图标
+	r.GET("/scripts/:id/icon", s.Icon())
 	muxutils.BindTree(r, []*muxutils.RouterTree{
 		// 需要半鉴权
 		{
@@ -547,4 +550,55 @@ func (s *Script) UpdateSyncSetting(ctx context.Context, req *api.UpdateSyncSetti
 // VersionStat 获取脚本版本统计信息
 func (s *Script) VersionStat(ctx context.Context, req *api.VersionStatRequest) (*api.VersionStatResponse, error) {
 	return script_svc.Script().VersionStat(ctx, req)
+}
+
+// Icon 获取脚本图标，避免在列表页内联 base64 图标数据。
+// 前端通过 /api/v2/scripts/:id/icon?t=<updatetime> 请求，
+// updatetime 变化时 URL 变化，浏览器自动刷新缓存。
+func (s *Script) Icon() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		sid := ctx.Param("id")
+		id, err := strconv.ParseInt(sid, 10, 64)
+		if err != nil || id <= 0 {
+			ctx.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		iconValue, err := script_svc.Script().GetIcon(ctx, id)
+		if err != nil || iconValue == "" {
+			ctx.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		// base64 data URI: 解码后返回图片
+		if strings.HasPrefix(iconValue, "data:") {
+			parts := strings.SplitN(iconValue, ",", 2)
+			if len(parts) != 2 {
+				ctx.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+			// 解析 content type: "data:image/png;base64"
+			contentType := strings.TrimPrefix(parts[0], "data:")
+			contentType = strings.TrimSuffix(contentType, ";base64")
+
+			// 优先尝试标准 base64，失败后尝试无 padding 的 base64
+			decoded, err := base64.StdEncoding.DecodeString(parts[1])
+			if err != nil {
+				decoded, err = base64.RawStdEncoding.DecodeString(parts[1])
+				if err != nil {
+					ctx.AbortWithStatus(http.StatusNotFound)
+					return
+				}
+			}
+
+			ctx.Writer.Header().Set("Content-Type", contentType)
+			ctx.Writer.Header().Set("Cache-Control", "public, max-age=604800, immutable")
+			_, _ = ctx.Writer.Write(decoded)
+			return
+		}
+
+		// 普通 URL: 重定向，同样可长期缓存（URL 含 t= 参数用于缓存失效）
+		ctx.Writer.Header().Set("Cache-Control", "public, max-age=604800, immutable")
+		ctx.Redirect(http.StatusFound, iconValue)
+	}
 }

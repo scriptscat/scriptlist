@@ -117,6 +117,8 @@ type ScriptSvc interface {
 	IsArchive() gin.HandlerFunc
 	// VersionStat 获取脚本版本统计信息
 	VersionStat(ctx context.Context, req *api.VersionStatRequest) (*api.VersionStatResponse, error)
+	// GetIcon 获取脚本图标值（base64 data URI 或 URL）
+	GetIcon(ctx context.Context, scriptID int64) (string, error)
 }
 
 type RequireScriptOption func(*RequireScriptOptions)
@@ -1439,4 +1441,26 @@ func (s *scriptSvc) VersionStat(ctx context.Context, req *api.VersionStatRequest
 		return nil, err
 	}
 	return resp, nil
+}
+
+// GetIcon 获取脚本图标值
+func (s *scriptSvc) GetIcon(ctx context.Context, scriptID int64) (string, error) {
+	code, err := script_repo.ScriptCode().FindLatest(ctx, scriptID, 0, false)
+	if err != nil {
+		return "", err
+	}
+	if code == nil {
+		return "", nil
+	}
+	metaJson := make(map[string][]string)
+	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
+		return "", nil
+	}
+	if vals, ok := metaJson["icon"]; ok && len(vals) > 0 && vals[0] != "" {
+		return vals[0], nil
+	}
+	if vals, ok := metaJson["iconURL"]; ok && len(vals) > 0 && vals[0] != "" {
+		return vals[0], nil
+	}
+	return "", nil
 }
