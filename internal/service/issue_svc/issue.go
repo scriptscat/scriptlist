@@ -180,17 +180,6 @@ func (i *issueSvc) Watch(ctx context.Context, userId int64, req *api.WatchReques
 // Open 打开/关闭issue
 func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenResponse, error) {
 	comments := make([]*api.Comment, 0)
-	if req.Content != "" {
-		resp, err := Comment().CreateComment(ctx, &api.CreateCommentRequest{
-			IssueID:  req.IssueID,
-			ScriptID: req.ScriptID,
-			Content:  req.Content,
-		})
-		if err != nil {
-			return nil, err
-		}
-		comments = append(comments, resp.Comment)
-	}
 	// 检查是否有权限操作
 	issue := i.CtxIssue(ctx)
 	var commentType issue_entity.CommentType
@@ -219,6 +208,17 @@ func (i *issueSvc) Open(ctx context.Context, req *api.OpenRequest) (*api.OpenRes
 	}
 	if err := issue_repo.Issue().Update(ctx, issue); err != nil {
 		return nil, err
+	}
+	if req.Content != "" {
+		resp, err := Comment().CreateComment(ctx, &api.CreateCommentRequest{
+			IssueID:  req.IssueID,
+			ScriptID: req.ScriptID,
+			Content:  req.Content,
+		})
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, resp.Comment)
 	}
 	if err := issue_repo.Comment().Create(ctx, comment); err != nil {
 		return nil, err
