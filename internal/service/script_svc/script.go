@@ -1454,7 +1454,7 @@ func (s *scriptSvc) GetIcon(ctx context.Context, scriptID int64) (string, error)
 	}
 	metaJson := make(map[string][]string)
 	if err := json.Unmarshal([]byte(code.MetaJson), &metaJson); err != nil {
-		return "", nil
+		return "", err
 	}
 	if vals, ok := metaJson["icon"]; ok && len(vals) > 0 && vals[0] != "" {
 		return vals[0], nil
