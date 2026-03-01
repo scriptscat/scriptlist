@@ -20,11 +20,10 @@ type AuditLogItem struct {
 	Createtime int64               `json:"createtime"`
 }
 
-// ListRequest 全局管理日志（公开，仅返回管理员操作）
+// ListRequest 全局管理日志（公开，仅返回管理员删除的脚本）
 type ListRequest struct {
 	mux.Meta              `path:"/audit-logs" method:"GET"`
 	httputils.PageRequest `form:",inline"`
-	Action                string `form:"action"`
 }
 
 type ListResponse struct {

@@ -22,11 +22,11 @@ func AuditLog() AuditLogSvc {
 
 type auditLogSvc struct{}
 
-// List 查全局管理日志（强制 is_admin=true）
+// List 查全局管理日志（仅返回管理员删除的脚本）
 func (s *auditLogSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResponse, error) {
 	isAdmin := true
 	opts := &audit_repo.ListOptions{
-		Action:  req.Action,
+		Action:  string(audit_entity.ActionScriptDelete),
 		IsAdmin: &isAdmin,
 		Offset:  req.GetOffset(),
 		Limit:   req.GetLimit(),

@@ -22,7 +22,7 @@ func TestAuditLogSvc_List(t *testing.T) {
 	ctx := context.Background()
 	svc := &auditLogSvc{}
 
-	t.Run("返回管理员操作列表", func(t *testing.T) {
+	t.Run("仅返回管理员删除的脚本", func(t *testing.T) {
 		expectedLogs := []*audit_entity.AuditLog{
 			{
 				ID:         1,
@@ -40,9 +40,10 @@ func TestAuditLogSvc_List(t *testing.T) {
 
 		mockRepo.EXPECT().FindPage(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(ctx context.Context, opts *audit_repo.ListOptions) ([]*audit_entity.AuditLog, int64, error) {
-				// 验证强制 is_admin=true
+				// 验证强制 is_admin=true 且 action=script_delete
 				assert.NotNil(t, opts.IsAdmin)
 				assert.True(t, *opts.IsAdmin)
+				assert.Equal(t, "script_delete", opts.Action)
 				return expectedLogs, int64(1), nil
 			},
 		)
@@ -57,22 +58,6 @@ func TestAuditLogSvc_List(t *testing.T) {
 		assert.Equal(t, audit_entity.ActionScriptDelete, resp.List[0].Action)
 		assert.True(t, resp.List[0].IsAdmin)
 		assert.Equal(t, "违规内容", resp.List[0].Reason)
-	})
-
-	t.Run("按操作类型筛选", func(t *testing.T) {
-		mockRepo.EXPECT().FindPage(gomock.Any(), gomock.Any()).DoAndReturn(
-			func(ctx context.Context, opts *audit_repo.ListOptions) ([]*audit_entity.AuditLog, int64, error) {
-				assert.Equal(t, "script_delete", opts.Action)
-				assert.NotNil(t, opts.IsAdmin)
-				assert.True(t, *opts.IsAdmin)
-				return nil, 0, nil
-			},
-		)
-
-		resp, err := svc.List(ctx, &api.ListRequest{Action: "script_delete"})
-		assert.NoError(t, err)
-		assert.NotNil(t, resp)
-		assert.Equal(t, int64(0), resp.Total)
 	})
 
 	t.Run("空结果", func(t *testing.T) {
