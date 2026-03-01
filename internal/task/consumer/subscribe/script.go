@@ -30,6 +30,9 @@ func (s *Script) Subscribe(ctx context.Context) error {
 	if err := producer.SubscribeScriptCodeUpdate(ctx, s.scriptCodeUpdate); err != nil {
 		return err
 	}
+	if err := producer.SubscribeScriptDelete(ctx, s.scriptDelete); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -114,6 +117,27 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, msg *producer.ScriptCodeU
 		}
 	}
 	return nil
+}
+
+// 消费脚本删除消息,管理员删除他人脚本时发送通知
+func (s *Script) scriptDelete(ctx context.Context, msg *producer.ScriptDeleteMsg) error {
+	// 仅管理员删除他人脚本时通知
+	if !msg.IsAdmin || msg.Script == nil || msg.OperatorUID == msg.Script.UserID {
+		return nil
+	}
+	reason := msg.Reason
+	if reason == "" {
+		reason = "未提供原因"
+	}
+	return notification_svc.Notification().Send(ctx, msg.Script.UserID,
+		notification_entity.ScriptDeleteTemplate,
+		notification_svc.WithParams(&template.ScriptDelete{
+			ID:     msg.Script.ID,
+			Name:   msg.Script.Name,
+			Reason: reason,
+		}),
+		notification_svc.WithFrom(msg.OperatorUID),
+	)
 }
 
 // 保存脚本相关域名

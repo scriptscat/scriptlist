@@ -96,4 +96,13 @@ var TplMap = map[notification_entity.Type]map[sender.Type]Template{
 			Content: ReportCommentContent,
 		},
 	},
+	notification_entity.ScriptDeleteTemplate: {
+		sender.InAppSender: {
+			Content: "script.delete.content",
+		},
+		sender.MailSender: {
+			Title:   ScriptDeleteTitle,
+			Content: ScriptDeleteContent,
+		},
+	},
 }

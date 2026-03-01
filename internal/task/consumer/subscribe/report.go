@@ -69,6 +69,16 @@ func (s *Report) reportCommentCreate(ctx context.Context, script *script_entity.
 		uids = append(uids, script.UserID)
 	}
 
+	// 通知系统管理员
+	admins, err := user_repo.User().FindAdmins(ctx)
+	if err != nil {
+		logger.Ctx(ctx).Error("获取管理员列表错误", zap.Error(err))
+	} else {
+		for _, admin := range admins {
+			uids = append(uids, admin.ID)
+		}
+	}
+
 	if err := notification_svc.Notification().MultipleSend(ctx, uids, notification_entity.ReportCommentTemplate,
 		notification_svc.WithParams(&template.ReportComment{
 			ScriptID:  script.ID,

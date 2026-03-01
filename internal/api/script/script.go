@@ -312,7 +312,7 @@ type ArchiveResponse struct {
 type DeleteRequest struct {
 	mux.Meta `path:"/scripts/:id" method:"DELETE"`
 	ID       int64  `uri:"id" binding:"required"`
-	Reason   string `json:"reason" binding:"max=1024"` // 删除原因（可选）
+	Reason   string `form:"reason" json:"reason" binding:"max=1024"` // 删除原因（可选）
 }
 
 type DeleteResponse struct {

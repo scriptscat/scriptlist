@@ -204,7 +204,7 @@ func TestReport_GetReport_Found(t *testing.T) {
 		err := testMux.Do(ctx, &api.GetReportRequest{ScriptID: 1, ReportID: 1}, resp)
 		convey.So(err, convey.ShouldBeNil)
 		convey.So(resp.Content, convey.ShouldEqual, "spam content")
-		convey.So(resp.Report.Reason, convey.ShouldEqual, "spam")
+		convey.So(resp.Reason, convey.ShouldEqual, "spam")
 	})
 }
 
