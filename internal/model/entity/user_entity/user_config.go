@@ -9,23 +9,25 @@ import (
 	"github.com/cago-frame/cago/pkg/utils"
 )
 
+// Notify 通知配置
+// 0: 未设置 1: 开启 2: 关闭
 type Notify struct {
 	// 创建脚本
-	CreateScript *bool `json:"create_script"`
+	CreateScript int `json:"create_script"`
 	// 脚本更新
-	ScriptUpdate *bool `json:"script_update"`
+	ScriptUpdate int `json:"script_update"`
 	// 脚本反馈
-	ScriptIssue *bool `json:"script_issue"`
+	ScriptIssue int `json:"script_issue"`
 	// 脚本反馈评论
-	ScriptIssueComment *bool `json:"script_issue_comment"`
+	ScriptIssueComment int `json:"script_issue_comment"`
 	// 脚本评分
-	Score *bool `json:"score"`
+	Score int `json:"score"`
 	// 艾特
-	At *bool `json:"at"`
+	At int `json:"at"`
 	// 脚本举报
-	ScriptReport *bool `json:"script_report"`
+	ScriptReport int `json:"script_report"`
 	// 脚本举报评论
-	ScriptReportComment *bool `json:"script_report_comment"`
+	ScriptReportComment int `json:"script_report_comment"`
 }
 
 func (n *Notify) Scan(value interface{}) error {
@@ -38,26 +40,12 @@ func (n *Notify) Scan(value interface{}) error {
 }
 
 func (n *Notify) Value() (driver.Value, error) {
-	n.DefaultValue()
 	return json.Marshal(n)
 }
 
-func (n *Notify) DefaultValue() {
-	setTrue(&n.ScriptIssue)
-	setTrue(&n.ScriptIssueComment)
-	setTrue(&n.ScriptUpdate)
-	setTrue(&n.At)
-	setTrue(&n.Score)
-	setTrue(&n.CreateScript)
-	setTrue(&n.ScriptReport)
-	setTrue(&n.ScriptReportComment)
-}
-
-func setTrue(b **bool) {
-	t := true
-	if *b == nil {
-		*b = &t
-	}
+// IsEnabled 判断通知是否开启 (0=默认开启, 1=开启, 2=关闭)
+func (n *Notify) IsEnabled(v int) bool {
+	return v != 2
 }
 
 type UserConfig struct {

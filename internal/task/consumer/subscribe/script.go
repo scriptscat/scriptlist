@@ -20,8 +20,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type Script struct {
-}
+type Script struct{}
 
 func (s *Script) Subscribe(ctx context.Context) error {
 	if err := producer.SubscribeScriptCreate(ctx, s.scriptCreate); err != nil {
@@ -119,10 +118,9 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, msg *producer.ScriptCodeU
 	return nil
 }
 
-// 消费脚本删除消息,管理员删除他人脚本时发送通知
+// 消费脚本删除消息,管理员删除脚本时发送通知
 func (s *Script) scriptDelete(ctx context.Context, msg *producer.ScriptDeleteMsg) error {
-	// 仅管理员删除他人脚本时通知
-	if !msg.IsAdmin || msg.Script == nil || msg.OperatorUID == msg.Script.UserID {
+	if !msg.IsAdmin || msg.Script == nil {
 		return nil
 	}
 	reason := msg.Reason

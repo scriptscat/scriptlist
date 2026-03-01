@@ -214,7 +214,6 @@ func (n *notificationSvc) MultipleSend(ctx context.Context, toUsers []int64, not
 			if userConfig.Notify == nil {
 				userConfig.Notify = &user_entity.Notify{}
 			}
-			userConfig.Notify.DefaultValue()
 
 			// 发送邮件
 			for senderType, content := range tplContent {
@@ -263,15 +262,15 @@ func (n *notificationSvc) IsNotify(ctx context.Context, userConfig *user_entity.
 	}
 	switch tpl {
 	case notification_entity.ScriptUpdateTemplate:
-		return *userConfig.Notify.ScriptUpdate, nil
+		return userConfig.Notify.IsEnabled(userConfig.Notify.ScriptUpdate), nil
 	case notification_entity.CommentCreateTemplate:
-		return *userConfig.Notify.ScriptIssueComment, nil
+		return userConfig.Notify.IsEnabled(userConfig.Notify.ScriptIssueComment), nil
 	case notification_entity.IssueCreateTemplate:
-		return *userConfig.Notify.ScriptIssue, nil
+		return userConfig.Notify.IsEnabled(userConfig.Notify.ScriptIssue), nil
 	case notification_entity.ReportCreateTemplate:
-		return *userConfig.Notify.ScriptReport, nil
+		return userConfig.Notify.IsEnabled(userConfig.Notify.ScriptReport), nil
 	case notification_entity.ReportCommentTemplate:
-		return *userConfig.Notify.ScriptReportComment, nil
+		return userConfig.Notify.IsEnabled(userConfig.Notify.ScriptReportComment), nil
 	default:
 		return true, nil
 	}
