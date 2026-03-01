@@ -30,11 +30,16 @@ func (s *Script) Subscribe(ctx context.Context) error {
 	if err := producer.SubscribeScriptCodeUpdate(ctx, s.scriptCodeUpdate); err != nil {
 		return err
 	}
+	if err := producer.SubscribeScriptDelete(ctx, s.scriptDelete); err != nil {
+		return err
+	}
 	return nil
 }
 
 // 消费脚本创建消息,根据meta信息进行分类
-func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script, codeId int64) error {
+func (s *Script) scriptCreate(ctx context.Context, msg *producer.ScriptCreateMsg) error {
+	script := msg.Script
+	codeId := msg.CodeID
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID), zap.Int64("code_id", codeId))
 	code, err := script_repo.ScriptCode().Find(ctx, codeId)
 	if err != nil {
@@ -68,7 +73,9 @@ func (s *Script) scriptCreate(ctx context.Context, script *script_entity.Script,
 }
 
 // 消费脚本代码更新消息,发送邮件通知给关注了的用户
-func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, codeId int64) error {
+func (s *Script) scriptCodeUpdate(ctx context.Context, msg *producer.ScriptCodeUpdateMsg) error {
+	script := msg.Script
+	codeId := msg.CodeID
 	logger := logger.Ctx(ctx).With(zap.Int64("script_id", script.ID), zap.Int64("code_id", codeId))
 	code, err := script_repo.ScriptCode().Find(ctx, codeId)
 	if err != nil {
@@ -110,6 +117,27 @@ func (s *Script) scriptCodeUpdate(ctx context.Context, script *script_entity.Scr
 		}
 	}
 	return nil
+}
+
+// 消费脚本删除消息,管理员删除他人脚本时发送通知
+func (s *Script) scriptDelete(ctx context.Context, msg *producer.ScriptDeleteMsg) error {
+	// 仅管理员删除他人脚本时通知
+	if !msg.IsAdmin || msg.Script == nil || msg.OperatorUID == msg.Script.UserID {
+		return nil
+	}
+	reason := msg.Reason
+	if reason == "" {
+		reason = "未提供原因"
+	}
+	return notification_svc.Notification().Send(ctx, msg.Script.UserID,
+		notification_entity.ScriptDeleteTemplate,
+		notification_svc.WithParams(&template.ScriptDelete{
+			ID:     msg.Script.ID,
+			Name:   msg.Script.Name,
+			Reason: reason,
+		}),
+		notification_svc.WithFrom(msg.OperatorUID),
+	)
 }
 
 // 保存脚本相关域名

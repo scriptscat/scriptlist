@@ -7,16 +7,19 @@ import (
 	"github.com/cago-frame/cago/server/mux"
 	"github.com/gin-contrib/cors"
 	_ "github.com/scriptscat/scriptlist/docs"
+	"github.com/scriptscat/scriptlist/internal/controller/audit_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/auth_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/issue_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/notification_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/open_ctr"
+	"github.com/scriptscat/scriptlist/internal/controller/report_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/resource_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/script_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/statistics_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/system_ctr"
 	"github.com/scriptscat/scriptlist/internal/controller/user_ctr"
 	"github.com/scriptscat/scriptlist/internal/service/auth_svc"
+	"github.com/scriptscat/scriptlist/internal/service/script_svc"
 )
 
 // Router 路由表
@@ -103,6 +106,12 @@ func Router(ctx context.Context, root *mux.Router) error {
 	// 脚本反馈评论
 	issueCommentCtr := issue_ctr.NewComment()
 	issueCommentCtr.Router(r)
+	// 脚本举报
+	reportCtr := report_ctr.NewReport()
+	reportCtr.Router(r)
+	// 脚本举报评论
+	reportCommentCtr := report_ctr.NewReportComment()
+	reportCommentCtr.Router(r)
 	// 脚本统计
 	statisticsCtr := statistics_ctr.NewStatistics()
 	statisticsCtr.Router(r)
@@ -136,6 +145,22 @@ func Router(ctx context.Context, root *mux.Router) error {
 		rg := r.Group("/")
 		rg.GET("/open/crx-download/:id", controller.CrxDownload())
 		rg.GET("/open/favicons", controller.Favicon())
+	}
+	// 审计日志
+	{
+		controller := audit_ctr.NewAuditLog()
+		// GET /audit-logs 公开接口
+		r.Group("/").Bind(
+			controller.List,
+		)
+		// GET /scripts/:id/audit-logs 需要脚本 manage 权限
+		r.Group("/",
+			auth_svc.Auth().RequireLogin(true),
+			script_svc.Script().RequireScript(),
+			script_svc.Access().CheckHandler("script", "manage"),
+		).Bind(
+			controller.ScriptList,
+		)
 	}
 	return nil
 }

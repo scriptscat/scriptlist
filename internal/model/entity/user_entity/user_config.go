@@ -22,6 +22,10 @@ type Notify struct {
 	Score *bool `json:"score"`
 	// 艾特
 	At *bool `json:"at"`
+	// 脚本举报
+	ScriptReport *bool `json:"script_report"`
+	// 脚本举报评论
+	ScriptReportComment *bool `json:"script_report_comment"`
 }
 
 func (n *Notify) Scan(value interface{}) error {
@@ -45,6 +49,8 @@ func (n *Notify) DefaultValue() {
 	setTrue(&n.At)
 	setTrue(&n.Score)
 	setTrue(&n.CreateScript)
+	setTrue(&n.ScriptReport)
+	setTrue(&n.ScriptReportComment)
 }
 
 func setTrue(b **bool) {

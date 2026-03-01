@@ -44,7 +44,7 @@ func (s *app) Send(ctx context.Context, user *user_entity.User, content string, 
 	}
 
 	if options.From != nil {
-		m.FromUserID = user.ID
+		m.FromUserID = options.From.ID
 	}
 
 	if err := notification_repo.Notification().Create(ctx, m); err != nil {

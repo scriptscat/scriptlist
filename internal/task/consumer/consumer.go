@@ -19,6 +19,8 @@ func Consumer(ctx context.Context, cfg *configs.Config) error {
 		&subscribe.Statistics{},
 		&subscribe.Issue{},
 		&subscribe.Access{},
+		&subscribe.Report{},
+		&subscribe.AuditLog{},
 	}
 	for _, v := range subscribers {
 		if err := v.Subscribe(ctx); err != nil {

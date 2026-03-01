@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/scriptscat/scriptlist/internal/model"
 	"github.com/scriptscat/scriptlist/internal/repository/user_profile_repo"
 
 	"github.com/cago-frame/cago/database/cache"
@@ -16,6 +17,7 @@ import (
 type UserRepo interface {
 	Find(ctx context.Context, id int64) (*user_entity.User, error)
 	FindByPrefix(ctx context.Context, query string) ([]*user_entity.User, error)
+	FindAdmins(ctx context.Context) ([]*user_entity.User, error)
 }
 
 var defaultUser UserRepo
@@ -70,6 +72,14 @@ func (u *user) Find(ctx context.Context, id int64) (*user_entity.User, error) {
 		}
 		return ret, nil
 	}, cache.Expiration(time.Minute)).Scan(&ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (u *user) FindAdmins(ctx context.Context) ([]*user_entity.User, error) {
+	var ret []*user_entity.User
+	if err := db.Ctx(ctx).Where("adminid = ?", model.Admin).Find(&ret).Error; err != nil {
 		return nil, err
 	}
 	return ret, nil

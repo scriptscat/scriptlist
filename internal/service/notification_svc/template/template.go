@@ -78,4 +78,31 @@ var TplMap = map[notification_entity.Type]map[sender.Type]Template{
 			Content: ScriptScoreReplyContent,
 		},
 	},
+	notification_entity.ReportCreateTemplate: {
+		sender.InAppSender: {
+			Content: "report.create.content",
+		},
+		sender.MailSender: {
+			Title:   ReportCreateTitle,
+			Content: ReportCreateContent,
+		},
+	},
+	notification_entity.ReportCommentTemplate: {
+		sender.InAppSender: {
+			Content: "report.comment.content",
+		},
+		sender.MailSender: {
+			Title:   ReportCommentTitle,
+			Content: ReportCommentContent,
+		},
+	},
+	notification_entity.ScriptDeleteTemplate: {
+		sender.InAppSender: {
+			Content: "script.delete.content",
+		},
+		sender.MailSender: {
+			Title:   ScriptDeleteTitle,
+			Content: ScriptDeleteContent,
+		},
+	},
 }

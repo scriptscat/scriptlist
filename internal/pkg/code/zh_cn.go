@@ -80,4 +80,14 @@ var zhCN = map[int]string{
 	ScriptFavoriteNotFound:            "脚本未收藏",
 	ScriptFavoriteLimitExceeded:       "收藏夹脚本数量超过限制,最多100个脚本",
 	ScriptFavoriteFolderCannotEdit:    "系统默认收藏夹不能编辑",
+
+	NotificationNotFound:         "通知不存在",
+	NotificationPermissionDenied: "通知权限不足",
+
+	ReportNotFound:        "举报不存在",
+	ReportIsDelete:        "举报已删除",
+	ReportAlreadyResolved: "举报已解决",
+	ReportCommentNotFound: "举报评论不存在",
+	ReportReasonInvalid:   "举报原因无效",
+	ReportSelfReport:      "不能举报自己的脚本",
 }

@@ -203,18 +203,18 @@ func (n *notificationSvc) MultipleSend(ctx context.Context, toUsers []int64, not
 			if err != nil {
 				logger.Ctx(ctx).Error("find user config error", zap.Error(err), zap.Int64("user_id", toUser))
 				userConfig = &user_entity.UserConfig{
-					Uid:    toUser,
-					Notify: &user_entity.Notify{},
+					Uid: toUser,
 				}
-				userConfig.Notify.DefaultValue()
 			}
 			if userConfig == nil {
 				userConfig = &user_entity.UserConfig{
-					Uid:    toUser,
-					Notify: &user_entity.Notify{},
+					Uid: toUser,
 				}
-				userConfig.Notify.DefaultValue()
 			}
+			if userConfig.Notify == nil {
+				userConfig.Notify = &user_entity.Notify{}
+			}
+			userConfig.Notify.DefaultValue()
 
 			// 发送邮件
 			for senderType, content := range tplContent {
@@ -256,7 +256,8 @@ func (n *notificationSvc) parseTpl(tpl string, data interface{}) (string, error)
 
 // IsNotify 判断用户是否允许邮件通知
 func (n *notificationSvc) IsNotify(ctx context.Context, userConfig *user_entity.UserConfig,
-	senderType sender.Type, tpl notification_entity.Type) (bool, error) {
+	senderType sender.Type, tpl notification_entity.Type,
+) (bool, error) {
 	if senderType != sender.MailSender {
 		return true, nil
 	}
@@ -267,6 +268,10 @@ func (n *notificationSvc) IsNotify(ctx context.Context, userConfig *user_entity.
 		return *userConfig.Notify.ScriptIssueComment, nil
 	case notification_entity.IssueCreateTemplate:
 		return *userConfig.Notify.ScriptIssue, nil
+	case notification_entity.ReportCreateTemplate:
+		return *userConfig.Notify.ScriptReport, nil
+	case notification_entity.ReportCommentTemplate:
+		return *userConfig.Notify.ScriptReportComment, nil
 	default:
 		return true, nil
 	}

@@ -12,4 +12,7 @@ const (
 	StatisticCollectTopic = "statistic.collect" // 统计数据收集
 
 	ScriptAccessInviteTopic = "script.access.invite" // 脚本访问邀请
+
+	ReportCreateTopic        = "report.create"         // 创建举报
+	ReportCommentCreateTopic = "report.comment.create" // 举报评论
 )

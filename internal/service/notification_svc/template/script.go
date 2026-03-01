@@ -39,3 +39,23 @@ type AccessInvite struct {
 func (s *AccessInvite) Link() string {
 	return fmt.Sprintf("/script/invite/?code=%s", s.Code)
 }
+
+const (
+	ScriptDeleteTitle   = "[{{.Value.Name}}] 您的脚本已被管理员删除"
+	ScriptDeleteContent = `
+您的脚本 <b>{{.Value.Name}}</b> 已被管理员删除<br/>
+删除原因: {{.Value.Reason}}<br/>
+<hr/>
+如有疑问请联系管理员
+`
+)
+
+type ScriptDelete struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	Reason string `json:"reason"`
+}
+
+func (s *ScriptDelete) Link() string {
+	return ""
+}

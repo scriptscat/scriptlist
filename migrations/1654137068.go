@@ -12,7 +12,7 @@ func T1654137068() *gormigrate.Migration {
 		ID: "1654137068",
 		Migrate: func(tx *gorm.DB) error {
 			return tx.AutoMigrate(
-				//&user_entity.User{},
+				// &user_entity.User{},
 				&script_entity.Script{},
 				&script_entity.Code{},
 				&script_entity.ScriptCategory{},
