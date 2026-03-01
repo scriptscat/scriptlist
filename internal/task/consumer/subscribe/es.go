@@ -36,8 +36,8 @@ func (e *EsSync) Subscribe(ctx context.Context) error {
 }
 
 // 消费脚本创建消息推送到elasticsearch
-func (e *EsSync) scriptCreate(ctx context.Context, script *script_entity.Script, code int64) error {
-	return e.syncScript(ctx, script, code, false)
+func (e *EsSync) scriptCreate(ctx context.Context, msg *producer.ScriptCreateMsg) error {
+	return e.syncScript(ctx, msg.Script, msg.CodeID, false)
 }
 
 func (e *EsSync) syncScript(ctx context.Context, script *script_entity.Script, code int64, update bool) error {
@@ -56,8 +56,8 @@ func (e *EsSync) syncScript(ctx context.Context, script *script_entity.Script, c
 }
 
 // 消费脚本代码更新消息,更新es记录
-func (e *EsSync) scriptCodeUpdate(ctx context.Context, script *script_entity.Script, code int64) error {
-	return e.syncScript(ctx, script, code, false)
+func (e *EsSync) scriptCodeUpdate(ctx context.Context, msg *producer.ScriptCodeUpdateMsg) error {
+	return e.syncScript(ctx, msg.Script, msg.CodeID, false)
 }
 
 func (e *EsSync) statisticSyncKey(scriptId int64) string {
@@ -103,9 +103,9 @@ func (e *EsSync) scriptStatistic(ctx context.Context, msg *producer.ScriptStatis
 }
 
 // 消费脚本删除消息,删除es记录
-func (e *EsSync) scriptDelete(ctx context.Context, msg *script_entity.Script) error {
-	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.ID))
-	if err := script_repo.Migrate().Delete(ctx, msg.ID); err != nil {
+func (e *EsSync) scriptDelete(ctx context.Context, msg *producer.ScriptDeleteMsg) error {
+	logger := logger.Ctx(ctx).With(zap.Int64("script_id", msg.Script.ID))
+	if err := script_repo.Migrate().Delete(ctx, msg.Script.ID); err != nil {
 		logger.Error("删除es数据失败", zap.Error(err))
 		return err
 	}

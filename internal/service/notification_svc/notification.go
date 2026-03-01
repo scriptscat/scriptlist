@@ -267,6 +267,10 @@ func (n *notificationSvc) IsNotify(ctx context.Context, userConfig *user_entity.
 		return *userConfig.Notify.ScriptIssueComment, nil
 	case notification_entity.IssueCreateTemplate:
 		return *userConfig.Notify.ScriptIssue, nil
+	case notification_entity.ReportCreateTemplate:
+		return *userConfig.Notify.ScriptReport, nil
+	case notification_entity.ReportCommentTemplate:
+		return *userConfig.Notify.ScriptReportComment, nil
 	default:
 		return true, nil
 	}

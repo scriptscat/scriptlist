@@ -19,6 +19,8 @@ const (
 	ScriptScoreTemplate                        // 脚本评分
 	AccessInviteTemplate                       // 访问邀请
 	ScriptScoreReplyTemplate                   // 脚本评分回复
+	ReportCreateTemplate                       // 举报创建
+	ReportCommentTemplate                      // 举报评论
 )
 
 // 已读状态

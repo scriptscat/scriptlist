@@ -207,10 +207,15 @@ var roleAccessMap = map[script_entity.AccessRole]map[string]map[string]struct{}{
 			"manage": struct{}{},
 			"delete": struct{}{},
 		},
+		"report": {
+			"manage": struct{}{},
+			"delete": struct{}{},
+		},
 		"statistics": {
 			"manage": struct{}{},
 		},
 	},
+	// owner 不拥有 report 权限，举报的管理（解决/删除）仅限平台管理员(admin)操作
 	"owner": {
 		"script": {
 			"write":       struct{}{},

@@ -56,6 +56,21 @@ func (mr *MockUserRepoMockRecorder) Find(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserRepo)(nil).Find), ctx, id)
 }
 
+// FindAdmins mocks base method.
+func (m *MockUserRepo) FindAdmins(ctx context.Context) ([]*user_entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAdmins", ctx)
+	ret0, _ := ret[0].([]*user_entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAdmins indicates an expected call of FindAdmins.
+func (mr *MockUserRepoMockRecorder) FindAdmins(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAdmins", reflect.TypeOf((*MockUserRepo)(nil).FindAdmins), ctx)
+}
+
 // FindByPrefix mocks base method.
 func (m *MockUserRepo) FindByPrefix(ctx context.Context, query string) ([]*user_entity.User, error) {
 	m.ctrl.T.Helper()

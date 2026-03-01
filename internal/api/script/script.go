@@ -227,6 +227,8 @@ type StateResponse struct {
 	FavoriteCount int64 `json:"favorite_count"`
 	// Issue数量
 	IssueCount int64 `json:"issue_count"`
+	// 未解决举报数量
+	ReportCount int64 `json:"report_count"`
 }
 
 // WatchRequest 关注脚本
@@ -309,7 +311,8 @@ type ArchiveResponse struct {
 // DeleteRequest 删除脚本
 type DeleteRequest struct {
 	mux.Meta `path:"/scripts/:id" method:"DELETE"`
-	ID       int64 `uri:"id" binding:"required"`
+	ID       int64  `uri:"id" binding:"required"`
+	Reason   string `json:"reason" binding:"max=1024"` // 删除原因（可选）
 }
 
 type DeleteResponse struct {

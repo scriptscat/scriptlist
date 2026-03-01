@@ -106,3 +106,13 @@ const (
 	NotificationNotFound = iota + 109000
 	NotificationPermissionDenied
 )
+
+// report
+const (
+	ReportNotFound = iota + 110000
+	ReportIsDelete
+	ReportAlreadyResolved
+	ReportCommentNotFound
+	ReportReasonInvalid
+	ReportSelfReport
+)

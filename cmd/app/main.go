@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/scriptscat/scriptlist/internal/repository/audit_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/feedback_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/user_profile_repo"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/scriptscat/scriptlist/internal/api"
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/notification_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/report_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/resource_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/script_repo"
 	"github.com/scriptscat/scriptlist/internal/repository/statistics_repo"
@@ -65,6 +67,9 @@ func main() {
 	issue_repo.RegisterScriptIssueComment(issue_repo.NewScriptIssueComment())
 	issue_repo.RegisterScriptIssueWatch(issue_repo.NewScriptIssueWatch())
 
+	report_repo.RegisterScriptReport(report_repo.NewScriptReport())
+	report_repo.RegisterScriptReportComment(report_repo.NewScriptReportComment())
+
 	user_repo.RegisterUser(user_repo.NewUserRepo())
 	user_repo.RegisterFollow(user_repo.NewFollowRepo())
 	user_repo.RegisterUserConfig(user_repo.NewUserConfig())
@@ -75,6 +80,8 @@ func main() {
 	resource_repo.RegisterResource(resource_repo.NewResource())
 
 	notification_repo.RegisterNotification(notification_repo.NewNotificationRepo())
+
+	audit_repo.RegisterAuditLog(audit_repo.NewAuditLogRepo())
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).

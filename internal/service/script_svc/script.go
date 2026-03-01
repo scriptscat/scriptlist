@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/scriptscat/scriptlist/internal/repository/issue_repo"
+	"github.com/scriptscat/scriptlist/internal/repository/report_repo"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/cago-frame/cago/database/cache"
@@ -406,7 +407,11 @@ func (s *scriptSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Cr
 	if err != nil {
 		return nil, err
 	}
-	if err := producer.PublishScriptCreate(ctx, script, scriptCode); err != nil {
+	user := auth_svc.Auth().Get(ctx)
+	if err := producer.PublishScriptCreate(ctx, script, scriptCode, producer.Operator{
+		OperatorUID:      user.UID,
+		OperatorUsername: user.Username,
+	}); err != nil {
 		logger.Ctx(ctx).Error("publish scriptSvc create failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
 		return nil, i18n.NewInternalError(ctx, code.ScriptCreateFailed)
 	}
@@ -544,7 +549,12 @@ func (s *scriptSvc) UpdateCode(ctx context.Context, req *api.UpdateCodeRequest) 
 				code.ScriptUpdateFailed,
 			)
 		}
-		if err := producer.PublishScriptCodeUpdate(ctx, script, scriptCode); err != nil {
+		user := auth_svc.Auth().Get(ctx)
+		if err := producer.PublishScriptCodeUpdate(ctx, script, scriptCode, producer.Operator{
+			OperatorUID:      user.UID,
+			OperatorUsername: user.Username,
+			IsAdmin:          user.AdminLevel.IsAdmin(model.Admin),
+		}); err != nil {
 			logger.Ctx(ctx).Error("publish scriptSvc code update failed", zap.Int64("script_id", script.ID), zap.Int64("code_id", scriptCode.ID), zap.Error(err))
 			return nil, i18n.NewInternalError(ctx, code.ScriptUpdateFailed)
 		}
@@ -797,6 +807,11 @@ func (s *scriptSvc) State(ctx context.Context, req *api.StateRequest) (*api.Stat
 		return nil, err
 	}
 
+	resp.ReportCount, err = report_repo.Report().CountByScript(ctx, req.ID, 1)
+	if err != nil {
+		return nil, err
+	}
+
 	return resp, nil
 }
 
@@ -1014,7 +1029,16 @@ func (s *scriptSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.De
 	if err := script_repo.Script().Update(ctx, script); err != nil {
 		return nil, err
 	}
-	if err := producer.PublishScriptDelete(ctx, script); err != nil {
+	user := auth_svc.Auth().Get(ctx)
+	if err := producer.PublishScriptDelete(ctx, &producer.ScriptDeleteMsg{
+		Script: script,
+		Operator: producer.Operator{
+			OperatorUID:      user.UID,
+			OperatorUsername: user.Username,
+			IsAdmin:          user.AdminLevel.IsAdmin(model.Admin),
+		},
+		Reason: req.Reason,
+	}); err != nil {
 		logger.Ctx(ctx).Error("发布删除脚本消息失败", zap.Error(err))
 	}
 	return &api.DeleteResponse{}, nil
